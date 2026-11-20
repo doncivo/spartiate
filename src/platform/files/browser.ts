@@ -1,5 +1,5 @@
 import { decodeTextBytes } from '../../domain/textEncoding';
-import { DEFAULT_PICK_MAX_BYTES, FileExportError, type FileService, type PickedBytes, type PickedText } from './types';
+import { DEFAULT_PICK_ARCHIVE_MAX_BYTES, DEFAULT_PICK_MAX_BYTES, FileExportError, type FileService, type PickedBytes, type PickedText } from './types';
 
 /**
  * Navigateur de développement et tests de bout en bout : « enregistrer » déclenche un téléchargement (élément `<a download>`), le
@@ -29,7 +29,7 @@ export function createBrowserFiles(): FileService {
       return pickTextFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES);
     },
     pickBytes(options) {
-      return pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES);
+      return pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_ARCHIVE_MAX_BYTES);
     },
   };
 }

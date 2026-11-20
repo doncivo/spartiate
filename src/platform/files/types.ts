@@ -52,6 +52,12 @@ export interface PickedText {
 /** Taille maximale d'un fichier choisi par défaut (2 Mo), la même que `MAX_IMPORT_BYTES` de `src-tauri/src/import.rs`. */
 export const DEFAULT_PICK_MAX_BYTES = 2 * 1024 * 1024;
 
+/**
+ * Taille maximale d'une archive d'export choisie pour l'import (24 Mio, FIX-EXPORT C-136) : la même que `IMPORT_ZIP_LIMITS.maxBytes` (limite de lecture
+ * de l'archive, `archive.ts`) et que `MAX_IMPORT_BYTES` de `src-tauri/src/import.rs` (test par lecture du source). Une archive d'export n'est pas compressée.
+ */
+export const DEFAULT_PICK_ARCHIVE_MAX_BYTES = 24 * 1024 * 1024;
+
 export interface PickedBytes {
   readonly name: string;
   readonly bytes: Uint8Array;

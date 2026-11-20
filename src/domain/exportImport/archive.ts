@@ -196,6 +196,11 @@ export interface Manifest {
   readonly sv: number;
   readonly date: string;
   readonly sha256: string;
+  /**
+   * FIX-EXPORT C-109 : horizon de remise à zéro (hlc) déjà appliqué par l'appareil qui exporte, écrit seulement s'il en a un (clé `reset_horizon`).
+   * Absent d'une archive des versions précédentes. Sert au refus d'une archive faite par un appareil pas encore effacé (`archiveResetVerdict`).
+   */
+  readonly resetHorizon?: string;
 }
 
 export type ArchiveErrorCode = 'not-zip' | 'corrupt' | 'missing-file' | 'bad-manifest' | 'wrong-app' | 'future-version' | 'hash-mismatch' | 'invalid-data';
@@ -245,6 +250,9 @@ export function canonicalDataJson(data: ExportData): string {
   return Object.keys(training).length === 0 ? JSON.stringify({ body_weight: weights, profile, settings }) : JSON.stringify({ body_weight: weights, profile, settings, training });
 }
 
+/** Forme stricte d'un hlc (copie de `isStrictHlc`, `domain/sync` n'étant pas importable ici) : 15 chiffres, compteur hexadécimal, UUID v4 d'appareil. */
+const isHlcText = (v: unknown): v is string => typeof v === 'string' && /^\d{15}-[0-9a-f]{4}-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(v);
+
 const encode = (text: string): Uint8Array => new TextEncoder().encode(text);
 
 /** Hash de l'équivalence métier : SHA-256 du `data.json` canonique (sans hlc, device_id, updated_at). */
@@ -258,13 +266,22 @@ export function weightCsv(weights: readonly ExportWeight[]): string {
   return `${lines.join('\n')}\n`;
 }
 
-export function buildExportArchive(data: ExportData, options: { readonly date: string; readonly sv: number }): Promise<{ bytes: Uint8Array; fileName: string; dataSha256: string }> {
+/** Manifeste d'une archive : `reset_horizon` (clé de fichier) seulement si l'appareil a appliqué une remise à zéro. */
+export function manifestJson(manifest: Manifest): string {
+  const { resetHorizon, ...rest } = manifest;
+  return JSON.stringify(resetHorizon === undefined ? rest : { ...rest, reset_horizon: resetHorizon });
+}
+
+export function buildExportArchive(
+  data: ExportData,
+  options: { readonly date: string; readonly sv: number; readonly resetHorizon?: string | null },
+): Promise<{ bytes: Uint8Array; fileName: string; dataSha256: string }> {
   const dataBytes = encode(canonicalDataJson(data));
   const dataSha256 = sha256Hex(dataBytes);
-  const manifest: Manifest = { app: EXPORT_APP, sv: options.sv, date: options.date, sha256: dataSha256 };
+  const manifest: Manifest = { app: EXPORT_APP, sv: options.sv, date: options.date, sha256: dataSha256, ...(options.resetHorizon ? { resetHorizon: options.resetHorizon } : {}) };
   const entries: ZipEntry[] = [
     { name: 'data.json', data: dataBytes },
-    { name: 'manifest.json', data: encode(JSON.stringify(manifest)) },
+    { name: 'manifest.json', data: encode(manifestJson(manifest)) },
     { name: 'weight.csv', data: encode(weightCsv(data.weights)) },
   ];
   return Promise.resolve({ bytes: buildZip(entries), fileName: `spartiate-export-${options.date.slice(0, 10)}.zip`, dataSha256 });
@@ -519,6 +536,14 @@ export interface ParsedArchive {
  */
 export const IMPORT_ZIP_LIMITS = { maxEntries: 64, maxBytes: 24 * 1024 * 1024 } as const;
 
+/**
+ * FIX-EXPORT C-136 : une archive (non compressée) de plus que la limite de lecture serait refusée à l'import ; l'export ne la produit pas.
+ * La taille du fichier est au moins la somme de ses entrées : ce test ne laisse passer que des archives réimportables.
+ */
+export function exportFitsImportLimit(archiveBytes: number): boolean {
+  return archiveBytes <= IMPORT_ZIP_LIMITS.maxBytes;
+}
+
 export function parseExportArchive(bytes: Uint8Array, options: { readonly currentSv: number; readonly currentYear: number }): Promise<ParsedArchive> {
   return Promise.resolve().then(() => {
     let entries: ZipEntry[];
@@ -537,7 +562,9 @@ export function parseExportArchive(bytes: Uint8Array, options: { readonly curren
       if (!isObject(raw) || typeof raw['app'] !== 'string' || typeof raw['sv'] !== 'number' || !Number.isInteger(raw['sv']) || typeof raw['date'] !== 'string' || typeof raw['sha256'] !== 'string') {
         throw new ArchiveError('bad-manifest');
       }
-      manifest = { app: raw['app'], sv: raw['sv'], date: raw['date'], sha256: raw['sha256'] };
+      const horizon = raw['reset_horizon'];
+      if (horizon !== undefined && !isHlcText(horizon)) throw new ArchiveError('bad-manifest');
+      manifest = { app: raw['app'], sv: raw['sv'], date: raw['date'], sha256: raw['sha256'], ...(horizon === undefined ? {} : { resetHorizon: horizon }) };
     } catch (e) {
       throw e instanceof ArchiveError ? e : new ArchiveError('bad-manifest');
     }

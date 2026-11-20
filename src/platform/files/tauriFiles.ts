@@ -1,5 +1,5 @@
 import { decodeTextBytes } from '../../domain/textEncoding';
-import { DEFAULT_PICK_MAX_BYTES, FileExportError, MAX_EXPORT_BYTES, type FileService, type PickedBytes, type PickedText, type SaveRequest } from './types';
+import { DEFAULT_PICK_ARCHIVE_MAX_BYTES, DEFAULT_PICK_MAX_BYTES, FileExportError, MAX_EXPORT_BYTES, type FileService, type PickedBytes, type PickedText, type SaveRequest } from './types';
 
 /** Commandes Rust de l'export et de l'import (`src-tauri/src/export.rs`, `src-tauri/src/import.rs`), injectables pour les tests. */
 export interface TauriFileApi {
@@ -49,7 +49,7 @@ function bytesOfBase64(data: string): Uint8Array {
  */
 export function createTauriFiles(api: TauriFileApi = loadTauriFileApi()): FileService {
   /** Boîte « Ouvrir » puis octets du fichier choisi (plafond appliqué ici aussi : `maxBytes` ne peut que réduire celui de Rust). */
-  const pick = async (maxBytes: number | undefined): Promise<PickedBytes | null> => {
+  const pick = async (maxBytes: number | undefined, defaultMax: number): Promise<PickedBytes | null> => {
     let picked: { name: string; data: string } | null;
     try {
       picked = await api.pickFile();
@@ -59,7 +59,7 @@ export function createTauriFiles(api: TauriFileApi = loadTauriFileApi()): FileSe
     }
     if (picked === null) return null;
     const bytes = bytesOfBase64(picked.data);
-    if (bytes.length > (maxBytes ?? DEFAULT_PICK_MAX_BYTES)) throw new FileExportError('too-large');
+    if (bytes.length > (maxBytes ?? defaultMax)) throw new FileExportError('too-large');
     return { name: picked.name, bytes };
   };
   return {
@@ -77,9 +77,9 @@ export function createTauriFiles(api: TauriFileApi = loadTauriFileApi()): FileSe
     },
     reveal: () => api.revealExported(),
     async pickText(options): Promise<PickedText | null> {
-      const picked = await pick(options.maxBytes);
+      const picked = await pick(options.maxBytes, DEFAULT_PICK_MAX_BYTES);
       return picked === null ? null : { name: picked.name, text: decodeTextBytes(picked.bytes) };
     },
-    pickBytes: (options): Promise<PickedBytes | null> => pick(options.maxBytes),
+    pickBytes: (options): Promise<PickedBytes | null> => pick(options.maxBytes, DEFAULT_PICK_ARCHIVE_MAX_BYTES),
   };
 }

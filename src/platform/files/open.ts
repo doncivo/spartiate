@@ -1,7 +1,7 @@
 import { createBrowserFiles, pickBytesFromInput, pickTextFromInput } from './browser';
 import { createTauriFiles } from './tauriFiles';
 import { createUnavailableFiles } from './memory';
-import { DEFAULT_PICK_MAX_BYTES, type FileService } from './types';
+import { DEFAULT_PICK_ARCHIVE_MAX_BYTES, DEFAULT_PICK_MAX_BYTES, type FileService } from './types';
 
 /**
  * iPhone : service réel chargé à la demande (bundle de départ, PERF-02) ; `canSave` vrai d'emblée, `pickText` par le sélecteur du système.
@@ -21,7 +21,7 @@ function createLazyIosFiles(): FileService {
     canSave: () => true,
     save: (request) => real().then((files) => files.save(request)),
     pickText: (options) => pickTextFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
-    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_MAX_BYTES),
+    pickBytes: (options) => pickBytesFromInput(options.accept, options.maxBytes ?? DEFAULT_PICK_ARCHIVE_MAX_BYTES),
   };
 }
 

@@ -10,7 +10,7 @@ import { createAppContainer } from '../app/container';
 import { ExportImportScreen } from './ExportImportScreen';
 
 vi.mock('../../domain/exportImport/archive', async (original) => ({
-  ...(await original<typeof import('../../domain/exportImport/archive')>()),
+  ...(await original<Record<string, unknown>>()),
   buildExportArchive: () => Promise.resolve({ bytes: new Uint8Array(24 * 1024 * 1024 + 1), fileName: 'spartiate-export-2026-10-05.zip', dataSha256: '' }),
 }));
 vi.mock('../../domain/exportImport/fullExport', () => ({

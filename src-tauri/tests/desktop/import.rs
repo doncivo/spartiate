@@ -11,8 +11,8 @@ fn scratch() -> tempfile::TempDir {
 }
 
 #[test]
-fn spa005_limit_is_two_megabytes_like_the_typescript_side() {
-    assert_eq!(MAX_IMPORT_BYTES, 2 * 1024 * 1024);
+fn fix_export_limit_is_24_mebibytes_like_the_typescript_side() {
+    assert_eq!(MAX_IMPORT_BYTES, 24 * 1024 * 1024);
     assert_eq!(IMPORT_EXTENSIONS, ["zip"]);
 }
 
