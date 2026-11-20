@@ -107,11 +107,21 @@ describe('règle « même écriture » (Y-07 critère 6, QA)', () => {
     expect(await dump()).toEqual(after);
   });
 
-  it('valeur gardée plus ancienne que le repli de la ligne (aucune horloge propre) : jamais réintégrée ; la règle ordinaire décide', async () => {
+  it('valeur gardée plus ancienne que le repli de la ligne, sans horloge propre et colonne nulle : jamais écrite ici, réintégrée (ADR 0011 avenant 39)', async () => {
     await taskFromA(T1, h(5_000));
+    await keep(T1, 'antérieure', h(1_000));
+    expect(await run()).toEqual({ reintegrated: 1, superseded: 0, remaining: 0 });
+    expect(await xOf(T1)).toBe('antérieure');
+  });
+
+  it('valeur gardée plus ancienne que le repli, colonne écrite avec la ligne (non nulle) : jamais réintégrée ; la règle ordinaire décide', async () => {
+    await taskFromA(T1, h(5_000));
+    await db.driver.execute('INSERT OR IGNORE INTO sync_guard (id) VALUES (1)');
+    await db.driver.execute(`UPDATE task SET ${TEST_COLUMN} = 'de la ligne' WHERE id = ?`, [T1]);
+    await db.driver.execute('DELETE FROM sync_guard');
     await keep(T1, 'périmée', h(1_000));
     expect(await run()).toEqual({ reintegrated: 0, superseded: 1, remaining: 0 });
-    expect(await xOf(T1)).toBeNull();
+    expect(await xOf(T1)).toBe('de la ligne');
   });
 
   it('valeur gardée entre le repli et le hlc courant de la ligne : écrite (le champ n’a jamais eu d’écriture locale), le hlc de la ligne ne recule pas', async () => {

@@ -181,7 +181,8 @@ const nothing = (remove: readonly string[] = []): ReintegrationDecision => ({ wr
 
 /**
  * Décision pour les champs gardés d'une ligne :
- * - ligne présente : horloge locale du champ = horloge propre, sinon repli `'*'`, sinon hlc de la ligne ; fusion ordinaire (`mergeField`),
+ * - ligne présente : horloge locale du champ = horloge propre ; sans elle et valeur locale nulle (hors `deleted_at`), le champ n'a jamais
+ *   été écrit ici et la valeur gardée s'applique sans conflit (ADR 0011 avenant 39) ; sinon repli `'*'`, sinon hlc de la ligne ; fusion ordinaire (`mergeField`),
  *   sauf la **même écriture** : sans horloge propre et au hlc de ce repli, la valeur gardée vient de l'écriture que la ligne a reçue quand
  *   la colonne n'existait pas ici (la valeur locale n'est que le défaut de la migration) : elle est écrite. Un gagnant dont le parent
  *   manque attend ; les autres champs (écrits ou dépassés) quittent `sync_unknown` ;
@@ -218,7 +219,10 @@ export function decideReintegration(input: ReintegrationInput): ReintegrationDec
     const clock = own ?? row.clocks.get('*') ?? { hlc: row.hlc, base: null };
     const local: LocalField = { value: row.values.get(f.name) ?? null, hlc: clock.hlc, base: clock.base, pending: row.pending.has(f.name) || row.pending.has('*') };
     const sameWrite = own === undefined && f.hlc === clock.hlc;
-    const decision = sameWrite ? { apply: true, conflict: null } : mergeField(local, [f.value, f.hlc, f.base]);
+    // Avenant 39 : sans horloge propre et valeur locale nulle, le champ n'a jamais été écrit ici (colonne ajoutée nulle, toute écriture hors
+    // création pose son horloge propre) : « * » ne le date pas. Jamais pour `deleted_at` (colonne de toujours : aucune résurrection).
+    const neverWritten = own === undefined && f.name !== 'deleted_at' && local.value === null && !row.pending.has(f.name);
+    const decision = sameWrite || neverWritten ? { apply: true, conflict: null } : mergeField(local, [f.value, f.hlc, f.base]);
     if (decision.apply && input.missingParents.has(f.name)) {
       waiting.add(f.name);
       continue;
