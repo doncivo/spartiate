@@ -192,3 +192,35 @@ describe('FIX-ASSIST (d) tonnage, records et fiche', () => {
     expect(target(8, 10)).toEqual({ sets: 3, repMin: 8, repMax: 10, rir: null });
   });
 });
+
+describe('FIX-ASSIST passe qa-test : cas limites', () => {
+  const CATALOG = { id: 'pull-up-assisted', metric: 'bodyweight-reps', equipment: ['assisted-pull-up-machine', 'resistance-band', 'pull-up-bar'] } as const;
+  it('assisté du catalogue en bodyweight-reps : non prescrit, aucune rampe, hors tonnage par défaut', () => {
+    const p = prescribe(input({ exercise: CATALOG, equipment: ASSIST_GYM, history: [session(2, 30, [10, 10, 10])] }));
+    expect(p.status).toBe('unsupported');
+    expect(warmupForExercise(CATALOG, 30, ASSIST_GYM)).toEqual([]);
+    expect(tonnageKg([setRow(0, { done: true, reps: 8, loadKg: 30, exerciseId: 'pull-up-assisted' })])).toBe(0);
+  });
+  it('assistance juste au-dessus du minimum (10 kg, pile de 5 kg) → 5 kg, puis 5 kg → maintien', () => {
+    const first = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(2, 10, [10, 10, 10])] }));
+    expect(first.loadKg).toBe(5);
+    const second = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(2, 5, [10, 10, 10])] }));
+    expect(second.loadKg).toBe(5);
+    expect(second.ladderSetIndex).not.toBeNull();
+  });
+  it('poids de corps connu, cran et rang 2 : la décote de position relève l’assistance, jamais au-dessus de la référence comme une « hausse »', () => {
+    const p = prescribe(input({ exercise: ASSISTED_BODY, bodyweightKg: 80, equipment: ASSIST_GYM, history: [session(2, 30, [10, 10, 10])], positionRank: 2, lastPositionRank: 1 }));
+    expect(p.loadKg as number).toBeGreaterThanOrEqual(25);
+    if ((p.loadKg as number) >= 30) expect(p.headline).toBe('position');
+    else expect(explainPrescription(p).key).toBe('assistDecrease');
+  });
+  it('sans grille, 3 kg d’assistance → 0,5 kg ; 2,6 kg → maintenue (jamais 0 kg d’assistance)', () => {
+    expect(prescribe(input({ exercise: ASSISTED, equipment: null, history: [session(2, 3, [10, 10, 10])] })).loadKg).toBe(0.5);
+    expect(prescribe(input({ exercise: ASSISTED, equipment: null, history: [session(2, 2.6, [10, 10, 10])] })).loadKg).toBe(2.6);
+  });
+  it('« Dur » au haut de plage : assistance maintenue (aucun cran), comme un exercice ordinaire', () => {
+    const p = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(2, 30, [10, 10, 10], { difficulty: 'hard' })] }));
+    expect(p.loadKg).toBe(30);
+    expect(p.headline).toBe('hold-hard');
+  });
+});

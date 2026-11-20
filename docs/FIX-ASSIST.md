@@ -32,3 +32,29 @@ comme une réduction.
 Périmètre : `src/domain/training/{prescribe,constraints,warmup,closure,exerciseSheet,explain,config,types}.ts`, `src/i18n/fr.progression.ts`,
 `src/i18n/fr.training.ts`, `src/features/training/session/ExerciseProgression.tsx`, `src/features/training/library/ExerciseSheetStats.tsx`,
 `src/db/repositories/sql/workoutRepository.ts` (identifiants assistés passés au résumé). Hors périmètre : migrations, synchro, contenu.
+
+## Passe agent du module (training, binôme domain-logic) : choix
+
+- (a) Cran : `nextLoadBelow` (nouvelle, `loadGrid.ts`) sur la grille ; sans grille, −2,5 kg (`unknownIncrementKg`, D-244) ; jamais à 0 kg ni
+  en dessous ni sous la plus petite charge de la grille : sinon assistance maintenue, +1 répétition, raison `assistance-min`, phrase
+  « Même assistance… assistance minimale du matériel ». Le plafond +10 % reste appliqué (sur la charge totale si le poids de corps est connu).
+  Recalibrage « Facile » +5 % désactivé pour un assisté (il hausserait l'assistance) : double progression ordinaire.
+- (b) Réductions hors décharge (inactivité, Recovery basse, journée rouge), poids de corps connu ou non : assistance MAINTENUE (choix le plus
+  prudent et cohérent avec D-170 (3), D-273, D-284 ; l'augmenter d'un cran sur une pile de 5 kg serait une baisse de difficulté forte et non
+  demandée). Raison `assistance-held`, phrases « Assistance maintenue : reprise… » / « … récupération basse… », journée rouge inchangée
+  (`redDayHeld`). Position : poids de corps connu, calcul existant sur la charge totale (DEP-01) gardé ; inconnu, assistance maintenue et note
+  `noteAssistanceHeld`. Choix « −5 % » et « mini-deload » omis pour un assisté (`proposalOptions(…, assisted)`), « −2 répétitions »,
+  variante et autre plage gardés. Décharge : D-273 / D-284 inchangés.
+- (c) Échauffement : aucune rampe pour un assisté (drapeau ou matériel `assisted-pull-up-machine`) : une fraction de l'assistance est plus
+  dure que le travail et, sans poids de corps, aucune rampe inversée n'est calculable.
+- (d) Tonnage et records : séries d'un assisté hors tonnage et hors records (charge et volume), poids de corps connu ou non (le poids de
+  corps varie d'une séance à l'autre : un record de « charge effective » serait instable) ; fiche : ni 1RM (`assisted`) ni record de charge.
+  Assistés = catalogue (`CATALOG_ASSISTED_IDS`, gardé aligné sur `exercises.json` par un test) + personnalisés de la table `exercise` dont le
+  matériel comprend la machine (`workoutRepository.assistedFor`). L'historique (`HistoryView`, `tonnageKg` sans argument) n'exclut que le
+  catalogue : résidu mineur (voir risques).
+- (e) `ENGINE_VERSION` reste 3 : aucune constante modifiée ; le dépôt n'incrémente la version qu'au changement d'une valeur de configuration
+  (`config.ts` l. 4-5 ; D-170 (6), I4-08, D-273, D-284 l'ont laissée à 3 pour des changements de règle).
+
+## Proposition de décision (à numéroter par l'appelant, docs/decisions.md non modifié)
+
+| D-??? | **FIX-ASSIST (0.28.0) : exercice assisté, l'assistance est une charge négative (audit Claude 0.27.0, C-001, C-002, C-011 ; complète D-170 (3), D-273, D-284 ; choix prudents, révisables par Ali).** Pour un exercice assisté (matériel `assisted-pull-up-machine`), la charge saisie est l'assistance. (1) Haut de plage atteint : l'assistance BAISSE d'un cran (grille du matériel ; sans grille, 2,5 kg, D-244), jamais sous la plus petite assistance de la grille ni sous 0,5 kg sans grille : sinon assistance maintenue et une répétition de plus, « assistance minimale du matériel » ; phrase « Assistance −x kg », jamais « +x kg » ; pas de recalibrage « Facile » +5 %. (2) Hors décharge, inactivité, Recovery basse et journée rouge ne baissent jamais l'assistance, poids de corps connu ou non : maintenue et dite (« Assistance maintenue… », journée rouge `redDayHeld` inchangée) ; décote de position : sur la charge totale si le poids de corps est connu (DEP-01, inchangé), sinon maintenue et dite en note ; choix « −5 % » et mini-deload omis. Décharge : D-273 / D-284 inchangés. (3) Aucune rampe d'échauffement pour un assisté. (4) Séries d'un assisté hors tonnage et hors records (charge, volume) ; fiche sans 1RM ni record de charge. (5) `ENGINE_VERSION` reste 3 (aucune constante modifiée). Tests : `src/domain/training/fixAssist.test.ts`, `src/db/repositories/sql/workoutClosure.test.ts` (describe FIX-ASSIST), `src/features/training/session/fixAssistText.test.ts`. | Claude (choix prudents) ; révisable par Ali |

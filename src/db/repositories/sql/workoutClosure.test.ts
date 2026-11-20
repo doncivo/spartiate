@@ -187,3 +187,38 @@ describe('« Mettre à jour la routine ? »', () => {
     expect((await (await repo()).routineChanges(W1)).hasChanges).toBe(false);
   });
 });
+
+describe('FIX-ASSIST (audit C-011) : exercice assisté hors tonnage et records', () => {
+  it('séries d’un exercice personnalisé avec la machine d’assistance : hors tonnage et sans record, même assistance plus forte', async () => {
+    db = await openBaseDb(DEVICE);
+    const CUSTOM = '7f3a1c2e-0000-4000-8000-0000000000a5';
+    await (await db.data.repos.exercises()).create({
+      id: CUSTOM,
+      nameFr: 'Tractions à la machine assistée',
+      aliasesEn: [],
+      muscles: [{ id: 'lats', weight: 1 }],
+      equipment: ['assisted-pull-up-machine'],
+      pattern: 'pull-vertical',
+      kind: 'compound',
+      metric: 'load-reps',
+      bodyweightFraction: null,
+      defaultRepRange: [8, 12],
+      defaultRestSec: 90,
+      instructions: { setup: 'Régler', execution: 'Tirer', mistakes: [] },
+      media: null,
+      strengthStandardKey: null,
+    });
+    const session = async (id: string, assistKg: number) => {
+      db.clock.advance(60_000);
+      const r = await repo();
+      await r.start({ source: 'empty', id, name: 'Séance' });
+      const w = await r.addExercise(id, { exerciseId: CUSTOM, exerciseName: 'Tractions assistées', sets: 2 });
+      for (const s of w.sets) await r.validateSet(s.id, { reps: 8, loadKg: assistKg });
+      db.clock.advance(60_000);
+      return close(id);
+    };
+    expect((await session(W1, 20)).summary).toMatchObject({ validatedWorkSets: 2, tonnageKg: 0, records: [] });
+    expect((await session(W2, 40)).summary).toMatchObject({ validatedWorkSets: 2, tonnageKg: 0, records: [] });
+    await expect((await repo()).summary(W2)).resolves.toMatchObject({ tonnageKg: 0, records: [] });
+  });
+});
