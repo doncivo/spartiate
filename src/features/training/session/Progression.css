@@ -74,7 +74,7 @@
   padding: 0 var(--ct-space-2);
   background: var(--ct-color-surface-input);
   color: var(--ct-color-text);
-  border: 1px solid var(--ct-color-border-strong);
+  border: 1px solid var(--ct-color-control-border);
   border-radius: var(--ct-radius-md);
   font: inherit;
   cursor: pointer;
@@ -88,7 +88,7 @@
 }
 
 .ct-progression__choice:focus-visible {
-  outline: 2px solid var(--ct-color-bronze);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 
