@@ -1,12 +1,13 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-20 : **lot 0.28.0 en cours** (docs/LOT-0.28.0.md, prompt d'Ali ; schéma 20, version 0.27.0 publiée). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-322 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste »).
+État au 2026-11-20 : **lot 0.28.0 en cours** (docs/LOT-0.28.0.md, prompt d'Ali ; schéma 20, version 0.27.0 publiée). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-324 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste »).
 
 ## Lot 0.28.0 — où on en est
 
-- Phase 0 : DOC-PRIV fusionné (#156, D-318 à D-321). **HIST-01 reporté en fin de lot** : condition non remplie (PR #127 « Relecture Codex 13/11 » encore ouverte ; conditions et étapes : docs/LOT-0.28.0.md 0.2). Motifs hors dépôt : `C:\Dev\spartiate\.codex-tmp\hist01-motifs.txt` (jamais commité).
-- Phase 1 : FIX-ASSIST (D-322) en PR ; **suivant : FIX-ABERR** (C-005, C-028, C-168), puis FIX-A008, FIX-A009 (audit Codex, `git show origin/audit-0.26.0:docs/audit-0.26.0/bloquants.md`, à relire au début de chaque phase).
+- Phase 0 : DOC-PRIV fusionné (#156, D-318 à D-321). **HIST-01 fait le 20/11** (docs/HIST-01.md : historique réécrit et poussé en force, PR #127 fermée, D-319, D-324) ; **tous les SHA antérieurs au 20/11 ont changé** (table dans docs/HIST-01.md) ; reste à Ali : recloner `C:\Dev\spartiate-codex`, envoyer la demande de purge à GitHub Support. Les worktrees locaux créés avant le 20/11 12:39 UTC portent l'ancien historique : n'en repousser aucun, recréer depuis origin.
+- Phase 1 : FIX-ASSIST fusionné (#157, D-322) ; **en cours : FIX-ABERR** (branche `FIX-ABERR` poussée, réécrite par HIST-01 ; étapes en fin de docs/FIX-ABERR.md ; décisions d'Ali du 20/11 : contrôle de vraisemblance à la première séance, hausse > 150 % confirmée par une 2e séance complète), puis FIX-A008 (brief hors dépôt `C:\Dev\spartiate\.codex-tmp\lot028\brief-FIX-A008.md`), FIX-A009 (audit Codex, `git show origin/audit-0.26.0:docs/audit-0.26.0/bloquants.md`, à relire au début de chaque phase).
 - Phase 2 puis 3 : ordre dans docs/LOT-0.28.0.md.
+- Budgets (D-324) : un dépassement est consigné dans la fiche et n'arrête plus ; arrêt au double du budget ou au 2e compactage.
 - Méthode du lot : un worktree par ticket `C:\Dev\spartiate\.codex-tmp\wt-<ticket>` depuis origin/main, `node_modules` par jonction (`mklink /J`) vers celui de `C:\Dev\spartiate` ; scripts de travail dans `C:\Dev\spartiate\.codex-tmp\lot028\`. `pairingBundle.test` échoue seulement depuis un worktree (point 3.4) ; le reste de `npm run test:bundle` doit être vert. Le main local de `C:\Dev\spartiate` est ancien et divergent : ne jamais s'y fier, toujours origin/main.
 - Pièges : le chapitre du PRD est figé par `prd-split.test.ts` (liste fermée de décisions) : une mise en cohérence passe par une D- ; `scripts/release/privacy.test.ts` refuse toute valeur attribuée à Ali et tout conseil de réinstaller l'app ; aucun `prettier --write`.
 
