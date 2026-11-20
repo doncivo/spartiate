@@ -39,6 +39,11 @@ const ROUTINE: RoutineInput = {
   ],
 };
 
+/** Poids de corps synthétique (D-292) ; rappel « ton poids de corps (… kg) » du texte de l'app, interpolé (garde DOC-PRIV, C-165). */
+const BODY_KG = 80;
+const BODY = String.raw`ton poids de corps \(${String(BODY_KG)} kg\)`;
+const asked = (pattern: string): RegExp => new RegExp(pattern);
+
 const notifier: TimerNotifier = { permission: async () => 'granted', requestPermission: async () => 'granted', isPending: async () => false, schedule: async () => true, cancel: async () => undefined };
 const liveActivity: LiveActivity = { isAvailable: async () => ({ available: false, reason: 'unsupported' }) as never, start: async () => ({ started: false }) as never, end: async () => ({ ended: true, count: 0 }) };
 
@@ -85,13 +90,13 @@ afterEach(async () => {
 });
 
 describe('FIX-ABERR vraisemblance : première séance, poids de corps 80 kg', () => {
-  beforeEach(async () => weigh(80));
+  beforeEach(async () => weigh(BODY_KG));
 
   it('développé couché 201 kg × 5 : question « plus de 2,5 fois ton poids de corps », rien n’est écrit', async () => {
     openSession();
     const set = await firstSet(BENCH);
     enter(set, '201', '5');
-    expect(await within(set).findByText(/201 kg : c’est plus de 2,5 fois ton poids de corps \(80 kg\)/)).toBeInTheDocument();
+    expect(await within(set).findByText(asked(`201 kg : c’est plus de 2,5 fois ${BODY}`))).toBeInTheDocument();
     expect(within(set).getByRole('button', { name: 'Confirmer' })).toBeInTheDocument();
     expect(await openDone()).toEqual([]);
   });
@@ -127,8 +132,8 @@ describe('FIX-ABERR vraisemblance : première séance, poids de corps 80 kg', ()
   it('traction assistée : 80 kg d’assistance (≥ poids de corps) signalée ; 79,5 kg écrite sans question', async () => {
     openSession();
     const set = await firstSet(ASSISTED);
-    enter(set, '80', '8');
-    expect(await within(set).findByText(/Assistance de 80 kg : peu plausible face à ton poids de corps \(80 kg\)/)).toBeInTheDocument();
+    enter(set, String(BODY_KG), '8');
+    expect(await within(set).findByText(asked(`Assistance de ${String(BODY_KG)} kg : peu plausible face à ${BODY}`))).toBeInTheDocument();
     expect(await openDone()).toEqual([]);
     fireEvent.click(within(set).getByRole('button', { name: 'Corriger' }));
     enter(set, '79,5', '8');
@@ -140,7 +145,7 @@ describe('FIX-ABERR vraisemblance : première séance, poids de corps 80 kg', ()
     openSession();
     const set = await firstSet(CURL);
     enter(set, '48,5', '10');
-    expect(await within(set).findByText(/48,5 kg : c’est plus de 0,6 fois ton poids de corps \(80 kg\) par haltère/)).toBeInTheDocument();
+    expect(await within(set).findByText(asked(`48,5 kg : c’est plus de 0,6 fois ${BODY} par haltère`))).toBeInTheDocument();
     expect(await openDone()).toEqual([]);
   });
 });
@@ -163,7 +168,7 @@ describe('FIX-ABERR vraisemblance : première séance, poids de corps inconnu', 
 });
 
 describe('FIX-ABERR vraisemblance : passe qa-test', () => {
-  beforeEach(async () => weigh(80));
+  beforeEach(async () => weigh(BODY_KG));
   it('après « Confirmer », la série suivante à la même charge est écrite sans nouvelle question', async () => {
     openSession();
     const set = await firstSet(BENCH);
