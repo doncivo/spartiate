@@ -92,6 +92,19 @@ export function validateRoutineDay(day: RoutineDaySpec, dayIndex = 0): RoutineIs
   return issues;
 }
 
+/**
+ * FIX-PROGRAMME (C-065) : jours déjà enregistrés dont le jour de la semaine change dans le brouillon : à libérer (jour de la semaine vidé)
+ * avant toute autre écriture, pour qu'un échange (lundi ↔ mardi, ou « Aucun » ↔ « Lundi ») ne bute pas sur l'unicité contrôlée jour par
+ * jour contre la base. Le brouillon lui-même reste contrôlé par `validateRoutine` (`day-weekday-duplicate`).
+ */
+export function weekdaysToRelease(before: readonly { readonly id: string; readonly weekday?: number | null }[], after: readonly { readonly id: string; readonly weekday?: number | null }[]): string[] {
+  return before.flatMap((old) => {
+    const now = after.find((d) => d.id === old.id);
+    const was = old.weekday ?? null;
+    return now !== undefined && was !== null && was !== (now.weekday ?? null) ? [old.id] : [];
+  });
+}
+
 export function validateRoutine(routine: RoutineSpec): RoutineIssue[] {
   const issues: RoutineIssue[] = [];
   if (blank(routine.name) || routine.name.length > NAME_MAX) issues.push({ code: 'name-empty' });

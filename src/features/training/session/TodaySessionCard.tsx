@@ -40,6 +40,8 @@ interface ProgramDay {
 /** PROG-04 (D-316) : jour sans séance prévue (jours rattachés à un jour de la semaine) ; le prochain jour prévu est annoncé. */
 interface RestDay {
   readonly rest: true;
+  /** FIX-PROGRAMME (C-063) : la séance du jour est déjà faite aujourd'hui (sinon : jour sans séance prévue). */
+  readonly done: boolean;
   readonly nextName: string;
   readonly nextWeekday: number;
 }
@@ -85,11 +87,13 @@ export function TodaySessionCard() {
       const [routine, closed] = await Promise.all([(await data.repos.trainingRoutines()).get(cycle.record.routineId), (await data.repos.workouts()).listClosed(50)]);
       if (routine === null) return null;
       // PROG-04 (D-316) : jour de la semaine s'il est donné ; sinon rotation d'avant (D-243).
-      const choice = programDayFor(routine.days, closed, routine.id, localDayOf(clock.nowMs()));
+      // FIX-PROGRAMME (C-063) : date locale du début de chaque séance close, pour ne pas reproposer la séance du jour déjà faite.
+      const dated = closed.map((w) => ({ routineId: w.routineId, routineDayId: w.routineDayId, day: localDayOf(Date.parse(w.startedAt)) }));
+      const choice = programDayFor(routine.days, dated, routine.id, localDayOf(clock.nowMs()));
       if (choice === null) return null;
-      if (choice.kind === 'rest') {
+      if (choice.kind === 'rest' || choice.kind === 'done') {
         const next = routine.days.find((d) => d.id === choice.nextDayId);
-        return next === undefined ? null : { rest: true, nextName: next.name, nextWeekday: choice.nextWeekday };
+        return next === undefined ? null : { rest: true, done: choice.kind === 'done', nextName: next.name, nextWeekday: choice.nextWeekday };
       }
       const day = routine.days.find((d) => d.id === choice.dayId);
       if (day === undefined) return null;
@@ -118,8 +122,8 @@ export function TodaySessionCard() {
         </h2>
         <CycleMarker marker={marker} />
         <div className="ct-session-card__body">
-          <p className="ct-session-card__name">{tTraining('sessionRestTitle')}</p>
-          <p className="ct-today__muted ct-session-card__meta">{tTraining('sessionRestToday', { weekday, name: program.nextName })}</p>
+          <p className="ct-session-card__name">{tTraining(program.done ? 'sessionDoneTitle' : 'sessionRestTitle')}</p>
+          <p className="ct-today__muted ct-session-card__meta">{tTraining(program.done ? 'sessionDoneToday' : 'sessionRestToday', { weekday, name: program.nextName })}</p>
         </div>
         <Button fullWidth variant="secondary" onClick={() => navigate({ tab: 'training', screen: 'session' })}>
           {tTraining('sessionOther')}

@@ -115,7 +115,8 @@ export function CycleView({ access }: { readonly access: DataAccess }) {
     setLoad({ status: 'ready', current, routines });
     setClosedSince(closedCount);
     setWeeks(String(proposed) as WeeksChoice);
-    if (answers) setRampUp(answers.rampUp);
+    // FIX-PROGRAMME (C-064) : hors premier cycle, la reprise revient éteinte (D-267 : elle ne se reprend jamais), même sans quitter l'écran.
+    setRampUp(answers?.rampUp ?? false);
     setRoutineId((id) => (routines.some((r) => r.id === id) ? id : (current?.record.routineId ?? routines[0]?.id ?? '')));
     },
     [],
