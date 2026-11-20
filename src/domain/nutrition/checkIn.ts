@@ -8,6 +8,7 @@
 import type { LocalDate } from '../types';
 import { twoWeekCoverage, type TwoWeekCoverage } from './coverage';
 import { KCAL_PER_G, NUTRITION_CONFIG, NUTRITION_ENGINE_VERSION } from './config';
+import { lowestKcal } from './floor';
 import { shiftTarget, weeklyAverageTarget, type RestPlan } from './restDay';
 import type { DayTotals, Target, WeighIn } from './types';
 
@@ -109,15 +110,34 @@ export function proposeCheckIn(input: CheckInInput): CheckInResult {
   // D-272 : le check-in raisonne sur la moyenne hebdomadaire, puis applique le même écart aux deux cibles (différence conservée).
   const training = input.currentTarget;
   const average = weeklyAverageTarget(training, plan);
+  const floor = input.lowFloorConfirmed ? NUTRITION_CONFIG.confirmedFloorKcal : NUTRITION_CONFIG.floorKcal;
+  // FIX-PLANCHER (C-031) : le plancher vaut pour la plus basse des deux cibles, pas seulement pour la moyenne.
+  const lowestNow = lowestKcal(training, plan);
+  if (input.style !== 'manual' && lowestNow < floor && input.tdee !== null && input.weightKg !== null) {
+    const coverage = twoWeekCoverage(input.days, input.weighIns, input.weekEnd);
+    if (coverage.sufficient) return result(input, 'alert', { coverage, alert: { kind: 'below-floor', currentKcal: lowestNow } });
+  }
   const single = proposeSingle({ ...input, currentTarget: average, restPlan: null });
   if (single.proposal === null) return single;
   const p = single.proposal;
   const delta = p.target.kcal - average.kcal;
+  const clampedBy: Clamp[] = [...p.clampedBy];
+  // Chaque cible est relevée au plancher en vigueur ; l'écart d'avant est conservé tant qu'il ne la fait pas passer dessous.
+  const bounded = (base: Target): Target => {
+    const shifted = shiftTarget(base, delta, p.target.proteinG, p.target.fatG);
+    if (shifted.kcal >= floor) return shifted;
+    if (!clampedBy.includes('floor')) clampedBy.push('floor');
+    return shiftTarget(base, floor - base.kcal, p.target.proteinG, p.target.fatG);
+  };
+  const target = bounded(training);
+  const restTarget = bounded(plan.rest);
   const proposal: Proposal = {
     ...p,
-    target: shiftTarget(training, delta, p.target.proteinG, p.target.fatG),
-    restTarget: shiftTarget(plan.rest, delta, p.target.proteinG, p.target.fatG),
+    target,
+    restTarget,
     previousTarget: training,
+    clampedBy,
+    belowStandardFloor: lowestKcal(target, { rest: restTarget, trainingDays: plan.trainingDays }) < NUTRITION_CONFIG.floorKcal,
     alternatives: p.alternatives.length > 0 ? [{ kind: 'hold', target: training }] : [],
   };
   return { ...single, proposal };

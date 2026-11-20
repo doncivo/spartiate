@@ -1,6 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { useMemo, useState } from 'react';
 import {
+  floorVerdict,
   checkInPeriod,
   firstCheckIn,
   effectiveTarget,
@@ -144,6 +145,9 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const current = effective?.target ?? null;
   // FIX-0271 (U-12) : plan de repos actuel (une cible de repos enregistrée le matin du check-in compte), rapporté à la cible analysée.
   const restPlan = checkInRestPlan(targets, period.weekEnd, snapshot.today);
+  // FIX-PLANCHER : une cible en vigueur sous 1 200 kcal n'a pu être écrite qu'avec la confirmation d'Ali ; le moteur la reprend.
+  const confirmedInForce = current !== null && floorVerdict(current, restPlan) === 'confirm';
+  const [acceptConfirmed, setAcceptConfirmed] = useState(false);
   const result: CheckInResult = useMemo(
     () =>
       proposeCheckIn({
@@ -155,10 +159,10 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         weightKg: tdee.weightKg,
         goal: prefs.goal,
         currentTarget: current,
-        lowFloorConfirmed: false,
+        lowFloorConfirmed: confirmedInForce,
         restPlan,
       }),
-    [prefs, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current, restPlan],
+    [prefs, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current, restPlan, confirmedInForce],
   );
   const proposal = result.proposal;
   const existing = targets.find((t) => t.weekStart === period.checkInDate);
@@ -355,6 +359,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
           submitLabel={tNutrition('saveMyTarget')}
           onChange={setPreview}
           onCancel={() => setCustomizing(false)}
+          restGapKcal={restPlan !== null && current !== null ? restPlan.rest.kcal - current.kcal : null}
           onSave={(target, lowFloorConfirmed) => decide({ action: 'customize', target }, lowFloorConfirmed)}
         >
           {customWarnings.length > 0 ? (
@@ -373,7 +378,13 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
             </p>
           ) : null}
           <div className="ct-checkin__actions">
-            <Button fullWidth disabled={busy} onClick={() => void decide({ action: 'accept' })}>
+            {proposal.belowStandardFloor ? (
+              <label className="ct-nutrition__check">
+                <input type="checkbox" checked={acceptConfirmed} onChange={(event) => setAcceptConfirmed(event.target.checked)} />
+                <span>{tNutrition('floorConfirm')}</span>
+              </label>
+            ) : null}
+            <Button fullWidth disabled={busy} onClick={() => void decide({ action: 'accept' }, acceptConfirmed)}>
               {tNutrition('accept', { kcal: formatInt(proposal.target.kcal) })}
             </Button>
             <div className="ct-checkin__secondary">
