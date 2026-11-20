@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { AppContainerProvider, useAppContainer } from './features/app/AppContainerContext';
 import { useAppStore } from './features/app/appStore';
 import { UndoToast } from './features/app/UndoToast';
@@ -9,8 +9,8 @@ import { TABS, useNavigationStore, type TabDefinition } from './features/app/nav
 import { startDesktopIntegration } from './features/app/desktop';
 import { toKeyInput, type ShortcutId } from './features/app/shortcuts';
 import { startAppStartup, type AppStartup } from './features/app/startup';
-import { StartupWatchdog } from './features/app/StartupWatchdog';
-import { startupTracker } from './features/app/startupSteps';
+import { FallbackBoundary, StartupWatchdog } from './features/app/StartupWatchdog';
+import { isDatabaseWorkStep, startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
 import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
@@ -22,9 +22,10 @@ import { startSyncIntegration } from './features/sync/startSync';
 import { AppLockGate } from './features/security/AppLockGate';
 import { bootAppLock } from './features/security/appLockBoot';
 import { isAppLocked } from './features/security/appLockStore';
+import type { startSigningIntegration } from './features/signing/signingRun';
 import { t } from './i18n';
 import { formatPrefsVersion, subscribeFormatPrefs } from './i18n/formatPrefs';
-import { AppShell, TabRail } from './ui';
+import { AppShell, Button, TabRail } from './ui';
 import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
 import { SHORTCUTS } from './features/app/shortcuts';
 import { todayLocal } from './domain/clock';
@@ -93,6 +94,50 @@ function AppShellContent() {
         <SectionNotice tab={route.tab} />
       )}
     </AppShell>
+  );
+}
+
+type SigningModule = { readonly startSigningIntegration: typeof startSigningIntegration };
+
+/**
+ * I-02 : démarre l'avis de signature chargé à la demande ; renvoie l'arrêt. C-116 : un bloc illisible est journalisé seulement, l'état de la
+ * base et la coquille ne changent pas.
+ */
+export function startSigningLazily(container: AppContainer, load: () => Promise<SigningModule> = () => import('./features/signing/signingRun')): () => void {
+  let stop: (() => void) | undefined;
+  let cancelled = false;
+  void load().then(
+    (module) => {
+      if (cancelled) return;
+      stop = module.startSigningIntegration(container).dispose;
+    },
+    () => logFailure('signing', 'chargement impossible'),
+  );
+  return () => {
+    cancelled = true;
+    stop?.();
+  };
+}
+
+/** Relancer pendant une migration ou sur un pilote empoisonné est interdit (D-326 5, C-115). */
+const reloadForbidden = (): boolean => useAppStore.getState().dbFailure?.kind === 'connection-poisoned' || isDatabaseWorkStep(startupTracker.current()?.name ?? '');
+
+function RootCrash({ reload }: { readonly reload: () => void }) {
+  const poisoned = useAppStore.getState().dbFailure?.kind === 'connection-poisoned';
+  return (
+    <div role="alert" className="app-shell">
+      <p>{t('app.crashTitle')}</p>
+      {reloadForbidden() ? <p>{t(poisoned ? 'app.dbPoisoned' : 'app.crashMigration')}</p> : <Button onClick={() => (reloadForbidden() ? undefined : reload())}>{t('app.crashRetry')}</Button>}
+    </div>
+  );
+}
+
+/** C-114 : dernière frontière, au-dessus de toute la coquille : message statique et relance au lieu d'un écran blanc. */
+export function RootErrorBoundary({ children, reload = () => window.location.reload() }: { readonly children: ReactNode; readonly reload?: () => void }) {
+  return (
+    <FallbackBoundary code="render" fallback={() => <RootCrash reload={reload} />}>
+      {children}
+    </FallbackBoundary>
   );
 }
 
@@ -168,19 +213,7 @@ export function App() {
   // I-02 : avis d'expiration de la signature (iPhone seulement, chargé à la demande hors du bundle de départ, APRÈS le premier rendu).
   useEffect(() => {
     if (!container?.signing.source.supported) return undefined;
-    let stop: (() => void) | undefined;
-    let cancelled = false;
-    void import('./features/signing/signingRun').then(
-      (module) => {
-        if (cancelled) return;
-        stop = module.startSigningIntegration(container).dispose;
-      },
-      () => publishStartFailure('signing', new Error('chargement impossible')),
-    );
-    return () => {
-      cancelled = true;
-      stop?.();
-    };
+    return startSigningLazily(container);
   }, [container]);
 
   // I5-01 (D-69) : import des fichiers Raccourcis à l'ouverture (iPhone seulement, tâche différée chargée à la demande, jamais avant Aujourd'hui).

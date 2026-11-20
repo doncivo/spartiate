@@ -169,6 +169,7 @@ describe('Entraînement : bibliothèque, matériel et routines', () => {
       fireEvent.change(within(first).getByLabelText('RIR (facultatif)'), { target: { value: '2' } });
       fireEvent.click(within(first).getByRole('button', { name: 'Descendre' }));
       fireEvent.click(within(within(day).getByRole('group', { name: 'Planche' })).getByRole('button', { name: 'Retirer' }));
+      fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Retirer' }));
       fireEvent.click(within(day).getByRole('button', { name: 'Ajouter un exercice' }));
       const picker = await screen.findByRole('region', { name: 'Ajouter un exercice à « Full Body A »' });
       fireEvent.change(within(picker).getByLabelText('Rechercher un exercice'), { target: { value: 'curl' } });

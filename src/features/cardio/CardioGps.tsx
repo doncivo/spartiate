@@ -3,7 +3,7 @@ import { addTrackPoint, emptyTrack, lastKmSecPerKm, paceSecPerKm, type TrackStat
 import type { Clock } from '../../domain/clock';
 import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
-import { Button, HeroFigure } from '../../ui';
+import { Button, ConfirmDialog, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
 import { trackPath } from './gpsFigures';
 
@@ -39,6 +39,8 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
   const mounted = useRef(true);
   const run = useRef(0);
   const starting = useRef(false);
+  // C-067 : « Abandonner le suivi » jette tracé et distance : confirmation avant l'arrêt.
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const stopWatch = async (): Promise<void> => {
     const stop = stopRef.current;
@@ -121,6 +123,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
 
   const finish = async (report: boolean): Promise<void> => {
     const current = state;
+    setConfirmCancel(false);
     run.current += 1;
     starting.current = false;
     await stopWatch();
@@ -184,11 +187,24 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
           </p>
           {live.paused ? <p className="ct-cardio__message">{line('gpsPaused')}</p> : live.lost ? <p className="ct-cardio__message">{line('gpsLost')}</p> : null}
           <div className="ct-cardio__gps-actions">
-            <Button variant="secondary" onClick={() => void finish(false)}>
+            <Button variant="secondary" onClick={() => setConfirmCancel(true)}>
               {tCardio('gpsCancel')}
             </Button>
             <Button onClick={() => void finish(true)}>{tCardio('gpsStop')}</Button>
           </div>
+          {confirmCancel && (
+            <ConfirmDialog
+              title={tCardio('gpsCancelTitle')}
+              description={tCardio('gpsCancelHint')}
+              confirmLabel={tCardio('gpsCancelConfirm')}
+              cancelLabel={tCardio('gpsCancelKeep')}
+              onCancel={() => setConfirmCancel(false)}
+              onConfirm={() => {
+                setConfirmCancel(false);
+                void finish(false);
+              }}
+            />
+          )}
         </>
       ) : (
         <>

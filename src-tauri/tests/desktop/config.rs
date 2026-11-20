@@ -1187,10 +1187,22 @@ fn files_ios_01_4_plugin_is_ios_only_and_the_ios_handler_has_only_the_save_comma
 #[test]
 fn files_ios_01_10_ios_workflow_checks_the_plugin_targets() {
     let workflow = include_str!("../../../.github/workflows/build-ios.yml");
-    assert!(workflow.contains("cargo tree --target aarch64-apple-ios -i tauri-plugin-ct-files"));
-    assert!(
-        workflow.contains("cargo tree --target x86_64-pc-windows-msvc -i tauri-plugin-ct-files")
-    );
+    // CI-PUB (C-174) : arbre de chaque cible calculé une fois, contrôle par plugin (iOS oui, Windows non) ; ce test figeait l'ancien texte.
+    assert!(workflow.contains(
+        "IOS_TREE=$(cargo tree --locked --target aarch64-apple-ios -e normal --prefix none)"
+    ));
+    assert!(workflow.contains(
+        "WIN_TREE=$(cargo tree --locked --target x86_64-pc-windows-msvc -e normal --prefix none)"
+    ));
+    assert!(workflow.contains("in_ios \"$CRATE\" || { echo"));
+    assert!(workflow.contains("if in_win \"$CRATE\"; then echo"));
+    let crate_loop = workflow
+        .lines()
+        .find(|l| l.trim_start().starts_with("for CRATE in "))
+        .unwrap_or("");
+    assert!(crate_loop
+        .split_whitespace()
+        .any(|w| w.trim_end_matches(';') == "tauri-plugin-ct-files"));
     assert!(
         workflow.contains("tauri-plugin-dialog tauri-plugin-fs"),
         "dialog et fs refusés dans la cible iOS"
