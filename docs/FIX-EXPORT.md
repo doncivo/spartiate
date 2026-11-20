@@ -42,3 +42,16 @@ Périmètre écrit : `src/domain/exportImport/archive.ts` (manifeste, limite d'e
 
 Ajoutés (verts dès l'écriture : comportement déjà couvert par le vert, aucun rouge possible) : `reset_horizon` nul, numérique, vide, en majuscules : `bad-manifest` ; clé de manifeste inconnue ignorée ;
 archive d'ancienne version lue et admise sans effacement ; horizon local illisible : la date seule décide.
+
+## Décisions proposées (à consigner dans docs/decisions.md par le lot)
+
+- **D-334 (complète D-187)** : l'archive d'export porte dans son manifeste `reset_horizon` (hlc), seulement si l'appareil exportant a appliqué une remise à zéro (ni `data.json`, ni son hash, ni `EXPORT_SV`
+  ne changent). Verdict d'import pur `archiveResetVerdict` : date du manifeste <= dernier effacement ou illisible : refus ; sinon, si cet appareil a un horizon : archive sans horizon : refus « sans preuve » ;
+  horizon < le nôtre : refus ; >= : admise. Aucun effacement ici : tout est admis comme avant. Limite : une archive d'une ancienne version faite après un effacement légitime est refusée (à réexporter).
+- **D-335** : plafond d'import des archives = limite de lecture de l'archive = 24 Mio (TS, Rust, test par lecture du source) ; l'export refuse une archive > 24 Mio (non compressée) plutôt que d'en produire une
+  non réimportable. Compression non retenue (hors périmètre). Mesure d'une base synthétique de 12 mois toujours à faire (constat C-136).
+- **D-336** : textes de l'export, de l'import et de « Repartir de zéro » testés contre le code (familles de l'archive ; `RESET_TABLES` table par table) ; avertissement « données de santé en clair » avant l'export.
+
+## Constats d'Ali à faire
+
+Aucun avant la première utilisation réelle (D-38). À valider par Ali : le refus prudent d'une archive sans horizon après un effacement local (D-334).
