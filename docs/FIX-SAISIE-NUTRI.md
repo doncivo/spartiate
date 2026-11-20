@@ -39,12 +39,21 @@ product-owner (cette fiche), agent du module, qa-test : consignés plus bas. cod
 - qa-test : marge d'énergie portée de 1,15 à 1,25 (+ 20 kcal) après échec de données de test réalistes (20/10/50 g pour 300 kcal = 370 kcal annoncés, fibres et polyols) ; ajoutés : refus 100 kcal / 5 000 g à l'écran, suppression de l'entrée en correction, formulaire ouvert à travers minuit. Hors périmètre : vecteurs `tests/fixtures/nutrition` 8 semaines inchangés (verts, ils passent `previousSmoothed` explicitement). `src/sync` et `src/domain/sync` non touchés ; aucune migration, aucune dépendance.
 - code-reviewer : à faire par l'appelant.
 
-## Décisions proposées
+## Passe code-reviewer (à froid, agent distinct) : à corriger, puis corrigé
+
+Contrôles : 728 tests ciblés verts, eslint vide, rouge `2d545dde` avant vert `fca6f662`, couches respectées, `useCurrentDay` hors du départ
+(`NutritionRemainingCard` à la demande), EMA recalculée à la main (2 052,108), tests existants modifiés justifiés. Important : la borne de D-343
+bloquait l'import Renpho (entrée Quick Add revalidée par le dépôt) : corrigé (rouge `521b51ef`, vert suivant ; 770 tests de la nutrition et de
+l'import Santé verts). Suggestions : (2) « 1 200 », « 1e3 », « 0x10 » : corrigé avec D-344 ; (3) test du minuteur de minuit en fausses horloges et
+de démontage de `useCurrentDay`, (5) motif `macro-too-large` dans le domaine : registre BL-103 ; (4) les cas qa-test de `Saisie.test.tsx` sont
+arrivés avec le vert (ajouts après implémentation).
+
+## Décisions : D-341, D-342, D-343, D-344 (docs/decisions.md)
 
 - **D-341** : une correction de grammes d'une entrée ne perd plus de précision (valeurs au millionième, affichage arrondi) : l'aller-retour 100 g → 1 g → 100 g rend la valeur d'origine (C-032).
 - **D-342** : Open Food Facts : si kcal × 4,184 s'écarte du kJ annoncé de plus de 15 %, la fiche prend kJ / 4,184 et le dit sur la fiche récupérée (« estimation ») ; un seul des deux champs : inchangé (C-033).
-- **D-343** : Quick Add (création et correction) : chaque macro ≤ 1 000 g et 4P + 4G + 9L ≤ 1,25 × kcal + 20, sinon refus avec un message dédié (C-034).
-- **D-344** : saisie : champs numériques de la nutrition en texte `inputMode="decimal"` (C-095) ; le jour d'« aujourd'hui » est relu au retour au premier plan, au focus et à minuit (`useCurrentDay`) (C-096) ; un formulaire ouvert garde son jour et la navigation de jour est désactivée (C-097) ; une écriture étrangère (suppression d'une autre entrée) ne ferme pas le formulaire (C-098).
+- **D-343** : Quick Add (création et correction) : chaque macro ≤ 1 000 g et 4P + 4G + 9L ≤ 1,25 × kcal + 20, sinon refus avec un message dédié (C-034). Revue : l'entrée « Renpho — total du jour » de l'import Santé n'est pas soumise à ces bornes (sinon un jour partiel faisait échouer tout l'import). Limite : une entrée Quick Add ancienne et incohérente doit être corrigée pour être enregistrée de nouveau.
+- **D-344** : saisie : champs numériques de la nutrition en texte `inputMode="decimal"` (C-095) ; le jour d'« aujourd'hui » est relu au retour au premier plan, au focus et à minuit (`useCurrentDay`) (C-096) ; un formulaire ouvert garde son jour et la navigation de jour est désactivée (C-097) ; une écriture étrangère (suppression d'une autre entrée) ne ferme pas le formulaire (C-098). Revue : `parseNumber` retire les espaces de milliers (ordinaires, insécables, fines : « 1 200 ») et n'accepte que chiffres et un séparateur décimal (refus de « 1e3 », « 0x10 », « ,5 »).
 - **D-357** : dépense mesurée (§ 15.1) lissée par l'EMA de demi-vie 7 j rejouée sur les 21 derniers jours à chaque lecture (`estimateTdeeSmoothed`), sans valeur persistée (rien à synchroniser) ; un pas nul remplace la valeur par la mesure (C-036).
 
 ## Constats d'Ali à faire
