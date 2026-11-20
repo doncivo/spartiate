@@ -54,3 +54,31 @@ describe('FIX-EXPORT C-109 : l’horizon dans le manifeste', () => {
     await expect(parseExportArchive(buildZip(entries), { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toMatchObject({ code: 'bad-manifest' });
   });
 });
+
+describe('FIX-EXPORT qa-test : cas limites de l’horizon', () => {
+  const manifestWith = async (value: unknown): Promise<Uint8Array> => {
+    const ok = await buildExportArchive(DATA, { date: DATE, sv: EXPORT_SV });
+    const entries = readZip(ok.bytes).map((e) => {
+      if (e.name !== 'manifest.json') return e;
+      const m = JSON.parse(new TextDecoder().decode(e.data)) as Record<string, unknown>;
+      return { name: e.name, data: new TextEncoder().encode(JSON.stringify({ ...m, reset_horizon: value, inconnue: 1 })) };
+    });
+    return buildZip(entries);
+  };
+  it.each([null, 42, '', H.toUpperCase()])('reset_horizon %j : refusé (bad-manifest)', async (value) => {
+    await expect(parseExportArchive(await manifestWith(value), { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toMatchObject({ code: 'bad-manifest' });
+  });
+  it('une clé de manifeste inconnue est ignorée ; horizon valide relu', async () => {
+    const parsed = await parseExportArchive(await manifestWith(H), { currentSv: EXPORT_SV, currentYear: 2026 });
+    expect(parsed.manifest.resetHorizon).toBe(H);
+  });
+  it('archive des versions précédentes (sans horizon) : lue, et admise tant que cet appareil n’a jamais été effacé', async () => {
+    const legacy = await parseExportArchive((await buildExportArchive(DATA, { date: '2026-10-05T08:00:00.000Z', sv: 16 })).bytes, { currentSv: EXPORT_SV, currentYear: 2026 });
+    expect(legacy.manifest.resetHorizon).toBeUndefined();
+    expect(archiveResetVerdict({ manifestDate: legacy.manifest.date, manifestHorizon: null, localResetAtMs: null, localHorizon: null })).toBe('ok');
+  });
+  it('appareil effacé dont l’horizon n’est pas lisible (null) mais heure d’effacement connue : la date seule décide', () => {
+    expect(archiveResetVerdict({ manifestDate: '2026-11-20T10:05:00.000Z', manifestHorizon: null, localResetAtMs: T, localHorizon: null })).toBe('ok');
+    expect(archiveResetVerdict({ manifestDate: '2026-11-20T09:00:00.000Z', manifestHorizon: null, localResetAtMs: T, localHorizon: null })).toBe('before-reset');
+  });
+});

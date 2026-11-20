@@ -23,3 +23,22 @@ Périmètre écrit : `src/domain/exportImport/archive.ts` (manifeste, limite d'e
 (verdict pur), `src/features/settings/ExportImportScreen.tsx`, `src/platform/files/{types,browser,iosFiles,open,tauriFiles}.ts` (plafond d'archive),
 `src-tauri/src/import.rs`, `src/i18n/fr.exportImport.ts`, `fr.dataReset.ts`, tests, cette fiche. Hors périmètre : `src/sync/**`, `src/domain/sync/**`, format de
 `data.json`, `EXPORT_SV`, CSV Hevy / Strong.
+
+## Passe agent du module : écarts et choix prudents
+
+- **C-109, écart au brief** : l'archive ne porte ni HLC ni `created_at` par ligne (D-57, équivalence par hash de `data.json`) ; comparer l'horizon « aux lignes »
+  est donc impossible sans changer le format. Choix : le manifeste porte `reset_horizon` (hlc de l'horizon que l'appareil exportant a appliqué), seulement s'il en a un ;
+  `data.json`, son hash et `EXPORT_SV` sont inchangés. Import : refus si l'horizon de l'archive est antérieur au nôtre (`before-reset`) ou absent alors que cet appareil a un
+  horizon (`unproven`, message « sans preuve », refus prudent, y compris pour une archive d'ancienne version faite après l'effacement : à réexporter depuis un appareil à jour).
+  Aucun effacement ici : toute archive est admise comme avant (archives des versions précédentes lues, test). Le test PROG-01 (archive d'un autre appareil après l'effacement)
+  porte désormais l'horizon ; l'ancien test « archive d'après s'importe » de D-187 passe par l'export de l'écran.
+- **C-136** : plafond d'import des archives 24 Mio (`DEFAULT_PICK_ARCHIVE_MAX_BYTES`, `IMPORT_ZIP_LIMITS.maxBytes`, `MAX_IMPORT_BYTES` Rust, test par lecture du source) ; les fichiers texte (CSV) restent à
+  2 Mo (façade TypeScript, la commande Rust lit jusqu'à 24 Mio puis TS refuse). L'export refuse > 24 Mio (message `exportNotReimportable`).
+- **C-107** : `exportHint`, `exportWarning` (données de santé en clair, avant les boutons), `mergeHint`, `replaceHint` ; mention « famille inconnue d'une archive ancienne laissée telle quelle » (`TABLE_SINCE_SV`).
+- **C-108** : tables effacées couvertes par `wipedTraining` (exercices perso, progression), `wipedSupplements`, `wipedCardio` (GPS), `wipedTechnical` ; test table par table contre `RESET_TABLES`.
+  `keptContent` : faux avant (la table `exercise` ne contient que les exercices perso, effacés) ; vrai maintenant (bibliothèque embarquée gardée).
+
+## Passe qa-test
+
+Ajoutés (verts dès l'écriture : comportement déjà couvert par le vert, aucun rouge possible) : `reset_horizon` nul, numérique, vide, en majuscules : `bad-manifest` ; clé de manifeste inconnue ignorée ;
+archive d'ancienne version lue et admise sans effacement ; horizon local illisible : la date seule décide.
