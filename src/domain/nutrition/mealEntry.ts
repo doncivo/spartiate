@@ -7,6 +7,7 @@
 import { isLocalDate, isLocalTime, type LocalDate, type LocalTime } from '../types';
 import { ENTRY_NAME_MAX, ENTRY_SOURCES, FOOD_GRAMS_MAX, KCAL_PER_100G_MAX, parseFoodId, parseRecipeFoodId, type EntrySource } from './food';
 import type { MealEntryInput } from './types';
+import { isRenphoDayEntry } from './renphoDay';
 
 export const ENTRY_METHODS = ['search', 'scan', 'photo', 'quickadd'] as const;
 export type EntryMethod = (typeof ENTRY_METHODS)[number];
@@ -105,8 +106,11 @@ export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
     if (draft.grams !== null) add('grams-invalid');
     if (!known(draft.kcal)) add('kcal-required');
     else if (draft.kcal > QUICK_ADD_KCAL_MAX) add('value-invalid');
-    for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('value-invalid');
-    if (known(draft.kcal) && (known(draft.proteinG) || known(draft.fatG) || known(draft.carbG))) {
+    // Revue FIX-SAISIE-NUTRI : les bornes de D-343 visent la saisie d'Ali ; l'entrée « Renpho — total du jour » écrite par l'import Santé
+    // (kcal d'un fichier, macros éventuellement gardées d'un jour partiel) n'y est pas soumise, sinon tout l'import échouerait.
+    const imported = isRenphoDayEntry(draft);
+    if (!imported) for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('value-invalid');
+    if (!imported && known(draft.kcal) && (known(draft.proteinG) || known(draft.fatG) || known(draft.carbG))) {
       const fromMacros = 4 * (draft.proteinG ?? 0) + 9 * (draft.fatG ?? 0) + 4 * (draft.carbG ?? 0);
       if (fromMacros > draft.kcal * QUICK_ADD_ENERGY_MARGIN.ratio + QUICK_ADD_ENERGY_MARGIN.kcal) add('macros-exceed-energy');
     }

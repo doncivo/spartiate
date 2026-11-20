@@ -16,12 +16,17 @@ export function ProvenanceBadge({ source }: { readonly source: EntrySource }) {
   return <span className={`ct-nutrition__badge ct-nutrition__badge--${source}`}>{tNutrition(PROVENANCE_KEY[source])}</span>;
 }
 
-/** Nombre saisi : vide = inconnu (`null`), virgule décimale acceptée ; invalide (NaN, négatif) = `undefined`. */
+/**
+ * Nombre saisi : vide = inconnu (`null`) ; espaces de milliers (ordinaires, insécables, fines) retirées, virgule ou point décimal ; tout le
+ * reste (négatif, exposant, hexadécimal, plusieurs séparateurs) = invalide (`undefined`). Revue FIX-SAISIE-NUTRI (D-344).
+ */
+const DECIMAL = /^\d+([.,]\d+)?$/;
 export function parseNumber(text: string): number | null | undefined {
-  const trimmed = text.trim().replace(',', '.');
-  if (trimmed === '') return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) && n >= 0 ? n : undefined;
+  const compact = text.replace(/[\s\u00a0\u202f\u2009]/g, '');
+  if (compact === '') return null;
+  if (!DECIMAL.test(compact)) return undefined;
+  const n = Number(compact.replace(',', '.'));
+  return Number.isFinite(n) ? n : undefined;
 }
 
 export interface NumberFieldProps {
