@@ -521,6 +521,14 @@ export const GRAPHIC_TOKEN_PAIRS: readonly TokenPair[] = [
   ['--ct-color-switch-on-thumb', '--ct-color-switch-on'],
   // UI-REFONTE-02 : rond d'événement et trait « maintenant » de l'agenda.
   ['--ct-color-agenda-event', '--ct-color-bg'],
+  // A11Y (C-111, C-112) : anneau de focus et bordure des champs ≥ 3:1 sur chaque surface ; piste de l'interrupteur éteint (et son pouce) sur le fond.
+  ...['--ct-color-bg', '--ct-color-surface', '--ct-color-surface-raised', '--ct-color-surface-input'].flatMap((surface): TokenPair[] => [
+    ['--ct-color-focus-ring', surface],
+    ['--ct-color-control-border', surface],
+  ]),
+  ['--ct-color-switch-off', '--ct-color-bg'],
+  ['--ct-color-switch-off', '--ct-color-surface'],
+  ['--ct-color-switch-off-thumb', '--ct-color-switch-off'],
 ];
 
 /** Écran Focus (F-01 critère 13) : texte 4,5:1. */
