@@ -31,7 +31,7 @@ La même case existe quand on désinstalle Spartiate depuis « Paramètres › A
 
 **Dans toutes les versions de Spartiate (crochet REL-TECH-02, repris de l'ancien projet avant la première version), la case « Supprimer les données de l'application » est sans effet : elle reste affichée, mais les données sont toujours conservées**, que l'on désinstalle depuis Windows, avec `uninstall.exe` ou par « Désinstaller avant d'installer » (crochet NSIS, `src-tauri/windows/hooks.nsh`, décision 9 de l'audit 1.0). Le test de fumée Windows le vérifie à chaque suite sur un vrai installeur.
 
-**Attention : avant cette version, cocher cette case supprime vos données.** Ce cas reste possible tant qu'une version antérieure est installée : si tu installes la première version avec crochet par-dessus une ancienne en choisissant « Désinstaller avant d'installer », c'est le désinstalleur de l'ANCIENNE version qui s'exécute et sa case reste active. Dans ce cas, choisir « Ne pas désinstaller » ou laisser l'app se mettre à jour elle-même.
+Aucune version de Spartiate n'a de désinstalleur dont la case efface les données. Seuls les désinstalleurs de l'ancien projet (dossier `fr.circletasks.planner`, versions d'avant le 17/10/2026) gardaient la case active, et ils ne touchent pas au dossier de Spartiate.
 
 ### Effacer volontairement les données
 

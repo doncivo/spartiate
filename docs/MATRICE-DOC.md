@@ -24,3 +24,7 @@ Tests documentaires : voir « Vérifications ». Aucun test rouge préalable : a
 ## Décisions
 
 Aucune nouvelle décision ; H-39 au registre provisoire (docs/decisions.md, après H-38).
+
+## Passe code-reviewer (à froid, agent distinct) : à corriger, puis corrigé
+
+Justes : CHANGELOG 0.27.0 (D-317, FIX-0271), « toutes les versions » de install-pc.md (`hooks.nsh` du 17/10/2026, Spartiate 0.1.0 du 03/11/2026), aucun CONFIRMED promu, H-39 conforme. Corrigés : (1) install-pc.md, paragraphe « Attention : avant cette version » devenu faux pour Spartiate, réécrit ; (2) licences.md, phrase I4-02 (« fournissait seulement », attribution affichée depuis I4-05, H-12 sans constat) ; (3) matrice H-4 : correction publiée en 0.2.1 ; (4) H-39 cite `sync/commands.rs` (appel) et `sync/pairing.rs`.
