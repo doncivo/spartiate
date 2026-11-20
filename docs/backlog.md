@@ -264,6 +264,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-097 | rapport FIX-A009b (lot 0.28.0) | limite : colonne connue écrite nulle avec la ligne face à une valeur gardée plus ancienne non nulle (divergence possible, non atteignable aujourd'hui) ; correction complète = migration de `sync_unknown` ; déclencheur : tout ticket qui élargit une contrainte d’une colonne publiée (data-model, architect) | reporté : non atteignable avec le catalogue actuel (avenant 39) |
 | BL-098 | relecture architecte de FIX-A009b (lot 0.28.0) | garde « colonne publiée ajoutée nulle » sur base vide : ajouter une ligne avant chaque migration pour attraper un remplissage par UPDATE | à faire (lot 0.28.0) |
 | BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | à faire (lot 0.28.0) |
+| BL-100 | revue FIX-EXPORT | mineur — test C-108 : comparer la liste `WIPED` de `ResetDataScreen.tsx` (et non les clés du catalogue) à `RESET_TABLES`, mots clés de tables plus précis, commentaire du cas « horizon local illisible » | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0

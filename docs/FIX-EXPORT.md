@@ -55,3 +55,7 @@ archive d'ancienne version lue et admise sans effacement ; horizon local illisib
 ## Constats d'Ali à faire
 
 Aucun avant la première utilisation réelle (D-38). À valider par Ali : le refus prudent d'une archive sans horizon après un effacement local (D-334).
+
+## Passe code-reviewer (à froid) : approuvé
+
+Compatibilité des archives vérifiée (la 0.27.0 ignore `reset_horizon`, le hash ne couvre que `data.json`) ; C-109 correct (verdict pur, aucun faux refus sans effacement) ; plafonds identiques TS / Rust, lectures bornées ; textes vrais ; départ inchangé ; rouge `9bf60931` puis vert `6399712e`. Suggestions : (1) commentaire de `DEFAULT_PICK_MAX_BYTES` faux : corrigé ; (2) le test C-108 lit les clés `wiped*` du catalogue, pas la liste `WIPED` de l'écran ; (3) mots clés de tables lâches ; (4) cas « horizon local illisible » impossible : reportés au registre (BL-100) ; (5) refus « unproven » à valider par Ali (D-334).
