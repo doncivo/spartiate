@@ -43,7 +43,7 @@ Périmètre écrit : `src/domain/exportImport/archive.ts` (manifeste, limite d'e
 Ajoutés (verts dès l'écriture : comportement déjà couvert par le vert, aucun rouge possible) : `reset_horizon` nul, numérique, vide, en majuscules : `bad-manifest` ; clé de manifeste inconnue ignorée ;
 archive d'ancienne version lue et admise sans effacement ; horizon local illisible : la date seule décide.
 
-## Décisions proposées (à consigner dans docs/decisions.md par le lot)
+## Décisions : D-334 à D-336 (docs/decisions.md)
 
 - **D-334 (complète D-187)** : l'archive d'export porte dans son manifeste `reset_horizon` (hlc), seulement si l'appareil exportant a appliqué une remise à zéro (ni `data.json`, ni son hash, ni `EXPORT_SV`
   ne changent). Verdict d'import pur `archiveResetVerdict` : date du manifeste <= dernier effacement ou illisible : refus ; sinon, si cet appareil a un horizon : archive sans horizon : refus « sans preuve » ;
