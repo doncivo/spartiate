@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-20 : **lot 0.28.0 en cours** (docs/LOT-0.28.0.md, prompt d'Ali ; schéma 20, version 0.27.0 publiée). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-332 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste »).
+État au 2026-11-20 : **lot 0.28.0 en cours** (docs/LOT-0.28.0.md, prompt d'Ali ; schéma 20, version 0.27.0 publiée). Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions D-22 à D-247, D-250 à D-253 et D-260 à D-333 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste »).
 
 ## Lot 0.28.0 — où on en est
 

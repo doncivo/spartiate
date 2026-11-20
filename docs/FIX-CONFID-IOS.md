@@ -141,3 +141,13 @@ Conformes : Swift et Rust iOS plausibles (appel avant le plugin SQL, délai de 5
 Le ticket a atteint le double de son budget M (≈ 273 k pour l'agent du module, plus les relectures) : arrêt (D-324). Branche poussée, PR #163 ouverte, **non fusionnée** (revue 1 à corriger). À la reprise : traiter les points 1 et 2 (rouge puis vert), 3, 4 et 6 ; relire la compilation build-ios de branche (run 44765785227) et la CI ; revue 2 ; fusion. Suivant ensuite : FIX-EXPORT.
 
 Compilation build-ios de la branche (publish=false, run 44765785227, sur `d2f49c48`) : **verte** ; le Swift de `ct-files` et le Rust iOS compilent. À relancer seulement si les corrections touchent le Swift.
+
+## Reprise après le point d'étape (décision d'Ali du 20/11, 19 h 30, D-333) : corrections de la revue 1
+
+- Point 1 (preuve rouge) : les tests arrivés avec le vert `807e5cef` (`src-tauri/tests/desktop/backup_exclusion.rs`, `applog.rs`, `logsRow.test.tsx`) ont été rejoués contre le code du rouge `7d400b72` dans un worktree jetable : Rust **ne compile pas** (module `backup_exclusion` et constantes `BODY_UNITS`, `BODY_WORDS`, `ALLOWED_LOG_KEYS`, `ALLOWED_LOG_KEY_SUFFIXES`, `GLOBAL_PER_MINUTE`, `MAX_RATE_KEYS` absents : 8 erreurs) ; Vitest : « un échec d'exclusion de la sauvegarde iCloud est dit sur la ligne Version » **échoue** (1 sur 4). Rouge établi après coup ; l'écart de méthode (tests ajoutés avec le vert) reste consigné.
+- Point 2 (masquage) : rouge `39508ff2` (13 vecteurs dans `tests/fixtures/logs/sanitize-vectors.json` : 8 échecs Vitest, échec cargo sur `{"restingHr":[52]}`), vert `f3a4f606` (TS et Rust : clé non permise commençant par une lettre masquée sous toutes ses formes, tableau JSON, espaces fines U+2009 et U+2007). 120 tests Vitest de `src/platform/logs` et 24 tests cargo `applog` verts ; fmt, clippy, tsc, eslint propres.
+- Point 3 : « jamais ailleurs » retiré : « … jusqu'à leur rotation, ou dans une sauvegarde iCloud de l'iPhone. »
+- Points 4 et 5 : écrits dans D-331 (tout décimal masqué, voulu) et D-332 (résumé `rate-capped` perdu si l'app se ferme avant la minute suivante).
+- Point 6 : ligne « Écart au code amont » ajoutée à l'avenant SEC-01 de l'ADR 0002.
+- Swift inchangé : la compilation build-ios de branche (run 44765785227) reste valable.
+- Budget : dépassé au-delà du double, consigné (D-333 lève l'arrêt).
