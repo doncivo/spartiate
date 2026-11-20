@@ -99,3 +99,27 @@ describe('C-068 : focus sans série suivante', () => {
     await waitFor(() => expect(screen.getByRole('group')).toHaveFocus());
   });
 });
+
+describe('C-068 : focus sur la série SUIVANTE', () => {
+  it('une série à faire située avant la ligne validée ne prend pas le focus', async () => {
+    function Three() {
+      const [done, setDone] = useState(false);
+      return (
+        <ol>
+          <SetRow set={make('s0', 0)} number={1} timed={false} source="routine" busy={false} onValidate={vi.fn()} onUnvalidate={vi.fn()} onKind={vi.fn()} onRemove={vi.fn()} />
+          <SetRow set={make('s1', 1, done)} number={2} timed={false} source="routine" busy={false} onValidate={() => setDone(true)} onUnvalidate={vi.fn()} onKind={vi.fn()} onRemove={vi.fn()} />
+          <SetRow set={make('s2', 2)} number={3} timed={false} source="routine" busy={false} onValidate={vi.fn()} onUnvalidate={vi.fn()} onKind={vi.fn()} onRemove={vi.fn()} />
+        </ol>
+      );
+    }
+    render(<Three />);
+    const [, second, third] = screen.getAllByRole('group');
+    if (!second || !third) throw new Error('séries absentes');
+    fireEvent.change(within(second).getByLabelText(tTraining('sessionLoad')), { target: { value: '40' } });
+    const reps = within(second).getByLabelText(tTraining('sessionReps'));
+    fireEvent.change(reps, { target: { value: '8' } });
+    reps.focus();
+    fireEvent.keyDown(reps, { key: 'Enter' });
+    await waitFor(() => expect(within(third).getByLabelText(tTraining('sessionLoad'))).toHaveFocus());
+  });
+});

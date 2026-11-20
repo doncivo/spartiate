@@ -7,7 +7,7 @@ import { tStartupBlocked } from '../../i18n/fr.startupBlocked';
 import { DbOpenWatchdog } from './DbFailureDetails';
 import { useAppStore, type DbFailure } from './appStore';
 import { StartupWatchdog } from './StartupWatchdog';
-import { createStartupTracker } from './startupSteps';
+import { createStartupTracker, startupTracker } from './startupSteps';
 
 /** FIX-COQUILLE (C-114, C-115, C-116) : jamais d'écran blanc, jamais de rechargement en pleine migration ni sur un pilote empoisonné. */
 const poisoned: DbFailure = { phase: 'start', step: 'connection-poisoned', errorName: 'DbError', message: 'synthétique', kind: 'connection-poisoned' };
@@ -37,6 +37,28 @@ describe('C-114 : frontière d’erreur racine', () => {
 
   it('pilote empoisonné : aucun bouton de rechargement, consigne de fermer l’app (D-326 5)', () => {
     useAppStore.setState({ dbStatus: 'error', dbFailure: poisoned });
+    const reload = vi.fn();
+    render(
+      <RootErrorBoundary reload={reload}>
+        <Boom />
+      </RootErrorBoundary>,
+    );
+    expect(screen.queryByRole('button', { name: t('app.crashRetry') })).toBeNull();
+    expect(screen.getByRole('alert')).toHaveTextContent(t('app.dbPoisoned'));
+    expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('C-114 / C-115 : frontière racine pendant une migration', () => {
+  afterEach(() => {
+    startupTracker.reset();
+    vi.restoreAllMocks();
+  });
+
+  it('étape de migration ouverte : aucun bouton de relance, consigne de fermer l’app', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    useAppStore.setState({ dbStatus: 'loading', dbFailure: null });
+    startupTracker.begin('db.migration.5');
     const reload = vi.fn();
     render(
       <RootErrorBoundary reload={reload}>
@@ -107,8 +129,14 @@ describe('C-115 : chien de garde et migration lente', () => {
     useAppStore.setState({ dbProgress: { step: 'migration', migration: 30 } });
     render(<DbOpenWatchdog />);
     await tick(16_000);
+    // Migration : le délai est celui des étapes de base (120 s), aucun diagnostic à 16 s.
+    expect(screen.queryByTestId('db-failure-detail')).toBeNull();
+    await tick(110_000);
     expect(screen.getByTestId('db-failure-detail')).toBeVisible();
     expect(screen.queryByRole('button', { name: t('app.diag.retry') })).toBeNull();
+    // Texte vrai : plus de « touche Réessayer » quand le bouton n'existe pas.
+    expect(screen.queryByText(t('app.dbStalled'))).toBeNull();
+    expect(screen.getByRole('alert')).toHaveTextContent(t('app.dbSlow'));
     vi.useRealTimers();
   });
 
