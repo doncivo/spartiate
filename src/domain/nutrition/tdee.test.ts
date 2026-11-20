@@ -155,8 +155,8 @@ describe('I4-01 : smoothTdee : EMA demi-vie 7 j', () => {
   it('sans valeur précédente : le brut', () => {
     expect(smoothTdee({ previous: null, raw: 2620, stepDays: 7 })).toBe(2620);
   });
-  it('pas nul : la valeur précédente', () => {
-    expect(smoothTdee({ previous: 2500, raw: 2620, stepDays: 0 })).toBe(2500);
+  it('pas nul : la mesure remplace (C-036)', () => {
+    expect(smoothTdee({ previous: 2500, raw: 2620, stepDays: 0 })).toBe(2620);
   });
 });
 

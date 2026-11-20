@@ -1,5 +1,4 @@
 import { lazy, Suspense } from 'react';
-import { todayLocal } from '../../domain/clock';
 import { tNutrition } from '../../i18n/nutritionText';
 import { Button, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -9,6 +8,7 @@ import { DashboardView } from './dashboard/DashboardView';
 import { JournalView } from './journal/JournalView';
 import { StrategyView } from './strategy/StrategyView';
 import { useNutritionData } from './useNutritionData';
+import { useCurrentDay } from './useCurrentDay';
 import './NutritionScreen.css';
 
 /** Section Recettes (I4-07) : bloc à la demande, avec son catalogue de textes, jamais dans le départ ni dans le bloc de Nutrition. */
@@ -29,7 +29,7 @@ export function NutritionScreen() {
   const route = useNavigationStore((s) => s.route);
   const navigate = useNavigationStore((s) => s.navigate);
   const current: NutritionScreenId = route.tab === 'nutrition' ? (route.screen ?? 'journal') : 'journal';
-  const today = todayLocal(container.clock);
+  const today = useCurrentDay(container.clock);
   const { state, reload } = useNutritionData(container.data, today);
 
   return (

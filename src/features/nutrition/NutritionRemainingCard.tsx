@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { todayLocal } from '../../domain/clock';
 import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type DayType, type Remaining, type Target } from '../../domain/nutrition';
 import { tNutrition } from '../../i18n/nutritionText';
 import { Button } from '../../ui';
@@ -8,6 +7,7 @@ import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadDayTarget } from './dayType';
 import { KcalHero } from './shared';
+import { useCurrentDay } from './useCurrentDay';
 
 type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly day: DayTotals; readonly target: Target | null; readonly remaining: Remaining | null; readonly dayType: DayType | null };
 
@@ -21,13 +21,13 @@ export function NutritionRemainingCard() {
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
+  const today = useCurrentDay(container.clock);
   const synced = useSyncedData(['meal_entry', 'nutrition_target', 'day_completeness', 'workout', 'workout_set']);
 
   useEffect(() => {
     let live = true;
     void (async () => {
       try {
-        const today = todayLocal(container.clock);
         const [entries, completeness] = await Promise.all([data.repos.mealEntries(), data.repos.dayCompleteness()]);
         // PROG-01 (D-270) : cible du type de jour (entraînement ou repos) ; sans cible de repos, la cible unique.
         const [list, effective, declared] = await Promise.all([entries.listByDate(today), loadDayTarget(data, today), completeness.get(today)]);
@@ -42,7 +42,7 @@ export function NutritionRemainingCard() {
     return () => {
       live = false;
     };
-  }, [data, container, synced]);
+  }, [data, today, synced]);
 
   if (load.status !== 'ready') return null;
   const { day, target, remaining, dayType } = load;

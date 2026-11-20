@@ -32,6 +32,8 @@ export type BarcodeResolution =
       /** custom : fiche perso ; cache : fiche de moins de 90 jours ; network : récupérée à l'instant ; stale : périmée, réseau en échec. */
       readonly via: 'custom' | 'cache' | 'network' | 'stale';
       readonly missing: readonly OffMissing[];
+      /** Fiche récupérée à l'instant dont le kcal a été recalculé depuis le kJ (D-342). */
+      readonly energyFromKj?: boolean;
       readonly refreshFailure?: OffFailure;
     }
   | { readonly kind: 'not-found'; readonly code: string }
@@ -83,7 +85,7 @@ export async function resolveBarcode(deps: OffDeps, input: string): Promise<Barc
   if (!converted.ok) return { kind: 'refused', code, reason: converted.reason };
   try {
     const food = await deps.foods.cacheOff(converted.draft);
-    return { kind: 'found', food, via: 'network', missing: converted.missing };
+    return { kind: 'found', food, via: 'network', missing: converted.missing, energyFromKj: converted.energyFromKj };
   } catch {
     return staleOrFail({ kind: 'write-failed' });
   }
@@ -92,6 +94,7 @@ export async function resolveBarcode(deps: OffDeps, input: string): Promise<Barc
 export interface OnlineItem {
   readonly draft: FoodDraft;
   readonly missing: readonly OffMissing[];
+  readonly energyFromKj: boolean;
 }
 
 export type OnlineSearch =
@@ -123,7 +126,7 @@ export async function searchOnline(deps: OffDeps, query: string): Promise<Online
   for (const raw of response.products) {
     const converted = offProductToDraft(raw, deps.now);
     if (!converted.ok) refused += 1;
-    else if (items.length < ONLINE_RESULTS_MAX) items.push({ draft: converted.draft, missing: converted.missing });
+    else if (items.length < ONLINE_RESULTS_MAX) items.push({ draft: converted.draft, missing: converted.missing, energyFromKj: converted.energyFromKj });
   }
   return { kind: 'ok', items, refused };
 }
