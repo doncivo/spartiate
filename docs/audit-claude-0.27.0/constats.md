@@ -210,3 +210,70 @@ Vérifié sans défaut (lecture) : confirmations de suppression d'une routine, d
 - C-083 à vérifier (appareil) — `CardioView.tsx:301`, `:305` : `inputMode="numeric"` sur l'heure et la durée ; le clavier numérique iOS n'a pas « : ». Libellé de durée sans « mm:ss » (`fr.cardio.ts:17`, `:30`) ; distance faussée après arrière-plan sans avertissement (H-35) ; `role="status"` mis à jour tous les 10 m (annonces VoiceOver).
 - C-084 mineur — `StrengthScore.tsx:108` : « 0 groupes » (règle 0 et 1 au singulier, FIX-0241) ; vocabulaire : « Varied »/« Variée », « deload »/« décharge », « Ischio-jambiers »/« Ischios », « cet appareil »/« cet iPhone », « 1000 kg » sans séparateur (`fr.training.ts:336`) ; noms des boutons « Monter/Descendre/Retirer » identiques sur chaque ligne (`RoutinesView.tsx:552-570`).
 - C-085 amélioration — `fr.routines.ts` (textes d'habitudes CircleTasks) importé au départ par `fr.ts:5` et listé dans `start-modules.json:53`, seules des clés de `weekdayName` servent ; `src/features/training/content02.originals.json` ne sert qu'à un test ; paramètres `{x}` non typés dans les `*Text.ts` ; `LibraryView.tsx:511-522` libellés « Répétitions » pour un exercice au temps ; `HistoryView.tsx:72` `setTimeout` non nettoyé.
+
+## Partie 7b — Nutrition et Progrès (écrans)
+
+Preuves : `preuves/partie7b-ecrans.test.ts`, sortie `preuves/resultats/partie7b-ecrans.log` (4 rouges). CSS de 7b : contrôles de motifs et recherche ciblée (`NutritionScreen.css`, `Recipes.css`, `Supplements.css`, `BodyProgress.css` partiellement lus).
+Vérifié sans défaut (lecture) : double appui protégé sur « Ajouter » ; le scan ouvre la quantité sans ajouter, caméra refusée gérée, absent sur PC ; ordre déterministe du journal et de la recherche ; seuls la requête ou le code partent vers OFF ; même `effectiveTarget` (D-314) et `dayTargetFor` (D-270) dans le journal ; confirmations de suppression d'une entrée, d'une recette, d'un complément, d'une photo ; « En vigueur depuis … · décidée le … » présent ; photos recodées en JPEG (EXIF et GPS retirés), table `progress_photo_file` hors synchro et hors export, effacée par la remise à zéro ; le texte « Elle passera devant… » a disparu ; aucun catalogue Nutrition, Recettes, Compléments ou Corps dans le départ. **Piste de Codex `SupplementsView.tsx:127` : corrigée par FIX-0272** (gardes `live`), reste un échec non journalisé après démontage et un test sans portée (partie 11).
+
+### C-086 — important — cible de repos sous le plancher : l'écran demande une confirmation qui n'existe pas (aggrave C-031)
+- `StrategyView.tsx:162`, `TargetForm.tsx:42`, `CheckInView.tsx:358`, `:376`, `useCases.ts:216` : `belowFloor` ne regarde que la cible d'entraînement. Repos à −200, cible d'entraînement 1 300 → repos 1 100 → « confirme explicitement » sans case ; enregistrement impossible. Au check-in « Personnaliser », message trompeur « L'enregistrement a échoué. Rien n'a changé. ».
+- Preuve : lecture (relecteur), cohérente avec le test rouge C-031. Correction : case de confirmation dès que la plus basse des deux cibles passe sous 1 200.
+
+### C-087 — important — cible confirmée sous 1 200 kcal : cible de repos impossible à ajouter ou retirer
+- `useCases.ts:285` : `saveRestPlan` écrit avec `lowFloorConfirmed: false` ; cible en vigueur 1 100 confirmée, interrupteur de repos coupé → `confirmation-required` puis « Enregistrement impossible. Réessaie. » (`RestTargetForm.tsx:88`).
+- Preuve : lecture. Correction : reprendre la confirmation de la décision en vigueur.
+
+### C-088 — important — tableau de bord : un jour de repos est compté sur la cible d'entraînement
+- `DashboardView.tsx:31-33` : `remainingForDay(snapshot.target.target, today)` ; le Journal (`JournalView.tsx:110`) et Aujourd'hui (`NutritionRemainingCard`) appliquent `dayTargetFor` (D-270). Entraînement 2 500, repos 2 300, 2 000 mangées un jour de repos → tableau de bord « reste 500 », Journal et Aujourd'hui « reste 300 ». Même biais sur la ligne de cible du graphique (`Charts.tsx:28`) et « vs cible » (`DashboardView.tsx:62`).
+- Preuve : lecture. Correction : `dayTargetFor` partout.
+
+### C-089 — important, à vérifier (8b) — photos « supprimées sans retour possible » encore récupérables
+- `src-tauri/src/backup.rs:1-16`, `bodyProgressRepository.ts:151`, `fr.bodyProgress.ts:87`, `:99` : les sauvegardes `VACUUM INTO` copient `progress_photo_file` (14 quotidiennes sur PC) ; une photo supprimée reste dans `backups/` et revient à la restauration ; pas de `secure_delete`. À vérifier : sans `NSURLIsExcludedFromBackupKey`, la base (photos comprises) part probablement dans la sauvegarde iCloud de l'iPhone, contraire au texte « jamais envoyées » et à D-99 (1).
+- Preuve : lecture ; exclusion iCloud vérifiée en 8b. Correction : purge des sauvegardes à la suppression ou photos hors base ; texte exact ; exclusion de sauvegarde si elle est voulue.
+
+### C-090 — important — « +5 cm en 4 semaines » faux sur un historique espacé
+- `bodyZone.ts:33-36`, `BodyProgress.tsx:240`, `fr.bodyProgress.ts:42`, `:47` : référence = la mesure la plus récente d'au moins 28 jours, sans borne haute. 01/06 à 80, 01/11 à 85 → « +5 cm en 4 semaines » (5 mois en réalité) ; colonne « 4 sem. » du PC fausse de même.
+- Preuve : test rouge C-090. Correction : dire la date réelle de la référence (`since`), ou borner la fenêtre.
+
+### C-091 — important — compléments : changer une heure efface la constance passée
+- `supplements.ts:108`, `:127` (D-211, configuration courante) : créatine prise à 08:00 pendant 7 jours, heure passée à 08:30 → constance **0 %**, série 0, bande des 14 jours vide ; la prise du jour redevient « à cocher ».
+- Preuve : test rouge C-091. Correction : rattacher une prise au créneau du jour (heure en vigueur ce jour-là) ; D-211 à compléter par Ali.
+
+### C-092 — important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats
+- `FoodSearchPanel.tsx:383` avec `foodSearch.ts:64` : `searchFoods` coupe à 50 avant le filtre de provenance, OFF classé en dernier. 60 fiches Ciqual « yaourt … » et un yaourt OFF en cache → l'OFF est absent, filtre « OFF » → « Aucun résultat ».
+- Preuve : test rouge C-092. Correction : filtrer avant de couper.
+
+### C-093 — mineur — tendance du poids : échelle étirée par une pesée aberrante
+- `dashboard/model.ts:28` : 80 ; 80,2 ; 120 (aberrante) → max de l'axe **126**, tendance aplatie. `Charts.tsx:54` : `role="img"` sans liste de valeurs.
+- Preuve : test rouge C-093. Correction : exclure les aberrantes de l'échelle (point hors cadre signalé).
+
+### C-094 — important — mesure corporelle supprimée d'un geste, sans confirmation ni annulation
+- `BodyProgress.tsx:150-158`, `:311` : la croix efface aussitôt et la suppression se propage par synchro sur les deux appareils.
+- Preuve : lecture. Correction : `ConfirmDialog` comme pour les photos.
+
+### C-095 — important, à vérifier (WebKit, WebView2) — virgule décimale dans les champs numériques de la nutrition
+- `shared.tsx:38-53` : `<input type="number" inputMode="decimal">` ; si le moteur nettoie « 12,5 » en "", `parseNumber("")` rend `null` : Quick Add enregistre des protéines inconnues sans erreur, et « 150,5 » g désactive « Ajouter » sans message (`FoodSearchPanel.tsx:795`). Les e2e saisissent une virgule ailleurs (`I6-06-cardio.spec.ts:34`, `Y-IOS-01.spec.ts:51`), pas dans ce composant.
+- Preuve : lecture ; comportement de jsdom ; e2e iphone-webkit à ajouter. Correction : `type="text"` avec `inputMode="decimal"`, comme les autres champs.
+
+### C-096 — important — journal ouvert après minuit : saisie rattachée à la veille
+- `JournalView.tsx:68`, `:114`, `NutritionScreen.tsx:32`, `NutritionRemainingCard.tsx:30` : jour figé à l'ouverture, aucune relecture ni `visibilitychange`. Écran ouvert à 23:50, Quick Add à 00:10 → entrée de la veille à 00:10.
+- Preuve : lecture. Correction : relire le jour au retour au premier plan et à minuit (même cause que C-074).
+
+### C-097 — important — saisie enregistrée sur un autre jour que celui de l'ouverture
+- `JournalView.tsx:155-166`, `:229-233` : navigation de jour active pendant que Quick Add ou la recherche est ouvert ; le formulaire prend le nouveau jour sans l'afficher. Ouvert aujourd'hui, « ‹ » puis « Ajouter » → entrée d'hier.
+- Preuve : lecture. Correction : figer le jour du formulaire et l'afficher, ou bloquer la navigation.
+
+### C-098 — important — supprimer une autre entrée efface le formulaire en cours
+- `JournalView.tsx:99-104`, `:134-144` : `afterWrite` remet le mode à idle ; Quick Add en cours, suppression confirmée d'une autre entrée → saisie perdue.
+- Preuve : lecture. Correction : ne pas fermer le formulaire sur une écriture étrangère.
+
+### C-099 à C-106 — mineurs, améliorations et points à vérifier
+- C-099 mineur — `JournalView.tsx:206-216` avec `SegmentedControl.tsx:58-66` : la déclaration de journée écrit à chaque flèche ; deux flèches rapides enregistrent « Complète » au lieu de « Incomplète » (alimente la dépense, D-81). `FoodSearchPanel.tsx:389`, `:306-314` : les flèches des filtres déplacent aussi le focus dans les résultats.
+- C-100 mineur — `FoodSearchPanel.tsx:109`, `useCases.ts:137` : une prise issue d'un code scanné est enregistrée `method: 'search'` (`scan` jamais utilisé).
+- C-101 mineur (§ 18.3) — erreurs masquées : `FoodSearchPanel.tsx:196` (échec des récents présenté comme liste vide), `:705`, `:319`, `:257` ; `JournalView.tsx:90-91` sans « Réessayer » ; `SupplementsView.tsx:215-219` (`toggleReminders` sans `catch`, interrupteur muet).
+- C-102 mineur — `FoodSearchPanel.tsx:715-716`, `:795-797` : heure invalide signalée « quantité invalide » ; `:573` : fiche OFF périmée choisie depuis la liste sans avertissement ; `:363` : Échap ferme toute la recherche.
+- C-103 mineur — `SupplementsView.tsx:159-161` : cocher puis décocher vite laisse la prise cochée ; `RestTargetForm.tsx:18`, `:30` : « −200 » refusé sans message, plan en kcal au-dessus de la cible réaffiché en écart 0, interrupteur incohérent si le retrait échoue ; `<input type="time">` suit le réglage 12/24 h de l'iPhone (à vérifier).
+- C-104 mineur — `CheckInView.tsx:143` : colonne « Actuel » = cible de la semaine analysée, pas celle en vigueur aujourd'hui (conforme D-82/D-314, déroutant) ; `StrategyView.tsx:326` : historique sans « décidée le » ; `:115` : préférences appliquées avant l'écriture sans retour arrière.
+- C-105 mineur — Corps : « Taille » pour le tour de taille et pour la hauteur (`fr.bodyProgress.ts:32`, `:57`, `:77`) ; silhouette `BodyZones.tsx:55-66` sans rôle ni clavier, zones d'environ 18 px (commentaire « 44 px »), cou et épaules qui se chevauchent ; pastilles en `radiogroup` sans tabulation itinérante, valeur gardée au changement de zone (`BodyProgress.tsx:287`) ; photo importée toujours datée du jour (`:166`) ; date de saisie figée au montage (`:78`) ; sélecteur bloqué si `cancel` n'arrive pas (`picker.ts:14-22`, à vérifier) ; fibres dans la carte « Importé de Santé (Renpho) ».
+- C-106 amélioration — anglicismes de `fr.nutrition.ts` (« Dashboard », « non loggé », « Cache OFF ») ; deux réglages « Objectif » aux libellés différents (`fr.body.ts:18-21`, `fr.nutrition.ts:294-297`, à vérifier : peuvent se contredire) ; `fr.capture.ts` et `fr.scan.ts` (textes de CircleTasks) importés au départ (`fr.ts:1-2`, `start-modules.json:49`, `:54`) ; Corps sans tendance ni dépense (§ 17, table, à vérifier dans Progrès).

@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **213** (23.9 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **272** (30.5 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -566,10 +566,10 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/app/todayTestPreload.ts` | 7c | à lire |  |
 | `src/features/app/undo.ts` | 7c | à lire |  |
 | `src/features/app/updateRestore.ts` | 7c | à lire |  |
-| `src/features/bodyProgress/BodyProgress.css` | 7b | à lire |  |
-| `src/features/bodyProgress/BodyProgress.tsx` | 7b | à lire |  |
-| `src/features/bodyProgress/BodyZones.tsx` | 7b | à lire |  |
-| `src/features/bodyProgress/bodyZone.ts` | 7b | à lire |  |
+| `src/features/bodyProgress/BodyProgress.css` | 7b | lu 2026-11-20 (relecteur corps) | lignes 55-134 et recherche ciblée |
+| `src/features/bodyProgress/BodyProgress.tsx` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/features/bodyProgress/BodyZones.tsx` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/features/bodyProgress/bodyZone.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/features/cardio/Cardio.css` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/features/cardio/CardioGps.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/features/cardio/CardioProgress.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
@@ -580,48 +580,48 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/notifications/supplementActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/features/notifications/supplementNotifications.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
 | `src/features/notifications/supplementWake.ts` | 7c | à lire |  |
-| `src/features/nutrition/NutritionRemainingCard.tsx` | 7b | à lire |  |
-| `src/features/nutrition/NutritionScreen.css` | 7b | à lire |  |
-| `src/features/nutrition/NutritionScreen.tsx` | 7b | à lire |  |
-| `src/features/nutrition/catalogue/ciqualCatalogue.ts` | 7b | à lire |  |
-| `src/features/nutrition/checkIn/CheckIn.css` | 7b | à lire |  |
-| `src/features/nutrition/checkIn/CheckInView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/checkIn/weekSummary.ts` | 7b | à lire |  |
-| `src/features/nutrition/dashboard/Charts.tsx` | 7b | à lire |  |
-| `src/features/nutrition/dashboard/DashboardView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/dashboard/model.ts` | 7b | à lire |  |
-| `src/features/nutrition/dayType.ts` | 7b | à lire |  |
-| `src/features/nutrition/journal/EntryEditor.tsx` | 7b | à lire |  |
-| `src/features/nutrition/journal/JournalView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/quickAdd/QuickAddForm.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/IngredientPicker.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/RecipeEditor.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/RecipeHits.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/RecipeQuantityStep.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/Recipes.css` | 7b | à lire |  |
-| `src/features/nutrition/recipes/RecipesView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/recipes/recipeModel.ts` | 7b | à lire |  |
-| `src/features/nutrition/recipes/recipeSearch.ts` | 7b | à lire |  |
-| `src/features/nutrition/scan/BarcodeScanView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/scan/scanBarcode.ts` | 7b | à lire |  |
-| `src/features/nutrition/search/CustomFoodForm.tsx` | 7b | à lire |  |
-| `src/features/nutrition/search/FoodSearchPanel.tsx` | 7b | à lire |  |
-| `src/features/nutrition/search/catalogueSearch.ts` | 7b | à lire |  |
-| `src/features/nutrition/search/favoritesStore.ts` | 7b | à lire |  |
-| `src/features/nutrition/search/offLookup.ts` | 7b | à lire |  |
-| `src/features/nutrition/search/offMessages.ts` | 7b | à lire |  |
-| `src/features/nutrition/search/resolveFood.ts` | 7b | à lire |  |
-| `src/features/nutrition/shared.tsx` | 7b | à lire |  |
-| `src/features/nutrition/strategy/RestTargetForm.tsx` | 7b | à lire |  |
-| `src/features/nutrition/strategy/StrategyView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/strategy/TargetForm.tsx` | 7b | à lire |  |
-| `src/features/nutrition/supplements/Supplements.css` | 7b | à lire |  |
-| `src/features/nutrition/supplements/SupplementsTodayCard.tsx` | 7b | à lire |  |
-| `src/features/nutrition/supplements/SupplementsView.tsx` | 7b | à lire |  |
-| `src/features/nutrition/supplements/constancy.ts` | 7b | à lire |  |
-| `src/features/nutrition/supplements/replan.ts` | 7b | à lire |  |
-| `src/features/nutrition/useCases.ts` | 7b | à lire |  |
-| `src/features/nutrition/useNutritionData.ts` | 7b | à lire |  |
+| `src/features/nutrition/NutritionRemainingCard.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/NutritionScreen.css` | 7b | lu 2026-11-20 (relecteur journal) | recherche ciblée (couleurs, tailles) |
+| `src/features/nutrition/NutritionScreen.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/catalogue/ciqualCatalogue.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/checkIn/CheckIn.css` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/checkIn/CheckInView.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/checkIn/weekSummary.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/dashboard/Charts.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/dashboard/DashboardView.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/dashboard/model.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/dayType.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/journal/EntryEditor.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/journal/JournalView.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/quickAdd/QuickAddForm.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/recipes/IngredientPicker.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/RecipeEditor.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/RecipeHits.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/RecipeQuantityStep.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/Recipes.css` | 7b | lu 2026-11-20 (relecteur check-in) | recherche ciblée (couleurs, tailles) |
+| `src/features/nutrition/recipes/RecipesView.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/recipeModel.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/recipes/recipeSearch.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/scan/BarcodeScanView.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/scan/scanBarcode.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/CustomFoodForm.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/FoodSearchPanel.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/catalogueSearch.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/favoritesStore.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/offLookup.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/offMessages.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/search/resolveFood.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/shared.tsx` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/strategy/RestTargetForm.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/strategy/StrategyView.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/strategy/TargetForm.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/supplements/Supplements.css` | 7b | lu 2026-11-20 (relecteur check-in) | recherche ciblée (couleurs, tailles) |
+| `src/features/nutrition/supplements/SupplementsTodayCard.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/supplements/SupplementsView.tsx` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/supplements/constancy.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/supplements/replan.ts` | 7b | lu 2026-11-20 (relecteur check-in) |  |
+| `src/features/nutrition/useCases.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
+| `src/features/nutrition/useNutritionData.ts` | 7b | lu 2026-11-20 (relecteur journal) |  |
 | `src/features/onboarding/BodyMap.tsx` | 7c | à lire |  |
 | `src/features/onboarding/OnboardingFlow.css` | 7c | à lire |  |
 | `src/features/onboarding/OnboardingFlow.tsx` | 7c | à lire |  |
@@ -827,8 +827,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/updater/updaterStore.ts` | 7c | à lire |  |
 | `src/i18n/appUpdateRestoreText.ts` | 7c | à lire |  |
 | `src/i18n/backupRestoreText.ts` | 7c | à lire |  |
-| `src/i18n/bodyProgressText.ts` | 7b | à lire |  |
-| `src/i18n/bodyText.ts` | 7b | à lire |  |
+| `src/i18n/bodyProgressText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/i18n/bodyText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/cardioText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/circuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/dataResetText.ts` | 7c | à lire |  |
@@ -843,9 +843,9 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.appearance.ts` | 7c | à lire |  |
 | `src/i18n/fr.backup.ts` | 7c | à lire |  |
 | `src/i18n/fr.backupRestore.ts` | 7c | à lire |  |
-| `src/i18n/fr.body.ts` | 7b | à lire |  |
-| `src/i18n/fr.bodyProgress.ts` | 7b | à lire |  |
-| `src/i18n/fr.capture.ts` | 7b | à lire |  |
+| `src/i18n/fr.body.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/i18n/fr.bodyProgress.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/i18n/fr.capture.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.cardio.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.circuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.dataReset.ts` | 7c | à lire |  |
@@ -855,24 +855,24 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.importCsv.ts` | 7c | à lire |  |
 | `src/i18n/fr.logs.ts` | 7c | à lire |  |
 | `src/i18n/fr.notifications.ts` | 7c | à lire |  |
-| `src/i18n/fr.nutrition.ts` | 7b | à lire |  |
+| `src/i18n/fr.nutrition.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.onboarding.ts` | 7c | à lire |  |
 | `src/i18n/fr.progression.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/fr.recipes.ts` | 7b | à lire |  |
+| `src/i18n/fr.recipes.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.recovery.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.recoveryFactors.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.recoveryNotifications.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.routineCircuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.routines.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/fr.scan.ts` | 7b | à lire |  |
+| `src/i18n/fr.scan.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.sections.ts` | 7c | à lire |  |
 | `src/i18n/fr.security.ts` | 7c | à lire |  |
 | `src/i18n/fr.shortcuts.ts` | 7c | à lire |  |
 | `src/i18n/fr.signing.ts` | 7c | à lire |  |
 | `src/i18n/fr.startupBlocked.ts` | 7c | à lire |  |
 | `src/i18n/fr.strength.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/fr.supplementNotifications.ts` | 7b | à lire |  |
-| `src/i18n/fr.supplements.ts` | 7b | à lire |  |
+| `src/i18n/fr.supplementNotifications.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
+| `src/i18n/fr.supplements.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/fr.syncCarryReport.ts` | 7c | à lire |  |
 | `src/i18n/fr.syncConflicts.ts` | 7c | à lire |  |
 | `src/i18n/fr.syncEngine.ts` | 7c | à lire |  |
@@ -900,19 +900,19 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/index.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/logsText.ts` | 7c | à lire |  |
 | `src/i18n/native/fr.json` | 7c | à lire |  |
-| `src/i18n/nutritionText.ts` | 7b | à lire |  |
+| `src/i18n/nutritionText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/onboardingText.ts` | 7c | à lire |  |
 | `src/i18n/plural.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/plusText.ts` | 7c | à lire |  |
 | `src/i18n/progressionText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/recipesText.ts` | 7b | à lire |  |
+| `src/i18n/recipesText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/recoveryFactorsText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/recoveryText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/routineCircuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/sectionsText.ts` | 7c | à lire |  |
 | `src/i18n/settingsRefonteText.ts` | 7c | à lire |  |
 | `src/i18n/strengthText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
-| `src/i18n/supplementsText.ts` | 7b | à lire |  |
+| `src/i18n/supplementsText.ts` | 7b | lu 2026-11-20 (relecteur corps) |  |
 | `src/i18n/syncCarryReportText.ts` | 7c | à lire |  |
 | `src/i18n/syncOlderDeviceText.ts` | 7c | à lire |  |
 | `src/i18n/syncOwnDeletionText.ts` | 7c | à lire |  |
