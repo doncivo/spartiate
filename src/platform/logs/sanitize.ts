@@ -88,7 +88,7 @@ const isWordChar = (char: string | undefined): boolean => isAlnum(char) || char 
 const isNbsp = (char: string | undefined): boolean => char === '\u00a0' || char === '\u202f' || char === '\u2009' || char === '\u2007';
 const startsWithLetter = (key: string): boolean => isLetter(Array.from(key)[0]);
 /** Revue 2 : signes sautés avant un nombre pour trouver sa clé ou son mot corporel (au plus trois). */
-const isSkippable = (char: string | undefined): boolean => isNbsp(char) || (char !== undefined && '["+-(/,\u2192'.includes(char));
+const isSkippable = (char: string | undefined): boolean => isNbsp(char) || (char !== undefined && '["+-(/,>\u2192\u2248'.includes(char));
 
 /** Clé d'un mot qui finit par `clé=` ou `clé:` (hors extrait JSON `"clé":`), sans ponctuation ni casse, sinon null. */
 function signKeyEnding(word: string | undefined): string | null {

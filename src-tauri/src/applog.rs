@@ -447,7 +447,11 @@ fn is_nbsp(c: char) -> bool {
 
 /// Revue 2 : signes sautés avant un nombre pour trouver sa clé ou son mot corporel (au plus trois).
 fn is_skippable(c: char) -> bool {
-    is_nbsp(c) || matches!(c, '[' | '"' | '+' | '-' | '(' | '/' | ',' | '\u{2192}')
+    is_nbsp(c)
+        || matches!(
+            c,
+            '[' | '"' | '+' | '-' | '(' | '/' | ',' | '>' | '\u{2192}' | '\u{2248}'
+        )
 }
 
 fn starts_with_letter(key: &str) -> bool {

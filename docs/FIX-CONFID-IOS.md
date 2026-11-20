@@ -157,3 +157,7 @@ Compilation build-ios de la branche (publish=false, run 44765785227, sur `d2f49c
 Constats : (1, important) nombre entre guillemets sous une clé corporelle (`"weight":"82"`) en clair ; (2, important) second élément d'un tableau JSON espacé (`"weight":[80, 82]`) en clair ; (3) `weight=[82]`, `["weight",82]`, `poids=-82`, `weight:+82`, `poids:` + insécable + `82`, `poids(82)`, `poids/82`, `poids→82`, `weight → 82` en clair ; (4) `FC moyenne 142`, `82 kilos`, `82 lbs`, `72 pulsations` en clair ; (5) `version 1.2` et `22h30` masqués ; texte `photosPrivacy` « jamais envoyées » à nuancer. Parité TS et Rust confirmée, aucune valeur utile masquée à tort.
 
 Corrections : rouge `528c45cf` (21 vecteurs, 18 échecs Vitest), vert (TS et Rust, règles dans D-331) : toutes les formes des points 1 à 4 masquées ; point 5 écrit comme limite voulue dans D-331 ; `photosPrivacy` : « jamais envoyées par Spartiate ». 141 tests Vitest de `src/platform/logs`, 24 tests cargo `applog` verts.
+
+## Passe code-reviewer — revue 3 (à froid) : approuvé
+
+Parité TS / Rust exacte, aucune régression, formes essayées masquées. Suggestions : (1) `poids->82`, `poids=>82`, `poids≈82` en clair : traitées (rouge `11c4a6ce`, vert suivant, `>` et `≈` sautés) ; (2) crochet isolé (`weight: [ 80 , 82 ]`) : limite écrite dans D-331.
