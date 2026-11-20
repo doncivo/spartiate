@@ -19,7 +19,7 @@ Après la mise à jour : dans Entraînement › ta routine, rattache chaque jour
 
 Aucune migration : ta base reste au schéma 19. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.
 
-- **Stratégie** : l'écran est regroupé en Style, Objectif, Cible, Jours de repos et Historique, une ligne par réglage. La cible en vigueur reste en grand ; s'il y a une cible prévue plus tard, elle s'affiche dessous en bronze (« À partir du lundi 16/11 : 2 450 kcal · P 190 · G 250 · L 75 »).
+- **Stratégie** : l'écran est regroupé en Style, Objectif, Cible, Jours de repos et Historique, une ligne par réglage. La cible en vigueur reste en grand ; s'il y a une cible prévue plus tard, elle s'affiche dessous en bronze (« À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] »).
 - **Modifier ma cible** : le formulaire est replié et vide. Si une cible future existe, enregistrer une cible du jour demande une confirmation qui dit qu'elle passera devant. C'est pareil au check-in, pour « Accepter » et « Personnaliser ».
 - **Jours de repos** : écrits en toutes lettres (« Repos le mercredi et le dimanche »).
 - **Aujourd'hui** : la carte Séance affiche « Semaine 1 sur 4 », avec le badge bronze « Décharge » pendant la semaine de décharge, et rien sans cycle.
@@ -195,7 +195,7 @@ Premier lot du chantier ergonomie, d'après l'aperçu esthétique que tu as vali
 
 **Sans migration** (la base reste en schéma 13) : cette version peut s'installer sur PC et iPhone à tout moment ; installe pourtant les deux le même jour, pour que le PC affiche les valeurs inhabituelles comme l'iPhone.
 
-- **Dette de sommeil plus juste** (ta décision) : une nuit courte ajoute ce qui manque pour 7 h 30 ; une nuit longue rembourse maintenant jusqu'à 1 h de dette. La dette reste entre 0 et 3 h, sur les 7 nuits avant aujourd'hui. Avec des nuits irrégulières autour de 7 h 30, ton besoin affiché redescend vers 7 h 30 à 8 h 45 au lieu de 10 h 30.
+- **Dette de sommeil plus juste** (ta décision) : une nuit courte ajoute ce qui manque pour 7 h 30 ; une nuit longue rembourse maintenant jusqu'à 1 h de dette. La dette reste entre 0 et 3 h, sur les 7 nuits avant aujourd'hui. Avec des nuits irrégulières autour de 7 h 30, le besoin affiché redescend vers 7 h 30 à 8 h 45 au lieu de rester au plafond.
 - **Nuit et réveil** : seuls les moments où tu dors comptent pour délimiter ta nuit ; un long bloc « Au lit » ne relie plus ta nuit à une sieste et ne repousse plus l'heure de ton réveil. Tous les stades de l'Apple Watch (Principal ou Essentiel, Profond, Paradoxal, Endormi non précisé) comptent comme du sommeil.
 - **Recalcul automatique** : les résumés des 30 derniers jours sont recalculés une fois avec ces règles, à l'ouverture suivante, même si le dossier `sante` n'est pas joignable ou si les fichiers sont absents. S'il est interrompu, il reprend à l'ouverture d'après.
 - **Valeurs inhabituelles** : la carte « repos conseillé » ne s'affiche que pour une HRV ou une FC au repos à plus de 2 σ de ta base (exactement 2 σ ne suffit plus), jugée sur la valeur exacte et non arrondie. Le PC affiche la même décision que l'iPhone.
@@ -514,7 +514,7 @@ Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de
 
 - iPhone : toucher un champ (Poids, Taille…) ne zoome plus la page. Le texte des champs de saisie fait au moins 16 px sur iOS ; le zoom de l’utilisateur reste libre.
 - Synchronisation : Profil et poids et Aujourd’hui se rechargent tout seuls quand la synchro applique des données reçues de l’autre appareil, sans changer d’onglet ; un champ que tu es en train de modifier n’est pas écrasé.
-- Journal des conflits : « Profil : expérience », « Pesée du 5 nov. », valeurs traduites (« Intermédiaire », « Perte de poids », « Homme »…), nombres au format français avec leur unité (« 106,25 kg », « 186 cm »). Plus aucune clé technique ni mot anglais.
+- Journal des conflits : « Profil : expérience », « Pesée du 5 nov. », valeurs traduites (« Intermédiaire », « Perte de poids », « Homme »…), nombres au format français avec leur unité (« 82,25 kg », « 178 cm »). Plus aucune clé technique ni mot anglais.
 - Synchronisation : « PC : Jamais lu » à tort sur l’iPhone corrigé. Après une reprise depuis un instantané ou un changement d’époque, la dernière modification lue ne dépendait que du dernier enregistrement de journal lu, donc restait vide tant que l’autre appareil n’avait rien écrit de nouveau ; un curseur arrivé à la tête annoncée de l’autre appareil vaut désormais lecture jusqu’à cette tête.
 - Synchronisation : les copies de conflit créées par iCloud (« state 2.spx ») sont ignorées à la lecture, jamais supprimées, et signalées une seule fois dans le journal technique. Une seule synchro tourne à la fois sur chaque appareil (minuteur, retour au premier plan, bouton, écriture différée), vérifié par un test.
 - Apple Santé : quand Santé répond « Missing com.apple.developer.healthkit entitlement » (app installée par SideStore avec un compte Apple gratuit), l’écran dit que Santé n’est pas accessible dans ce cas et que l’import passera par l’app Raccourcis dans une prochaine version ; « Autoriser l’accès » est masqué, « Détail technique » est conservé. Accès direct HealthKit BLOCKED dans la matrice des capacités (D-69).

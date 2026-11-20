@@ -47,10 +47,10 @@ describe('libellés des conflits du catalogue publié (0.1.4 point 3)', () => {
     expect(conflictValueText(profile, col(profile, 'units'), side('metric'), 0)).toBe('Métrique');
   });
 
-  it('nombres au format français avec unité : « 106,25 kg », « 186 cm », année sans séparateur', () => {
-    expect(conflictValueText(weight, col(weight, 'kg'), side(106.25), 0)).toBe('106,25 kg');
+  it('nombres au format français avec unité : « 82,25 kg », « 178 cm », année sans séparateur', () => {
+    expect(conflictValueText(weight, col(weight, 'kg'), side(82.25), 0)).toBe('82,25 kg');
     expect(conflictValueText(weight, col(weight, 'kg'), side(83), 0)).toBe('83 kg');
-    expect(conflictValueText(profile, col(profile, 'height_cm'), side(186), 0)).toBe('186 cm');
+    expect(conflictValueText(profile, col(profile, 'height_cm'), side(178), 0)).toBe('178 cm');
     expect(conflictValueText(profile, col(profile, 'birth_year'), side(1990), 0)).toBe('1990');
     expect(conflictValueText(weight, col(weight, 'source'), side('health'), 0)).toBe('Apple Santé');
     expect(conflictValueText(weight, col(weight, 'source'), side('manual'), 0)).toBe('Saisie à la main');

@@ -69,7 +69,7 @@ describe('aucun conseil de supprimer ou de réinstaller l’app (C-110, C-181)',
   it('catalogues et guides', () => {
     expect(scan(USER_TEXTS, DANGER, (line) => SAFE.test(line) || isComment(line))).toEqual([]);
   });
-  it('les guides d’installation ne parlent plus de CircleTasks (C-182)', () => {
+  it('les guides d’installation n’ont plus de vestige de l’ancien projet (C-182)', () => {
     const guides = ['docs/install-iphone.md', 'docs/install-pc.md'];
     const inherited = [/\btâches\b/i, /\bagendas?\b/i, /jours fériés/i, /CT_GOOGLE/, /Réglages\s*[›>]\s*(«\s*)?(À propos|Synchronisation|Journaux|Rechercher)/];
     expect(scan(guides, inherited)).toEqual([]);

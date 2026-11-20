@@ -64,7 +64,7 @@ Passes : product-owner, training, nutrition, qa-test, code-reviewer.
 - Si la correction complète exige de changer le format des journaux de synchro : livre seulement la détection, le bandeau et la conservation, puis rédige un ADR de proposition pour le reste. Ne change jamais le format sans validation d'Ali.
 
 4b. FIX-0244, budget S, après SYNC-01 et avant la publication (décision d'Ali du 15/11 ; agents : nutrition, accessibility-i18n)
-1. Stratégie : « Enregistrer la cible de repos » crée une cible manuelle datée d'aujourd'hui qui recopie la cible en vigueur, et passe devant une cible déjà prévue à une date future (constat d'Ali du 15/11 : cible importée datée du 16/11 à 2 450 kcal, cible du jour à 3 177). L'enregistrement de la cible de repos ne doit jamais écraser une cible future : il s'applique à la cible concernée, sans changer ses valeurs. Test rouge avant le vert.
+1. Stratégie : « Enregistrer la cible de repos » crée une cible manuelle datée d'aujourd'hui qui recopie la cible en vigueur, et passe devant une cible déjà prévue à une date future (constat d'Ali du 15/11 : cible importée datée du 16/11 à [retiré] kcal, cible du jour à [retiré]). L'enregistrement de la cible de repos ne doit jamais écraser une cible future : il s'applique à la cible concernée, sans changer ses valeurs. Test rouge avant le vert.
 2. Stratégie : l'interrupteur de la cible des jours de repos n'a ni libellé visible ni nom accessible. Les ajouter, avec un test d'accessibilité.
 
 Fin du lot

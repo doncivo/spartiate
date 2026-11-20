@@ -183,7 +183,7 @@ describe('buildSleepNights', () => {
 });
 
 describe('FIX-0172 point 7 : tous les stades Apple Watch comptent comme endormi (D-132)', () => {
-  it('nuit typique d’Apple Watch (valeurs inventées, libellés français) : 448 min dormies, soit 7 h 28', () => {
+  it('nuit typique d’Apple Watch (valeurs inventées, libellés français) : 448 min dormies', () => {
     const parsed = parseShortcutSleep(fixture('sommeil-apple-watch.csv'), TODAY, TZ);
     expect(parsed.rejectedTotal).toBe(0);
     const { nights, ignoredGroups } = buildSleepNights(parsed.segments, TZ);

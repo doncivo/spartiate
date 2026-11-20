@@ -9,7 +9,7 @@ Règles de cible : D-74, D-82 (cible en vigueur), D-270 à D-272 (cible de repos
 
 | # | Critère (Given / When / Then) | Tests |
 | --- | --- | --- |
-| 1 | Une cible en vigueur (2 600 kcal depuis le 09/11) et une cible acceptée datée du lundi 16/11 (2 450 kcal, P 190, G 250, L 75) → j'ouvre Stratégie (iPhone ou PC) → la cible en vigueur reste affichée en chiffre héros et, à côté, « À partir du lundi 16/11 : 2 450 kcal · P 190 · G 250 · L 75 ». Plusieurs cibles futures : seule la plus proche (D-295). Aucune cible future, ou une cible future masquée par une décision plus récente : rien. | domaine `upcomingTargets` (vecteurs) ; écran (StrategyErgo03.test.tsx) |
+| 1 | Une cible en vigueur ([retiré] kcal depuis le 09/11) et une cible acceptée datée du lundi 16/11 ([retiré] kcal, P, G, L [retirés]) → j'ouvre Stratégie (iPhone ou PC) → la cible en vigueur reste affichée en chiffre héros et, à côté, « À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] ». Plusieurs cibles futures : seule la plus proche (D-295). Aucune cible future, ou une cible future masquée par une décision plus récente : rien. | domaine `upcomingTargets` (vecteurs) ; écran (StrategyErgo03.test.tsx) |
 | 2 | Stratégie ouverte → aucun champ de cible n'est affiché ; « Modifier ma cible » (« Fixer ma cible » sans cible) déplie le formulaire, champs vides. | écran |
 | 3 | Une cible future existe → j'enregistre une cible du jour → une confirmation explicite dit qu'elle passera devant la cible prévue à partir du lundi 16/11 ; « Annuler » n'écrit rien, « Enregistrer quand même » écrit (D-296). Sans cible future : pas de confirmation, comportement d'avant. | écran |
 | 4 | Cible des jours de repos : section titrée « Jours de repos » ; interrupteur nommé et libellé visible (FIX-0244, D-291 : vérifié, non refait) ; avec une cible de repos, les jours de repos sont écrits en toutes lettres (« Repos le mercredi et le dimanche »). | écran ; test FIX-0244 existant vert |
@@ -26,9 +26,9 @@ Données de test corrigées entre le rouge et le vert, sans rien affaiblir : dan
 
 | Critère | Point | Rouge | Vert |
 | --- | --- | --- | --- |
-| 1 | `upcomingTargets` (domaine, 7 vecteurs) ; ligne « À partir du lundi 16/11 : 2 450 kcal · P 190 · G 250 · L 75 » ; la plus proche seulement ; rien sans cible future ; `saveRestPlan` (FIX-0244) relève les cibles futures avec la même fonction | `b0229d62` | `75c33037` |
+| 1 | `upcomingTargets` (domaine, 7 vecteurs) ; ligne « À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] » ; la plus proche seulement ; rien sans cible future ; `saveRestPlan` (FIX-0244) relève les cibles futures avec la même fonction | `b0229d62` | `75c33037` |
 | 2 | Formulaire replié derrière « Modifier ma cible » / « Fixer ma cible », `aria-expanded`, champs vides | `b0229d62` | `75c33037` |
-| 3 | `ConfirmDialog` « Elle passera devant la cible prévue à partir du lundi 16/11 (2 450 kcal) » ; « Annuler » n'écrit rien (résultat `cancelled`, aucun message) ; « Enregistrer quand même » écrit ; sans cible future, pas de fenêtre | `b0229d62` | `75c33037` |
+| 3 | `ConfirmDialog` « Elle passera devant la cible prévue à partir du lundi 16/11 ([retiré] kcal) » ; « Annuler » n'écrit rien (résultat `cancelled`, aucun message) ; « Enregistrer quand même » écrit ; sans cible future, pas de fenêtre | `b0229d62` | `75c33037` |
 | 4 | Section « Jours de repos » (région nommée) ; interrupteur de FIX-0244 vérifié, non refait (test FIX-0244 inchangé, vert) ; « Repos le mercredi et le dimanche » | `b0229d62` | `75c33037` |
 | 5 | Groupes Style / Objectif / Cible / Jours de repos / Historique ; lignes « étiquette : valeur » qui se déplient | `b0229d62` | `75c33037` |
 | 6 | `cycleWeekMarker` (domaine, 13 vecteurs : 4 et 6 semaines, illimité, décharge anticipée, pause, pas commencé, fini, clos, invalide) ; carte Séance iPhone et PC : « Semaine 1 sur 4 », « Semaine 4 sur 4 » + « Décharge », rien sans cycle | `b0229d62` | `75c33037` |
@@ -46,7 +46,7 @@ Quatre scènes ajoutées à tests/visual/capture.spec.ts dès le commit rouge. E
 - **Avant** : artefact `visual-pairs` du run Tests du commit rouge `b0229d62`, qui a l'ancien écran avec les mêmes données.
 - **Après** : artefact `visual-pairs` du run Tests du dernier commit de la PR.
 - **Runs** : avant = run [43797714780](https://github.com/doncivo/spartiate/actions/runs/43797714780) (branche jetable `ERGO-03-avant` sur `b0229d62`, lancé à la main : aucune CI n'avait tourné sur le commit rouge ; job « Captures » vert, tests rouges attendus) ; après = run [43797522416](https://github.com/doncivo/spartiate/actions/runs/43797522416) (`6eeab8e8`). Artefacts `visual-pairs` gardés 14 jours.
-- **Relecture de l'orchestrateur** : Stratégie iPhone, avant = segments empilés (style, objectif, activité en boutons) ; après = groupes Style / Objectif / Cible en lignes « étiquette · valeur », cible en vigueur en chiffre héros, ligne bronze « À partir du lundi 09/11 : 2 450 kcal · P 190 · G 250 · L 75 », bouton « Modifier ma cible ». PC : même structure dans la colonne de 900 px. Aujourd'hui : carte Séance « Semaine 4 sur 4 » et badge bronze « Décharge ». Aucun texte coupé ni débordement aux deux largeurs ; le très grand texte reste à constater sur l'iPhone.
+- **Relecture de l'orchestrateur** : Stratégie iPhone, avant = segments empilés (style, objectif, activité en boutons) ; après = groupes Style / Objectif / Cible en lignes « étiquette · valeur », cible en vigueur en chiffre héros, ligne bronze « À partir du lundi 09/11 : [retiré] kcal · P · G · L [retirés] », bouton « Modifier ma cible ». PC : même structure dans la colonne de 900 px. Aujourd'hui : carte Séance « Semaine 4 sur 4 » et badge bronze « Décharge ». Aucun texte coupé ni débordement aux deux largeurs ; le très grand texte reste à constater sur l'iPhone.
 
 ## code-reviewer
 

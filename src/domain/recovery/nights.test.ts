@@ -40,7 +40,7 @@ describe('nuits et siestes (I5-05)', () => {
   });
 
   it('semaine réelle simplifiée : couchers 1 h à 4 h, levers 9 h à 11 h 30, trois siestes l’après-midi : dette proche de 0, besoin proche de 7 h 30', () => {
-    // [jour de réveil, coucher, lever, minutes dormies] ; moyenne dormie 7 h 28 (448 min)
+    // [jour de réveil, coucher, lever, minutes dormies] ; moyenne dormie de 448 min (valeurs inventées)
     const week: readonly [number, string, string, number][] = [
       [2, '01:00', '09:00', 450],
       [3, '02:30', '10:30', 445],

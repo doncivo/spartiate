@@ -25,13 +25,13 @@ const strip = (data: ExportData): ExportData => ({
 });
 async function archiveSv18(withDecidedAt = true): Promise<ExportData> {
   const x = await open(X, '2026-11-14T18:00:00.000Z');
-  await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2450), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
+  await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2350), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
   const read = await (await x.data.repos.exportImport()).readExportData();
   const { bytes } = await buildExportArchive(withDecidedAt ? read : strip(read), { date: '2026-11-14T18:05:00.000Z', sv: 18 });
   return (await parseExportArchive(bytes, { currentSv: 19, currentYear: 2026 })).data;
 }
 const checkIn = (db: TestDb) =>
-  db.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3177), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
+  db.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3050), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
 const importInto = (db: TestDb, data: ExportData, mode: 'merge' | 'replace') =>
   db.data.transaction(async (r) => {
     const repo = await r.exportImport();
@@ -42,14 +42,14 @@ const inForce = async (db: TestDb, date: string) => (await (await db.data.repos.
 describe('FIX-0271 : cible importée prévue pour le lundi 16/11', () => {
   for (const mode of ['replace', 'merge'] as const) {
     for (const withDecidedAt of [true, false]) {
-      it(`${mode}${withDecidedAt ? '' : ', archive sans date de décision'} : check-in du 15/11 avant l’import, 3 177 le 15/11 puis 2 450 le 19/11`, async () => {
+      it(`${mode}${withDecidedAt ? '' : ', archive sans date de décision'} : check-in du 15/11 avant l’import, 3 050 le 15/11 puis 2 350 le 19/11`, async () => {
         const data = await archiveSv18(withDecidedAt);
         const a = await open(A, '2026-11-15T10:00:00.000Z');
         await checkIn(a);
         a.clock.advance(60_000);
         await importInto(a, data, mode);
-        expect(await inForce(a, '2026-11-19')).toBe(2450);
-        if (mode === 'merge') expect(await inForce(a, '2026-11-15')).toBe(3177);
+        expect(await inForce(a, '2026-11-19')).toBe(2350);
+        if (mode === 'merge') expect(await inForce(a, '2026-11-15')).toBe(3050);
       });
       it(`${mode}${withDecidedAt ? '' : ', archive sans date de décision'} : check-in du 15/11 après l’import, la cible prévue s’applique le 19/11`, async () => {
         const data = await archiveSv18(withDecidedAt);
@@ -57,8 +57,8 @@ describe('FIX-0271 : cible importée prévue pour le lundi 16/11', () => {
         await importInto(a, data, mode);
         a.clock.advance(60_000);
         await checkIn(a);
-        expect(await inForce(a, '2026-11-15')).toBe(3177);
-        expect(await inForce(a, '2026-11-19')).toBe(2450);
+        expect(await inForce(a, '2026-11-15')).toBe(3050);
+        expect(await inForce(a, '2026-11-19')).toBe(2350);
       });
     }
   }
@@ -67,9 +67,9 @@ describe('FIX-0271 : cible importée prévue pour le lundi 16/11', () => {
 describe('FIX-0271 revue (point 2) : fusion à la frontière de minuit', () => {
   it('décision locale prise à 00:30 heure de Paris (23:30 UTC la veille) : la fusion garde la cible que l’appareil d’origine aurait retenue', async () => {
     const t = await open(A, '2026-11-15T23:30:00.000Z');
-    await t.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3177), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
+    await t.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3050), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
     const x = await open(X, '2026-11-10T10:00:00.000Z');
-    await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2450), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
+    await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2350), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
     // Ordre de référence : les deux décisions avec leurs HLC d'origine, sur le même calendrier que la lecture.
     const expected = effectiveTarget([...(await (await t.data.repos.nutritionTargets()).list()), ...(await (await x.data.repos.nutritionTargets()).list())], '2026-11-19' as LocalDate);
     const { bytes } = await buildExportArchive(await (await x.data.repos.exportImport()).readExportData(), { date: '2026-11-10T10:05:00.000Z', sv: 18 });

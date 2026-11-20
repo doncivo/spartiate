@@ -6,7 +6,7 @@ import { buildSleepNights, parseShortcutSleep } from './shortcutFiles';
 import { sleepDebtDiagnostic } from './sleepNeed';
 
 /**
- * FIX-0115 : constat d'Ali en 0.11.4, « Besoin : 10 h 30 » alors que la moyenne Apple Santé est de 7 h 28. Fixture qui reflète ses nuits :
+ * FIX-0115 : besoin de sommeil au plafond avec une moyenne normale. Fixture SYNTHÉTIQUE (valeurs inventées) de nuits tardives :
  * couchers après 1 h, levers entre 9 h et 11 h 30, durées dormies très variables (moyenne ≈ 7 h 30).
  */
 const TZ = 'Europe/Paris';
@@ -35,7 +35,7 @@ function csv(): string {
   }).join('\n');
 }
 
-describe('fixture des nuits d’Ali', () => {
+describe('fixture synthétique de nuits tardives et irrégulières', () => {
   const parsed = parseShortcutSleep(csv(), TODAY, TZ);
   const { nights } = buildSleepNights(parsed.segments, TZ);
   const records = toNightRecords({ nights, hrv: [], restingHrByDay: [], timeZone: TZ });
@@ -58,7 +58,7 @@ describe('fixture des nuits d’Ali', () => {
     expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0, short: 3, long: 4 });
   });
 
-  // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas, 10 h 30 »).
+  // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas »).
   it('compensation partielle : déficits 230 min, crédits 158 min (dont deux nuits plafonnées à 1 h), dette 72 min, besoin 8 h 42', () => {
     const out = summarizeRecoveryDay({ today: TODAY, now: '2026-11-12T10:00:00.000Z', timeZone: TZ, nights: records, workouts: [] });
     expect(out.summary.sleepNeedMinutes).toBe(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + 72);
