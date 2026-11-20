@@ -45,7 +45,6 @@ export const progressionFr = {
   explainPosition: '−{delta} kg (−{cut} %) : {rank}ᵉ exercice de ce muscle dans la séance, la charge est plus basse que pour un premier exercice.',
   explainPositionPair: '−{delta} kg par haltère (−{cut} %) : {rank}ᵉ exercice de ce muscle dans la séance, la charge est plus basse que pour un premier exercice.',
   explainPositionHeld: 'Même charge : {rank}ᵉ exercice de ce muscle dans la séance, la hausse est absorbée par la décote de position.',
-  explainOutlierHold: '{load}, bien au-dessus de tes séances précédentes : même charge, une répétition de plus sur la série {set}. Vérifie ta saisie ; la progression reprendra après une seconde séance à cette charge.',
   // Contraintes (I2-02) : maintien ou réduction, jamais imposés.
   explainFatigue: 'Même charge, mêmes répétitions : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   explainInactivity: '−{delta} kg (−{cut} %) : reprise après une pause de 3 semaines ou plus sur ce muscle.',
@@ -59,6 +58,7 @@ export const progressionFr = {
   explainRedDayPair: 'Journée rouge : charges −{cut} %, arrondies au matériel vers le bas (−{delta} kg par haltère) ; estimation, pas un avis médical.',
   explainRedDayHeld: 'Journée rouge : charge maintenue (charge minimale du matériel ou exercice assisté), aucune hausse ; estimation, pas un avis médical.',
   // Précisions ajoutées à la phrase (I2-04), information seulement.
+  noteOutlierHeld: 'Ta dernière séance dépasse {ratio} % de tes charges habituelles : elle n’est pas reprise comme référence tant qu’une seconde séance complète à cette charge ne la confirme pas. Proposition calculée depuis ta séance d’avant ; corrige l’historique s’il s’agit d’une faute de frappe.',
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
   noteAssistanceHeld: 'Exercice assisté : l’assistance est maintenue, la réduire alourdirait l’exercice.',
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',

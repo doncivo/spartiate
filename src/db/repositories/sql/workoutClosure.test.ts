@@ -222,3 +222,38 @@ describe('FIX-ASSIST (audit C-011) : exercice assisté hors tonnage et records',
     await expect((await repo()).summary(W2)).resolves.toMatchObject({ tonnageKg: 0, records: [] });
   });
 });
+
+describe('FIX-ABERR revue 1 : exercice personnalisé lesté, record au résumé de fin', () => {
+  it('lest 5 kg puis 10 kg × 8 : 10 kg est un record de charge (le repérage ne se fait pas sur le lest seul)', async () => {
+    db = await openBaseDb(DEVICE);
+    const CUSTOM = '7f3a1c2e-0000-4000-8000-0000000000a6';
+    await (await db.data.repos.exercises()).create({
+      id: CUSTOM,
+      nameFr: 'Dips lestés',
+      aliasesEn: [],
+      muscles: [{ id: 'triceps', weight: 1 }],
+      equipment: ['parallel-bars', 'loading-belt'],
+      pattern: 'push-vertical',
+      kind: 'compound',
+      metric: 'load-reps',
+      bodyweightFraction: 1,
+      defaultRepRange: [6, 10],
+      defaultRestSec: 120,
+      instructions: { setup: 'Lester', execution: 'Descendre', mistakes: [] },
+      media: null,
+      strengthStandardKey: null,
+    });
+    const session = async (id: string, lestKg: number) => {
+      db.clock.advance(60_000);
+      const r = await repo();
+      await r.start({ source: 'empty', id, name: 'Séance' });
+      const w = await r.addExercise(id, { exerciseId: CUSTOM, exerciseName: 'Dips lestés', sets: 3 });
+      for (const s of w.sets) await r.validateSet(s.id, { reps: 8, loadKg: lestKg });
+      db.clock.advance(60_000);
+      return close(id);
+    };
+    await session(W1, 5);
+    const records = (await session(W2, 10)).summary.records.map((r) => [r.kind, r.value]);
+    expect(records).toContainEqual(['load', 10]);
+  });
+});

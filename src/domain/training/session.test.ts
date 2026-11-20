@@ -31,7 +31,9 @@ describe('validateSetEntry : bornes de la saisie', () => {
     for (const reps of [0, -1, 1.5, 1000, Number.NaN]) expect(validateSetEntry(entry({ reps }), 'work'), String(reps)).toContain('reps');
     expect(validateSetEntry(entry({ reps: 999 }), 'work')).toEqual([]);
   });
-  it('charge : fini, 0 à 1000 kg', () => {
+  // FIX-ABERR (C-005, C-168) : bornes absolues seulement ; 1 000 kg après 100 kg est signalé avant l'enregistrement par `entryOutlier`
+  // (outlierEntry.test.ts), jamais admis sans signal.
+  it('charge : bornes absolues, fini, 0 à 1000 kg', () => {
     for (const loadKg of [-0.5, 1000.5, Number.POSITIVE_INFINITY, Number.NaN]) expect(validateSetEntry(entry({ loadKg }), 'work'), String(loadKg)).toContain('load');
     expect(validateSetEntry(entry({ loadKg: 62.5 }), 'work')).toEqual([]);
   });

@@ -27,7 +27,6 @@ export type ExplanationKey =
   | 'recoveryLowSet'
   | 'redDay'
   | 'redDayHeld'
-  | 'outlierHold'
   | 'position'
   | 'positionHeld'
   // FIX-ASSIST : exercice assisté (la charge saisie est l'assistance).
@@ -75,8 +74,6 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: unknown ? 'increaseUnknownStep' : 'increase', params: { ...params, delta } };
     }
     case 'rep-ladder':
-      // B1 : la dernière séance dépasse nettement l'historique sans confirmation : on le dit, avec la charge, pour qu'Ali vérifie.
-      if (p.reasons.includes('outlier-excluded') && p.loadKg !== null) return { key: 'outlierHold', params: { load: p.loadKg, set } };
       return { key: 'repLadder', params: { set } };
     case 'recalibration':
       return { key: 'recalibration', params: { delta: p.deltaKg ?? 0 } };
@@ -122,7 +119,7 @@ export function explainPrescription(p: Prescription): Explanation {
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown' | 'noteAssistanceHeld';
+export type ExplanationNoteKey = 'notePartialIgnored' | 'noteOutlierHeld' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown' | 'noteAssistanceHeld';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -132,6 +129,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   if (p.headline === 'decision' || p.headline === 'unsupported') return [];
   const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
   if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
+  // FIX-ABERR (C-005) : séance aberrante non confirmée, référence plafonnée à la séance d'avant.
+  if (p.reasons.includes('outlier-excluded')) notes.push({ key: 'noteOutlierHeld', params: { ratio: percent(p.activeConfig.outlierRatio) } });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });

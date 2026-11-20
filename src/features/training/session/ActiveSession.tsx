@@ -468,6 +468,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}
+                    checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
                     onKind={(kind: SetKind) => void write((repo) => repo.updateSet(set.id, { setKind: kind }))}

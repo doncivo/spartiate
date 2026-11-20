@@ -1,11 +1,12 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check, X } from 'lucide-react';
-import { useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
-import { Icon } from '../../../ui';
+import { Button, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
+import type { OutlierAsk } from './outlierCheck';
 
 /**
  * Une série de la séance active (§ 13.2, I1-02 critères 2 et 5) : cible rappelée (plage de la routine, ou valeurs de la séance copiée),
@@ -72,15 +73,38 @@ export interface SetRowProps {
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
+  /**
+   * FIX-ABERR (C-005, § 11.5) : contrôle d'une charge aberrante AVANT l'écriture ; une question renvoyée suspend la validation jusqu'à
+   * « Confirmer » (écrit) ou « Corriger » (rien d'écrit, focus sur la charge). Absent : aucun contrôle relatif.
+   */
+  readonly checkEntry?: (entry: SetEntry, kind: SetKind) => Promise<OutlierAsk | null>;
   readonly onValidate: (entry: SetEntry) => void;
   readonly onUnvalidate: () => void;
   readonly onKind: (kind: SetKind) => void;
   readonly onRemove: () => void;
 }
 
-export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+/** Texte de la question avant écriture (FIX-ABERR) : contrôle relatif, ou vraisemblance à la première séance (décision d'Ali du 20/11). */
+function outlierText(outlier: OutlierAsk, held: Held): string {
+  const load = formatExerciseLoad(outlier.loadKg, held);
+  if (outlier.check === 'relative') {
+    return tTraining(outlier.assisted ? 'sessionOutlierAskAssisted' : 'sessionOutlierAsk', { load, usual: formatExerciseLoad(outlier.usualKg, held), percent: outlier.percent });
+  }
+  const assisted = outlier.exerciseClass === 'assisted';
+  if (outlier.multiple === null || outlier.bodyweightKg === null) {
+    return tTraining(assisted ? 'sessionPlausibleAskAssistedUnknown' : 'sessionPlausibleAskUnknown', { load, cap: formatExerciseLoad(outlier.capKg, held) });
+  }
+  const body = formatExerciseLoad(outlier.bodyweightKg, null);
+  if (assisted) return tTraining('sessionPlausibleAskAssisted', { load, body });
+  return tTraining(outlier.perDumbbell ? 'sessionPlausibleAskDumbbell' : 'sessionPlausibleAsk', { load, body, multiple: formatNumber(outlier.multiple) });
+}
+
+export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
+  const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
+  const [checking, setChecking] = useState(false);
+  const loadRef = useRef<HTMLInputElement>(null);
   // I2-01 : une proposition acceptée écrit charge et répétitions dans une série à faire ; la saisie repart des valeurs enregistrées (la ligne
   // n'est pas remontée : le focus reste où il est), SAUF si Ali a déjà tapé quelque chose dans cette ligne : sa saisie l'emporte toujours.
   const stored = [set.loadKg, set.reps, set.durationSec, set.rir].map(String).join('|');
@@ -94,7 +118,8 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const target = targetText(set, timed, source, held);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
 
-  function validate(): void {
+  async function validate(): Promise<void> {
+    if (checking) return;
     const fields = timed ? [draft.load, draft.duration, draft.rir] : [draft.load, draft.reps, draft.rir];
     if (fields.some((f) => f.trim() !== '' && parseNumber(f) === null)) {
       setIssue(tTraining('sessionErrorValues'));
@@ -106,19 +131,41 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       durationSec: timed ? parseNumber(draft.duration) : null,
       rir: parseNumber(draft.rir),
     };
-    const issues = validateSetEntry(entry, timed ? 'timed' : set.setKind);
+    const kind = timed ? 'timed' : set.setKind;
+    const issues = validateSetEntry(entry, kind);
     if (issues.length > 0) {
       setIssue(tTraining(issues.includes('empty') ? 'sessionErrorEmpty' : issues.length === 1 && issues[0] === 'duration' && entry.durationSec === null ? 'sessionErrorDuration' : 'sessionErrorValues'));
       return;
     }
     setIssue(null);
+    if (checkEntry !== undefined && kind === 'work') {
+      setChecking(true);
+      // Contrôle impossible (bloc à la demande non chargé) : la saisie n'est jamais bloquée, bornes absolues seules.
+      const outlier = await checkEntry(entry, kind)
+        .catch(() => null)
+        .finally(() => setChecking(false));
+      if (outlier !== null) {
+        setAsk({ entry, outlier });
+        return;
+      }
+    }
     onValidate(entry);
+  }
+
+  function confirmAsk(): void {
+    if (ask === null) return;
+    setAsk(null);
+    onValidate(ask.entry);
+  }
+  function correctAsk(): void {
+    setAsk(null);
+    loadRef.current?.focus();
   }
 
   const onKey = (event: KeyboardEvent<HTMLInputElement>): void => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      if (!busy) validate();
+      if (!busy) void validate();
     }
   };
   /** ERGO-01b P3 : un tap = un cran (charge) ou une répétition ; la saisie au clavier reste possible. */
@@ -142,16 +189,20 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const steps = current && !timed;
   // ERGO-02 (D-261) : deux haltères, le libellé « 2 × 26 kg » suit la saisie et le « − / + » ; la valeur saisie reste celle d'un haltère.
   const pairLoad = held === 2 ? parseNumber(draft.load) : null;
-  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric') => (
+  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>) => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
       <input
+        ref={ref}
         className="ct-session__input"
         inputMode={mode}
         enterKeyHint="done"
         autoComplete="off"
         value={draft[key]}
-        onChange={(e) => setDraft((now) => ({ ...now, [key]: e.target.value }))}
+        onChange={(e) => {
+          setAsk(null);
+          setDraft((now) => ({ ...now, [key]: e.target.value }));
+        }}
         onKeyDown={onKey}
       />
     </label>
@@ -186,7 +237,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal')}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal', loadRef)}
             {pairLoad === null ? null : (
               <output className="ct-session__pair ct-session__num" aria-live="polite">
                 {formatExerciseLoad(pairLoad, 2)}
@@ -210,7 +261,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
             <button type="button" className="ct-training__icon-button" aria-label={tTraining('sessionRemoveSet')} disabled={busy} onClick={onRemove}>
               <Icon icon={X} size="md" />
             </button>
-            <button type="button" className="ct-session__validate" disabled={busy} onClick={validate}>
+            <button type="button" className="ct-session__validate" disabled={busy || checking || ask !== null} onClick={() => void validate()}>
               {tTraining('sessionValidate')}
             </button>
           </div>
@@ -221,6 +272,21 @@ export function SetRow({ set, number, current = false, loads = null, held = null
             <p className="ct-training__error" role="alert">
               {issue}
             </p>
+          )}
+          {ask && (
+            <div className="ct-session__outlier">
+              <p className="ct-training__error ct-session__num" role="alert">
+                {outlierText(ask.outlier, held)}
+              </p>
+              <div className="ct-training__actions">
+                <Button variant="primary" disabled={busy} onClick={confirmAsk}>
+                  {tTraining('sessionOutlierConfirm')}
+                </Button>
+                <Button variant="secondary" disabled={busy} onClick={correctAsk}>
+                  {tTraining('sessionOutlierCorrect')}
+                </Button>
+              </div>
+            </div>
           )}
         </>
       )}

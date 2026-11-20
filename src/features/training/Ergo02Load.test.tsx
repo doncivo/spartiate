@@ -102,7 +102,8 @@ describe('ERGO-02 (D-261) : séance active', () => {
     expect(stored?.load_kg).toBe(28);
 
     const single = screen.getByRole('region', { name: SINGLE.name });
-    const row = within(single).getAllByRole('group')[0] as HTMLElement;
+    // FIX-ABERR : la série est cherchée par son nom (le bloc « Proposition », chargé à la demande, peut être monté avant elle).
+    const row = within(single).getAllByRole('group', { name: /^Série \d+$/ })[0] as HTMLElement;
     expect(within(row).queryByLabelText('Charge par haltère (kg)')).toBeNull();
     fireEvent.change(within(row).getByLabelText('Charge (kg)'), { target: { value: '26' } });
     fireEvent.change(within(row).getByLabelText('Répétitions'), { target: { value: '8' } });

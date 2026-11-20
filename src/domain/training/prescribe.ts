@@ -114,7 +114,8 @@ export function prescribe(input: PrescribeInput): Prescription {
   const assisted = input.exercise.assisted === true;
   const body: BodyLoad | null = fraction !== null && fraction > 0 && bodyKg !== null && bodyKg > 0 ? { baseKg: bodyKg * fraction, sign: assisted ? -1 : 1 } : null;
   if (fraction !== null && fraction > 0 && body === null && input.history.length > 0) reasons.add('bodyweight-unknown');
-  const analysis = analyzeHistory(input.history, config, body);
+  // FIX-ABERR : assisté au poids de corps inconnu, aucune aberrante (une assistance n'est pas une charge, une valeur haute allège l'exercice).
+  const analysis = analyzeHistory(input.history, config, body, { outliers: !(input.exercise.assisted === true && body === null) });
   if (analysis.latest?.partial === true) reasons.add('partial-session-ignored');
   if ((analysis.latest?.outliers ?? 0) > 0) reasons.add('outlier-excluded');
   const estimates = analysis.estimates;
@@ -140,11 +141,9 @@ export function prescribe(input: PrescribeInput): Prescription {
       recalibration: null,
     });
   }
-  // B1 : si les séries de la dernière séance ont été écartées comme aberrantes (non encore confirmées), elle reste la référence de charge
-  // (c'est ce qu'Ali a réellement soulevé) ; le 1RM courant, lui, attend la confirmation par une séance suivante.
-  const raw = analysis.latestRaw;
-  const outlierReference = raw !== null && analysis.latest?.partial !== true && (analysis.latest?.outliers ?? 0) > 0 && raw.workoutId !== estimates[0]?.workoutId;
-  const last = outlierReference ? raw : estimates[0];
+  // FIX-ABERR (C-005, § 11.5) : une séance aberrante non confirmée n'est jamais la référence (fin du choix B1 de la PR #60) ; la référence est
+  // la dernière séance non aberrante, jusqu'à ce qu'une seconde séance complète hors décharge confirme la charge (`analyzeHistory`).
+  const last = estimates[0];
   if (last === undefined || current === null) {
     reasons.add('no-history');
     return finish({
@@ -298,13 +297,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   let draft: Draft;
   /** Hausse à arrondir et plafonner (étape 7). */
   let increase: { readonly targetKg: number; readonly reps: readonly number[] } | null = null;
-  if (outlierReference) {
-    // B1 : charge très au-dessus de l'historique, pas encore confirmée par une seconde séance : même charge, une répétition de plus,
-    // jamais de hausse (une faute de frappe ne s'amplifie pas) ; l'explication le dit et invite à vérifier.
-    reasons.add('rep-ladder');
-    const index = ladderIndex(reference.reps, target.repMax);
-    draft = hold('rep-ladder', plusOne(reference.reps, index), index);
-  } else if (recalAllowed) {
+  if (recalAllowed) {
     reasons.add('easy-recalibration');
     increase = { targetKg: refLoad * (1 + config.easyRecalibrationGain), reps: reference.reps };
     draft = { headline: 'recalibration', loadKg: refLoad, reps: reference.reps, ladderSetIndex: null, recalibration: { at: input.now, estimated1rmKg: current * (1 + config.easyRecalibrationGain) } };

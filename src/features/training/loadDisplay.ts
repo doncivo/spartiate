@@ -5,7 +5,7 @@ import type { TrainingData } from './trainingState';
 
 /**
  * ERGO-02 (D-261, révise D-260) : nombre d'haltères tenus pour AFFICHER une charge (« 2 × 26 kg » ou « 26 kg »). La valeur stockée, saisie,
- * prescrite et comptée dans le volume reste celle d'un haltère : rien d'autre ne lit ce nombre.
+ * prescrite et comptée dans le volume reste celle d'un haltère ; seul autre lecteur : le contrôle de vraisemblance (FIX-ABERR, plafond par haltère).
  */
 export type Held = 1 | 2 | null;
 
