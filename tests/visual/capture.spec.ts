@@ -97,7 +97,7 @@ const seedErgo03 = async (page: Page): Promise<void> => {
     const device = '0f8fad5b-d9cb-469f-a165-70867728950e';
     const target = "INSERT INTO nutrition_target (id, week_start, kcal, protein_g, fat_g, carb_g, source, accepted, engine_version, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, 'manual', 1, NULL, ?, ?, ?, ?)";
     await window.__ctTest?.execute(target, ['e3000000-0000-4000-8000-000000000001', '2026-11-02', 2600, 150, 80, 320, stamp, stamp, device, `001794218400000-0000-${device}`]);
-    await window.__ctTest?.execute(target, ['e3000000-0000-4000-8000-000000000002', '2026-11-09', 2450, 190, 75, 250, stamp, stamp, device, `001794218400001-0000-${device}`]);
+    await window.__ctTest?.execute(target, ['e3000000-0000-4000-8000-000000000002', '2026-11-09', 2350, 180, 72, 240, stamp, stamp, device, `001794218400001-0000-${device}`]);
     await window.__ctTest?.execute(
       "INSERT INTO mesocycle (id, routine_id, start_date, weeks, unlimited, deload_week, block_origin_week, block_origin_index, rotation_index, pauses, status, outcome, ended_on, created_at, updated_at, device_id, hlc) VALUES (?, ?, '2026-10-12', 4, 0, NULL, 1, 0, 0, '[]', 'active', NULL, NULL, ?, ?, ?, ?)",
       ['e3000000-0000-4000-8000-000000000003', 'e3000000-0000-4000-8000-000000000004', stamp, stamp, device, `001794218400002-0000-${device}`],

@@ -73,11 +73,11 @@ describe('écrans ouverts relus après un lot reçu', () => {
   it('Profil et poids : une pesée arrivée par la synchro apparaît sans changer d’onglet', async () => {
     wrap(<BodyScreen />);
     await screen.findByLabelText('Poids (kg)');
-    expect(screen.queryByText(/106,25/)).toBeNull();
+    expect(screen.queryByText(/82,25/)).toBeNull();
     const weights = await db.data.repos.bodyWeights();
-    await weights.saveManual({ date: '2026-11-05' as never, kg: 106.25, timezone: 'Europe/Paris' }, '2026-11-06' as never);
+    await weights.saveManual({ date: '2026-11-05' as never, kg: 82.25, timezone: 'Europe/Paris' }, '2026-11-06' as never);
     await act(async () => void (await applyRemoteChanges(container, change('body_weight'))));
-    expect((await screen.findAllByText(/106,25/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/82,25/)).length).toBeGreaterThan(0);
   });
 
   it('Profil et poids : le profil reçu remplit les champs non modifiés, jamais ceux que tu es en train de saisir', async () => {
@@ -103,9 +103,9 @@ describe('écrans ouverts relus après un lot reçu', () => {
     await weights.saveManual({ date: '2026-11-04' as never, kg: 100, timezone: 'Europe/Paris' }, '2026-11-06' as never);
     wrap(<TodayScreen />);
     await screen.findByText(/100/);
-    await weights.saveManual({ date: '2026-11-05' as never, kg: 106.25, timezone: 'Europe/Paris' }, '2026-11-06' as never);
+    await weights.saveManual({ date: '2026-11-05' as never, kg: 82.25, timezone: 'Europe/Paris' }, '2026-11-06' as never);
     await act(async () => void (await applyRemoteChanges(container, change('body_weight'))));
-    expect((await screen.findAllByText(/106,25/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/82,25/)).length).toBeGreaterThan(0);
   });
 
   it('un lot qui ne touche aucune table affichée ne relit rien', async () => {

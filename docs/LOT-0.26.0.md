@@ -17,18 +17,18 @@ Cadre du lot (identique au lot 0.25.0)
 
 1. DOC-H21, budget S (product-owner, docs-writer) — constats d'Ali du 14/11 sur l'iPhone, 0.24.0, raccourcis « Spartiate — récupération » et « Spartiate — corps et nutrition » :
 - capability-matrix et docs/decisions.md :
-  - H-21 CONFIRMED : poids.csv écrit `date;valeur;kg`, décimale au POINT (pas à la virgule), décalage `+01:00`/`+02:00`, parfois une espace avant le `;` (le lecteur l'ignore), valeurs du type 105.800000001 lues et arrondies.
-  - H-22, H-23, H-24 CONFIRMED : hrv.csv, fc-repos.csv et sommeil.csv lus sans refus à l'ouverture (dernier import 17:35), sommeil cohérent avec Santé (constat du 13/11 : 4 h 24) ; filtre « Source est Apple Watch » ajouté sur ces trois blocs.
+  - H-21 CONFIRMED : poids.csv écrit `date;valeur;kg`, décimale au POINT (pas à la virgule), décalage `+01:00`/`+02:00`, parfois une espace avant le `;` (le lecteur l'ignore), valeurs du type [retiré].800000001 lues et arrondies.
+  - H-22, H-23, H-24 CONFIRMED : hrv.csv, fc-repos.csv et sommeil.csv lus sans refus à l'ouverture (dernier import 17:35), sommeil cohérent avec Santé (constat du 13/11) ; filtre « Source est Apple Watch » ajouté sur ces trois blocs.
   - H-25 (pas.csv) reste UNVERIFIED.
   - H-28 CONFIRMED avec correction : en français, le type s'appelle « Indice de masse grasse » (et non « Pourcentage de graisse corporelle ») ; « Masse maigre », « Tour de taille », « Poids » existent sous ces noms ; Renpho écrit bien masse grasse et masse maigre.
-  - H-29 CONFIRMED : masse grasse en `%` (26.9;%), masses en kg, tour de taille en cm.
+  - H-29 CONFIRMED : masse grasse en `%` ([retiré];%), masses en kg, tour de taille en cm.
   - H-30 et H-31 : sans objet, décision d'Ali du 15/11 : la nutrition se saisit dans Spartiate, pas de bloc nutrition dans le raccourci.
 - docs/guide-raccourcis-sante.md : type « Indice de masse grasse » ; nutrition retirée (choix d'Ali) ou marquée facultative ; automatisation « Lorsque Spartiate est ouverte » qui lance les deux raccourcis (remplace les automatisations horaires, qui échouent iPhone verrouillé) ; filtre Source = Apple Watch sur HRV, FC repos, sommeil (jamais sur les pas) ; avertissement : avec « Grouper par », l'action « Formater la date » doit pointer « Date de début », sinon deux dates par ligne.
 - PRD § 27 / Q-2 : fournisseur IA = aucun (décision d'Ali du 15/11, pas de budget) ; fonctions IA grisées avec leur cause.
 
 2. ERGO-03, budget M (ui-design-system, nutrition, accessibility-i18n) — Stratégie et Aujourd'hui :
 - Stratégie (iPhone et PC) :
-  - afficher la cible EN VIGUEUR et, à côté, la cible À VENIR quand une cible acceptée a une date future (« À partir du lundi 16/11 : 2 450 kcal · P 190 · G 250 · L 75 ») ;
+  - afficher la cible EN VIGUEUR et, à côté, la cible À VENIR quand une cible acceptée a une date future (« À partir du lundi 16/11 : [retiré] kcal · P · G · L [retirés] ») ;
   - « Fixer ma cible » n'est plus pré-rempli avec une valeur prête à écraser : champs vides ou repliés derrière un bouton « Modifier ma cible », et enregistrement d'une cible du jour qui passerait devant une cible future = confirmation explicite qui le dit ;
   - cible des jours de repos : section titrée, interrupteur libellé (si FIX-0244 ne l'a pas fait), jours de repos lisibles en toutes lettres ;
   - écran moins dense : groupes Style / Objectif / Cible / Jours de repos / Historique, une ligne par réglage avec sa valeur, comme Plus.
