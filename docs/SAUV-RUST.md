@@ -21,3 +21,14 @@ Constats de l'audit Claude 0.27.0 : C-137, C-138 ; A-008 (audit Codex 0.26.0, c�
 - C-137 pré-restauration. Given 3 copies de 2099, When une restauration datée 2026, Then `safety_copy` existe.
 - C-138. Given une restauration en cours (bloquée à `Staged`), When une seconde restauration ou une quotidienne sur la même base, Then `busy` et rien n'est modifié ; When la première finit, Then une nouvelle sauvegarde réussit. Une autre base n'est pas bloquée.
 - C-138 échange. Given un fichier créé à la place de la base entre le déplacement et le renommage, Then l'échange échoue, le fichier étranger n'est pas remplacé, l'ancienne base reste récupérable.
+
+## Décisions proposées
+
+- **D-366** : C-137 (SAUV-RUST) : la rotation des sauvegardes (migration, quotidienne, avant restauration) exclut le fichier que l'appel vient de créer, qui compte dans `keep` ; `created` et `path` ne sont rendus que si le fichier existe après la rotation (sinon `io`). Tri par nom inchangé.
+- **D-367** : C-138 (SAUV-RUST) : exclusion mutuelle des opérations de `backup.rs` qui touchent la base (créations, restauration, récupération) par un verrou de processus à clé « chemin de la base », pris sans attente ; la seconde opération est refusée avec `busy` (choix prudent : refus plutôt qu'attente). `busy` rejoint `KNOWN_REASONS` côté TypeScript.
+- **D-368** : C-138 (SAUV-RUST) : l'échange de restauration et son retour arrière ne remplacent jamais un fichier existant ; un conflit laisse `.restore-old` en place (`rollback-failed`), la récupération au démarrage archive l'ancienne base. Révisable : un remplacement après copie de sécurité vérifiée reste possible plus tard.
+- **D-369** : SAUV-RUST : la clé du verrou est le chemin de la base, non un verrou global, pour que les tests parallèles du binaire ne se refusent pas mutuellement ; en production (une base) l'effet est celui d'un verrou commun. Le texte français de `busy` (`backupRestore.errorBusy`) parle de notifications : à reformuler si Ali veut un message propre aux sauvegardes.
+
+## Fin de fiche
+
+Rouge : c4a94c01 (Rust, 5 rouges confirmés localement) puis commit du test TS rouge. Constats d'Ali à faire : aucun. Écarts : A-008 côté Rust réduit à C-137/C-138 (D-326 (5)) ; pas de passe code-reviewer.

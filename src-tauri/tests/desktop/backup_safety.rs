@@ -176,9 +176,11 @@ fn c138_a_second_operation_on_the_same_database_is_refused_while_a_restore_runs(
     first.join().unwrap().unwrap();
     assert!(!backups.join("spartiate-daily-20261004.db").exists());
     // Le verrou est rendu : une nouvelle sauvegarde passe.
-    assert!(create_daily_backup(&db, &backups, "20261004", false, 14)
-        .unwrap()
-        .created);
+    assert!(
+        create_daily_backup(&db, &backups, "20261004", false, 14)
+            .unwrap()
+            .created
+    );
 }
 
 #[test]

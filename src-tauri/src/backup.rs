@@ -112,6 +112,39 @@ impl BackupError {
     }
 }
 
+/// C-138 : bases dont une opération de `backup.rs` est en cours (clé : chemin de la base ; en production une seule base, donc un verrou
+/// commun à toutes les opérations qui touchent la base, `.restoring*` ou `.restore-old`).
+static BUSY_DATABASES: std::sync::Mutex<Vec<PathBuf>> = std::sync::Mutex::new(Vec::new());
+
+/// Garde d'exclusion mutuelle : rendue à la sortie de l'opération, même en cas d'erreur.
+struct OperationGuard(PathBuf);
+
+impl OperationGuard {
+    /// Prise sans attente : une seconde opération sur la même base est refusée (`busy`).
+    fn acquire(db_path: &Path) -> Result<Self, BackupError> {
+        let mut busy = BUSY_DATABASES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if busy.iter().any(|p| p == db_path) {
+            return Err(BackupError::new(
+                "busy",
+                "une autre opération sur la base est en cours",
+            ));
+        }
+        busy.push(db_path.to_path_buf());
+        Ok(Self(db_path.to_path_buf()))
+    }
+}
+
+impl Drop for OperationGuard {
+    fn drop(&mut self) {
+        let mut busy = BUSY_DATABASES
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        busy.retain(|p| p != &self.0);
+    }
+}
+
 fn io_err(e: io::Error) -> BackupError {
     BackupError::new("io", e.to_string())
 }
@@ -225,6 +258,17 @@ fn sidecar(path: &Path, suffix: &str) -> PathBuf {
 
 /// Supprime les plus anciennes sauvegardes d'une famille au-delà de `keep`. Renvoie le nombre supprimé.
 pub fn prune_family(dir: &Path, family: Family, keep: usize) -> io::Result<usize> {
+    prune_family_except(dir, family, keep, None)
+}
+
+/// Comme `prune_family`, mais `protected` (le fichier que l'appel vient de créer, C-137) n'est jamais supprimé : il compte dans `keep`,
+/// les plus anciens des AUTRES fichiers partent. L'horodatage vient de la WebView : une horloge qui recule ne doit pas purger la création.
+fn prune_family_except(
+    dir: &Path,
+    family: Family,
+    keep: usize,
+    protected: Option<&Path>,
+) -> io::Result<usize> {
     let mut found: Vec<(String, PathBuf)> = Vec::new();
     for entry in fs::read_dir(dir)? {
         let path = entry?.path();
@@ -232,13 +276,15 @@ pub fn prune_family(dir: &Path, family: Family, keep: usize) -> io::Result<usize
             continue;
         };
         if let Some((found_family, key)) = parse_backup_name(name) {
-            if found_family == family {
+            if found_family == family && protected != Some(path.as_path()) {
                 found.push((format!("{key}{name}"), path));
             }
         }
     }
     found.sort();
-    let excess = found.len().saturating_sub(keep);
+    let excess = found
+        .len()
+        .saturating_sub(keep.saturating_sub(usize::from(protected.is_some())));
     for (_, path) in found.into_iter().take(excess) {
         fs::remove_file(&path)?;
         let _ = fs::remove_file(sidecar(&path, "-wal"));
@@ -399,6 +445,7 @@ pub fn create_migration_backup(
             format!("horodatage invalide : {stamp}"),
         ));
     }
+    let _guard = OperationGuard::acquire(db_path)?;
     if !db_path.is_file() {
         if from_version >= 1 {
             return Err(BackupError::new("no-database", "base introuvable"));
@@ -413,8 +460,15 @@ pub fn create_migration_backup(
     remove_orphan_tmp(backups_dir);
     let target = backups_dir.join(migration_backup_name(from_version, to_version, stamp));
     copy_database(db_path, &target, DEFAULT_BUSY_MS)?;
-    // Le nettoyage ne doit jamais faire échouer une sauvegarde réussie.
-    let removed = prune_family(backups_dir, Family::Migration, keep).unwrap_or(0);
+    // Le nettoyage ne doit jamais faire échouer une sauvegarde réussie ni purger celle qu'on vient de créer (C-137).
+    let removed =
+        prune_family_except(backups_dir, Family::Migration, keep, Some(&target)).unwrap_or(0);
+    if !target.is_file() {
+        return Err(BackupError::new(
+            "io",
+            "la sauvegarde créée est introuvable",
+        ));
+    }
     Ok(BackupOutcome {
         path: Some(target.to_string_lossy().into_owned()),
         removed,
@@ -446,6 +500,7 @@ pub fn create_daily_backup(
             format!("jour invalide : {day}"),
         ));
     }
+    let _guard = OperationGuard::acquire(db_path)?;
     if !db_path.is_file() {
         return Err(BackupError::new("no-database", "base introuvable"));
     }
@@ -462,7 +517,13 @@ pub fn create_daily_backup(
         });
     }
     copy_database(db_path, &target, DAILY_BUSY_MS)?;
-    let removed = prune_family(backups_dir, Family::Daily, keep).unwrap_or(0);
+    let removed = prune_family_except(backups_dir, Family::Daily, keep, Some(&target)).unwrap_or(0);
+    if !target.is_file() {
+        return Err(BackupError::new(
+            "io",
+            "la sauvegarde créée est introuvable",
+        ));
+    }
     Ok(DailyOutcome {
         name,
         created: true,
@@ -1550,6 +1611,7 @@ pub fn recover_interrupted_restore(
     db_path: &Path,
     backups_dir: &Path,
 ) -> Result<Recovery, BackupError> {
+    let _guard = OperationGuard::acquire(db_path)?;
     let fail = |code: &'static str, e: io::Error| BackupError::new(code, e.to_string());
     let old_of = |suffix: &str| sidecar(&sidecar(db_path, suffix), OLD_SUFFIX);
     let olds: Vec<(&str, PathBuf)> = ["", "-wal", "-shm"]
@@ -1705,6 +1767,13 @@ fn swap_database(
             }
         }
         hook(RestoreStep::OldMoved)?;
+        // C-138 : jamais de remplacement d'une cible existante.
+        if present(db_path) {
+            return Err(io::Error::new(
+                io::ErrorKind::AlreadyExists,
+                "la base existe déjà : elle n'est pas remplacée",
+            ));
+        }
         fs::rename(staged, db_path)
     })();
     let Err(error) = result else {
@@ -1716,7 +1785,8 @@ fn swap_database(
     };
     let mut rollback_failed = false;
     for (from, old) in moved.iter().rev() {
-        if fs::rename(old, from).is_err() {
+        // Le retour arrière ne remplace pas non plus un fichier présent : l'ancien reste en `.restore-old` (récupéré au démarrage).
+        if present(from) || fs::rename(old, from).is_err() {
             rollback_failed = true;
         }
     }
@@ -1752,6 +1822,7 @@ pub fn restore_backup_file(
     if parse_backup_name(name).is_none() {
         return Err(BackupError::new("bad-name", "nom de sauvegarde inconnu"));
     }
+    let _guard = OperationGuard::acquire(db_path)?;
     let source = backups_dir.join(name);
     if !is_plain_dir(backups_dir) || !is_plain_file(&source) {
         return Err(BackupError::new(
@@ -1768,9 +1839,13 @@ pub fn restore_backup_file(
     let schema_version = check_backup_file(&source, app_version)?;
 
     remove_orphan_tmp(backups_dir);
+    let mut protected_safety: Option<PathBuf> = None;
     let safety_copy = if db_path.is_file() {
         let safety = pre_restore_backup_name(stamp);
-        copy_database(db_path, &backups_dir.join(&safety), DEFAULT_BUSY_MS)?;
+        let safety_path = backups_dir.join(&safety);
+        copy_database(db_path, &safety_path, DEFAULT_BUSY_MS)?;
+        // C-137 : jamais purgée par la rotation qui suit.
+        protected_safety = Some(safety_path);
         Some(safety)
     } else {
         None
@@ -1798,7 +1873,12 @@ pub fn restore_backup_file(
         let _ = fs::remove_file(&staged);
         return Err(error);
     }
-    let _ = prune_family(backups_dir, Family::PreRestore, KEEP_PRE_RESTORE_BACKUPS);
+    let _ = prune_family_except(
+        backups_dir,
+        Family::PreRestore,
+        KEEP_PRE_RESTORE_BACKUPS,
+        protected_safety.as_deref(),
+    );
     Ok(RestoreOutcome {
         safety_copy,
         schema_version,
