@@ -152,7 +152,7 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
 Budget M (150 k) déjà dépassé à la première passe (≈ 210 k) ; suite du 20/11 ≈ 75 k de plus, soit ≈ 285 k cumulés, sous l'arrêt de 300 k
 (D-324, décision d'Ali du 20/11 : consigner et continuer). Pas de point d'étape supplémentaire ; il reste les étapes de reprise ci-dessous.
 
-## Décision proposée (à inscrire par l'appelant, révisable par Ali)
+## Décisions : D-323 et D-325 (docs/decisions.md)
 
 D-323 — FIX-ABERR (0.28.0) : charge aberrante (audit Claude 0.27.0, C-005, C-028, C-168 ; § 11.2 point 1, § 11.5 ; remplace le choix B1 de la
 PR #60). (1) À la validation d'une série de travail, une charge > 150 % (`outlierRatio`) de la charge habituelle (1RM courant ramené aux
