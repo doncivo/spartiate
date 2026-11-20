@@ -1,6 +1,6 @@
 # FIX-ASSIST — Exercice assisté : l'assistance est une charge négative (lot 0.28.0)
 
-Statut : **en cours.** Budget M. Branche `FIX-ASSIST` depuis `origin/main` (`d0566409`, 0.27.0). Aucune migration. Lot 0.28.0, phase 1.1.
+Statut : **fait (revue par l'appelant à suivre).** Budget M. Branche `FIX-ASSIST` depuis `origin/main` (`d0566409`, 0.27.0). Aucune migration. Lot 0.28.0, phase 1.1.
 Origine : audit Claude 0.27.0 (`origin/audit-claude-0.27.0`, `docs/audit-claude-0.27.0/constats.md`), C-001 (bloquant), C-002, C-011 ; preuve
 `preuves/partie4-moteur.test.ts`, describe « C-001 » (copiée dans `src/domain/training/fixAssist.test.ts`, jamais branchée depuis docs/).
 Décisions lues : D-170 (3), D-273, D-284. Chapitres PRD : 11 (§ 11.2 point 6 « maintien ou réduction seulement », § 11.3, § 11.4, § 11.5),
@@ -54,6 +54,31 @@ Périmètre : `src/domain/training/{prescribe,constraints,warmup,closure,exercis
   catalogue : résidu mineur (voir risques).
 - (e) `ENGINE_VERSION` reste 3 : aucune constante modifiée ; le dépôt n'incrémente la version qu'au changement d'une valeur de configuration
   (`config.ts` l. 4-5 ; D-170 (6), I4-08, D-273, D-284 l'ont laissée à 3 pour des changements de règle).
+
+## Passe qa-test
+
+- Cas limites (describe « passe qa-test » de `fixAssist.test.ts`) : assisté du catalogue `pull-up-assisted` (bodyweight-reps) non prescrit,
+  sans rampe, hors tonnage par défaut ; 10 kg → 5 kg puis 5 kg (minimum de la pile) maintenu avec une répétition de plus ; sans grille
+  3 → 0,5 kg et 2,6 kg maintenu (jamais 0 kg) ; poids de corps connu + cran + rang 2 : jamais une assistance au-dessus de la référence dite
+  « hausse » ; « Dur » : maintien. Poids de corps connu vs inconnu couvert aux critères 1, 4, 5 et 7.
+- Constat : C-001a (preuve de l'audit) passait déjà avec grille (35 kg refusé par le plafond +10 % calculé sur l'assistance) : le test rouge
+  du critère 1 (30 → 25) porte le défaut. Le catalogue impose une variante « par haltère » à toute phrase en {delta} kg
+  (`ExerciseProgressionPair.test.tsx`) : variantes ajoutées (jamais affichées pour une machine).
+- Résultats : `src/domain/training` 42 fichiers, 580 tests verts, couverture 96,8 % instructions / 91,4 % branches / 98,6 % lignes ;
+  `src/features/training` et `workoutRepository` verts (283 tests, 1 échec corrigé puis 44 tests ciblés verts) ; `workoutClosure.test.ts`
+  vert ; `tsc --noEmit` et `eslint` sans erreur.
+- Risques résiduels : l'historique (`HistoryView`, volume par séance) n'exclut que l'assisté du catalogue, pas un personnalisé ; alertes
+  secondaires (`alertInactivity` quand la phrase principale est autre) disent encore « −x % » pour un assisté ; Recovery basse sur un assisté
+  d'isolation retire toujours une série (volume seulement, prudent).
+
+## Commits
+
+- Rouge : `ee29597f` « FIX-ASSIST : tests rouges (C-001, C-002, C-011) » (18 + 1 tests rouges ; aucun test existant ne figeait le défaut).
+- Vert : `7aa2025b` « FIX-ASSIST : l'assistance est une charge négative (C-001, C-002, C-011) ».
+- Fichiers : `src/domain/training/{assisted,prescribe,constraints,loadGrid,warmup,closure,exerciseSheet,explain,config,types,index}.ts`,
+  `src/domain/training/fixAssist.test.ts`, `src/i18n/fr.progression.ts`, `src/i18n/fr.training.ts`,
+  `src/features/training/session/{ExerciseProgression.tsx,fixAssistText.test.ts}`, `src/features/training/library/ExerciseSheetStats.tsx`,
+  `src/db/repositories/sql/{workoutRepository.ts,workoutClosure.test.ts}`.
 
 ## Proposition de décision (à numéroter par l'appelant, docs/decisions.md non modifié)
 
