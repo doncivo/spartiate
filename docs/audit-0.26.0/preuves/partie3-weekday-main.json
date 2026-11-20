@@ -1,0 +1,22 @@
+{
+  "sha": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+  "observations": [
+    {
+      "route": "journal",
+      "curseur": 0,
+      "conserves": [
+        {
+          "table": "routine_day",
+          "field": "weekday",
+          "value": 4,
+          "sv": 20
+        }
+      ]
+    },
+    {
+      "route": "snapshot",
+      "curseur": 17,
+      "conserves": []
+    }
+  ]
+}

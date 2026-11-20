@@ -1,0 +1,24 @@
+{
+  "ref": "refs/heads/main",
+  "sha": "d056640910db32cc9d08b940e9a6ae9e602d3b19",
+  "date": "2026-11-20T08:42:38.233Z",
+  "files": [
+    {
+      "file": "src/db/migrations/0020_routine_weekday.ts",
+      "sha256": "66054dbb62396e2eeeaa3de2248f18470b5c1a0534c537dc39c795a952ed70a4"
+    },
+    {
+      "file": "src/domain/sync/syncTables.ts",
+      "sha256": "2482bfb7f3c2636a1acc9b083403e72dc6c9c0d99794d23f1de444f3dd956ef8"
+    },
+    {
+      "file": "src/sync/snapshot.ts",
+      "sha256": "73777d02dd8c25113a9b189895a8c39ade07d3f55c61cc204d497d82590caf8d"
+    },
+    {
+      "file": "docs/PROG-04.md",
+      "sha256": "6191f1ccf64bbfee281be5ced7c864e4eaafc745a8c95f3429279a0b60423d03"
+    }
+  ],
+  "snapshotIdentiqueAuTag": true
+}

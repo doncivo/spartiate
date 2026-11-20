@@ -25,6 +25,8 @@ Publication vérifiée : Windows 2026-11-16 04:30:31 UTC ; iOS 04:39:41 UTC, rel
 
 ## Reprise exacte
 
+Point du 20/11 : A-009 étendu à `routine_day.weekday` (PROG-04, schéma 20), référence distante main `d0566409` consultée en lecture seule via GitHub, sans changement de branche. Test lecteur réel 19 : journal vert, instantané rouge, curseur 17. Preuves et limites dans `bloquants.md`. Claude Code arrêté selon Ali ; tests ciblés autorisés, suite complète toujours interdite. Écritures limitées strictement au dossier d'audit. La construction standard du bundle écrit aussi des caches hors de ce dossier : pas de nouvelle mesure pour ce point immédiat ; preuve antérieure et identité des sources conservées, écart explicite à la règle de push. Les parties 2 et 3 restent en cours.
+
 Lire AGENTS.md, CLAUDE.md, docs/reprise.md puis ce fichier. Les statuts historiques des documents de version ne remplacent pas les preuves.
 Consulter `preuves/resultats/*.json` pour les commandes déjà exécutées ; un statut en cours nécessite de vérifier la session, pas de relancer automatiquement.
 Pistes conservées : seuil training 90 % absent de `vitest.config.ts` (partie 11) ; effet de notifications `SupplementsView.tsx:127` poursuivi après démontage (parties 5/7/11) ; références partagées entre tests `epochCarryReplacedParentResume.test.ts:93-115` (partie 11). Relais de partie 1 : erreurs de réintégration/garde absorbées (`bootstrap.ts`, parties 2/3), fuseau/thème système (7c), chargements des notifications/récupération (5/6/7/11). Les budgets par partie ci-dessus remplacent l'estimation globale historique.

@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "partie3-weekday-main-corrige",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "docs/audit-0.26.0/preuves/partie3-weekday-main.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-20T08:42:58.5007829Z",
+    "fin":  "2026-11-20T08:42:59.9584714Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}
