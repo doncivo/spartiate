@@ -45,9 +45,9 @@ describe('C-049 baseline : une aberrante est jugée contre la moyenne et le σ d
     const values = [48, 50, 52, 50, 48, 200, 30];
     const b = buildBaseline(values.map((v, i) => night(dd(3, i + 1), v)), '2026-03-10', 'hrvMs');
     expect(b.stats.excluded).toBe(1);
-    const many = [49, 50, 51, 50, 49, 51, 50, 200, 210].map((v, i) => night(dd(3, i + 1), v, i % 2 ? 62 : 58));
-    // 200 et 210 se masquent l'une l'autre (chacune jugée contre un σ qui contient l'autre) : limite connue, rien n'est exclu.
-    expect(buildBaseline(many, '2026-03-12', 'hrvMs').stats.excluded).toBe(0);
+    const many = [48, 50, 52, 50, 48, 200, 210].map((v, i) => night(dd(3, i + 1), v, i % 2 ? 62 : 58));
+    // 200 et 210 se masquent l'une l'autre (210 contre [48, 50, 52, 50, 48, 200] : moyenne 74,67, σ ≈ 61,4, z ≈ 2,21 ; 200 contre [48, 50, 52, 50, 48, 210] : σ ≈ 65,5, z ≈ 1,89) : limite connue, rien n'est exclu.
+    expect(buildBaseline(many, '2026-03-10', 'hrvMs').stats.excluded).toBe(0);
   });
 });
 

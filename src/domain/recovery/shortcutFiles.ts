@@ -39,7 +39,7 @@ export interface ShortcutParseReport {
   readonly rejectedTotal: number;
   /** Lignes exactement identiques à une ligne déjà lue. */
   readonly duplicates: number;
-  /** Fichier plus long que `MAX_LINES` : seules les premières lignes sont lues. */
+  /** Fichier plus long que `MAX_LINES` : seules les DERNIÈRES lignes sont lues (FIX-RECUP, C-052 : guide « Plus ancien en premier », les jours récents sont gardés). */
   readonly truncated: boolean;
 }
 
@@ -75,10 +75,11 @@ export class Counter {
 
 export function readRows(text: string): { readonly rows: readonly (readonly string[])[]; readonly truncated: boolean } {
   const lines = (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text).split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
-  const truncated = lines.length > MAX_LINES;
-  const rows = lines.slice(0, MAX_LINES).map((l) => l.split(/[;\t]/).map((c) => c.trim()));
-  const first = rows[0]?.[0];
-  if (first !== undefined && HEADER.test(first) && !ISO_WITH_ZONE.test(first) && !ISO_NO_ZONE.test(first)) rows.shift();
+  // L'en-tête est reconnu sur la première ligne du FICHIER, avant la troncature (FIX-RECUP, C-052).
+  const first = lines[0]?.split(/[;\t]/)[0]?.trim();
+  const body = first !== undefined && HEADER.test(first) && !ISO_WITH_ZONE.test(first) && !ISO_NO_ZONE.test(first) ? lines.slice(1) : lines;
+  const truncated = body.length > MAX_LINES;
+  const rows = body.slice(-MAX_LINES).map((l) => l.split(/[;\t]/).map((c) => c.trim()));
   return { rows, truncated };
 }
 
@@ -179,6 +180,11 @@ export function parseShortcutRestingHr(text: string, today: string, timeZone: st
 export interface ShortcutSteps extends ShortcutParseReport {
   /** Total par jour local, du plus ancien au plus récent. */
   readonly days: readonly { readonly day: string; readonly steps: number }[];
+  /**
+   * FIX-RECUP (C-052, D-348) : jour le plus ancien du fichier quand son total peut être partiel (fichier de plusieurs jours : fenêtre « 30 derniers
+   * jours » commencée à l'heure de l'export ; ou fichier tronqué) ; null sinon. L'import l'insère s'il manque, sans jamais réécrire un total connu.
+   */
+  readonly partialDay: string | null;
 }
 
 /** `pas.csv` : un échantillon par ligne, sommés par jour local (voir l'en-tête du module). */
@@ -187,7 +193,9 @@ export function parseShortcutSteps(text: string, today: string, timeZone: string
   const byDay = new Map<string, number>();
   for (const s of r.samples) byDay.set(s.day, (byDay.get(s.day) ?? 0) + Math.round(s.value));
   const { samples: _samples, ...report } = r;
-  return { ...report, days: [...byDay.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([day, steps]) => ({ day, steps })) };
+  const days = [...byDay.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([day, steps]) => ({ day, steps }));
+  const partialDay = days.length > 1 || (report.truncated && days.length > 0) ? (days[0]?.day ?? null) : null;
+  return { ...report, days, partialDay };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------

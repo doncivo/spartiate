@@ -29,7 +29,7 @@ describe('import pas.csv : jour partiel (C-052)', () => {
       log: () => undefined,
     }).run('manual');
   const totals = async () =>
-    (await (await db.data.repos.recoverySamples()).listWindow('pas', '2026-11-01T00:00:00.000Z', NOW)).map((s) => [s.startAt.slice(0, 10), s.value]);
+    (await (await db.data.repos.recoverySamples()).listWindow('pas', '2026-11-01T00:00:00.000Z', '2026-11-09T00:00:00.000Z')).map((s) => [s.startAt.slice(0, 10), s.value]);
 
   it('8 000 pas complets du 06/11, puis un fichier dont le 06/11 (1 200) est le jour le plus ancien : 8 000 gardé, les autres jours remplacés', async () => {
     await run('2026-11-05T12:00:00+01:00;5000\n2026-11-06T12:00:00+01:00;8000\n2026-11-07T12:00:00+01:00;3000');
