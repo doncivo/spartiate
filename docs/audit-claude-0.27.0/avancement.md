@@ -24,7 +24,7 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 | 9 Sécurité et confidentialité | M | terminée le 20/11 : C-165 (bloquant, sommeil réel dans un dépôt public), C-166 |
 | 10 Performance | S | terminée le 20/11 : bundle 196 042 octets normalisés (CI du tag), fuites relevées en partie 7 |
 | 11 Tests et CI | L | terminée le 20/11 : workflows et scripts lus, tests du moteur et de la nutrition lus en entier, C-168 à C-180 |
-| 12 Conformité PRD et documentation | M | en cours : C-181 à C-188 consignés, tracabilite.md en attente de 2 relecteurs |
+| 12 Conformité PRD et documentation | M | terminée le 20/11 : tracabilite.md (345 exigences), C-181 à C-194 |
 
 ## Journal
 
@@ -39,3 +39,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 - 20/11 : 8b et 9 consignées. C-165 poussé dans bloquants.md. Partie 11 : contrôles par script faits (preuves/partie11-tests.mjs).
 - 20/11 : partie 10 complétée par des mesures locales (preuves/partie10-perf.test.ts) et C-167. Parties 11 et 12 lancées (6 relecteurs). Reste ensuite : rapport.md, tracabilite.md, résumé de la PR.
 - 20/11 : couverture 892/892. Partie 11 consignée, partie 12 en cours (traçabilité). Reste : tracabilite.md, rapport.md, résumé de la PR.
+- 20/11 : audit terminé. rapport.md (résumé, constats triés, 10 tickets, non vérifié), tracabilite.md, couverture 892/892, 194 constats dont 3 bloquants. Aucune reprise nécessaire.
