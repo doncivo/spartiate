@@ -23,7 +23,7 @@ Constats de l'audit Claude 0.27.0 : C-137, C-138 ; A-008 (audit Codex 0.26.0, c�
 - C-138. Given une restauration en cours (bloquée à `Staged`), When une seconde restauration ou une quotidienne sur la même base, Then `busy` et rien n'est modifié ; When la première finit, Then une nouvelle sauvegarde réussit. Une autre base n'est pas bloquée.
 - C-138 échange. Given un fichier créé à la place de la base entre le déplacement et le renommage, Then l'échange échoue, le fichier étranger n'est pas remplacé, l'ancienne base reste récupérable.
 
-## Décisions proposées
+## Décisions : D-366, D-367, D-368, D-369 (docs/decisions.md)
 
 - **D-366** : C-137 (SAUV-RUST) : la rotation des sauvegardes (migration, quotidienne, avant restauration) exclut le fichier que l'appel vient de créer, qui compte dans `keep` ; `created` et `path` ne sont rendus que si le fichier existe après la rotation (sinon `io`). Tri par nom inchangé.
 - **D-367** : C-138 (SAUV-RUST) : exclusion mutuelle des opérations de `backup.rs` qui touchent la base (créations, restauration, récupération) par un verrou de processus à clé « chemin de la base », pris sans attente ; la seconde opération est refusée avec `busy` (choix prudent : refus plutôt qu'attente). `busy` rejoint `KNOWN_REASONS` côté TypeScript.
