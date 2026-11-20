@@ -42,8 +42,8 @@ describe('plugin officiel geolocation : dépendances (passe architect)', () => {
 
   it('build-ios.yml : la crate est exigée dans la cible iOS et refusée dans la cible Windows', () => {
     const workflow = read('.github/workflows/build-ios.yml');
-    expect(workflow).toContain(`echo "$ios" | grep -q '^tauri-plugin-geolocation '`);
-    expect(workflow).toContain(`if echo "$windows" | grep -q '^tauri-plugin-geolocation '`);
+    expect(workflow).toContain(`grep -q '^tauri-plugin-geolocation ' <<<"$ios"`);
+    expect(workflow).toContain(`if grep -q '^tauri-plugin-geolocation ' <<<"$windows"`);
   });
 });
 

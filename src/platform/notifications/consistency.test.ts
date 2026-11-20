@@ -149,9 +149,12 @@ describe('rappels : aucun envoi réel hors adaptateur iOS (N-TECH-01 critère 5,
 
   it('build-ios.yml vérifie par cargo tree que le plugin est compilé pour iOS et pas pour Windows', () => {
     const workflow = read('.github/workflows/build-ios.yml');
-    expect(workflow).toContain('cargo tree --target aarch64-apple-ios -i tauri-plugin-notification');
-    expect(workflow).toContain('cargo tree --target x86_64-pc-windows-msvc -i tauri-plugin-notification');
-    expect(workflow).toContain('cargo tree --target aarch64-apple-ios -i tauri-plugin-notification-actions');
-    expect(workflow).toContain('cargo tree --target x86_64-pc-windows-msvc -i tauri-plugin-notification-actions');
+    // CI-PUB (C-174) : le contrôle lit l'arbre de chaque cible calculé une fois (échec si cargo tree échoue) ; ces tests figeaient l'ancien texte.
+    expect(workflow).toContain('IOS_TREE=$(cargo tree --locked --target aarch64-apple-ios -e normal --prefix none)');
+    expect(workflow).toContain('WIN_TREE=$(cargo tree --locked --target x86_64-pc-windows-msvc -e normal --prefix none)');
+    expect(workflow).toContain('in_ios "$CRATE" || { echo "::error::$CRATE absent de la compilation iOS"; exit 1; }');
+    expect(workflow).toContain('if in_win "$CRATE"; then echo "::error::$CRATE présent dans la compilation Windows"; exit 1; fi');
+    const loop = workflow.split('\n').find((l) => l.trim().startsWith('for CRATE in ')) ?? '';
+    for (const crate of ['tauri-plugin-notification','tauri-plugin-notification-actions']) expect(loop.split(/\s+/)).toContain(crate);
   });
 });
