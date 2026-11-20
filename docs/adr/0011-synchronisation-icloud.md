@@ -1842,6 +1842,10 @@ Le délégué du sélecteur répond une fois au choix, à l'annulation et à la 
 
 **Inchangés** : format des journaux, des instantanés, état publié, `sm`, fusion. Garde : `src/db/migrations/schemaRepublish.test.ts` (toute migration qui ajoute une colonne publiée à une table déjà publiée a sa ligne). Détail, options et passe architect : ADR 0018.
 
+### 38. Avenant FIX-A009 : champ inconnu gardé quel que soit son chemin d'arrivée (2026-11-20, D-327 ; audit Codex A-009)
+
+Complète § 7.2 : un champ inconnu du catalogue du lecteur est gardé dans `sync_unknown` quel que soit son chemin d'arrivée (journal, instantané en fusion ou en remplacement d'époque), que sa table soit inconnue ou connue, avec son horloge de champ et la version de schéma de l'écrivain, sous les mêmes validations que le journal (`src/sync/snapshot.ts`). Au remplacement d'époque, seules les lignes gardées ou mises de côté conservent ces colonnes. En fusion, les colonnes inconnues d'une ligne que la fusion rejette (antérieure à un horizon de remise à zéro, par exemple) sont gardées comme le fait le journal, qui garde avant le contrôle de l'horizon : choix explicite, sans effet car la réintégration n'insère jamais une ligne incomplète et retire les champs antérieurs à une suppression. Aucun changement de format, de fusion ni de réintégration. Tests : `tests/unit/sync/versions/fixA009Proofs.test.ts`, `fixA009TwoDevices.test.ts`, `fixA009Qa.test.ts`. Limite connue, traitée à part (FIX-A009b) : à la réintégration (`decideReintegration`, `src/domain/sync/compat.ts`), un champ gardé sans horloge locale est comparé à l'horloge `'*'` de la ligne locale ; une ligne modifiée après l'écriture du champ fait écarter la valeur.
+
 ## Conséquences
 
 - **Dépendances** (validées par l'architecte) :
