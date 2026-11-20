@@ -292,10 +292,20 @@ pub fn sanitize_detail(raw: &str) -> String {
         Some(words[j].to_owned())
     };
     let mut out: Vec<&str> = Vec::with_capacity(words.len());
+    let previous2 = |index: usize| -> Option<&str> {
+        let j = neighbour_index(index, false)?;
+        neighbour_index(j, false).map(|k| words[k])
+    };
+    let opens_array = |w: &str| w.matches('[').count() > w.matches(']').count();
     let mut mask_next = false;
+    // Revue 2 : un mot masqué qui ouvre un tableau masque les mots suivants jusqu'au `]`.
+    let mut in_masked_array = false;
     for (index, word) in words.iter().enumerate() {
         if word.is_empty() {
             out.push(word);
+        } else if in_masked_array {
+            out.push(MASK);
+            in_masked_array = !word.contains(']');
         } else if mask_next {
             out.push(MASK);
             mask_next = false;
@@ -307,9 +317,11 @@ pub fn sanitize_detail(raw: &str) -> String {
                 word,
                 neighbour(index, false).as_deref(),
                 neighbour(index, true).as_deref(),
+                previous2(index),
             )
         {
             out.push(MASK);
+            in_masked_array = opens_array(word);
         } else {
             out.push(word);
         }
@@ -319,7 +331,21 @@ pub fn sanitize_detail(raw: &str) -> String {
 
 /// FIX-CONFID-IOS (C-140, C-151, § 22) : listes partagées avec TypeScript (`sanitize.ts`) et lues par les deux tests dans
 /// `tests/fixtures/logs/sanitize-vectors.json`. Comparaisons en minuscules.
-pub const BODY_UNITS: &[&str] = &["kg", "%", "bpm", "ms", "kcal", "h", "min", "cm"];
+pub const BODY_UNITS: &[&str] = &[
+    "kg",
+    "%",
+    "bpm",
+    "ms",
+    "kcal",
+    "h",
+    "min",
+    "cm",
+    "kilo",
+    "kilos",
+    "lb",
+    "lbs",
+    "pulsations",
+];
 pub const BODY_WORDS: &[&str] = &[
     "poids",
     "fc",
@@ -419,6 +445,11 @@ fn is_nbsp(c: char) -> bool {
     matches!(c, '\u{a0}' | '\u{202f}' | '\u{2009}' | '\u{2007}')
 }
 
+/// Revue 2 : signes sautés avant un nombre pour trouver sa clé ou son mot corporel (au plus trois).
+fn is_skippable(c: char) -> bool {
+    is_nbsp(c) || matches!(c, '[' | '"' | '+' | '-' | '(' | '/' | ',' | '\u{2192}')
+}
+
 fn starts_with_letter(key: &str) -> bool {
     key.chars().next().is_some_and(char::is_alphabetic)
 }
@@ -458,7 +489,12 @@ fn is_allowed_key(key: &str) -> bool {
 /// éventuellement suivis de parties `.` ou `,` + chiffres) : version de 3 parties ou plus séparées par des points gardée ; valeur d'une clé
 /// (`"clé":`, `clé=`, `clé:`) gardée si la clé est permise, masquée si c'est un extrait JSON ou un mot corporel ; sinon masquée si décimale,
 /// suivie d'une unité (attachée, ou au mot suivant quand le nombre finit le mot), ou en tête de mot après un mot corporel ou une unité.
-fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bool {
+fn has_body_number(
+    word: &str,
+    previous: Option<&str>,
+    next: Option<&str>,
+    previous2: Option<&str>,
+) -> bool {
     let chars: Vec<char> = word.chars().collect();
     let digit = |i: usize| chars.get(i).is_some_and(char::is_ascii_digit);
     let mut i = 0;
@@ -485,17 +521,16 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
         if parts >= 3 && !commas {
             continue;
         }
-        let before = start.checked_sub(1).map(|b| chars[b]);
+        // Revue 2 : jusqu'à trois signes sautés avant le nombre (`"82"`, `[82`, `-82`, `(82`, `→82`, insécable).
+        let mut s0 = start;
+        while s0 > 0 && start - s0 < 3 && is_skippable(chars[s0 - 1]) {
+            s0 -= 1;
+        }
+        let before = s0.checked_sub(1).map(|b| chars[b]);
         let mut keyed = false;
-        // Extrait JSON `"clé":nombre` ou `"clé":[nombre` (tableau, revue 1).
-        let close = if before == Some(':') && start >= 2 && chars[start - 2] == '"' {
-            Some(start - 2)
-        } else if before == Some('[')
-            && start >= 3
-            && chars[start - 2] == ':'
-            && chars[start - 3] == '"'
-        {
-            Some(start - 3)
+        // Extrait JSON `"clé":nombre`, `"clé":[nombre`, `"clé":"nombre`.
+        let close = if before == Some(':') && s0 >= 2 && chars[s0 - 2] == '"' {
+            Some(s0 - 2)
         } else {
             None
         };
@@ -510,14 +545,14 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
             return true;
         }
         if matches!(before, Some('=' | ':')) {
-            let mut k = start - 1;
+            let mut k = s0 - 1;
             while k > 0 && (chars[k - 1].is_ascii_alphanumeric() || chars[k - 1] == '_') {
                 k -= 1;
             }
             // Revue 1 : clé commençant par une lettre et non permise -> masquée (clés composées comprises) ; signe en tête de mot
             // (`hrv =48`) : la clé est le mot précédent.
-            let own: String = chars[k..start - 1].iter().collect();
-            let key = if own.is_empty() && start == 1 {
+            let own: String = chars[k..s0 - 1].iter().collect();
+            let key = if own.is_empty() && s0 == 1 {
                 bare(previous)
             } else {
                 own.clone()
@@ -555,10 +590,7 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
             return true;
         }
         // Mot corporel collé devant le nombre (« FC142 », « FC 142 » insécable), s'il commence le mot ou suit un signe.
-        let mut p = start;
-        while p > 0 && is_nbsp(chars[p - 1]) {
-            p -= 1;
-        }
+        let p = s0;
         let mut q = p;
         while q > 0 && chars[q - 1].is_alphabetic() {
             q -= 1;
@@ -586,7 +618,11 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
                 return true;
             }
             let prev = bare(previous);
-            if BODY_WORDS.contains(&prev.as_str()) || BODY_UNITS.contains(&prev.as_str()) {
+            // Revue 2 : mot corporel à un ou deux mots d'écart (`FC moyenne 142`, `weight → 82`).
+            if BODY_WORDS.contains(&prev.as_str())
+                || BODY_UNITS.contains(&prev.as_str())
+                || BODY_WORDS.contains(&bare(previous2).as_str())
+            {
                 return true;
             }
         }

@@ -84,7 +84,7 @@ export const bodyProgressFr = {
   kind_calf_right: 'Mollet droit',
 
   photosTitle: 'Photos de progression',
-  photosPrivacy: 'Les photos restent sur cet appareil : elles ne sont jamais envoyées, ni synchronisées, ni exportées. Seule la fiche (date) passe d’un appareil à l’autre.',
+  photosPrivacy: 'Les photos restent sur cet appareil : elles ne sont jamais envoyées par Spartiate, ni synchronisées, ni exportées. Seule la fiche (date) passe d’un appareil à l’autre.',
   photoAdd: 'Ajouter une photo',
   photoAdding: 'Enregistrement de la photo…',
   photoAdded: 'Photo enregistrée sur cet appareil.',

@@ -69,7 +69,7 @@ function isSensitive(token: string): boolean {
  * `tests/fixtures/logs/sanitize-vectors.json` : unités corporelles, mots corporels, clés dont la valeur numérique reste lisible (compteurs,
  * versions ; aussi toute clé qui finit par un suffixe de `ALLOWED_LOG_KEY_SUFFIXES`). Comparaisons en minuscules.
  */
-export const BODY_UNITS: readonly string[] = ['kg', '%', 'bpm', 'ms', 'kcal', 'h', 'min', 'cm'];
+export const BODY_UNITS: readonly string[] = ['kg', '%', 'bpm', 'ms', 'kcal', 'h', 'min', 'cm', 'kilo', 'kilos', 'lb', 'lbs', 'pulsations'];
 export const BODY_WORDS: readonly string[] = ['poids', 'fc', 'hrv', 'vfc', 'rmssd', 'sommeil', 'masse', 'graisse', 'taille', 'tour', 'imc', 'calories', 'kcal', 'weight', 'sleep', 'hr', 'bpm', 'protéines', 'glucides', 'lipides'];
 export const ALLOWED_LOG_KEYS: readonly string[] = [
   'version', 'schema_version', 'rules_version', 'sv', 'count', 'n', 'rows', 'files', 'segments', 'segment', 'tables', 'from', 'to', 'type_index', 'epoch', 'seq', 'localseq', 'ops',
@@ -87,6 +87,8 @@ const isWordChar = (char: string | undefined): boolean => isAlnum(char) || char 
 // Revue 1 de FIX-CONFID-IOS : espaces fines U+2009 et U+2007 traitées de même.
 const isNbsp = (char: string | undefined): boolean => char === '\u00a0' || char === '\u202f' || char === '\u2009' || char === '\u2007';
 const startsWithLetter = (key: string): boolean => isLetter(Array.from(key)[0]);
+/** Revue 2 : signes sautés avant un nombre pour trouver sa clé ou son mot corporel (au plus trois). */
+const isSkippable = (char: string | undefined): boolean => isNbsp(char) || (char !== undefined && '["+-(/,\u2192'.includes(char));
 
 /** Clé d'un mot qui finit par `clé=` ou `clé:` (hors extrait JSON `"clé":`), sans ponctuation ni casse, sinon null. */
 function signKeyEnding(word: string | undefined): string | null {
@@ -126,7 +128,7 @@ function isAllowedKey(key: string): boolean {
  * sinon masquée si décimale, suivie d'une unité (attachée, ou au mot suivant quand le nombre finit le mot), ou en tête de mot après un mot
  * corporel ou une unité.
  */
-function hasBodyNumber(word: string, previous: string | undefined, next: string | undefined): boolean {
+function hasBodyNumber(word: string, previous: string | undefined, next: string | undefined, previous2?: string): boolean {
   const chars = Array.from(word);
   let i = 0;
   while (i < chars.length) {
@@ -146,10 +148,13 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
     }
     const end = i;
     if (parts >= 3 && !commas) continue;
-    const before = chars[start - 1];
+    // Revue 2 : jusqu'à trois signes sautés avant le nombre (`"82"`, `[82`, `-82`, `(82`, `→82`, insécable) pour trouver la clé ou le mot.
+    let s0 = start;
+    while (s0 > 0 && start - s0 < 3 && isSkippable(chars[s0 - 1])) s0 -= 1;
+    const before = chars[s0 - 1];
     let keyed = false;
-    // Extrait JSON `"clé":nombre` ou `"clé":[nombre` (tableau, revue 1).
-    const close = before === ':' && chars[start - 2] === '"' ? start - 2 : before === '[' && chars[start - 2] === ':' && chars[start - 3] === '"' ? start - 3 : -1;
+    // Extrait JSON `"clé":nombre`, `"clé":[nombre`, `"clé":"nombre`.
+    const close = before === ':' && chars[s0 - 2] === '"' ? s0 - 2 : -1;
     if (close >= 0) {
       let open = close - 1;
       while (open >= 0 && chars[open] !== '"') open -= 1;
@@ -158,12 +163,12 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
       return true;
     }
     if (before === '=' || before === ':') {
-      let k = start - 1;
+      let k = s0 - 1;
       while (k > 0 && isKeyChar(chars[k - 1])) k -= 1;
       // Revue 1 : clé commençant par une lettre et non permise -> masquée (clés composées `heart_rate`, `poidsKg` comprises) ; signe en
       // tête de mot (`hrv =48`) : la clé est le mot précédent.
-      const own = chars.slice(k, start - 1).join('');
-      const key = own === '' && start - 1 === 0 ? bare(previous) : own;
+      const own = chars.slice(k, s0 - 1).join('');
+      const key = own === '' && s0 - 1 === 0 ? bare(previous) : own;
       if (isAllowedKey(key)) continue;
       if (startsWithLetter(key)) return true;
       keyed = own !== '';
@@ -178,8 +183,7 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
     const endsWord = chars.slice(end).every((char) => !isAlnum(char) && char !== '%');
     if (suffix === '' && endsWord && BODY_UNITS.includes(bare(next))) return true;
     // Mot corporel collé devant le nombre (« FC142 », « FC 142 » insécable), s'il commence le mot ou suit un signe.
-    let p = start;
-    while (p > 0 && isNbsp(chars[p - 1])) p -= 1;
+    const p = s0;
     let q = p;
     while (q > 0 && isLetter(chars[q - 1])) q -= 1;
     const prefix = chars.slice(q, p).join('').toLowerCase();
@@ -197,7 +201,8 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
         return true;
       }
       const prev = bare(previous);
-      if (BODY_WORDS.includes(prev) || BODY_UNITS.includes(prev)) return true;
+      // Revue 2 : mot corporel à un ou deux mots d'écart (`FC moyenne 142`, `weight → 82`).
+      if (BODY_WORDS.includes(prev) || BODY_UNITS.includes(prev) || BODY_WORDS.includes(bare(previous2))) return true;
     }
   }
   return false;
@@ -222,10 +227,22 @@ export function sanitizeLogDetail(raw: string): string {
     }
     return words[j];
   };
+  const previous2 = (index: number): string | undefined => {
+    const j = neighbourIndex(index, -1);
+    const k = j < 0 ? -1 : neighbourIndex(j, -1);
+    return k < 0 ? undefined : words[k];
+  };
+  const opensArray = (word: string): boolean => word.split('[').length > word.split(']').length;
   let maskNext = false;
+  // Revue 2 : un mot masqué qui ouvre un tableau masque les mots suivants jusqu'au `]`.
+  let inMaskedArray = false;
   return words
     .map((word, index) => {
       if (word === '') return word;
+      if (inMaskedArray) {
+        if (word.includes(']')) inMaskedArray = false;
+        return LOG_MASK;
+      }
       if (maskNext) {
         maskNext = false;
         return LOG_MASK;
@@ -234,7 +251,11 @@ export function sanitizeLogDetail(raw: string): string {
         maskNext = true;
         return LOG_MASK;
       }
-      return isSensitive(word) || hasBodyNumber(word, neighbour(index, -1), neighbour(index, 1)) ? LOG_MASK : word;
+      if (isSensitive(word) || hasBodyNumber(word, neighbour(index, -1), neighbour(index, 1), previous2(index))) {
+        inMaskedArray = opensArray(word);
+        return LOG_MASK;
+      }
+      return word;
     })
     .join(' ');
 }

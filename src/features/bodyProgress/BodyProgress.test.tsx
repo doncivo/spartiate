@@ -134,7 +134,7 @@ describe('mensurations', () => {
 describe('photos de progression', () => {
   it('la règle de confidentialité est dite en toutes lettres', async () => {
     mount();
-    expect(await screen.findByText(/Les photos restent sur cet appareil .* jamais envoyées, ni synchronisées, ni exportées/)).toBeInTheDocument();
+    expect(await screen.findByText(/Les photos restent sur cet appareil .* jamais envoyées par Spartiate, ni synchronisées, ni exportées/)).toBeInTheDocument();
   });
 
   it('ajout : fichier copié sur l’appareil, fiche publiée, miniature affichée avec un texte alternatif', async () => {
