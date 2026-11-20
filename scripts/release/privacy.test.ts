@@ -51,7 +51,7 @@ describe('aucune valeur réelle d’Ali dans les fichiers suivis (C-165, D-318)'
   });
   it('aucun fichier suivi ne porte ces formes', () => {
     // Une règle qui interdit la forme (« aucune valeur réelle d’Ali ») n’est pas une valeur.
-    expect(scan(files, PERSONAL_VALUE_FORMS, (line) => /\b(aucune? (donnée|valeur)s?|refuse[rz]?|retire[rz]?|interdite?s?)\b/i.test(line))).toEqual([]);
+    expect(scan(files, PERSONAL_VALUE_FORMS, (line) => /\b(aucune? (donnée|valeur)s?|refuse[rz]?|retir(e|é|ée|és|ées|er|ez)?|interdite?s?)\b/i.test(line))).toEqual([]);
   });
 });
 
@@ -59,15 +59,24 @@ describe('aucune valeur réelle d’Ali dans les fichiers suivis (C-165, D-318)'
 const USER_TEXTS = files.filter(
   (f) => (/^src\/i18n\//.test(f) && !/\.test\.tsx?$/.test(f)) || /^docs\/(install-[^/]+|guide-[^/]+|RESET-01)\.md$/.test(f) || f === 'README.md',
 );
-const DANGER: readonly RegExp[] = [/\b(ré|dés)install(e|es|ez|er)\b/i, /supprime[rsz]?\s+(une|l['’]|cette|ton|ta)\s*(autre\s+)?app/i, /Remove-Item/i];
+const DANGER: readonly RegExp[] = [
+  /\b(ré|dés)install(e|es|ez|er|ation)\b/i,
+  /supprime[rsz]?\s+(une|l['’]|cette|ton|ta)\s*(autre\s+)?app/i,
+  /supprim\w*\s+(à la main|les dossiers)/i,
+  /efface[rsz]?\s+(le|les)\s+dossiers?/i,
+  /Remove-Item/i,
+];
 /** Négations explicites qui protègent les données (« ne supprime jamais l'app », « ne la supprime pas »), ou SideStore lui-même. */
 const SAFE =
-  /\bjamais\b|\bne\s+(la\s+|le\s+|l['’])?(supprime|désinstalle|réinstalle)|aucune app|SideStore lui-même|Réinstalle-le avec iloader|\bne désinstalle pas\b|\bne pas\b|\bon désinstalle\b/i;
+  /\bjamais\b|\bne\s+(la\s+|le\s+|l['’])?(supprime|désinstalle|réinstalle)|aucune app|SideStore lui-même|Réinstalle-le avec iloader|\bne désinstalle pas\b|\bne pas\b|\bon désinstalle\b|n['’]existe plus/i;
 const isComment = (line: string): boolean => /^\s*(\/\/|\*|\/\*)/.test(line);
 
 describe('aucun conseil de supprimer ou de réinstaller l’app (C-110, C-181)', () => {
   it('catalogues et guides', () => {
-    expect(scan(USER_TEXTS, DANGER, (line) => SAFE.test(line) || isComment(line))).toEqual([]);
+    // La négation doit être dans la même proposition que le verbe dangereux (« Ne supprime jamais l'app », pas « jamais » ailleurs).
+    const clauses = (line: string): string[] => line.split(/[.;!?|]|\s—\s|\s:\s/);
+    const dangerous = (line: string): boolean => !isComment(line) && clauses(line).some((c) => DANGER.some((re) => re.test(c)) && !SAFE.test(c));
+    expect(scan(USER_TEXTS, [/./], (line) => !dangerous(line))).toEqual([]);
   });
   it('les guides d’installation n’ont plus de vestige de l’ancien projet (C-182)', () => {
     const guides = ['docs/install-iphone.md', 'docs/install-pc.md'];
