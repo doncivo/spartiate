@@ -60,8 +60,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
-| C-001 | audit Claude 0.27.0 | bloquant — exercice assisté hors décharge : cran et réductions inversés (plus d'assistance proposée comme une hausse) | à faire (lot 0.28.0) |
-| C-002 | audit Claude 0.27.0 | important — échauffement d'un exercice assisté plus dur que les séries de travail | à faire (lot 0.28.0) |
+| C-001 | audit Claude 0.27.0 | bloquant — exercice assisté hors décharge : cran et réductions inversés (plus d'assistance proposée comme une hausse) | fait (FIX-ASSIST, PR à venir) |
+| C-002 | audit Claude 0.27.0 | important — échauffement d'un exercice assisté plus dur que les séries de travail | fait (FIX-ASSIST, PR à venir) |
 | C-003 | audit Claude 0.27.0 | important — « Mettre à jour la routine » double les séries d'un exercice présent sur deux lignes du jour | à faire (lot 0.28.0) |
 | C-004 | audit Claude 0.27.0 | important — recalibrage « Facile » de deux crans en confiance provisoire (< 0,4 : au plus un cran) | à faire (lot 0.28.0) |
 | C-005 | audit Claude 0.27.0 | bloquant — charge aberrante (faute de frappe) enregistrée sans alerte, puis prescrite à toute la séance suivante | à faire (lot 0.28.0) |
@@ -70,7 +70,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-008 | audit Claude 0.27.0 | important — distance GPS gonflée à l'arrêt | à faire (lot 0.28.0) |
 | C-009 | audit Claude 0.27.0 | mineur — Recovery Split : seuil 50 % contre « ≥ 80 % » du § 12.1, commentaire faux | à faire (lot 0.28.0) |
 | C-010 | audit Claude 0.27.0 | mineur — séries dégressives et partielles comptées dans l'écart de routine | à faire (lot 0.28.0) |
-| C-011 | audit Claude 0.27.0 | mineur — tonnage et records d'un exercice assisté comptent l'assistance | à faire (lot 0.28.0) |
+| C-011 | audit Claude 0.27.0 | mineur — tonnage et records d'un exercice assisté comptent l'assistance | fait (FIX-ASSIST, PR à venir) |
 | C-012 | audit Claude 0.27.0 | mineur — durée estimée à 45 s par série quelle que soit la métrique (exercices chronométrés sous-estimés) | à faire (lot 0.28.0) |
 | C-013 | audit Claude 0.27.0 | mineur — plages 5–10 / 8–15 du § 12.1.4 appliquées aux seules substitutions (à trancher, D-86) | à faire (lot 0.28.0) |
 | C-014 | audit Claude 0.27.0 | mineur — replay : `doneAt` illisible, ordre indéfini au lieu de l'ordre par position | à faire (lot 0.28.0) |
@@ -254,6 +254,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
 | C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (lot 0.28.0) |
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | à faire (lot 0.28.0) |
+| BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
+| BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | à faire (lot 0.28.0) |
 
 ## 3. Audit Codex 0.26.0
 
