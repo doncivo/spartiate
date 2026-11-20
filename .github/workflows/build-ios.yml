@@ -48,7 +48,8 @@ jobs:
 
       - name: Lancement manuel hors tag
         if: github.ref_type != 'tag'
-        run: echo "::notice::Hors tag : aucun contrôle de la suite verte (rien n'est publié)."
+        run: |
+          echo "::notice::Hors tag : aucun contrôle de la suite verte (rien n'est publié)."
 
   ios:
     needs: garde
