@@ -234,16 +234,19 @@ describe('validation de l’historique', () => {
     expect(p.reasons).toEqual(['partial-session-ignored', 'history-reference', 'top-reached']);
   });
 
-  it('charge aberrante non confirmée : écartée du 1RM, mais reste la référence de charge sans hausse ; confirmée : elle progresse', () => {
-    // Relecture de la PR #60 (B1) : avant, la séance aberrante était écartée et la charge retombait sur l'ancienne (102,5 kg), pour toujours.
+  it('charge aberrante non confirmée : écartée du 1RM ET de la référence ; confirmée (champ ou 2e séance complète), elle progresse', () => {
+    // FIX-ABERR (C-005, C-168) : le choix B1 de la PR #60 reprenait la séance aberrante comme référence (200 kg prescrits après 100 kg) ;
+    // ce test le figeait. La référence est désormais la dernière séance non aberrante, jusqu'à confirmation par une seconde séance complète.
     const old = session(10, 100, [5, 5, 5]);
     const outlier = session(3, 200, [5, 5, 5]);
     const p = prescribe(input({ history: [old, outlier], target: target(3, 5) }));
-    expect(p.reasons).toEqual(['outlier-excluded', 'history-reference', 'rep-ladder']);
-    expect(p.loadKg).toBe(200);
+    expect(p.reasons).toEqual(['outlier-excluded', 'history-reference', 'top-reached']);
+    expect(p.reference?.loadKg).toBe(100);
+    expect(p.loadKg).toBe(102.5);
     expect(p.estimated1rmKg ?? 0).toBeLessThan(150);
     const confirmed = { ...outlier, sets: outlier.sets.map((x) => ({ ...x, confirmed: true })) };
     expect(prescribe(input({ history: [old, confirmed], target: target(3, 5) })).loadKg).toBe(202.5);
+    expect(prescribe(input({ history: [old, outlier, session(1, 200, [5, 5, 5])], target: target(3, 5) })).loadKg).toBe(202.5);
   });
 
   it('confiance < 0,4 : prescription provisoire (une séance de 2 séries à 40 jours)', () => {

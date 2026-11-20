@@ -64,7 +64,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-002 | audit Claude 0.27.0 | important — échauffement d'un exercice assisté plus dur que les séries de travail | fait (FIX-ASSIST, PR à venir) |
 | C-003 | audit Claude 0.27.0 | important — « Mettre à jour la routine » double les séries d'un exercice présent sur deux lignes du jour | à faire (lot 0.28.0) |
 | C-004 | audit Claude 0.27.0 | important — recalibrage « Facile » de deux crans en confiance provisoire (< 0,4 : au plus un cran) | à faire (lot 0.28.0) |
-| C-005 | audit Claude 0.27.0 | bloquant — charge aberrante (faute de frappe) enregistrée sans alerte, puis prescrite à toute la séance suivante | à faire (lot 0.28.0) |
+| C-005 | audit Claude 0.27.0 | bloquant — charge aberrante (faute de frappe) enregistrée sans alerte, puis prescrite à toute la séance suivante | fait (FIX-ABERR) |
 | C-006 | audit Claude 0.27.0 | mineur — décharge « arrondie vers le bas » qui ajoute une répétition (snapToEquipment au lieu de snapDown) | à faire (lot 0.28.0) |
 | C-007 | audit Claude 0.27.0 | mineur — grille de barre sans contrôle des disques réellement montables | à faire (lot 0.28.0) |
 | C-008 | audit Claude 0.27.0 | important — distance GPS gonflée à l'arrêt | à faire (lot 0.28.0) |
@@ -87,7 +87,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-025 | audit Claude 0.27.0 | mineur — inactivité comptée en tranches de 24 h ; dates comparées comme chaînes ISO | à faire (lot 0.28.0) |
 | C-026 | audit Claude 0.27.0 | à vérifier — décision datée après la dernière séance rendue sans contraintes (décharge, inactivité, journée rouge) | à faire (lot 0.28.0) |
 | C-027 | audit Claude 0.27.0 | mineur — « Dur » bloque le cran mais pas l'échelle de répétitions (§ 11.2.5 ambigu) | à faire (lot 0.28.0) |
-| C-028 | audit Claude 0.27.0 | mineur — aberrante : séances partielles et décharges comptées ; première séance jamais aberrante | à faire (lot 0.28.0) |
+| C-028 | audit Claude 0.27.0 | mineur — aberrante : séances partielles et décharges comptées ; première séance jamais aberrante | fait (FIX-ABERR) |
 | C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | à faire (lot 0.28.0) |
 | C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | à faire (lot 0.28.0) |
 | C-031 | audit Claude 0.27.0 | important — check-in à deux cibles : cible de repos sous le plancher, refus à « Accepter » | à faire (lot 0.28.0) |
@@ -256,6 +256,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | à faire (lot 0.28.0) |
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | à faire (lot 0.28.0) |
+| BL-092 | rapport FIX-ABERR (lot 0.28.0) | résumé de fin : séance passée datée par la dernière série et non par `ended_at` ; décharges comptées pour confirmer une aberrante (écart à D-323 (2)) | à faire (lot 0.28.0) |
 
 ## 3. Audit Codex 0.26.0
 

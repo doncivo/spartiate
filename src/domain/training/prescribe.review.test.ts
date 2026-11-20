@@ -32,10 +32,10 @@ const run = (over: Partial<PrescribeInput>) =>
   prescribe({ exercise: BENCH, history: [], lastDecision: null, profile: null, equipment: ANTONY, target: target(6, 10), config: CFG, now: NOW, ...over } as PrescribeInput);
 
 describe('B1 : une vraie progression n’est jamais écartée pour toujours', () => {
-  it('calibration 30 kg puis 50 kg : la référence est la dernière séance réellement faite (50 kg)', () => {
+  it('calibration 30 kg puis 50 kg (> 150 %) : non confirmée, la référence reste 30 kg (FIX-ABERR, C-005, C-168 : le test figeait 50 kg)', () => {
     const p = run({ target: target(8, 12), history: [session(10, 30, [10, 10, 10]), session(3, 50, [8, 8, 8])] });
-    expect(p.reference?.loadKg).toBe(50);
-    expect(p.loadKg).toBe(50);
+    expect(p.reference?.loadKg).toBe(30);
+    expect(p.loadKg).toBe(30);
     expect(p.reasons).toContain('outlier-excluded');
   });
   it('deux séances à 50 kg confirment le saut : le 1RM suit, et la charge progresse au haut de la fourchette', () => {

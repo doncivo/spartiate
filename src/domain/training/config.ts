@@ -113,6 +113,29 @@ export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
  */
 export const RECOVERY_SPLIT_CONFIG = Object.freeze({ spareBelowPercent: 50 });
 
+/** Type d'exercice pour la vraisemblance d'une charge à la première séance (FIX-ABERR, décision d'Ali du 20/11). */
+export type PlausibilityClass = 'lower-compound' | 'upper-compound' | 'isolation' | 'assisted';
+
+export interface PlausibilityConfig {
+  /** Plafond en multiple du poids de corps (assisté : assistance plafond, atteinte = signalée). */
+  readonly bodyweightMultiple: Readonly<Record<PlausibilityClass, number>>;
+  /** Poids de corps inconnu : plafond absolu en kg (assisté : assistance). */
+  readonly absoluteKg: Readonly<Record<PlausibilityClass, number>>;
+  /** Haltères : part du plafond du type, par haltère. */
+  readonly dumbbellShare: number;
+}
+
+/**
+ * FIX-ABERR (décision d'Ali du 20/11, proposition D-325) : plafonds de vraisemblance d'une série de travail à la première séance d'un exercice
+ * (aucun historique, le contrôle relatif n'a pas de référence). Au-delà, « Confirmer / Corriger » avant l'écriture. Choix prudents, révisables
+ * par Ali. Ne change aucune prescription : `ENGINE_VERSION` inchangé (D-284).
+ */
+export const PLAUSIBILITY_CONFIG: PlausibilityConfig = Object.freeze({
+  bodyweightMultiple: Object.freeze({ 'lower-compound': 3.5, 'upper-compound': 2.5, isolation: 1.2, assisted: 1 }),
+  absoluteKg: Object.freeze({ 'lower-compound': 300, 'upper-compound': 200, isolation: 100, assisted: 120 }),
+  dumbbellShare: 0.5,
+});
+
 /** Séances closes chargées par exercice pour le moteur (fenêtre d'estimation et séances ignorées ou aberrantes comprises). */
 export const HISTORY_SESSIONS_LOADED = 12;
 

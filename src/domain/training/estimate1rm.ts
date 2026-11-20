@@ -10,6 +10,8 @@ import type { Difficulty, ExerciseSession, HistorySet } from './types';
  *   meilleure série si elle dépasse 15 reps ou reste sous 60 % du 1RM courant d'avant elle.
  * - Exclus des statistiques (gardés dans l'historique brut) : échauffements, drops, partielles, chronométrées, séries non faites, séries
  *   aberrantes non confirmées (> 150 % du 1RM courant), séances à moins de 50 % de séries faites, séances de deload (I2-02).
+ * - FIX-ABERR (C-005, C-028) : une série aberrante est confirmée par le champ `confirmed`, ou par une séance ULTÉRIEURE COMPLÈTE (≥ 50 %
+ *   des séries faites) hors décharge qui l'atteint à 90 % ; une séance partielle ou de décharge ne confirme jamais.
  */
 
 export const epley = (loadKg: number, reps: number): number => loadKg * (1 + reps / 30);
@@ -80,11 +82,24 @@ export interface HistoryAnalysis {
   /** Séance la plus récente ayant au moins une série de travail : ignorée (moins de 50 % faites) ou séries aberrantes écartées. */
   readonly latest: { readonly workoutId: string; readonly partial: boolean; readonly outliers: number } | null;
   /**
-   * Séance la plus récente non partielle, avec TOUTES ses séries éligibles (aberrantes comprises) : référence de la prochaine
-   * prescription quand ses séries ont été écartées du 1RM (relecture de la PR #60, B1 : une charge de calibration prudente suivie d'une
-   * vraie charge ne doit jamais renvoyer à l'ancienne charge). Null sans séance éligible.
+   * FIX-ABERR (C-005) : séries aberrantes non confirmées de toutes les séances (partielles et décharges comprises), par séance et position,
+   * ordre chronologique. Gardées dans l'historique brut, jamais un record ni une référence.
    */
-  readonly latestRaw: SessionEstimate | null;
+  readonly unconfirmed: readonly OutlierRef[];
+}
+
+/** Série repérée par sa séance et sa position. */
+export interface OutlierRef {
+  readonly workoutId: string;
+  readonly position: number;
+}
+
+export interface AnalyzeOptions {
+  /**
+   * Repérage des aberrantes (défaut : oui). Non pour un exercice assisté au poids de corps inconnu : la charge saisie est une assistance,
+   * dont une valeur « haute » rend l'exercice plus facile (FIX-ABERR, choix prudent).
+   */
+  readonly outliers?: boolean;
 }
 
 /** Facteur sous lequel une séance ultérieure « répète » une série aberrante (e1RM ≥ 90 % du sien) et la confirme. */
@@ -95,39 +110,42 @@ const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.end
 
 const fatigueMark = (session: ExerciseSession): { readonly fatigueChoice?: true } => (session.fatigueChoice === true ? { fatigueChoice: true } : {});
 
-export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig, body: BodyLoad | null = null): HistoryAnalysis {
+type EligibleSet = HistorySet & { loadKg: number; reps: number };
+
+export function analyzeHistory(history: readonly ExerciseSession[], config: ProgressionConfig, body: BodyLoad | null = null, options: AnalyzeOptions = {}): HistoryAnalysis {
   const e1rm = (s: { readonly loadKg: number; readonly reps: number }): number => epley(totalLoad(s.loadKg, body), s.reps);
   const eligibleSet = (s: HistorySet): boolean => isEligibleSet(s, body);
+  const detect = options.outliers !== false;
   const valid: SessionEstimate[] = [];
+  const unconfirmed: OutlierRef[] = [];
   let latest: HistoryAnalysis['latest'] = null;
-  let latestRaw: SessionEstimate | null = null;
   const ordered = [...history].sort(chronological);
-  // Meilleur e1RM éligible de chaque séance : une série aberrante est confirmée si une séance ULTÉRIEURE l'atteint à 90 % (B1). Sans
-  // cela, `confirmed` n'étant jamais renseigné, un vrai progrès > 150 % restait écarté pour toujours.
-  const bestOf = ordered.map((session) => {
-    const values = session.sets.filter((s) => s.setKind === 'work' && eligibleSet(s)).map((s) => e1rm({ loadKg: s.loadKg ?? 0, reps: s.reps as number }));
+  const workOf = (session: ExerciseSession): readonly HistorySet[] => session.sets.filter((s) => s.setKind === 'work');
+  // Lest nul ou absent d'une série éligible (poids de corps connu) : lu comme 0.
+  const eligibleOf = (session: ExerciseSession): EligibleSet[] => workOf(session).filter(eligibleSet).map((s) => ({ ...s, loadKg: s.loadKg ?? 0 })) as EligibleSet[];
+  const isPartial = (session: ExerciseSession): boolean => eligibleOf(session).length < config.minCompletedFraction * workOf(session).length;
+  // Séance complète hors décharge : seule capable de confirmer une aberrante antérieure (C-028). Meilleur e1RM éligible, 0 sinon.
+  const confirmingBest = ordered.map((session) => {
+    if (session.deload === true || workOf(session).length === 0 || isPartial(session)) return 0;
+    const values = eligibleOf(session).map(e1rm);
     return values.length > 0 ? Math.max(...values) : 0;
   });
-  const repeatedLater = (index: number, e1rm: number): boolean => bestOf.slice(index + 1).some((b) => b >= REPEAT_CONFIRMS_FROM * e1rm);
+  const repeatedLater = (index: number, value: number): boolean => confirmingBest.slice(index + 1).some((b) => b >= REPEAT_CONFIRMS_FROM * value);
   for (const [index, session] of ordered.entries()) {
+    const work = workOf(session);
+    if (work.length === 0) continue;
+    const eligible = eligibleOf(session);
+    const current = current1rmFromSessions(valid, config);
+    const outlier = (s: EligibleSet): boolean => detect && s.confirmed !== true && current !== null && e1rm(s) > config.outlierRatio * current && !repeatedLater(index, e1rm(s));
+    for (const s of eligible) if (outlier(s)) unconfirmed.push({ workoutId: session.workoutId, position: s.position });
     // Deload (I2-02, § 11.3) : visible dans l'historique brut, exclu des statistiques.
     if (session.deload === true) continue;
-    const work = session.sets.filter((s) => s.setKind === 'work');
-    if (work.length === 0) continue;
-    // Lest nul ou absent d'une série éligible (poids de corps connu) : lu comme 0.
-    const eligible = work.filter(eligibleSet).map((s) => ({ ...s, loadKg: s.loadKg ?? 0 })) as (HistorySet & { loadKg: number; reps: number })[];
     if (eligible.length < config.minCompletedFraction * work.length) {
       latest = { workoutId: session.workoutId, partial: true, outliers: 0 };
       continue;
     }
-    const current = current1rmFromSessions(valid, config);
-    const kept = eligible.filter((s) => s.confirmed === true || current === null || e1rm(s) <= config.outlierRatio * current || repeatedLater(index, e1rm(s)));
+    const kept = eligible.filter((s) => !outlier(s));
     latest = { workoutId: session.workoutId, partial: false, outliers: eligible.length - kept.length };
-    if (eligible.length > 0) {
-      const all = [...eligible].sort((a, b) => a.position - b.position);
-      const top = all.reduce((t, s) => (e1rm(s) > e1rm(t) ? s : t));
-      latestRaw = { workoutId: session.workoutId, endedAt: session.endedAt, difficulty: session.difficulty, e1rmKg: e1rm(top), quality: 1, validSets: all.length, sets: all, ...fatigueMark(session) };
-    }
     if (kept.length === 0) continue;
     const sets = [...kept].sort((a, b) => a.position - b.position);
     // Meilleure série : e1RM maximal, la première par position à égalité.
@@ -143,5 +161,11 @@ export function analyzeHistory(history: readonly ExerciseSession[], config: Prog
       ...fatigueMark(session),
     });
   }
-  return { estimates: valid, latest, latestRaw };
+  return { estimates: valid, latest, unconfirmed };
+}
+
+/** Prédicat « série aberrante non confirmée » tiré d'une analyse. */
+export function isUnconfirmedOutlier(analysis: HistoryAnalysis): (workoutId: string, position: number) => boolean {
+  const keys = new Set(analysis.unconfirmed.map((r) => `${r.workoutId}\u0000${String(r.position)}`));
+  return (workoutId, position) => keys.has(`${workoutId}\u0000${String(position)}`);
 }
