@@ -30,7 +30,7 @@ describe('guide des raccourcis Santé (DOC-H21)', () => {
   });
   it('écrit les exemples avec la décimale au point (H-21)', () => {
     expect(guide).toContain('+01:00;81.4;kg');
-    expect(guide).toContain('+01:00;26.9;%');
+    expect(guide).toContain('+01:00;20.5;%');
     expect(guide).not.toContain(';81,4;kg');
   });
 });

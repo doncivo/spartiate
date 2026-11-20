@@ -6,7 +6,7 @@ Ce guide est pour le PC Windows (Windows 10 ou 11). Les versions PC sont publié
 
 - Base, sauvegardes locales et journal technique : `%APPDATA%\fr.spartiate.app` (`spartiate.db`, `backups\`, `logs\`, `sync\`).
 - Données du moteur web : `%LOCALAPPDATA%\fr.spartiate.app`.
-- Clé de synchro et jetons d'agenda : Gestionnaire d'identification Windows (coffre système), hors de ces dossiers.
+- Clé de synchro (et clé IA si elle est un jour fournie) : Gestionnaire d'identification Windows (coffre système), hors de ces dossiers.
 - Programme installé : `%LOCALAPPDATA%\Spartiate` (installation « utilisateur courant »), raccourci « Spartiate » dans le menu Démarrer.
 
 ## Mettre à jour : la voie sûre, depuis l'app
@@ -21,7 +21,7 @@ C'est la seule voie à utiliser pour une mise à jour. Elle a été vérifiée l
 
 1. Télécharger `Spartiate_X.Y.Z_x64-setup.exe` depuis la page des versions de `spartiate-releases`.
 2. Cette procédure concerne seulement un PC sans Spartiate. Sur le PC d'Ali, déjà équipé, ne pas lancer cet installeur : utiliser la bannière intégrée.
-3. Si la bannière n'apparaît pas, ouvrir Réglages > À propos et rechercher la mise à jour ; relever version et erreur éventuelle pour diagnostic. Ne pas contourner l'updater par une installation manuelle.
+3. Si la bannière n'apparaît pas, ouvrir Plus › « À propos et diagnostic » › « Rechercher une mise à jour » ; relever version et erreur éventuelle pour diagnostic. Ne pas contourner l'updater par une installation manuelle.
 
 Les avertissements historiques ci-dessous expliquent le risque des anciens désinstalleurs ; ils ne constituent pas une procédure de mise à jour.
 
@@ -35,16 +35,16 @@ La même case existe quand on désinstalle Spartiate depuis « Paramètres › A
 
 ### Effacer volontairement les données
 
-Il n'existe plus de désinstallation « avec données ». Pour repartir de zéro : quitter Spartiate (zone de notification › Quitter), puis supprimer à la main `%APPDATA%\fr.spartiate.app` et `%LOCALAPPDATA%\fr.spartiate.app` (explorateur de fichiers, ou `Remove-Item -Recurse` dans PowerShell). Rien ne va à la corbeille : copier d'abord `backups\` si tu veux le garder.
+Il n'existe plus de désinstallation « avec données ». Pour repartir de zéro, la seule voie est dans l'app : Plus › « Repartir de zéro » (docs/RESET-01.md), qui fait d'abord une archive et prévient l'autre appareil. Ne supprime jamais à la main les dossiers de données : l'usage réel a commencé (D-292) et rien ne va à la corbeille.
 
 ## Si les données ont été effacées malgré tout
 
 Ce qui s'est passé le 2026-10-17 et ce que fait l'app :
 
-- La clé de synchro est dans le coffre Windows : au premier lancement, l'app retrouve le dossier iCloud Drive, se présente comme un **nouvel appareil** et reprend tout ce qui a été synchronisé (tâches, routines, événements, rappels, agendas, jours fériés) depuis l'instantané et les journaux des autres appareils. Aucune réassociation n'est nécessaire.
-- L'ancien appareil reste visible dans Réglages › Synchronisation › Détails comme un PC jamais revu : l'oublier depuis l'un des deux appareils (« Oublier cet appareil », confirmation native).
-- Perdu pour de bon : les sauvegardes locales d'avant l'effacement, l'historique du journal technique, les réglages locaux (filtre d'espace, compteurs de consentement). Les données qui n'avaient jamais été synchronisées (hors ligne depuis le dernier cycle) sont perdues aussi : d'où l'importance de laisser un cycle passer avant toute manipulation d'installation.
+- La clé de synchro est dans le coffre Windows : au premier lancement, l'app retrouve le dossier iCloud Drive, se présente comme un **nouvel appareil** et reprend tout ce qui a été synchronisé (séances, routines, nutrition, récupération, réglages publiés) depuis l'instantané et les journaux des autres appareils. Aucune réassociation n'est nécessaire.
+- L'ancien appareil reste visible dans Plus › « Appareils et synchro » comme un PC jamais revu : l'oublier depuis l'un des deux appareils (« Oublier cet appareil », confirmation native).
+- Perdu pour de bon : les sauvegardes locales d'avant l'effacement, l'historique du journal technique, les réglages locaux (thème, matériel actif, préférences de cet appareil). Les données qui n'avaient jamais été synchronisées (hors ligne depuis le dernier cycle) sont perdues aussi : d'où l'importance de laisser un cycle passer avant toute manipulation d'installation.
 
 ## Vérifier quelle version tourne
 
-Réglages › À propos affiche la version. Le journal technique (Réglages › Journaux) porte une ligne `app-updated <ancienne> <nouvelle>` à chaque changement de version. Si un vieux binaire ouvre une base plus récente, l'écran d'échec explique « Cette version de Spartiate est plus ancienne que vos données » et renvoie à la page des versions (depuis la 0.2.1 ; la 0.1.1 n'affichait que « Impossible d'ouvrir la base de données »).
+Plus › « À propos et diagnostic » affiche la version. Le journal technique (Plus › Journaux) porte une ligne `app-updated <ancienne> <nouvelle>` à chaque changement de version. Si un vieux binaire ouvre une base plus récente, l'écran d'échec explique « Cette version de Spartiate est plus ancienne que vos données » et renvoie à la page des versions (depuis la 0.2.1 ; la 0.1.1 n'affichait que « Impossible d'ouvrir la base de données »).

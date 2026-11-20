@@ -46,7 +46,7 @@ async function seed(): Promise<void> {
   await (await db.data.repos.profile()).save({ sex: 'male', birthYear: 1990, heightCm: 180 }, 2026);
   await saveNutritionPrefs(db.data, { activity: 'moderate', style: 'collaborative', goal: { kind: 'maintain' }, checkInWeekday: 1 });
   await saveManualTarget(db.data, { weekStart: d(-14), target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
-  await saveManualTarget(db.data, { weekStart: d(7), target: { kcal: 2450, proteinG: 190, fatG: 75, carbG: 250 }, lowFloorConfirmed: false });
+  await saveManualTarget(db.data, { weekStart: d(7), target: { kcal: 2350, proteinG: 180, fatG: 72, carbG: 240 }, lowFloorConfirmed: false });
 }
 
 beforeEach(async () => {
@@ -67,7 +67,7 @@ describe('FIX-0271 (D-314) : check-in devant une cible future', () => {
     expect(await within(r).findByText('Cible enregistrée.')).toBeInTheDocument();
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     expect((await decisions()).filter((t) => t.source === 'auto')).toMatchObject([{ accepted: true, weekStart: TODAY }]);
-    expect((await (await db.data.repos.nutritionTargets()).effective(d(7)))?.target.kcal).toBe(2450);
+    expect((await (await db.data.repos.nutritionTargets()).effective(d(7)))?.target.kcal).toBe(2350);
   });
 
   it('Refuser : pas de confirmation', async () => {

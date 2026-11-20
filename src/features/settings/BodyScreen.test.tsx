@@ -131,7 +131,7 @@ describe('Profil et poids (Plus)', () => {
     expect(await db.driver.select('SELECT 1 FROM profile')).toEqual([]);
   });
 
-  it('0.1.4 (7) : Taille (cm) garde le clavier numérique, sans aide « en centimètres, ex. 186 » : le libellé suffit', async () => {
+  it('0.1.4 (7) : Taille (cm) garde le clavier numérique, sans aide « en centimètres, ex. 178 » : le libellé suffit', async () => {
     open();
     const height = await screen.findByLabelText('Taille (cm)');
     expect(height).toHaveAttribute('inputmode', 'numeric');

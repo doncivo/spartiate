@@ -13,7 +13,7 @@ describe('saveRestPlan', () => {
   it('aucune lecture des cibles hors de la transaction : la décision et la recopie de la cible future sont écrites ensemble', async () => {
     db = await openBaseDb(DEVICE, '2026-11-09T10:00:00.000Z');
     const repo = await db.data.repos.nutritionTargets();
-    const current = await repo.record({ weekStart: '2026-11-09' as LocalDate, target: { kcal: 2450, proteinG: 150, fatG: 70, carbG: 250 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
+    const current = await repo.record({ weekStart: '2026-11-09' as LocalDate, target: { kcal: 2350, proteinG: 150, fatG: 70, carbG: 250 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
     db.clock.advance(1_000);
     await repo.record({ weekStart: '2026-11-16' as LocalDate, target: { kcal: 2300, proteinG: 150, fatG: 70, carbG: 220 }, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false });
     db.clock.advance(1_000);

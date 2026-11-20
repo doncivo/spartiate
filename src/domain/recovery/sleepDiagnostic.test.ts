@@ -6,21 +6,21 @@ import { buildSleepNights, parseShortcutSleep } from './shortcutFiles';
 import { sleepDebtDiagnostic } from './sleepNeed';
 
 /**
- * FIX-0115 : constat d'Ali en 0.11.4, « Besoin : 10 h 30 » alors que la moyenne Apple Santé est de 7 h 28. Fixture qui reflète ses nuits :
+ * FIX-0115 : besoin de sommeil au plafond avec une moyenne normale. Fixture SYNTHÉTIQUE de nuits tardives (durées décalées de quelques minutes en DOC-PRIV, D-321) :
  * couchers après 1 h, levers entre 9 h et 11 h 30, durées dormies très variables (moyenne ≈ 7 h 30).
  */
 const TZ = 'Europe/Paris';
 const TODAY = '2026-11-12';
 // [coucher (jour J-1 ou J, heure locale), lever (jour J), minutes dormies voulues]
 const NIGHTS: readonly (readonly [string, string, number])[] = [
-  ['2026-11-04T01:40', '2026-11-04T10:30', 525],
-  ['2026-11-05T02:10', '2026-11-05T09:00', 370],
-  ['2026-11-06T01:20', '2026-11-06T09:30', 470],
-  ['2026-11-07T02:40', '2026-11-07T09:00', 350],
-  ['2026-11-08T01:10', '2026-11-08T10:50', 510],
-  ['2026-11-09T02:30', '2026-11-09T09:10', 400],
-  ['2026-11-10T01:00', '2026-11-10T11:30', 540],
-  ['2026-11-11T01:30', '2026-11-11T09:20', 468],
+  ['2026-11-04T01:40', '2026-11-04T10:30', 528],
+  ['2026-11-05T02:10', '2026-11-05T09:00', 373],
+  ['2026-11-06T01:20', '2026-11-06T09:30', 473],
+  ['2026-11-07T02:40', '2026-11-07T09:00', 353],
+  ['2026-11-08T01:10', '2026-11-08T10:50', 513],
+  ['2026-11-09T02:30', '2026-11-09T09:10', 398],
+  ['2026-11-10T01:00', '2026-11-10T11:30', 543],
+  ['2026-11-11T01:30', '2026-11-11T09:20', 465],
 ];
 const offset = (local: string): string => `${local}:00+01:00`;
 function csv(): string {
@@ -35,7 +35,7 @@ function csv(): string {
   }).join('\n');
 }
 
-describe('fixture des nuits d’Ali', () => {
+describe('fixture synthétique de nuits tardives et irrégulières', () => {
   const parsed = parseShortcutSleep(csv(), TODAY, TZ);
   const { nights } = buildSleepNights(parsed.segments, TZ);
   const records = toNightRecords({ nights, hrv: [], restingHrByDay: [], timeZone: TZ });
@@ -58,10 +58,10 @@ describe('fixture des nuits d’Ali', () => {
     expect(diag).toEqual({ retained: 7, excludedNoAsleep: 0, excludedShort: 0, short: 3, long: 4 });
   });
 
-  // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas, 10 h 30 »).
-  it('compensation partielle : déficits 230 min, crédits 158 min (dont deux nuits plafonnées à 1 h), dette 72 min, besoin 8 h 42', () => {
+  // FIX-0172 (D-130, décision d'Ali du 12/11/2026) : remplace la caractérisation de l'ancienne règle (« la dette ne compense pas »).
+  it('compensation partielle : déficits 226 min, crédits 158 min (dont deux nuits plafonnées à 1 h), dette 68 min, besoin 8 h 38', () => {
     const out = summarizeRecoveryDay({ today: TODAY, now: '2026-11-12T10:00:00.000Z', timeZone: TZ, nights: records, workouts: [] });
-    expect(out.summary.sleepNeedMinutes).toBe(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + 72);
+    expect(out.summary.sleepNeedMinutes).toBe(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + 68);
     expect(out.summary.sleepNeedMinutes).toBeLessThan(Math.round(RECOVERY_CONFIG.sleep.baseSleepHours * 60) + Math.round(RECOVERY_CONFIG.sleep.debtCapHours * 60));
   });
 

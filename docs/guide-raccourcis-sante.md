@@ -51,8 +51,8 @@ l’ordre (barre de recherche « Rechercher des actions ») :
 Touche ▶︎ une fois : Raccourcis demande l’accès à Santé (Poids) → **Autoriser**. Le fichier `iCloud Drive › Spartiate › sante ›
 poids.csv` apparaît dans l’app Fichiers.
 
-Exemple de contenu : `2026-11-08T06:50:12+01:00;81.4;kg` (Raccourcis écrit la décimale au **point** ; une espace avant le `;` et une valeur
-comme `105.800000001` sont acceptées, la valeur est arrondie ; constat du 14/11, H-21)
+Exemple de contenu : `2026-01-05T07:00:00+01:00;81.4;kg` (Raccourcis écrit la décimale au **point** ; une espace avant le `;` et une valeur
+comme `80.400000001` sont acceptées, la valeur est arrondie ; constat du 14/11, H-21)
 
 Dans `iCloud Drive › Spartiate`, seul le sous-dossier `sante` est pour ces raccourcis. Ne touche à rien d’autre : le dossier `devices` et son contenu appartiennent à la synchro.
 
@@ -265,16 +265,16 @@ par le bloc 1 : n’écris jamais deux fois le même fichier.
 - **Unité** : kg (Spartiate convertit les lb)
 - **Regroupement** : aucun (un échantillon par ligne ; la pesée la plus récente du jour est gardée)
 - **Fichier** : `Spartiate/sante/poids.csv`
-- **Réglages** : 30 jours, plus ancien en premier. Exemple : `2026-11-08T06:50:12+01:00;81.4;kg` (décimale au point)
+- **Réglages** : 30 jours, plus ancien en premier. Exemple : `2026-01-05T07:00:00+01:00;81.4;kg` (décimale au point)
 - Plausible : 20 à 500 kg ; au-delà, la ligne est refusée et comptée.
 
 ### C.3 Bloc 2 — `masse-grasse.csv`
 
 - **Type Santé** : **Indice de masse grasse** (nom constaté sur l’iPhone le 14/11 ; ce n’est pas « Pourcentage de graisse corporelle »)
-- **Unité** : % (Raccourcis écrit `26.9;%` ; Spartiate lit aussi `18,5;%` et la fraction `0,185;`, le résultat est un pourcentage)
+- **Unité** : % (Raccourcis écrit par exemple `20.5;%` ; Spartiate lit aussi `18,5;%` et la fraction `0,185;`, le résultat est un pourcentage)
 - **Regroupement** : aucun
 - **Fichier** : `Spartiate/sante/masse-grasse.csv`
-- **Réglages** : 30 jours. Exemple : `2026-11-08T06:50:12+01:00;26.9;%`
+- **Réglages** : 30 jours. Exemple : `2026-01-05T07:00:00+01:00;20.5;%`
 - Plausible : 3 à 60 %.
 
 ### C.4 Bloc 3 — `masse-maigre.csv`

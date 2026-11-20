@@ -29,7 +29,7 @@ const kcal = (k: number) => ({ kcal: k, proteinG: 150, fatG: 70, carbG: 250 });
 /** Archive sv 18 faite le 14/11 sur un autre appareil : une cible manuelle acceptée prévue pour le lundi 16/11. */
 async function archiveSv18(): Promise<ExportData> {
   const x = await open(X, '2026-11-14T18:00:00.000Z');
-  await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2450), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
+  await x.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2350), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false }));
   const { bytes } = await buildExportArchive(await (await x.data.repos.exportImport()).readExportData(), { date: '2026-11-14T18:05:00.000Z', sv: 18 });
   return (await parseExportArchive(bytes, { currentSv: 19, currentYear: 2026 })).data;
 }
@@ -38,13 +38,13 @@ describe('AUDIT-USAGE a : cible importée après l’onboarding', () => {
   it('check-in accepté AVANT un import « Remplacer » : la cible importée est en vigueur le jeudi 19/11', async () => {
     const data = await archiveSv18();
     const a = await open(A, '2026-11-15T10:00:00.000Z');
-    await a.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3177), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
+    await a.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-09' as LocalDate, target: kcal(3050), source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false }));
     a.clock.advance(60_000);
     await a.data.transaction(async (r) => {
       const repo = await r.exportImport();
       await repo.applyImport(planImport(await repo.readExportData(), data, 'replace'), 2026);
     });
-    expect((await (await a.data.repos.nutritionTargets()).effective('2026-11-19' as LocalDate))?.target.kcal).toBe(2450);
+    expect((await (await a.data.repos.nutritionTargets()).effective('2026-11-19' as LocalDate))?.target.kcal).toBe(2350);
   });
 });
 
@@ -81,11 +81,11 @@ describe('AUDIT-USAGE e : cible de repos puis check-in « garder la cible »', (
     const db = await open(A, '2026-11-16T08:00:00.000Z');
     const repo = await db.data.repos.nutritionTargets();
     const rest = { rest: { kcal: 2150, proteinG: 150, fatG: 70, carbG: 180 }, trainingDays: [1, 2, 4, 5, 6] as Weekday[] };
-    await db.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2450), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: rest }));
+    await db.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2350), source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: rest }));
     db.clock.advance(60_000);
     await db.data.transaction(async (r) => (await r.nutritionTargets()).record({ weekStart: '2026-11-16' as LocalDate, target: kcal(2300), source: 'auto', accepted: false, engineVersion: 1, lowFloorConfirmed: false }));
     const now = await repo.effective('2026-11-16' as LocalDate);
-    expect(now?.target.kcal).toBe(2450);
+    expect(now?.target.kcal).toBe(2350);
     expect(now?.restPlan?.rest.kcal).toBe(2150);
   });
 });
