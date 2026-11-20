@@ -97,12 +97,12 @@ export const bodyProgressFr = {
   photoDelete: 'Supprimer la photo du {date}',
   photoDeleteConfirm: 'Confirmer la suppression de la photo du {date}',
   /** FIX-CONFID-IOS (C-089) : dire vrai ; les sauvegardes locales (quotidiennes, d'avant migration, d'avant restauration) ne sont pas réécrites. */
-  photoDeleteCost: 'La photo et sa fiche disparaissent de l’app. Le fichier peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, jamais ailleurs.',
+  photoDeleteCost: 'La photo et sa fiche disparaissent de l’app. Le fichier peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, ou dans une sauvegarde iCloud de l’iPhone.',
   photoDeleteCancel: 'Annuler',
   photoDeleted: 'Photo supprimée.',
   /** FIX-0171 (D-121) : seul l'appareil qui a le fichier supprime ; ailleurs, la fiche se masque localement. */
   photoDeleteFailed: 'Suppression impossible : la photo est intacte. Réessaie.',
-  photoDeleteLocalCost: 'La photo disparaît de l’app sur cet appareil. Le fichier peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, jamais ailleurs.',
+  photoDeleteLocalCost: 'La photo disparaît de l’app sur cet appareil. Le fichier peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, ou dans une sauvegarde iCloud de l’iPhone.',
   photoDeletedElsewhere: 'Supprimée sur un autre appareil ou par un import : la photo reste ici jusqu’à ce que tu la supprimes.',
   photoHide: 'Masquer la photo du {date} sur cet appareil',
   photoHideHint: 'Seul l’appareil qui a la photo peut la supprimer. Masquer ne change rien sur tes autres appareils.',

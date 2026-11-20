@@ -84,7 +84,15 @@ const isUnitChar = (char: string | undefined): boolean => char !== undefined && 
 const isKeyChar = (char: string | undefined): boolean => char !== undefined && (isAsciiAlpha(char) || isDigit(char) || char === '_');
 const isWordChar = (char: string | undefined): boolean => isAlnum(char) || char === '%';
 /** Espaces insécables (U+00A0, U+202F) : séparent un nombre de son unité dans un texte formaté en français (« 142 bpm »). */
-const isNbsp = (char: string | undefined): boolean => char === '\u00a0' || char === '\u202f';
+// Revue 1 de FIX-CONFID-IOS : espaces fines U+2009 et U+2007 traitées de même.
+const isNbsp = (char: string | undefined): boolean => char === '\u00a0' || char === '\u202f' || char === '\u2009' || char === '\u2007';
+const startsWithLetter = (key: string): boolean => isLetter(Array.from(key)[0]);
+
+/** Clé d'un mot qui finit par `clé=` ou `clé:` (hors extrait JSON `"clé":`), sans ponctuation ni casse, sinon null. */
+function signKeyEnding(word: string | undefined): string | null {
+  if (word === undefined || word.endsWith('":') || !(word.endsWith('=') || word.endsWith(':'))) return null;
+  return bare(word);
+}
 const isLetter = (char: string | undefined): boolean => char !== undefined && /^\p{L}$/u.test(char);
 
 /** Clé d'un mot qui finit par `"clé":` (extrait JSON coupé par une espace), sinon null. */
@@ -140,8 +148,9 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
     if (parts >= 3 && !commas) continue;
     const before = chars[start - 1];
     let keyed = false;
-    if (before === ':' && chars[start - 2] === '"') {
-      const close = start - 2;
+    // Extrait JSON `"clé":nombre` ou `"clé":[nombre` (tableau, revue 1).
+    const close = before === ':' && chars[start - 2] === '"' ? start - 2 : before === '[' && chars[start - 2] === ':' && chars[start - 3] === '"' ? start - 3 : -1;
+    if (close >= 0) {
       let open = close - 1;
       while (open >= 0 && chars[open] !== '"') open -= 1;
       const key = open >= 0 ? chars.slice(open + 1, close).join('') : '';
@@ -151,10 +160,13 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
     if (before === '=' || before === ':') {
       let k = start - 1;
       while (k > 0 && isKeyChar(chars[k - 1])) k -= 1;
-      const key = chars.slice(k, start - 1).join('');
+      // Revue 1 : clé commençant par une lettre et non permise -> masquée (clés composées `heart_rate`, `poidsKg` comprises) ; signe en
+      // tête de mot (`hrv =48`) : la clé est le mot précédent.
+      const own = chars.slice(k, start - 1).join('');
+      const key = own === '' && start - 1 === 0 ? bare(previous) : own;
       if (isAllowedKey(key)) continue;
-      if (BODY_WORDS.includes(key.toLowerCase())) return true;
-      keyed = key !== '';
+      if (startsWithLetter(key)) return true;
+      keyed = own !== '';
     }
     if (parts >= 2) return true;
     let unit = end;
@@ -179,6 +191,11 @@ function hasBodyNumber(word: string, previous: string | undefined, next: string 
         if (isAllowedKey(key)) continue;
         return true;
       }
+      const signKey = signKeyEnding(previous);
+      if (signKey !== null && startsWithLetter(signKey)) {
+        if (isAllowedKey(signKey)) continue;
+        return true;
+      }
       const prev = bare(previous);
       if (BODY_WORDS.includes(prev) || BODY_UNITS.includes(prev)) return true;
     }
@@ -191,9 +208,19 @@ export function sanitizeLogDetail(raw: string): string {
   const cleaned = Array.from(raw, (char) => (isControl(char.codePointAt(0) ?? 0) ? ' ' : char)).join('');
   if (Array.from(cleaned).length > MAX_DETAIL_CHARS) return LOG_MASK;
   const words = cleaned.split(' ');
+  const neighbourIndex = (index: number, step: 1 | -1): number => {
+    for (let j = index + step; j >= 0 && j < words.length; j += step) if (words[j] !== '') return j;
+    return -1;
+  };
   const neighbour = (index: number, step: 1 | -1): string | undefined => {
-    for (let j = index + step; j >= 0 && j < words.length; j += step) if (words[j] !== '') return words[j];
-    return undefined;
+    const j = neighbourIndex(index, step);
+    if (j < 0) return undefined;
+    // Revue 1 : signe seul (`hrv = 48`) : le mot précédent devient `hrv=`.
+    if (step === -1 && (words[j] === '=' || words[j] === ':')) {
+      const k = neighbourIndex(j, -1);
+      if (k >= 0) return `${words[k]}${words[j]}`;
+    }
+    return words[j];
   };
   let maskNext = false;
   return words

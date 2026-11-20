@@ -274,12 +274,22 @@ pub fn sanitize_detail(raw: &str) -> String {
         return MASK.to_owned();
     }
     let words: Vec<&str> = cleaned.split(' ').collect();
-    let neighbour = |index: usize, forward: bool| -> Option<&str> {
+    let neighbour_index = |index: usize, forward: bool| -> Option<usize> {
         if forward {
-            words[index + 1..].iter().find(|w| !w.is_empty()).copied()
+            (index + 1..words.len()).find(|j| !words[*j].is_empty())
         } else {
-            words[..index].iter().rev().find(|w| !w.is_empty()).copied()
+            (0..index).rev().find(|j| !words[*j].is_empty())
         }
+    };
+    // Revue 1 : signe seul (`hrv = 48`) : le mot précédent devient `hrv=`.
+    let neighbour = |index: usize, forward: bool| -> Option<String> {
+        let j = neighbour_index(index, forward)?;
+        if !forward && (words[j] == "=" || words[j] == ":") {
+            if let Some(k) = neighbour_index(j, false) {
+                return Some(format!("{}{}", words[k], words[j]));
+            }
+        }
+        Some(words[j].to_owned())
     };
     let mut out: Vec<&str> = Vec::with_capacity(words.len());
     let mut mask_next = false;
@@ -293,7 +303,11 @@ pub fn sanitize_detail(raw: &str) -> String {
             out.push(MASK);
             mask_next = true;
         } else if is_sensitive_token(word)
-            || has_body_number(word, neighbour(index, false), neighbour(index, true))
+            || has_body_number(
+                word,
+                neighbour(index, false).as_deref(),
+                neighbour(index, true).as_deref(),
+            )
         {
             out.push(MASK);
         } else {
@@ -402,7 +416,20 @@ fn is_word_char(c: char) -> bool {
 
 /// Espaces insécables (U+00A0, U+202F) : séparent un nombre de son unité dans un texte formaté en français.
 fn is_nbsp(c: char) -> bool {
-    matches!(c, '\u{a0}' | '\u{202f}')
+    matches!(c, '\u{a0}' | '\u{202f}' | '\u{2009}' | '\u{2007}')
+}
+
+fn starts_with_letter(key: &str) -> bool {
+    key.chars().next().is_some_and(char::is_alphabetic)
+}
+
+/// Clé d'un mot qui finit par `clé=` ou `clé:` (hors extrait JSON `"clé":`), sans ponctuation ni casse, sinon `None` (revue 1).
+fn sign_key_ending(word: Option<&str>) -> Option<String> {
+    let w = word?;
+    if w.ends_with("\":") || !(w.ends_with('=') || w.ends_with(':')) {
+        return None;
+    }
+    Some(bare(Some(w)))
 }
 
 /// Clé d'un mot qui finit par `"clé":` (extrait JSON coupé par une espace), sinon `None`.
@@ -460,8 +487,19 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
         }
         let before = start.checked_sub(1).map(|b| chars[b]);
         let mut keyed = false;
-        if before == Some(':') && start >= 2 && chars[start - 2] == '"' {
-            let close = start - 2;
+        // Extrait JSON `"clé":nombre` ou `"clé":[nombre` (tableau, revue 1).
+        let close = if before == Some(':') && start >= 2 && chars[start - 2] == '"' {
+            Some(start - 2)
+        } else if before == Some('[')
+            && start >= 3
+            && chars[start - 2] == ':'
+            && chars[start - 3] == '"'
+        {
+            Some(start - 3)
+        } else {
+            None
+        };
+        if let Some(close) = close {
             let key: String = match chars[..close].iter().rposition(|c| *c == '"') {
                 Some(open) => chars[open + 1..close].iter().collect(),
                 None => String::new(),
@@ -476,14 +514,21 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
             while k > 0 && (chars[k - 1].is_ascii_alphanumeric() || chars[k - 1] == '_') {
                 k -= 1;
             }
-            let key: String = chars[k..start - 1].iter().collect();
+            // Revue 1 : clé commençant par une lettre et non permise -> masquée (clés composées comprises) ; signe en tête de mot
+            // (`hrv =48`) : la clé est le mot précédent.
+            let own: String = chars[k..start - 1].iter().collect();
+            let key = if own.is_empty() && start == 1 {
+                bare(previous)
+            } else {
+                own.clone()
+            };
             if is_allowed_key(&key) {
                 continue;
             }
-            if BODY_WORDS.contains(&key.to_lowercase().as_str()) {
+            if starts_with_letter(&key) {
                 return true;
             }
-            keyed = !key.is_empty();
+            keyed = !own.is_empty();
         }
         if parts >= 2 {
             return true;
@@ -530,6 +575,12 @@ fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bo
         if starts_word {
             if let Some(key) = json_key_ending(previous) {
                 if is_allowed_key(key) {
+                    continue;
+                }
+                return true;
+            }
+            if let Some(key) = sign_key_ending(previous).filter(|k| starts_with_letter(k)) {
+                if is_allowed_key(&key) {
                     continue;
                 }
                 return true;
