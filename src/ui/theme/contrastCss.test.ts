@@ -48,6 +48,16 @@ const NON_RESOLUES: readonly { rule: string; raison: string }[] = [];
 /** Exemptions du seuil de 3:1 des relations de composants (clé : relation + thème), avec la raison. Rien d'autre n'est exempté. */
 const EXEMPTIONS: readonly { relation: string; theme: Theme; raison: string }[] = [
   {
+    relation: 'interrupteur éteint : piste sur la surface',
+    theme: 'light',
+    raison: 'maquette Reglages.html (.sw, #DDD9E4 sur blanc = 1,39:1) conservée, décision d’Ali du 2026-10-18 ; l’état se lit aussi à la position du pouce',
+  },
+  {
+    relation: 'interrupteur éteint : pouce sur la piste',
+    theme: 'light',
+    raison: 'même maquette : pouce blanc sur #DDD9E4 (1,39:1) ; l’état se lit aussi à la position du pouce',
+  },
+  {
     relation: 'interrupteur désactivé-éteint : contour du pouce creux sur la piste',
     theme: 'light',
     raison:
@@ -308,10 +318,10 @@ describe('rendu clair inchangé (critère 4)', () => {
     expect(light('.ct-toast', 'color')).toBe('#ffffff');
   });
 
-  it('interrupteur : activé #b8322a / #ede7dc, éteint #857e70 / #ffffff (A11Y C-112 : piste ≥ 3:1)', () => {
+  it('interrupteur : activé #b8322a / #ede7dc, éteint #bdb5a5 / #ffffff (charte § 18.4)', () => {
     expect(toHex(cascadeColor(rules, [TRACK, CHECKED_TRACK], 'background', 'light').color)).toBe('#b8322a');
     expect(toHex(cascadeColor(rules, [THUMB, CHECKED_THUMB], 'background', 'light').color)).toBe('#ede7dc');
-    expect(toHex(cascadeColor(rules, [TRACK], 'background', 'light').color)).toBe('#857e70');
+    expect(toHex(cascadeColor(rules, [TRACK], 'background', 'light').color)).toBe('#bdb5a5');
     expect(toHex(cascadeColor(rules, [THUMB], 'background', 'light').color)).toBe('#ffffff');
   });
 });

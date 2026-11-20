@@ -84,21 +84,9 @@ describe('bordure des champs et interrupteur (C-112)', () => {
   });
 });
 
-describe('Dynamic Type sur iPhone (C-113)', () => {
-  const ios = ((): string => {
-    const start = tokens.indexOf('@supports (-webkit-touch-callout: none)');
-    const open = tokens.indexOf('{', start);
-    let depth = 0;
-    for (let i = open; i < tokens.length; i += 1) {
-      if (tokens[i] === '{') depth += 1;
-      if (tokens[i] === '}' && (depth -= 1) === 0) return tokens.slice(open + 1, i);
-    }
-    return '';
-  })();
-
-  it('html suit la taille de texte d’iOS (-apple-system-body) dans le bloc iOS seulement', () => {
-    expect(ios).toMatch(/html\s*\{[^}]*font:\s*-apple-system-body/);
-    expect(tokens.replace(ios, '')).not.toContain('-apple-system-body');
+describe('Dynamic Type sur iPhone (C-113, préparation en rem)', () => {
+  it('mise à l’échelle iOS (-apple-system-body) reportée en 0.28.1 : absente de tokens.css (+6 % sans constat visuel)', () => {
+    expect(tokens).not.toContain('-apple-system-body');
   });
 
   it('PC : html garde font-size: 100 % (aucun effet hors iOS)', () => {
