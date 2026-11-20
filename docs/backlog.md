@@ -90,7 +90,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-028 | audit Claude 0.27.0 | mineur — aberrante : séances partielles et décharges comptées ; première séance jamais aberrante | fait (FIX-ABERR) |
 | C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | à faire (lot 0.28.0) |
 | C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | à faire (lot 0.28.0) |
-| C-031 | audit Claude 0.27.0 | important — check-in à deux cibles : cible de repos sous le plancher, refus à « Accepter » | à faire (lot 0.28.0) |
+| C-031 | audit Claude 0.27.0 | important — check-in à deux cibles : cible de repos sous le plancher, refus à « Accepter » | fait (FIX-PLANCHER) |
 | C-032 | audit Claude 0.27.0 | important — correction des grammes d'une entrée : arrondis cumulés enregistrés | à faire (lot 0.28.0) |
 | C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | à faire (lot 0.28.0) |
 | C-034 | audit Claude 0.27.0 | important — Quick Add sans borne ni contrôle de cohérence des macros | à faire (lot 0.28.0) |
@@ -145,9 +145,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-083 | audit Claude 0.27.0 | à vérifier (appareil) — clavier numérique iOS sans « : » pour l'heure et la durée cardio ; H-35 | à faire (lot 0.28.0) |
 | C-084 | audit Claude 0.27.0 | mineur — « 0 groupes » et vocabulaire incohérent (Variée, décharge, Ischios, nombres sans séparateur) | à faire (lot 0.28.0) |
 | C-085 | audit Claude 0.27.0 | amélioration — catalogue `fr.routines` hérité au départ ; JSON servant à un seul test ; paramètres non typés | à faire (lot 0.28.0) |
-| C-086 | audit Claude 0.27.0 | important — cible de repos sous le plancher : l'écran demande une confirmation qui n'existe pas | à faire (lot 0.28.0) |
-| C-087 | audit Claude 0.27.0 | important — cible confirmée sous 1 200 kcal : cible de repos impossible à ajouter ou retirer | à faire (lot 0.28.0) |
-| C-088 | audit Claude 0.27.0 | important — tableau de bord : un jour de repos compté sur la cible d'entraînement | à faire (lot 0.28.0) |
+| C-086 | audit Claude 0.27.0 | important — cible de repos sous le plancher : l'écran demande une confirmation qui n'existe pas | fait (FIX-PLANCHER) |
+| C-087 | audit Claude 0.27.0 | important — cible confirmée sous 1 200 kcal : cible de repos impossible à ajouter ou retirer | fait (FIX-PLANCHER) |
+| C-088 | audit Claude 0.27.0 | important — tableau de bord : un jour de repos compté sur la cible d'entraînement | fait (FIX-PLANCHER) |
 | C-089 | audit Claude 0.27.0 | important, à vérifier — photos « supprimées sans retour possible » encore présentes dans les sauvegardes | fait (FIX-CONFID-IOS) |
 | C-090 | audit Claude 0.27.0 | important — « +5 cm en 4 semaines » faux sur un historique espacé | à faire (lot 0.28.0) |
 | C-091 | audit Claude 0.27.0 | important — compléments : changer une heure efface la constance passée | à faire (lot 0.28.0) |
