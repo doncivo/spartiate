@@ -38,6 +38,7 @@ export const fr = {
     update: appUpdateFr,
     dbStalled: 'L’ouverture est peut-être encore en cours ; si rien ne change, touche « Réessayer ».',
     startError: 'Le démarrage de Spartiate a échoué.',
+    dbPoisoned: 'La base de données a été protégée après une erreur d’annulation : plus rien n’est enregistré. Ferme puis rouvre Spartiate ; tes données déjà enregistrées sont intactes.',
     sectionPending: 'La section {name} n’est pas encore disponible dans cette version.',
     diag: {
       title: 'Détail technique',
