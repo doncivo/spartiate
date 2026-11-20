@@ -24,3 +24,22 @@ Dans : `src/domain/nutrition` (nouveau `floor.ts`, `checkIn.ts`, `targetRecord.t
 ## Passes
 
 product-owner (cette fiche), agent du module, qa-test, code-reviewer : consignés plus bas.
+
+## Passes consignées
+
+- product-owner : fiche ci-dessus, avant les tests.
+- Agent du module : `src/domain/nutrition/floor.ts` (nouveau), `checkIn.ts`, `targetRecord.ts` ; `useCases.ts`, `TargetForm`, `RestTargetForm`, `StrategyView`, `CheckInView`, `dashboard/*`. Aucune clé i18n nouvelle (textes existants, désormais vrais : « confirme explicitement » n'apparaît plus qu'avec la case).
+- qa-test : bornes 799 / 800 / 1 199 / 1 200, repos plus haut que l'entraînement ajoutés ; 101 fichiers / 991 tests verts sur `src/features/nutrition`, `src/domain/nutrition`, `src/features/app`, dépôt de cibles ; `tsc` et eslint propres. Non couvert par un test d'écran : la case « Accepter » du check-in (relue, même composant que les autres cases).
+- code-reviewer : à faire par l'appelant.
+
+## Décisions proposées (numéros à partir de D-337, l'appelant renumérotera)
+
+- D-337 : le plancher de 1 200 kcal (800 sur confirmation) se contrôle sur la plus basse des deux cibles (`floorVerdict`, `src/domain/nutrition/floor.ts`) ; une seule règle pour l'enregistrement, le check-in, Stratégie et les formulaires.
+- D-338 : le check-in ne propose jamais de cible, d'entraînement ou de repos, sous 1 200 kcal sans confirmation : elle est relevée au plancher (`clampedBy` « floor ») ; une cible en vigueur sous 1 200 est reprise par le moteur comme confirmée ; « Accepter » une proposition sous 1 200 demande une case.
+- D-339 : une confirmation en vigueur est reprise à l'ajout ou au retrait de la cible de repos (et pour les cibles futures héritées) tant que la plus basse des deux cibles ne descend pas plus bas ; sinon nouvelle case. Aucune colonne ajoutée.
+- D-340 : le tableau de bord applique `dayTargetFor` (restant d'aujourd'hui, un trait de cible par jour dans le graphique, cible moyenne comparée affichée).
+
+## Constats d'Ali à faire
+
+- Vérifier à l'écran sur iPhone : case de confirmation en Stratégie avec un repos sous 1 200, après « Retirer la cible de repos » d'une cible confirmée, et au check-in ; le graphique des 7 jours avec un trait de cible par jour.
+- Valider le choix prudent « relever au plancher » plutôt que « demander la case » pour la proposition automatique du check-in (D-338).

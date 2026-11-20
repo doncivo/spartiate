@@ -51,3 +51,13 @@ describe('check-in à deux cibles (C-031)', () => {
     expect(p?.belowStandardFloor).toBe(true);
   });
 });
+
+describe('qa-test : bornes', () => {
+  it('799 refusé, 800 et 1 199 à confirmer, 1 200 libre', async () => {
+    const { floorVerdictOfKcal } = await import('./floor');
+    expect([799, 800, 1199, 1200].map(floorVerdictOfKcal)).toEqual(['rejected', 'confirm', 'confirm', 'ok']);
+  });
+  it('une cible de repos plus haute que l’entraînement : la plus basse reste celle de l’entraînement', () => {
+    expect(lowestKcal(T(1150), plan(1400))).toBe(1150);
+  });
+});

@@ -8,7 +8,7 @@ import { useNavigationStore } from '../../app/navigation';
 import { NumberField, parseNumber } from '../shared';
 import type { Weekday } from '../../../domain/types';
 import { activeRoutineDayCount, activeRoutineWeekdays, saveManualTarget, saveRestPlan, saveNutritionPrefs, type NutritionSnapshot } from '../useCases';
-import { RestTargetForm } from './RestTargetForm';
+import { RestTargetForm, type RestSaveResult } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
 import { collapseRecopies, defaultTrainingDays, restTargetFromGap, targetDecidedOn, targetInForceSince, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
 
@@ -140,17 +140,17 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const rateParsed = parseNumber(rate);
   const rateInvalid = prefs.goal.kind !== 'maintain' && !(typeof rateParsed === 'number' && rateParsed >= MIN_RATE_KG && rateParsed <= GOAL_RATE_MAX_KG);
 
-  async function saveRest(restPlan: RestPlan | null): Promise<boolean> {
-    if (target === null) return false;
+  async function saveRest(restPlan: RestPlan | null, lowFloorConfirmed = false): Promise<RestSaveResult> {
+    if (target === null) return 'error';
     try {
-      const result = await saveRestPlan(data, { today: snapshot.today, current: target, restPlan });
-      if (result !== 'saved' && result !== 'saved-partial') return false;
+      const result = await saveRestPlan(data, { today: snapshot.today, current: target, restPlan, lowFloorConfirmed });
+      if (result !== 'saved' && result !== 'saved-partial') return result;
       // Le formulaire est recréé à chaque nouvelle décision : le signalement vit ici, pas dans le formulaire.
       setRestPartial(result === 'saved-partial');
       await onChanged();
-      return true;
+      return 'saved';
     } catch {
-      return false;
+      return 'error';
     }
   }
 
@@ -296,7 +296,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         <Button variant="secondary" expanded={editing} onClick={() => setEditing((v) => !v)}>
           {targetButton}
         </Button>
-        {editing ? <TargetForm key={target?.id ?? 'none'} title={targetButton} initial={null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} onCancel={() => setEditing(false)} /> : null}
+        {editing ? <TargetForm key={target?.id ?? 'none'} title={targetButton} initial={null} submitLabel={tNutrition('saveTarget')} onSave={saveTarget} restGapKcal={target?.restPlan ? target.restPlan.rest.kcal - target.target.kcal : null} onCancel={() => setEditing(false)} /> : null}
         {saved ? <p role="status">{tNutrition('targetSaved')}</p> : null}
       </section>
 
