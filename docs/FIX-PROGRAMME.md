@@ -21,3 +21,66 @@ routine ? »). Décisions lues : D-243, D-267, D-269, D-315, D-316, D-318. Fixtu
 Périmètre écrit : `src/domain/training/closure.ts`, `programDay.ts`, `routineRules.ts` ; `src/domain/onboarding/review.ts` ;
 `src/features/training/session/TodaySessionCard.tsx`, `src/features/training/cycle/CycleView.tsx`, `src/features/training/RoutinesView.tsx` ;
 `src/features/onboarding/onboardingData.ts` ; `src/i18n/fr.training.ts` (deux textes) ; tests nommés ci-dessus ; cette fiche.
+
+## Passe agent du module : corrections et choix prudents
+
+- **C-003** (`closure.ts`, `routineDiff`) : les séries d'un exercice sont réparties entre ses lignes du jour (lignes triées par `position`).
+  Blocs dans l'ordre de la séance : séries consécutives du même exercice hors groupe, ou toutes celles d'un même groupe (`circuitId`) ;
+  autant de blocs que de lignes : bloc n → ligne n ; sinon répartition dans l'ordre des lignes (chacune au plus ses séries prévues, la dernière
+  le reste). Ligne à 0 série : « retirée ». `workout_set` ne porte pas l'identifiant de la ligne (`routineExerciseId`) : appariement par ordre,
+  sans migration. L'écriture (« Oui » de « Mettre à jour la routine ? ») reste par `lineId`, inchangée, et seulement après confirmation.
+- **C-063** (`programDay.ts`, `TodaySessionCard.tsx`) : `ClosedWorkoutLike.day` (date locale du DÉBUT de la séance) ; jours rattachés et séance
+  du jour close aujourd'hui (même routine, même jour) : choix `done` avec le prochain jour prévu après aujourd'hui (au plus tôt demain ; un
+  seul jour rattaché : le même jour la semaine suivante). Carte : « Séance faite », « Séance du jour faite. Prochaine séance {jour} : {nom}. »,
+  « Autre séance… » gardé, aucun « Lancer la séance ». Rotation (aucun jour rattaché) : inchangée, elle passait déjà au jour suivant.
+- **C-064** (`CycleView.tsx`) : `setRampUp(answers?.rampUp ?? false)` à chaque relecture ; la reprise ne vaut qu'au premier cycle (D-267).
+- **C-065** (`routineRules.ts` `weekdaysToRelease`, `RoutinesView.tsx` `saveDraft`) : dans la même transaction, les jours enregistrés dont
+  le jour de la semaine change sont d'abord libérés (`weekday = null`), puis chaque jour reçoit le sien ; le brouillon reste contrôlé par
+  `validateRoutine` (doublon refusé). Contrôle d'unicité du repository inchangé.
+- **C-117** (`review.ts` `reviewStart`, `cycleWeeksToWrite`, `reviewCycleWeeks` ; `onboardingData.ts`) : la revue part de
+  `training.cycleWeeks` s'il vaut 4, 5 ou 6 ; la fin n'écrit la durée qu'au premier passage ou si elle a changé dans la revue (7 et
+  « illimité » ne sont plus écrasés).
+- Aucune migration, aucun changement de ce qui est publié ni du moment de publication ; `src/sync/**` non touché. Modules hors du départ
+  (aucun dans `tests/bundle/start-modules.json`).
+
+## Passe qa-test
+
+`src/domain/training/fixProgramme.qa.test.ts` (11 cas, verts) : groupe A1 B1 A2 B2 plus ligne libre du même exercice (aucun écart ; tour
+ajouté au groupe : seules les lignes du groupe) ; série supprimée ou échauffement au milieu d'un bloc (bloc non coupé) ; ligne supprimée du
+jour ignorée ; dimanche fait → lundi ; repos inchangé ; autre jour de la routine fait aujourd'hui par « Autre séance… » (le jour du jour reste
+proposé) ; `weekdaysToRelease` (seuls les jours existants dont le jour non vide change) ; lecture 4/5/6 seulement ; écriture premier passage
+ou changement ; point de départ de la revue. Non-régression lancée : `src/domain/training`, `src/features/training/session`,
+`src/features/training/cycle`, `RoutineCircuit`, `RoutineReorder`, `TrainingScreen`, `Ergo02Screens`, `src/features/onboarding`,
+`src/domain/onboarding`, repositories SQL des séances et des routines : verts. `tsc` et eslint (fichiers touchés, tests compris) propres.
+
+## Preuves
+
+- Rouge : `559a13d4` (15 échecs sur 23 : C-003 × 6, C-063 × 3, C-064, C-065 × 2, C-117 × 4). Vert : `5321f2b6`. Qa-test : commit suivant.
+- Test ajusté entre rouge et vert (sans changer ce qu'il prouve) : C-064 lisait les deux cycles par `created_at` (même instant, horloge figée),
+  ordre non déterministe ; lecture par statut. L'assertion rouge d'origine (interrupteur encore coché) est inchangée.
+
+## Décisions proposées
+
+- **D-349** : FIX-PROGRAMME (C-063, complète D-316 (2), choix prudent, révisable par Ali) : avec des jours rattachés, la séance du jour close
+  le jour même (date locale de son début, même routine, même jour) n'est pas reproposée ; la carte dit « Séance du jour faite. Prochaine
+  séance {jour} : {nom}. » avec « Autre séance… » ; une séance commencée la veille et close après minuit compte pour la veille.
+- **D-350** : FIX-PROGRAMME (C-003, § 13.8, choix prudent) : « Mettre à jour la routine ? » apparie les séries aux lignes par ordre (blocs
+  contigus ou groupe ; sinon remplissage dans l'ordre des lignes, la dernière reçoit le reste), sans colonne `routine_exercise_id` sur
+  `workout_set` (aucune migration) ; une ligne d'un exercice répété sans série est proposée au retrait.
+- **D-351** : FIX-PROGRAMME (C-117, complète D-315 (1)) : « Revoir mes réglages » part de la durée réglée (`training.cycleWeeks`, si 4, 5 ou
+  6) et ne l'écrit que si elle change dans la revue ; 7 semaines et « illimité » ne sont jamais écrasés par une revue.
+- **D-352** : FIX-PROGRAMME (C-065, complète D-316 (1)) : à l'enregistrement d'une routine, l'unicité du jour de la semaine est contrôlée sur
+  le brouillon ; en base, les jours qui changent sont libérés puis écrits dans la même transaction (échange de deux jours permis).
+
+## Constats d'Ali à faire
+
+- iPhone, programme à jours rattachés : faire la séance du jour, la clore, revenir sur Aujourd'hui : « Séance du jour faite » et la
+  prochaine séance, aucun « Lancer la séance ».
+- Éditeur de routine : échanger deux jours de la semaine (lundi ↔ jeudi), enregistrer : accepté.
+
+## Écarts au brief
+
+- Preuve C-018 de `partie7a-ecrans.test.ts` adaptée : la séance close y est sans date ; la correction demandée (« passer la date des séances
+  closes ») la rend nécessaire. Une séance sans date ne compte pas comme faite aujourd'hui (cas testé).
+- C-064 et C-065 n'avaient pas de preuve écrite (lecture) : tests DOM ajoutés (`FixProgramme.screens.test.tsx`).
+- Budget : environ 130 k, dans le budget M.
