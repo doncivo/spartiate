@@ -2,39 +2,39 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **852** (95.5 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **892** (100.0 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
 | Fichier | Partie | Statut | Note |
 |---|---|---|---|
 | `.github/workflows/.gitkeep` | — | hors relecture | fichier vide |
-| `.github/workflows/build-ios.yml` | 11 | à lire |  |
-| `.github/workflows/build-windows.yml` | 11 | à lire |  |
-| `.github/workflows/tests.yml` | 11 | à lire |  |
-| `scripts/backup/export-migrations-fixture.mjs` | 11 | à lire |  |
-| `scripts/ci/test-counts.mjs` | 11 | à lire |  |
-| `scripts/cleanup/apply.mjs` | 11 | à lire |  |
-| `scripts/cleanup/cssClasses.mjs` | 11 | à lire |  |
-| `scripts/cleanup/cssTokens.mjs` | 11 | à lire |  |
-| `scripts/cleanup/i18nDrop.mjs` | 11 | à lire |  |
-| `scripts/cleanup/i18nKeys.mjs` | 11 | à lire |  |
-| `scripts/cleanup/legacySyncInventory.mjs` | 11 | à lire |  |
-| `scripts/cleanup/orphanCatalogs.mjs` | 11 | à lire |  |
-| `scripts/cleanup/plan.mjs` | 11 | à lire |  |
-| `scripts/cleanup/reachability.mjs` | 11 | à lire |  |
-| `scripts/cleanup/restore-missing.mjs` | 11 | à lire |  |
-| `scripts/cleanup/restore-tests.mjs` | 11 | à lire |  |
-| `scripts/cleanup/symbols.mjs` | 11 | à lire |  |
-| `scripts/content/build-ciqual.mjs` | 11 | à lire |  |
-| `scripts/content/build-media.mjs` | 11 | à lire |  |
-| `scripts/content/build-strength-standards.mjs` | 11 | à lire |  |
-| `scripts/content/ciqual.mjs` | 11 | à lire |  |
-| `scripts/content/media-map.json` | 11 | à lire |  |
-| `scripts/content/png-reduce.mjs` | 11 | à lire |  |
-| `scripts/content/set-strength-keys.mjs` | 11 | à lire |  |
-| `scripts/content/validate-content.mjs` | 11 | à lire |  |
-| `scripts/e2e-perf.mjs` | 11 | à lire |  |
+| `.github/workflows/build-ios.yml` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `.github/workflows/build-windows.yml` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `.github/workflows/tests.yml` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/backup/export-migrations-fixture.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/ci/test-counts.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/cleanup/apply.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/cssClasses.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/cssTokens.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/i18nDrop.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/i18nKeys.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/legacySyncInventory.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/orphanCatalogs.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/plan.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/reachability.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/restore-missing.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/restore-tests.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/cleanup/symbols.mjs` | 11 | lu 2026-11-20 (relecteur CI) | outils ponctuels CLEAN-01/02 lus en structure |
+| `scripts/content/build-ciqual.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/build-media.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/build-strength-standards.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/ciqual.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/media-map.json` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/png-reduce.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/set-strength-keys.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/content/validate-content.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/e2e-perf.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
 | `scripts/ios/apply-entitlements.mjs` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
 | `scripts/ios/apply-icons.mjs` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
 | `scripts/ios/check-plist-contract.mjs` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
@@ -45,20 +45,20 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `scripts/ios/plist.mjs` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
 | `scripts/ios/prepare-a9.mjs` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
 | `scripts/ios/source.template.json` | 8b | lu 2026-11-20 (relecteur Swift divers) |  |
-| `scripts/make-ocr-fixtures.mjs` | 11 | à lire |  |
-| `scripts/release/check-version.mjs` | 11 | à lire |  |
-| `scripts/release/fixtures/prd-v6.3-changes.json` | 11 | à lire |  |
-| `scripts/release/lib/agentsCheck.mjs` | 11 | à lire |  |
-| `scripts/release/lib/docsPaths.mjs` | 11 | à lire |  |
-| `scripts/release/lib/mentions.mjs` | 11 | à lire |  |
-| `scripts/release/lib/prdSplit.mjs` | 11 | à lire |  |
-| `scripts/release/licences-npm.mjs` | 11 | à lire |  |
-| `scripts/release/make-latest-json.mjs` | 11 | à lire |  |
-| `scripts/release/release-notes.mjs` | 11 | à lire |  |
-| `scripts/release/rename.mjs` | 11 | à lire |  |
-| `scripts/release/split-prd.mjs` | 11 | à lire |  |
-| `scripts/release/verify-signature.mjs` | 11 | à lire |  |
-| `scripts/smoke/build.mjs` | 11 | à lire |  |
+| `scripts/make-ocr-fixtures.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/check-version.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/fixtures/prd-v6.3-changes.json` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/lib/agentsCheck.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/lib/docsPaths.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/lib/mentions.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/lib/prdSplit.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/licences-npm.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/make-latest-json.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/release-notes.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/rename.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/split-prd.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/release/verify-signature.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
+| `scripts/smoke/build.mjs` | 11 | lu 2026-11-20 (relecteur CI) |  |
 | `src-tauri/Cargo.lock` | 8a | lu 2026-11-20 (auditeur) | hors relecture : verrou de dépendances, cargo audit vert en CI |
 | `src-tauri/Cargo.toml` | 8a | lu 2026-11-20 (relecteur export et config) |  |
 | `src-tauri/Info.ios.plist` | 8b | lu 2026-11-20 (relecteur Swift dossier) |  |

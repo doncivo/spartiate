@@ -851,3 +851,44 @@ src/platform/tauri/migrationBackup.ts	8b	2026-11-20	relecteur façades
 src/platform/tauri/sqlDriver.ts	8b	2026-11-20	relecteur façades	
 src/platform/timeZone.ts	8b	2026-11-20	relecteur façades	
 src/platform/windowTheme.ts	8b	2026-11-20	relecteur façades	
+.github/workflows/tests.yml	11	2026-11-20	relecteur CI	
+.github/workflows/build-windows.yml	11	2026-11-20	relecteur CI	
+.github/workflows/build-ios.yml	11	2026-11-20	relecteur CI	
+.github/workflows/.gitkeep	11	2026-11-20	relecteur CI	
+scripts/ci/test-counts.mjs	11	2026-11-20	relecteur CI	
+scripts/release/check-version.mjs	11	2026-11-20	relecteur CI	
+scripts/release/fixtures/prd-v6.3-changes.json	11	2026-11-20	relecteur CI	
+scripts/release/lib/agentsCheck.mjs	11	2026-11-20	relecteur CI	
+scripts/release/lib/docsPaths.mjs	11	2026-11-20	relecteur CI	
+scripts/release/lib/mentions.mjs	11	2026-11-20	relecteur CI	
+scripts/release/lib/prdSplit.mjs	11	2026-11-20	relecteur CI	
+scripts/release/licences-npm.mjs	11	2026-11-20	relecteur CI	
+scripts/release/make-latest-json.mjs	11	2026-11-20	relecteur CI	
+scripts/release/release-notes.mjs	11	2026-11-20	relecteur CI	
+scripts/release/rename.mjs	11	2026-11-20	relecteur CI	
+scripts/release/split-prd.mjs	11	2026-11-20	relecteur CI	
+scripts/release/verify-signature.mjs	11	2026-11-20	relecteur CI	
+scripts/smoke/build.mjs	11	2026-11-20	relecteur CI	
+scripts/backup/export-migrations-fixture.mjs	11	2026-11-20	relecteur CI	
+scripts/e2e-perf.mjs	11	2026-11-20	relecteur CI	
+scripts/make-ocr-fixtures.mjs	11	2026-11-20	relecteur CI	
+scripts/content/build-ciqual.mjs	11	2026-11-20	relecteur CI	
+scripts/content/build-media.mjs	11	2026-11-20	relecteur CI	
+scripts/content/build-strength-standards.mjs	11	2026-11-20	relecteur CI	
+scripts/content/ciqual.mjs	11	2026-11-20	relecteur CI	
+scripts/content/media-map.json	11	2026-11-20	relecteur CI	
+scripts/content/png-reduce.mjs	11	2026-11-20	relecteur CI	
+scripts/content/set-strength-keys.mjs	11	2026-11-20	relecteur CI	
+scripts/content/validate-content.mjs	11	2026-11-20	relecteur CI	
+scripts/cleanup/apply.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/cssClasses.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/cssTokens.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/i18nDrop.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/i18nKeys.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/legacySyncInventory.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/orphanCatalogs.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/plan.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/reachability.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/restore-missing.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/restore-tests.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
+scripts/cleanup/symbols.mjs	11	2026-11-20	relecteur CI	outils ponctuels CLEAN-01/02 lus en structure
