@@ -372,7 +372,7 @@ describe('cohérence du guide, du workflow et des scripts', () => {
   it('annonce l’alerte de I-02 avec la phrase définitive, la même que le comportement livré', () => {
     // I-02 critère 9 : « préviendra … (à l'ordre 5) » est remplacée ; l'alerte part 24 h avant l'expiration (SIGNING_ALERT_LEAD_MS) et le texte
     // d'alerte renvoie à SideStore (src/i18n/fr.signing.ts).
-    expect(guide).toContain("Spartiate vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore.");
+    expect(guide).toContain("Spartiate te prévient 24 h avant l'expiration ; actualise-la alors dans SideStore.");
     expect(guide).not.toContain("à l'ordre 5");
     expect(read('src/domain/signingNotice.ts')).toContain('SIGNING_ALERT_LEAD_MS = 24 * 3_600_000');
     expect(read('src/i18n/fr.signing.ts')).toContain('Vérifie dans SideStore que l’app a été actualisée');
