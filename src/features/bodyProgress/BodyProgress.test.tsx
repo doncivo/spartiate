@@ -195,7 +195,9 @@ describe('photos de progression', () => {
     const added = await (await photos()).add(D(1), JPEG);
     mount();
     fireEvent.click(await screen.findByRole('button', { name: /Supprimer la photo du/ }));
-    expect(screen.getByText(/sans retour possible/)).toBeInTheDocument();
+    expect(screen.getByText(/de l’app.*peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, jamais ailleurs/)).toBeInTheDocument();
+    // FIX-CONFID-IOS (C-089) : l'ancien texte « sans retour possible » figeait une promesse fausse (sauvegardes locales, pages libres).
+    expect(screen.queryByText(/sans retour possible/)).toBeNull();
     expect(await (await photos()).list()).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: /Confirmer la suppression/ }));
     await waitFor(async () => expect(await (await photos()).list()).toEqual([]));
@@ -210,7 +212,7 @@ describe('photos de progression', () => {
     fireEvent.click(await screen.findByRole('button', { name: /Supprimer la photo du/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Annuler' }));
     expect(await (await photos()).list()).toHaveLength(1);
-    expect(screen.queryByText(/sans retour possible/)).toBeNull();
+    expect(screen.queryByText(/de l’app.*peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, jamais ailleurs/)).toBeNull();
   });
 });
 
@@ -277,7 +279,7 @@ describe('FIX-0171 (D-121) : suppression seulement sur l’appareil qui a le fic
     expect(await screen.findByRole('img', { name: /Photo du 1er nov\. 2026/ })).toBeInTheDocument();
     expect(await (await photos()).loadFile(added.id)).toEqual(JPEG);
     fireEvent.click(screen.getByRole('button', { name: /Supprimer la photo du/ }));
-    expect(screen.getByText(/sans retour possible/)).toBeInTheDocument();
+    expect(screen.getByText(/de l’app.*peut subsister dans les sauvegardes locales de cet appareil jusqu’à leur rotation, jamais ailleurs/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Confirmer la suppression/ }));
     await waitFor(async () => expect(await (await photos()).loadFile(added.id)).toBeNull());
     expect(await screen.findByText('Aucune photo.')).toBeInTheDocument();

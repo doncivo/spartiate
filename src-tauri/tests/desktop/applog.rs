@@ -561,3 +561,125 @@ fn lecture_jusqu_a_2000_entrees_les_plus_recentes() {
     assert_eq!(all[1999].code, "e2099");
     assert_eq!(read_entries(&logs, 500).unwrap().len(), 500);
 }
+
+// --- FIX-CONFID-IOS (C-140, audit Claude 0.27.0) : plafond global, compteurs saturés, scopes réservés, rotation jamais bloquée ---
+
+/// Plafond global de la minute (toutes paires confondues), voir `applog::GLOBAL_PER_MINUTE`.
+const GLOBAL_CAP: usize = 60;
+
+#[test]
+fn fix_confid_c140_a_global_cap_bounds_a_minute_whatever_the_codes_then_summarizes() {
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    let mut rates = RateTable::new();
+    let mut written = 0;
+    for batch in 0..2 {
+        let entries: Vec<LogEntryIn> = (0..100)
+            .map(|i| entry("sync", &format!("code-{}", batch * 100 + i), ""))
+            .collect();
+        written += append_in(&logs, &mut rates, &entries, NOW + batch).unwrap();
+    }
+    assert_eq!(
+        written, GLOBAL_CAP,
+        "200 codes différents la même minute : 60 écrits au plus"
+    );
+    append_in(&logs, &mut rates, &[entry("sync", "later", "")], NOW + 61).unwrap();
+    let entries = read_entries(&logs, 500).unwrap();
+    let summary = entries
+        .iter()
+        .find(|e| e.scope == "log" && e.code == "rate-capped")
+        .expect("résumé du plafond global");
+    assert_eq!(summary.n, Some(140));
+    assert_eq!(entries.last().unwrap().code, "later");
+}
+
+#[test]
+fn fix_confid_c140_suppressed_counts_saturate_instead_of_overflowing() {
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    let mut rates = RateTable::new();
+    let mut big = entry("sync", "sync-now", "");
+    big.n = Some(u32::MAX);
+    let burst: Vec<LogEntryIn> = (0..13).map(|_| big.clone()).collect();
+    assert_eq!(append_in(&logs, &mut rates, &burst, NOW).unwrap(), 10);
+    append_in(&logs, &mut rates, &[entry("sync", "later", "")], NOW + 61).unwrap();
+    let entries = read_entries(&logs, 500).unwrap();
+    let summary = entries
+        .iter()
+        .find(|e| e.code == "suppressed")
+        .expect("résumé");
+    assert_eq!(summary.n, Some(u32::MAX));
+}
+
+#[test]
+fn fix_confid_c140_scopes_reserved_to_rust_are_refused_to_the_webview() {
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    let mut rates = RateTable::new();
+    let reserved = [
+        "log",
+        "sync-rust",
+        "backup-recovery",
+        "sql-refused",
+        "backup-exclusion",
+    ];
+    let entries: Vec<LogEntryIn> = reserved
+        .iter()
+        .map(|scope| entry(scope, "forged", ""))
+        .collect();
+    append_in(&logs, &mut rates, &entries, NOW).unwrap();
+    // Témoins : les scopes que le front emploie restent les siens.
+    append_in(
+        &logs,
+        &mut rates,
+        &[entry("backup", "backup-daily", ""), entry("logs", "export", "")],
+        NOW,
+    )
+    .unwrap();
+    let scopes: Vec<String> = read_entries(&logs, 500)
+        .unwrap()
+        .into_iter()
+        .map(|e| e.scope)
+        .collect();
+    assert_eq!(
+        scopes,
+        ["invalid", "invalid", "invalid", "invalid", "invalid", "backup", "logs"]
+    );
+}
+
+/// Un `.1` verrouillé (lecteur, antivirus, sans partage de suppression) ne bloque plus l'écriture : le courant est vidé et l'écriture
+/// reprend par `log` / `rotation-failed` ; le journal reste borné.
+#[cfg(windows)]
+#[test]
+fn fix_confid_c140_a_locked_previous_file_never_blocks_writing() {
+    use std::os::windows::fs::OpenOptionsExt;
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    let line = line_of(&normalize(
+        &entry("sync", "sync-now", &"x".repeat(200)),
+        "2026-10-08T08:00:00.000Z",
+    ));
+    let per_file = usize::try_from(MAX_FILE_BYTES).unwrap() / (line.len() + 1);
+    let lines: Vec<String> = (0..per_file).map(|_| line.clone()).collect();
+    append_lines(&logs, &lines).unwrap();
+    fs::write(logs.join(PREVIOUS_FILE), b"{}\n").unwrap();
+    let lock = fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(logs.join(PREVIOUS_FILE))
+        .unwrap();
+    let after = line_of(&normalize(
+        &entry("sync", "after-lock", ""),
+        "2026-10-08T08:01:00.000Z",
+    ));
+    assert_eq!(
+        append_lines(&logs, &[after]).unwrap(),
+        1,
+        "écriture faite malgré le verrou"
+    );
+    drop(lock);
+    assert!(size(&logs.join(CURRENT_FILE)) <= MAX_FILE_BYTES);
+    let text = fs::read_to_string(logs.join(CURRENT_FILE)).unwrap();
+    assert!(text.contains("\"rotation-failed\""), "{text}");
+    assert!(text.contains("\"after-lock\""));
+}

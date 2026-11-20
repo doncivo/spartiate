@@ -3,7 +3,10 @@
     "Vecteurs d'assainissement du journal technique (I-04 critère 5, ADR 0014 §1 et §3), lus par Vitest (src/platform/logs/sanitize.test.ts) et cargo test (src-tauri/tests/desktop/applog.rs) : sanitizeLogDetail (TypeScript) et applog::sanitize_detail (Rust) doivent rendre exactement `expected`.",
     "Règles : caractères de contrôle remplacés par une espace ; plus de 300 caractères -> [masqué] en entier ; sinon chaque mot (séparé par des espaces) qui contient un chemin (Windows, UNC, POSIX, ~/), file:, une URL avec requête, une adresse e-mail une séquence hexadécimale de 32 caractères ou plus, ou un jeton probable (suite de 24 caractères ou plus de [A-Za-z0-9+/=_.-] hors UUID exact, eyJ, ya29., 1//, token=) devient [masqué] ; « Bearer » et le mot suivant aussi.",
     "repeat : entrée construite par répétition (`[texte, nombre]`) au lieu de `input`.",
-    "codeVectors (revue du lot F) : le champ code est assaini aussi ; forme stricte ^[a-z0-9][a-z0-9.-]{0,63}$, sans séquence hexadécimale de 32 caractères ou plus ni jeton probable (segment entre - et . de 24 caractères ou plus hors UUID exact, ya29.) ; sinon `unknown` (codeAndDetailOf, TypeScript) ou `invalid` (applog::normalize, Rust)."
+    "codeVectors (revue du lot F) : le champ code est assaini aussi ; forme stricte ^[a-z0-9][a-z0-9.-]{0,63}$, sans séquence hexadécimale de 32 caractères ou plus ni jeton probable (segment entre - et . de 24 caractères ou plus hors UUID exact, ya29.) ; sinon `unknown` (codeAndDetailOf, TypeScript) ou `invalid` (applog::normalize, Rust).",
+    "FIX-CONFID-IOS (C-151, C-140, § 22 : aucune donnée corporelle) : un mot devient aussi [masqué] s'il contient un nombre décimal (deux parties séparées par . ou ,, ou des parties séparées par une virgule), un nombre suivi d'une unité de bodyUnits (attachée : 142bpm, 7h30, 18 % ; ou au mot suivant : 82,4 kg), un nombre en tête de mot qui suit un mot de bodyWords ou une unité (FC 142, sommeil 7 h 30), la valeur d'une clé de bodyWords (poids=82, FC:142), ou toute valeur numérique d'un extrait JSON (\"clé\":nombre) dont la clé n'est pas dans allowedKeys.",
+    "Restent lisibles : versions de trois parties ou plus séparées par des points (0.27.0), entiers seuls (codes HTTP, compteurs, heures 14:05), UUID, et les valeurs des clés de allowedKeys (comparaison en minuscules ; aussi toute clé qui finit par count, version ou known) en JSON comme en clé=valeur (rules_version=3, nights_known=7, \"files\":12). Un compteur nouveau dans un extrait JSON du journal s'ajoute à allowedKeys (TS et Rust lisent ces listes dans leurs tests).",
+    "Mots voisins : comparés après retrait des signes de ponctuation en tête et en fin (lettres, chiffres et % gardés), en minuscules."
   ],
   "vectors": [
     {
@@ -161,6 +164,114 @@
     {
       "input": "remote-reload-failed {\"code\":\"io\"}",
       "expected": "remote-reload-failed {\"code\":\"io\"}"
+    },
+    {
+      "input": "poids 82,4 kg hors bornes",
+      "expected": "poids [masqué] kg hors bornes"
+    },
+    {
+      "input": "FC 142",
+      "expected": "FC [masqué]"
+    },
+    {
+      "input": "FC: 142, repos",
+      "expected": "FC: [masqué] repos"
+    },
+    {
+      "input": "Unexpected token in JSON: {\"hrvMs\":48.6,\"restingHr\":52}",
+      "expected": "Unexpected token in JSON: [masqué]"
+    },
+    {
+      "input": "{\"restingHr\":52}",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "hrv=48 ms",
+      "expected": "[masqué] ms"
+    },
+    {
+      "input": "poids=82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "repos 142bpm",
+      "expected": "repos [masqué]"
+    },
+    {
+      "input": "sommeil 7 h 30",
+      "expected": "sommeil [masqué] h [masqué]"
+    },
+    {
+      "input": "dette 7h30",
+      "expected": "dette [masqué]"
+    },
+    {
+      "input": "graisse 18%",
+      "expected": "graisse [masqué]"
+    },
+    {
+      "input": "tour 92 cm",
+      "expected": "tour [masqué] cm"
+    },
+    {
+      "input": "dépense 2450 kcal",
+      "expected": "dépense [masqué] kcal"
+    },
+    {
+      "input": "durée 45min",
+      "expected": "durée [masqué]"
+    },
+    {
+      "input": "délai 5000 ms dépassé",
+      "expected": "délai [masqué] ms dépassé"
+    },
+    {
+      "input": "valeur 1.5 refusée",
+      "expected": "valeur [masqué] refusée"
+    },
+    {
+      "input": "liste [48,52]",
+      "expected": "liste [masqué]"
+    },
+    {
+      "input": "rules_version=3 nights_known=7",
+      "expected": "rules_version=3 nights_known=7"
+    },
+    {
+      "input": "{\"rules_version\":3,\"count\":2}",
+      "expected": "{\"rules_version\":3,\"count\":2}"
+    },
+    {
+      "input": "{\"rules_version\":3,\"weight\":82}",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "scan-done {\"files\":12,\"segments\":3}",
+      "expected": "scan-done {\"files\":12,\"segments\":3}"
+    },
+    {
+      "input": "{\"rulesVersion\":4,\"nightsKnown\":7,\"photoCount\":2}",
+      "expected": "{\"rulesVersion\":4,\"nightsKnown\":7,\"photoCount\":2}"
+    },
+    {
+      "input": "{\"code\":\"io\",\"n\":2}",
+      "expected": "{\"code\":\"io\",\"n\":2}"
+    },
+    {
+      "input": "version 0.27.0 schéma 20",
+      "expected": "version 0.27.0 schéma 20"
+    },
+    {
+      "input": "HTTP 401 après 3 essais",
+      "expected": "HTTP 401 après 3 essais"
+    },
+    {
+      "input": "migration 19 vers 20 à 14:05",
+      "expected": "migration 19 vers 20 à 14:05"
+    },
+    {
+      "input": "error returned from database: (code: 5) database is locked",
+      "expected": "error returned from database: (code: 5) database is locked"
     }
   ],
   "codeVectors": [
@@ -212,5 +323,107 @@
       "code": "",
       "valid": false
     }
+  ],
+  "bodyUnits": [
+    "kg",
+    "%",
+    "bpm",
+    "ms",
+    "kcal",
+    "h",
+    "min",
+    "cm"
+  ],
+  "bodyWords": [
+    "poids",
+    "fc",
+    "hrv",
+    "vfc",
+    "rmssd",
+    "sommeil",
+    "masse",
+    "graisse",
+    "taille",
+    "tour",
+    "imc",
+    "calories",
+    "kcal",
+    "weight",
+    "sleep",
+    "hr",
+    "bpm",
+    "protéines",
+    "glucides",
+    "lipides"
+  ],
+  "allowedKeys": [
+    "version",
+    "schema_version",
+    "rules_version",
+    "sv",
+    "count",
+    "n",
+    "rows",
+    "files",
+    "segments",
+    "segment",
+    "tables",
+    "from",
+    "to",
+    "type_index",
+    "epoch",
+    "seq",
+    "localseq",
+    "ops",
+    "entries",
+    "acks",
+    "appended",
+    "created",
+    "deleted",
+    "updated",
+    "unchanged",
+    "skipped",
+    "skipped_old",
+    "skipped_no_energy",
+    "skipped_journal",
+    "skipped_deleted",
+    "resumed",
+    "rejected",
+    "read",
+    "kept",
+    "imported",
+    "added",
+    "absent",
+    "unreadable",
+    "uncovered",
+    "unexplained",
+    "tombstones",
+    "superseded",
+    "ignored",
+    "failed",
+    "duplicates",
+    "planned",
+    "settings",
+    "codes",
+    "step",
+    "stage",
+    "attempt",
+    "attempts",
+    "status",
+    "http",
+    "written",
+    "removed",
+    "nights_known",
+    "days",
+    "size",
+    "previous",
+    "complete",
+    "id",
+    "code"
+  ],
+  "allowedKeySuffixes": [
+    "count",
+    "version",
+    "known"
   ]
 }
