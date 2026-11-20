@@ -82,6 +82,24 @@ describe('C-063 : la séance du jour faite n’est pas reproposée', () => {
     expect(within(card).getByRole('button', { name: tTraining('sessionOther') })).toBeInTheDocument();
   });
 
+  it('revue : séance « Lundi » commencée dimanche 23:30 et close lundi 00:30 (heure locale) : comptée pour dimanche, lundi la reproposé', async () => {
+    await follow([1, 4]);
+    // Heures locales, quel que soit le fuseau de la machine de test (D-349 : date locale du début).
+    db.clock.set(new Date(2026, 10, 15, 23, 30).getTime());
+    const repo = await db.data.repos.workouts();
+    const w = await repo.start({ source: 'routine', routineId: u(1), dayId: u(10) });
+    const first = w.sets[0];
+    if (first === undefined) throw new Error('série');
+    await repo.validateSet(first.id, { reps: 8, loadKg: 60 });
+    db.clock.set(new Date(2026, 10, 16, 0, 30).getTime());
+    await db.data.transaction(async (r) => (await r.workouts()).close(w.id));
+    db.clock.set(new Date(2026, 10, 16, 18, 0).getTime());
+    mountCard();
+    const card = await screen.findByRole('region', { name: tTraining('sessionTodayEyebrow') });
+    expect(await within(card).findByText('Lundi — Poussée')).toBeInTheDocument();
+    expect(within(card).getByRole('button', { name: tTraining('sessionLaunch') })).toBeInTheDocument();
+  });
+
   it('lundi suivant : la séance « Lundi » est de nouveau proposée', async () => {
     await follow([1, 4]);
     await mondayClosed();
@@ -110,6 +128,51 @@ describe('C-065 : échanger deux jours de la semaine dans l’éditeur de routin
     await editAndSave('4', '1');
     await vi.waitFor(async () => expect(await weekdays()).toEqual([{ id: u(10), weekday: 4 }, { id: u(11), weekday: 1 }]));
     expect(screen.queryByText(tTraining('saveError'))).toBeNull();
+  });
+
+  it('revue : échec d’écriture après la libération des jours : rien n’est gardé (ROLLBACK), « saveError » affiché', async () => {
+    await db.data.transaction(async (r) => (await r.trainingRoutines()).create(program([1, 4])));
+    const bind = <T extends object>(o: T, k: string | symbol): unknown => {
+      const v: unknown = Reflect.get(o, k);
+      return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(o) : v;
+    };
+    type Repos = Parameters<Parameters<typeof db.data.transaction>[0]>[0];
+    const failingRepos = (repos: Repos): Repos =>
+      new Proxy(repos, {
+        get: (target, key) =>
+          key === 'trainingRoutines'
+            ? async () => {
+                const repo = await target.trainingRoutines();
+                return new Proxy(repo, {
+                  get: (o, k) =>
+                    k === 'updateDay'
+                      ? async (id: string, patch: { weekday?: number | null }) => {
+                          // Première écriture d'un jour de la semaine non nul, après la libération : échec simulé.
+                          if (patch.weekday !== undefined && patch.weekday !== null) throw new Error('échec simulé');
+                          return o.updateDay(id, patch);
+                        }
+                      : bind(o, k),
+                });
+              }
+            : bind(target, key),
+      });
+    const data = new Proxy(db.data, {
+      get: (target, key) => (key === 'transaction' ? <R,>(fn: (repos: Repos) => Promise<R>) => target.transaction(async (repos) => fn(failingRepos(repos))) : bind(target, key)),
+    });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'routines' } as Route));
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data })}>
+        <TrainingScreen session={{ os: 'other' }} />
+      </AppContainerProvider>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /^Programme deux jours/ }));
+    const a = await screen.findByRole('group', { name: 'Lundi — Poussée' });
+    const b = screen.getByRole('group', { name: 'Jeudi — Tirage' });
+    fireEvent.change(within(a).getByLabelText(tTraining('dayWeekday')), { target: { value: '4' } });
+    fireEvent.change(within(b).getByLabelText(tTraining('dayWeekday')), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: tTraining('saveRoutine') }));
+    expect(await screen.findByText(tTraining('saveError'))).toBeInTheDocument();
+    expect(await weekdays()).toEqual([{ id: u(10), weekday: 1 }, { id: u(11), weekday: 4 }]);
   });
 
   it('Jour 1 aucun → lundi, Jour 2 lundi → aucun : enregistré', async () => {
