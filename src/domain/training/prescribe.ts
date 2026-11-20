@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { gridToVerify, loadGrid, nextLoadAbove, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -110,7 +110,9 @@ export function prescribe(input: PrescribeInput): Prescription {
   // REV-01 : exercice au poids du corps lesté ou assisté → 1RM et plafond sur la charge totale ; poids de corps inconnu → comportement d'avant.
   const fraction = input.exercise.bodyweightFraction ?? null;
   const bodyKg = input.bodyweightKg ?? null;
-  const body: BodyLoad | null = fraction !== null && fraction > 0 && bodyKg !== null && bodyKg > 0 ? { baseKg: bodyKg * fraction, sign: input.exercise.assisted === true ? -1 : 1 } : null;
+  // FIX-ASSIST (audit C-001) : exercice assisté, la charge saisie est l'assistance, une charge NÉGATIVE (moins d'assistance = plus dur).
+  const assisted = input.exercise.assisted === true;
+  const body: BodyLoad | null = fraction !== null && fraction > 0 && bodyKg !== null && bodyKg > 0 ? { baseKg: bodyKg * fraction, sign: assisted ? -1 : 1 } : null;
   if (fraction !== null && fraction > 0 && body === null && input.history.length > 0) reasons.add('bodyweight-unknown');
   const analysis = analyzeHistory(input.history, config, body);
   if (analysis.latest?.partial === true) reasons.add('partial-session-ignored');
@@ -172,8 +174,9 @@ export function prescribe(input: PrescribeInput): Prescription {
   // Relecture de la PR #60 (I2) : au haut de la fourchette, le cran l'emporte sur le recalibrage « Facile » (sinon +0 kg et +1 rep hors
   // fourchette, moins ambitieux que sans « Facile »).
   const topReached = complete && reference.reps.every((r) => r >= target.repMax);
+  // FIX-ASSIST : aucun recalibrage « Facile » +5 % pour un assisté (il hausserait l'assistance) ; double progression ordinaire.
   const recalAllowed =
-    !topReached && !hard && last.difficulty === 'easy' && confidence < config.easyRecalibrationBelow && (lastRecal === null || (Date.parse(input.now) - Date.parse(lastRecal)) / DAY_MS >= config.easyRecalibrationCooldownDays);
+    !assisted && !topReached && !hard && last.difficulty === 'easy' && confidence < config.easyRecalibrationBelow && (lastRecal === null || (Date.parse(input.now) - Date.parse(lastRecal)) / DAY_MS >= config.easyRecalibrationCooldownDays);
 
   const grid = loadGrid(input.exercise.equipment, input.equipment);
   // I2-04 : grille tirée d'un matériel « à vérifier » du profil : dit dans la phrase, la proposition est inchangée.
@@ -197,7 +200,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   });
   // FIX-0243 (D-273, § 11.5) : exercice assisté en décharge, l'assistance n'est touchée ni par l'inactivité ni par la Recovery (journée rouge
   // comprise) ; ces contraintes sont écartées ici pour qu'aucune raison ni alerte ne dise une baisse qui n'a pas lieu.
-  const constraints = evaluated.deload && input.exercise.assisted === true ? { ...evaluated, inactivityCut: 0, lowRecovery: false, redDay: false } : evaluated;
+  const constraints = evaluated.deload && assisted ? { ...evaluated, inactivityCut: 0, lowRecovery: false, redDay: false } : evaluated;
   addConstraintReasons(constraints, reasons);
   // I5-02 point 2.2 : Recovery basse issue d'une journée rouge acceptée par Ali (§ 16.7) ; même contrainte, la phrase le dit.
   if (constraints.lowRecovery && input.recovery?.redDay === true) reasons.add('recovery-red-day');
@@ -233,6 +236,11 @@ export function prescribe(input: PrescribeInput): Prescription {
       reasons.add('position-discount');
       return { loadKg: next, reps: nextReps, cut: 1 - positionFactor };
     }
+    // FIX-ASSIST (audit C-001) : assisté sans poids de corps exploitable : baisser l'assistance alourdirait l'exercice ; maintenue et dite.
+    if (assisted) {
+      reasons.add('assistance-held');
+      return { loadKg, reps: repsList, cut: 0 };
+    }
     if (!(loadKg > 0)) return { loadKg, reps: repsList, cut: 0 };
     const snapped = snapToEquipment(loadKg * positionFactor, repsList, available, config);
     const lowered = roundKg(Math.min(snapped.loadKg, loadKg));
@@ -243,7 +251,9 @@ export function prescribe(input: PrescribeInput): Prescription {
   const positionFields = (cut: number): { readonly positionRank: number; readonly positionCut: number; readonly positionBasisKg: number } => ({ positionRank: rank, positionCut: cut, positionBasisKg: body === null ? refLoad : body.baseKg + body.sign * refLoad });
   if (reduces(constraints)) {
     // Maintien de la référence (aucun cran, échelle ni recalibrage), puis réductions ; arrondi au matériel, jamais au-dessus de la référence.
-    const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config, input.exercise.assisted === true);
+    const reduced = reducedTarget(constraints, refPerformance, input.exercise.kind, config, assisted);
+    // FIX-ASSIST : hors décharge (D-284 en décharge), l'inactivité ou la Recovery basse n'ont pas baissé l'assistance : la phrase le dit.
+    if (assisted && !constraints.deload && (constraints.inactivityCut > 0 || constraints.lowRecovery)) reasons.add('assistance-held');
     if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
     // I4-08 : décote d'inactivité seule sur une grille connue : arrondie au cran (maintien sous le demi-cran), jamais un cran entier dit « −1 % ».
     const discountOnly = constraints.inactivityCut > 0 && !constraints.deload && !constraints.lowRecovery;
@@ -272,7 +282,7 @@ export function prescribe(input: PrescribeInput): Prescription {
       estimated1rmKg: current,
       confidence,
       recalibration: null,
-      options: proposalOptions(constraints, { loadKg, reps: pos.reps }, available, config),
+      options: proposalOptions(constraints, { loadKg, reps: pos.reps }, available, config, assisted),
       deload: constraints.deload,
       rirTarget: constraints.deload ? Math.max(target.rir ?? 0, config.deloadRirAtLeast) : target.rir,
       inactivityCut: constraints.inactivityCut,
@@ -308,9 +318,15 @@ export function prescribe(input: PrescribeInput): Prescription {
       let next: number | null;
       if (available === null) {
         reasons.add('increment-unknown');
-        next = refLoad + config.unknownIncrementKg;
-      } else next = nextLoadAbove(refLoad, available);
-      if (next === null) {
+        // FIX-ASSIST : assisté, le cran BAISSE l'assistance (cran supposé de 2,5 kg sans grille), jamais sous le demi-kilo d'arrondi.
+        next = assisted ? (refLoad - config.unknownIncrementKg >= config.unknownGridRoundingKg - EPS ? roundKg(refLoad - config.unknownIncrementKg) : null) : refLoad + config.unknownIncrementKg;
+      } else next = assisted ? nextLoadBelow(refLoad, available) : nextLoadAbove(refLoad, available);
+      if (next === null && assisted) {
+        // Assistance minimale du matériel : aucun cran possible, une répétition de plus (comme au maximum du matériel).
+        reasons.delete('increment-unknown');
+        reasons.add('assistance-min');
+        draft = extraRep();
+      } else if (next === null) {
         reasons.add('equipment-max');
         draft = extraRep();
       } else {
@@ -329,7 +345,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     const cap = Math.max(current, reference.e1rmKg) * (1 + config.maxGainPerSession);
     const fits = (loadKg: number, reps: readonly number[]): boolean => epley(totalLoad(loadKg, body), Math.max(...reps)) <= cap + 1e-9;
     const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
-    const snappedLoad = Math.max(snapped.loadKg, refLoad);
+    // Assisté (FIX-ASSIST) : la « hausse » est une assistance plus faible, jamais au-dessus de la référence.
+    const snappedLoad = assisted ? Math.min(snapped.loadKg, refLoad) : Math.max(snapped.loadKg, refLoad);
     if (draft.recalibration !== null && snappedLoad <= refLoad + EPS) {
       // I4-08 : +5 % retombé sur la référence (aucune charge de la grille entre la référence et +5 %, ou maximum du matériel) : aucun
       // recalibrage (ni « +0 kg », ni 1RM relevé, ni délai de 30 jours consommé) ; la double progression ordinaire s'applique.
@@ -366,6 +383,6 @@ export function prescribe(input: PrescribeInput): Prescription {
     confidence,
     recalibration: headline === 'position' ? null : draft.recalibration,
     // Stagnation seule : la proposition reste celle de la double progression, les trois choix partent de la référence.
-    options: proposalOptions(constraints, pos.cut > 0 ? { loadKg, reps: pos.reps } : refPerformance, available, config),
+    options: proposalOptions(constraints, pos.cut > 0 ? { loadKg, reps: pos.reps } : refPerformance, available, config, assisted),
   });
 }

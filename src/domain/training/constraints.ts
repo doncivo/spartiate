@@ -158,7 +158,8 @@ export function reducedTarget(
   const redDayCuts = c.redDay && !assisted;
   // D-273 (constat 6 de Codex) : exercice assisté, la charge saisie est l'assistance ; la réduire alourdirait l'exercice : en décharge, elle est gardée.
   // FIX-0243 (constat 9) : en décharge, aucun facteur ne touche l'assistance (inactivité et Recovery comprises) ; seules les séries baissent.
-  if (c.deload && assisted) return { targetKg: reference.loadKg, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
+  // FIX-ASSIST (audit C-001) : hors décharge aussi, aucun facteur (inactivité, Recovery basse) ne baisse l'assistance ; elle est maintenue et dite.
+  if (assisted) return { targetKg: reference.loadKg, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
   const deloadCut = c.deload ? (c.deloadLoad ?? config.deloadLoad) : 1;
   const factor = (1 - c.inactivityCut) * deloadCut * (recoveryCuts || redDayCuts ? config.lowRecoveryLoad : 1);
   return { targetKg: reference.loadKg * factor, reps: reference.reps.slice(0, sets), recoverySetRemoved: sets < beforeRecovery };
@@ -166,11 +167,14 @@ export function reducedTarget(
 
 /**
  * Choix facultatifs, dans l'ordre stable fatigue (charge, répétitions) puis stagnation (variante, plage, mini-deload). Base : la
- * proposition si elle est réduite, sinon la référence (un choix ne part jamais d'une hausse). Un choix qui ne réduit rien est omis.
+ * proposition si elle est réduite, sinon la référence (un choix ne part jamais d'une hausse). Un choix qui ne réduit rien est omis ; exercice
+ * assisté (FIX-ASSIST) : aucun choix de charge (« −5 % », mini-deload), les autres restent.
  */
-export function proposalOptions(c: ActiveConstraints, base: Performance, available: readonly number[] | null, config: ProgressionConfig): ProposalOption[] {
+export function proposalOptions(c: ActiveConstraints, base: Performance, available: readonly number[] | null, config: ProgressionConfig, assisted = false): ProposalOption[] {
   const options: ProposalOption[] = [];
   const lighter = (cut: number): { loadKg: number; reps: readonly number[] } | null => {
+    // FIX-ASSIST (audit C-001) : exercice assisté, baisser la charge saisie (l'assistance) alourdirait l'exercice : aucun choix de charge.
+    if (assisted) return null;
     const snapped = snapToEquipment(base.loadKg * (1 - cut), base.reps, available, config);
     return snapped.loadKg < base.loadKg - EPS ? { loadKg: snapped.loadKg, reps: snapped.reps } : null;
   };

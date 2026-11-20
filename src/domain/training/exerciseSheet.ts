@@ -1,4 +1,5 @@
 import type { IsoDateTime } from '../types';
+import { isAssistedEquipment } from './assisted';
 import { confidenceOf } from './confidence';
 import { DEFAULT_PROGRESSION_CONFIG } from './config';
 import { analyzeHistory, current1rmFromSessions } from './estimate1rm';
@@ -13,7 +14,7 @@ import type { Difficulty, Exercise, ExerciseSession, HistorySet } from './types'
 
 export type SheetOneRm =
   | { readonly kind: 'value'; readonly kg: number; readonly confidence: number; readonly sessions: number }
-  | { readonly kind: 'none'; readonly reason: 'noHistory' | 'noValid' | 'notLoad' | 'bodyweight' };
+  | { readonly kind: 'none'; readonly reason: 'noHistory' | 'noValid' | 'notLoad' | 'bodyweight' | 'assisted' };
 
 export interface SheetRecord {
   readonly loadKg: number;
@@ -68,8 +69,13 @@ export function sheetRecord(history: readonly ExerciseSession[]): SheetRecord | 
   return record;
 }
 
-function oneRmOf(history: readonly ExerciseSession[], exercise: Pick<Exercise, 'metric' | 'bodyweightFraction'>, now: IsoDateTime): SheetOneRm {
+/** Exercice vu par la fiche ; `equipment` absent : non assisté. */
+type SheetExercise = Pick<Exercise, 'metric' | 'bodyweightFraction'> & { readonly equipment?: readonly string[] };
+
+function oneRmOf(history: readonly ExerciseSession[], exercise: SheetExercise, now: IsoDateTime): SheetOneRm {
   if (exercise.metric !== 'load-reps') return { kind: 'none', reason: 'notLoad' };
+  // FIX-ASSIST (audit C-011) : la charge saisie d'un assisté est l'assistance : ni 1RM ni record de charge.
+  if (isAssistedEquipment(exercise.equipment)) return { kind: 'none', reason: 'assisted' };
   if (exercise.bodyweightFraction) return { kind: 'none', reason: 'bodyweight' };
   if (history.length === 0) return { kind: 'none', reason: 'noHistory' };
   const { estimates } = analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG);
@@ -78,7 +84,7 @@ function oneRmOf(history: readonly ExerciseSession[], exercise: Pick<Exercise, '
   return { kind: 'value', kg, confidence: confidenceOf(estimates, now, DEFAULT_PROGRESSION_CONFIG), sessions: estimates.length };
 }
 
-export function sheetStats(history: readonly ExerciseSession[], exercise: Pick<Exercise, 'metric' | 'bodyweightFraction'>, now: IsoDateTime): SheetStats {
+export function sheetStats(history: readonly ExerciseSession[], exercise: SheetExercise, now: IsoDateTime): SheetStats {
   const sessions: SheetSession[] = [];
   for (const session of [...history].sort(byRecent)) {
     const work = workSets(session);
@@ -103,5 +109,5 @@ export function sheetStats(history: readonly ExerciseSession[], exercise: Pick<E
     const last = values.at(-1);
     if (values.length >= 2 && first !== undefined && last !== undefined) trend = { values, deltaKg: last - first };
   }
-  return { oneRm, record: sheetRecord(history), trend, sessions };
+  return { oneRm, record: isAssistedEquipment(exercise.equipment) ? null : sheetRecord(history), trend, sessions };
 }

@@ -1,3 +1,4 @@
+import { isAssistedEquipment } from './assisted';
 import { WARMUP_STEPS, type WarmupStep } from './config';
 import { loadGrid, roundKg, snapDown } from './loadGrid';
 import type { ExerciseBase, ProgressionEquipment, ProgressionExercise } from './types';
@@ -13,6 +14,8 @@ export type { WarmupStep } from './config';
  * - Une rampe n'atteint jamais la charge de travail : une étape au-dessus ou égale est retirée ; deux étapes à la même charge n'en font
  *   qu'une (la première, aux répétitions les plus nombreuses). Sans grille connue (machine ou poulie « à vérifier », kettlebells sans pas,
  *   aucun profil), aucune rampe : jamais une charge que le matériel ne permet pas.
+ * - Exercice assisté (FIX-ASSIST, audit C-002) : la charge saisie est l'assistance ; une fraction de l'assistance serait plus DURE que le
+ *   travail, et sans poids de corps aucune rampe inversée n'est calculable : aucune rampe.
  * - Une rampe pour le PREMIER exercice composé chargé (`compound`, `load-reps`) de chaque pattern, dans l'ordre de la séance (§ 13.8).
  */
 
@@ -48,12 +51,12 @@ export function warmupRamp(workLoadKg: number, loads: readonly number[] | null, 
 
 /** Rampe d'un exercice avec ce profil : charge × répétitions seulement, grille du matériel de l'exercice. */
 export function warmupForExercise(
-  exercise: Pick<ProgressionExercise, 'metric' | 'equipment'>,
+  exercise: Pick<ProgressionExercise, 'metric' | 'equipment'> & { readonly assisted?: boolean },
   workLoadKg: number,
   profile: ProgressionEquipment | null,
   steps: readonly WarmupStep[] = WARMUP_STEPS,
 ): WarmupSet[] {
-  if (exercise.metric !== 'load-reps') return [];
+  if (exercise.metric !== 'load-reps' || exercise.assisted === true || isAssistedEquipment(exercise.equipment)) return [];
   return warmupRamp(workLoadKg, loadGrid(exercise.equipment, profile)?.loads ?? null, steps);
 }
 

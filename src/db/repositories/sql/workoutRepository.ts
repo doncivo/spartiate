@@ -15,6 +15,8 @@ import {
   restEndAt,
   routineDiff,
   summarizeWorkout,
+  isAssistedEquipment,
+  CATALOG_ASSISTED_IDS,
   validateSetBounds,
   validateSetEntry,
   REST_EXTEND_SEC,
@@ -338,6 +340,29 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         [workout.id, before, ...part],
       );
       out.push(...rows.map(rowToSet));
+    }
+    return out;
+  };
+  /** Colonne JSON `equipment` illisible : aucun matériel (l'exercice reste compté, comme avant). */
+  const equipmentOf = (json: string): string[] => {
+    try {
+      const v: unknown = JSON.parse(json);
+      return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+    } catch {
+      return [];
+    }
+  };
+  /**
+   * FIX-ASSIST (audit C-011) : exercices assistés de la séance (hors tonnage et records) : ceux du catalogue, plus les personnalisés dont le
+   * matériel comprend la machine d'assistance (table `exercise`, colonne JSON `equipment`).
+   */
+  const assistedFor = async (workout: WorkoutWithSets): Promise<ReadonlySet<string>> => {
+    const ids = [...new Set(workout.sets.map((s) => s.exerciseId))].filter((id) => !CATALOG_ASSISTED_IDS.has(id));
+    const out = new Set(CATALOG_ASSISTED_IDS);
+    for (let i = 0; i < ids.length; i += 400) {
+      const part = ids.slice(i, i + 400);
+      const rows = await db.select<{ id: string; equipment: string }>(`SELECT id, equipment FROM exercise WHERE id IN (${part.map(() => '?').join(', ')})`, part);
+      for (const row of rows) if (isAssistedEquipment(equipmentOf(row.equipment))) out.add(row.id);
     }
     return out;
   };
@@ -701,7 +726,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         ]);
       }
       const workout = await loadOrThrow(workoutId);
-      return { workout, summary: summarizeWorkout(workout, await historyFor(workout)), routineDiff: await diffFor(workout), alreadyClosed: row.ended_at !== null };
+      return { workout, summary: summarizeWorkout(workout, await historyFor(workout), await assistedFor(workout)), routineDiff: await diffFor(workout), alreadyClosed: row.ended_at !== null };
     },
 
     getClosed: async (id) => {
@@ -711,7 +736,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
 
     async summary(workoutId) {
       const workout = await loadOrThrow(workoutId);
-      return summarizeWorkout(workout, await historyFor(workout));
+      return summarizeWorkout(workout, await historyFor(workout), await assistedFor(workout));
     },
 
     async correctSet(setId, patch) {
