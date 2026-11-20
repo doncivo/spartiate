@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **112** (12.6 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **213** (23.9 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -535,9 +535,9 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/app/ShellChrome.tsx` | 7c | à lire |  |
 | `src/features/app/StartupBlocked.tsx` | 7c | à lire |  |
 | `src/features/app/StartupWatchdog.tsx` | 7c | à lire |  |
-| `src/features/app/TodayPcSide.tsx` | 7a | à lire |  |
-| `src/features/app/TodayScreen.css` | 7a | à lire |  |
-| `src/features/app/TodayScreen.tsx` | 7a | à lire |  |
+| `src/features/app/TodayPcSide.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/app/TodayScreen.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/app/TodayScreen.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/app/UndoToast.css` | 7c | à lire |  |
 | `src/features/app/UndoToast.tsx` | 7c | à lire |  |
 | `src/features/app/UpdateRestoreAction.tsx` | 7c | à lire |  |
@@ -570,11 +570,11 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/bodyProgress/BodyProgress.tsx` | 7b | à lire |  |
 | `src/features/bodyProgress/BodyZones.tsx` | 7b | à lire |  |
 | `src/features/bodyProgress/bodyZone.ts` | 7b | à lire |  |
-| `src/features/cardio/Cardio.css` | 7a | à lire |  |
-| `src/features/cardio/CardioGps.tsx` | 7a | à lire |  |
-| `src/features/cardio/CardioProgress.tsx` | 7a | à lire |  |
-| `src/features/cardio/CardioView.tsx` | 7a | à lire |  |
-| `src/features/cardio/gpsFigures.ts` | 7a | à lire |  |
+| `src/features/cardio/Cardio.css` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/features/cardio/CardioGps.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/features/cardio/CardioProgress.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/features/cardio/CardioView.tsx` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/features/cardio/gpsFigures.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/features/notifications/index.ts` | 7c | à lire |  |
 | `src/features/notifications/recoveryNotifications.ts` | 7c | à lire |  |
 | `src/features/notifications/supplementActions.ts` | 5 | lu 2026-11-20 (relecteur compléments) |  |
@@ -632,13 +632,13 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/onboarding/firstSession.ts` | 7c | à lire |  |
 | `src/features/onboarding/launch.ts` | 7c | à lire |  |
 | `src/features/onboarding/onboardingData.ts` | 7c | à lire |  |
-| `src/features/recovery/FactorJournalCard.tsx` | 7a | à lire |  |
-| `src/features/recovery/RecoveryProgress.tsx` | 7a | à lire |  |
-| `src/features/recovery/RecoveryToday.css` | 7a | à lire |  |
-| `src/features/recovery/RecoveryToday.tsx` | 7a | à lire |  |
-| `src/features/recovery/UnusualValuesCard.tsx` | 7a | à lire |  |
-| `src/features/recovery/display.ts` | 7a | à lire |  |
-| `src/features/recovery/factorJournal.ts` | 7a | à lire |  |
+| `src/features/recovery/FactorJournalCard.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/RecoveryProgress.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/RecoveryToday.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/RecoveryToday.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/UnusualValuesCard.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/display.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/recovery/factorJournal.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/security/AppLockGate.tsx` | 7c | à lire |  |
 | `src/features/security/LockScreen.tsx` | 7c | à lire |  |
 | `src/features/security/appLockBoot.ts` | 7c | à lire |  |
@@ -711,8 +711,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/signing/signingStatus.ts` | 7c | à lire |  |
 | `src/features/signing/signingText.ts` | 7c | à lire |  |
 | `src/features/signing/testKit.ts` | 7c | à lire |  |
-| `src/features/strength/StrengthScore.css` | 7a | à lire |  |
-| `src/features/strength/StrengthScore.tsx` | 7a | à lire |  |
+| `src/features/strength/StrengthScore.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/strength/StrengthScore.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/sync/CarryReport.css` | 7c | à lire |  |
 | `src/features/sync/CarryReportSheet.tsx` | 7c | à lire |  |
 | `src/features/sync/ConflictList.css` | 7c | à lire |  |
@@ -773,53 +773,53 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/features/sync/syncStore.ts` | 7c | à lire |  |
 | `src/features/sync/syncText.ts` | 7c | à lire |  |
 | `src/features/sync/testKit.ts` | 7c | à lire |  |
-| `src/features/training/EquipmentView.tsx` | 7a | à lire |  |
-| `src/features/training/LibraryView.tsx` | 7a | à lire |  |
-| `src/features/training/RoutineCircuitUi.tsx` | 7a | à lire |  |
-| `src/features/training/RoutinesView.tsx` | 7a | à lire |  |
-| `src/features/training/TrainingScreen.css` | 7a | à lire |  |
-| `src/features/training/TrainingScreen.tsx` | 7a | à lire |  |
-| `src/features/training/content.ts` | 7a | à lire |  |
-| `src/features/training/content02.originals.json` | 7a | à lire |  |
-| `src/features/training/cycle/CycleView.css` | 7a | à lire |  |
-| `src/features/training/cycle/CycleView.tsx` | 7a | à lire |  |
-| `src/features/training/cycle/currentCycle.ts` | 7a | à lire |  |
-| `src/features/training/cycle/sessionLink.ts` | 7a | à lire |  |
-| `src/features/training/history/History.css` | 7a | à lire |  |
-| `src/features/training/history/HistoryDetail.tsx` | 7a | à lire |  |
-| `src/features/training/history/HistorySetRow.tsx` | 7a | à lire |  |
-| `src/features/training/history/HistoryTimelineView.tsx` | 7a | à lire |  |
-| `src/features/training/history/HistoryView.tsx` | 7a | à lire |  |
-| `src/features/training/labels.ts` | 7a | à lire |  |
-| `src/features/training/library/ExerciseSheetStats.tsx` | 7a | à lire |  |
-| `src/features/training/library/Sheet.css` | 7a | à lire |  |
-| `src/features/training/loadDisplay.ts` | 7a | à lire |  |
-| `src/features/training/media/ExerciseMedia.css` | 7a | à lire |  |
-| `src/features/training/media/ExerciseMedia.tsx` | 7a | à lire |  |
-| `src/features/training/media/exerciseMediaFiles.ts` | 7a | à lire |  |
-| `src/features/training/session/ActiveSession.tsx` | 7a | à lire |  |
-| `src/features/training/session/Circuit.css` | 7a | à lire |  |
-| `src/features/training/session/CircuitUi.tsx` | 7a | à lire |  |
-| `src/features/training/session/ExerciseProgression.tsx` | 7a | à lire |  |
-| `src/features/training/session/GeneratedSession.css` | 7a | à lire |  |
-| `src/features/training/session/GeneratedSession.tsx` | 7a | à lire |  |
-| `src/features/training/session/Progression.css` | 7a | à lire |  |
-| `src/features/training/session/RecoverySession.css` | 7a | à lire |  |
-| `src/features/training/session/RecoverySession.tsx` | 7a | à lire |  |
-| `src/features/training/session/Session.css` | 7a | à lire |  |
-| `src/features/training/session/SessionScreen.tsx` | 7a | à lire |  |
-| `src/features/training/session/SetRow.tsx` | 7a | à lire |  |
-| `src/features/training/session/StartSession.tsx` | 7a | à lire |  |
-| `src/features/training/session/Summary.css` | 7a | à lire |  |
-| `src/features/training/session/SummaryFigures.tsx` | 7a | à lire |  |
-| `src/features/training/session/TodaySessionCard.tsx` | 7a | à lire |  |
-| `src/features/training/session/WorkoutSummary.tsx` | 7a | à lire |  |
-| `src/features/training/session/generationInput.ts` | 7a | à lire |  |
-| `src/features/training/session/prescriptionContext.ts` | 7a | à lire |  |
-| `src/features/training/session/redDayState.ts` | 7a | à lire |  |
-| `src/features/training/session/restTimer.ts` | 7a | à lire |  |
-| `src/features/training/session/todaySessionPreview.ts` | 7a | à lire |  |
-| `src/features/training/trainingState.ts` | 7a | à lire |  |
+| `src/features/training/EquipmentView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/LibraryView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/RoutineCircuitUi.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/RoutinesView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/TrainingScreen.css` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/TrainingScreen.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/content.ts` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/content02.originals.json` | 7a | lu 2026-11-20 (relecteur routines) | structure et usage seulement (fixture de test) |
+| `src/features/training/cycle/CycleView.css` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/cycle/CycleView.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/cycle/currentCycle.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/cycle/sessionLink.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/history/History.css` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/history/HistoryDetail.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/history/HistorySetRow.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/history/HistoryTimelineView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/history/HistoryView.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/labels.ts` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/library/ExerciseSheetStats.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/library/Sheet.css` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/loadDisplay.ts` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/media/ExerciseMedia.css` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/media/ExerciseMedia.tsx` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/media/exerciseMediaFiles.ts` | 7a | lu 2026-11-20 (relecteur routines) |  |
+| `src/features/training/session/ActiveSession.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/Circuit.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/CircuitUi.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/ExerciseProgression.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/GeneratedSession.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/GeneratedSession.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/Progression.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/RecoverySession.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/RecoverySession.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/Session.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/SessionScreen.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/SetRow.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/StartSession.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/Summary.css` | 7a | lu 2026-11-20 (relecteur séance) | motifs (couleurs, cibles) et lecture partielle |
+| `src/features/training/session/SummaryFigures.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/TodaySessionCard.tsx` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/session/WorkoutSummary.tsx` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/generationInput.ts` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/prescriptionContext.ts` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/redDayState.ts` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/restTimer.ts` | 7a | lu 2026-11-20 (relecteur séance) |  |
+| `src/features/training/session/todaySessionPreview.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
+| `src/features/training/trainingState.ts` | 7a | lu 2026-11-20 (relecteur Aujourd'hui) |  |
 | `src/features/updater/UpdateBanner.css` | 7c | à lire |  |
 | `src/features/updater/UpdateBanner.tsx` | 7c | à lire |  |
 | `src/features/updater/index.ts` | 7c | à lire |  |
@@ -829,8 +829,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/backupRestoreText.ts` | 7c | à lire |  |
 | `src/i18n/bodyProgressText.ts` | 7b | à lire |  |
 | `src/i18n/bodyText.ts` | 7b | à lire |  |
-| `src/i18n/cardioText.ts` | 7a | à lire |  |
-| `src/i18n/circuitText.ts` | 7a | à lire |  |
+| `src/i18n/cardioText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/circuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/dataResetText.ts` | 7c | à lire |  |
 | `src/i18n/exportImportText.ts` | 7c | à lire |  |
 | `src/i18n/fileFailureText.ts` | 7c | à lire |  |
@@ -846,8 +846,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.body.ts` | 7b | à lire |  |
 | `src/i18n/fr.bodyProgress.ts` | 7b | à lire |  |
 | `src/i18n/fr.capture.ts` | 7b | à lire |  |
-| `src/i18n/fr.cardio.ts` | 7a | à lire |  |
-| `src/i18n/fr.circuit.ts` | 7a | à lire |  |
+| `src/i18n/fr.cardio.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.circuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.dataReset.ts` | 7c | à lire |  |
 | `src/i18n/fr.events.ts` | 7c | à lire |  |
 | `src/i18n/fr.exportImport.ts` | 7c | à lire |  |
@@ -857,20 +857,20 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.notifications.ts` | 7c | à lire |  |
 | `src/i18n/fr.nutrition.ts` | 7b | à lire |  |
 | `src/i18n/fr.onboarding.ts` | 7c | à lire |  |
-| `src/i18n/fr.progression.ts` | 7a | à lire |  |
+| `src/i18n/fr.progression.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.recipes.ts` | 7b | à lire |  |
-| `src/i18n/fr.recovery.ts` | 7a | à lire |  |
-| `src/i18n/fr.recoveryFactors.ts` | 7a | à lire |  |
-| `src/i18n/fr.recoveryNotifications.ts` | 7a | à lire |  |
-| `src/i18n/fr.routineCircuit.ts` | 7a | à lire |  |
-| `src/i18n/fr.routines.ts` | 7a | à lire |  |
+| `src/i18n/fr.recovery.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.recoveryFactors.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.recoveryNotifications.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.routineCircuit.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.routines.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.scan.ts` | 7b | à lire |  |
 | `src/i18n/fr.sections.ts` | 7c | à lire |  |
 | `src/i18n/fr.security.ts` | 7c | à lire |  |
 | `src/i18n/fr.shortcuts.ts` | 7c | à lire |  |
 | `src/i18n/fr.signing.ts` | 7c | à lire |  |
 | `src/i18n/fr.startupBlocked.ts` | 7c | à lire |  |
-| `src/i18n/fr.strength.ts` | 7a | à lire |  |
+| `src/i18n/fr.strength.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.supplementNotifications.ts` | 7b | à lire |  |
 | `src/i18n/fr.supplements.ts` | 7b | à lire |  |
 | `src/i18n/fr.syncCarryReport.ts` | 7c | à lire |  |
@@ -886,32 +886,32 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/fr.syncReset.ts` | 7c | à lire |  |
 | `src/i18n/fr.syncRestore.ts` | 7c | à lire |  |
 | `src/i18n/fr.syncVersion.ts` | 7c | à lire |  |
-| `src/i18n/fr.timer.ts` | 7a | à lire |  |
-| `src/i18n/fr.today.ts` | 7a | à lire |  |
-| `src/i18n/fr.todayPc.ts` | 7a | à lire |  |
-| `src/i18n/fr.training.ts` | 7a | à lire |  |
-| `src/i18n/fr.trainingCycle.ts` | 7a | à lire |  |
-| `src/i18n/fr.trainingGeneration.ts` | 7a | à lire |  |
-| `src/i18n/fr.trainingMedia.ts` | 7a | à lire |  |
-| `src/i18n/fr.trainingRecovery.ts` | 7a | à lire |  |
+| `src/i18n/fr.timer.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.today.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.todayPc.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.training.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.trainingCycle.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.trainingGeneration.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.trainingMedia.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/fr.trainingRecovery.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/fr.ts` | 7c | à lire |  |
-| `src/i18n/fr.workoutReplay.ts` | 7a | à lire |  |
+| `src/i18n/fr.workoutReplay.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/healthText.ts` | 7c | à lire |  |
-| `src/i18n/index.ts` | 7c | à lire |  |
+| `src/i18n/index.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/logsText.ts` | 7c | à lire |  |
 | `src/i18n/native/fr.json` | 7c | à lire |  |
 | `src/i18n/nutritionText.ts` | 7b | à lire |  |
 | `src/i18n/onboardingText.ts` | 7c | à lire |  |
-| `src/i18n/plural.ts` | 7c | à lire |  |
+| `src/i18n/plural.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/plusText.ts` | 7c | à lire |  |
-| `src/i18n/progressionText.ts` | 7a | à lire |  |
+| `src/i18n/progressionText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/recipesText.ts` | 7b | à lire |  |
-| `src/i18n/recoveryFactorsText.ts` | 7a | à lire |  |
-| `src/i18n/recoveryText.ts` | 7a | à lire |  |
-| `src/i18n/routineCircuitText.ts` | 7a | à lire |  |
+| `src/i18n/recoveryFactorsText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/recoveryText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/routineCircuitText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/sectionsText.ts` | 7c | à lire |  |
 | `src/i18n/settingsRefonteText.ts` | 7c | à lire |  |
-| `src/i18n/strengthText.ts` | 7a | à lire |  |
+| `src/i18n/strengthText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/i18n/supplementsText.ts` | 7b | à lire |  |
 | `src/i18n/syncCarryReportText.ts` | 7c | à lire |  |
 | `src/i18n/syncOlderDeviceText.ts` | 7c | à lire |  |
@@ -920,16 +920,16 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/i18n/syncRefonteText.ts` | 7c | à lire |  |
 | `src/i18n/syncRescue.ts` | 7c | à lire |  |
 | `src/i18n/syncRestoreText.ts` | 7c | à lire |  |
-| `src/i18n/timerText.ts` | 7a | à lire |  |
-| `src/i18n/todayPcText.ts` | 7a | à lire |  |
-| `src/i18n/todayText.ts` | 7a | à lire |  |
-| `src/i18n/trainingCycleText.ts` | 7a | à lire |  |
-| `src/i18n/trainingGenerationText.ts` | 7a | à lire |  |
-| `src/i18n/trainingMediaText.ts` | 7a | à lire |  |
-| `src/i18n/trainingRecoveryText.ts` | 7a | à lire |  |
-| `src/i18n/trainingText.ts` | 7a | à lire |  |
-| `src/i18n/types.ts` | 7c | à lire |  |
-| `src/i18n/workoutReplayText.ts` | 7a | à lire |  |
+| `src/i18n/timerText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/todayPcText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/todayText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/trainingCycleText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/trainingGenerationText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/trainingMediaText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/trainingRecoveryText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/trainingText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/types.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
+| `src/i18n/workoutReplayText.ts` | 7a | lu 2026-11-20 (relecteur cardio) |  |
 | `src/main.tsx` | 7c | à lire |  |
 | `src/platform/appVersion.ts` | 8b | à lire |  |
 | `src/platform/backup/index.ts` | 8b | à lire |  |

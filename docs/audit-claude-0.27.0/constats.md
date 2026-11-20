@@ -26,7 +26,7 @@ Preuves : `preuves/partie4-moteur.test.ts`, sortie `preuves/resultats/partie4-mo
 - `prescribe.ts:175-176`, `:297-300` : recalibrage permis jusqu'à 0,6 de confiance, cible × 1,05. Une série 100 × 8 « Facile » (confiance 0,367 < 0,4) → **105 kg**, soit deux crans de barre ; le § 11.3 dit « < 0,4 → provisoire, hausse ≤ 1 cran ».
 - Preuve : test rouge C-004. Correction : borner le recalibrage à un cran sous 0,4, ou consigner par une D-n que l'exception du § 11.2.5 prime.
 
-### C-005 — important — charge aberrante de toute une séance reprise telle quelle, sans signalement avant l'enregistrement
+### C-005 — **bloquant** (reclassé en partie 7a) — charge aberrante de toute une séance reprise telle quelle, sans signalement avant l'enregistrement
 - `prescribe.ts:141-145`, `:291-296` (choix B1) : 3 × 8 à 1 000 kg (faute de frappe) après 100 kg → **1 000 kg × [9, 8, 8]** prescrits, avec l'explication « vérifier ». Le § 11.5 exige « aberrantes signalées avant enregistrement » : aucun signalement dans `src/features/training` (recherche `outlier|aberran` : seulement l'explication après coup, `ExerciseProgression.tsx:108`).
 - Preuve : test rouge C-005 et recherche de motifs. Correction : contrôle de saisie > 150 % du 1RM courant dans la séance active, et référence plafonnée tant que non confirmée.
 
@@ -148,3 +148,65 @@ Vérifié sans défaut (lecture) : bornes 0-100 et abstention jamais 0, journée
 - C-060 mineur — `daySummary.ts:58` : baseline complète à σ = 0, ou HRV absente, classée niveau B (« sans baseline complète », § 16.1) ; libellé seulement.
 - C-061 amélioration, à trancher — `baseline.ts:41-45` : 14 dernières nuits valides sans limite de calendrier ; après deux mois sans Watch, baseline ancienne en qualité « good ».
 - C-062 à vérifier — `muscleRecovery` fige le pourcentage à l'instant du calcul (ligne de 07:00 lue telle quelle à 18:00) ; règle « cardio importé −10/25/40 % » du § 16.3 non implémentée (D-88, D-220) sans ligne dans la matrice ; `recoveryNotificationPlan.ts:74` : rappel à 02:30 le 29/03 (heure inexistante), conversion du service non relue.
+
+## Partie 7a — Aujourd'hui et Entraînement (écrans)
+
+Contrôles déterministes sur tous les écrans (7a, 7b, 7c) : `preuves/partie7-motifs.mjs`, sortie `preuves/resultats/partie7-motifs.json` (150 TSX, 62 CSS : aucun texte visible en dur après filtrage des génériques TypeScript, aucun bouton à icône sans nom, réduction globale des animations dans `tokens.css:417`, couleurs hors jetons limitées à l'appairage, relevées en 7c). Contrastes : `preuves/contrastes.mjs`, sortie `preuves/resultats/contrastes.json` (relevés en 7c).
+Preuves de cette partie : `preuves/partie7a-ecrans.test.ts`, sortie `preuves/resultats/partie7a-ecrans.log` (4 rouges, témoin vert). CSS de 7a : contrôles de motifs, lecture complète par deux relecteurs, partielle pour `Session.css` et `TrainingScreen.css` (lignes 200-250 et 360-415).
+Vérifié sans défaut (lecture) : confirmations de suppression d'une routine, d'un exercice personnalisé, d'un profil, d'une séance du journal, d'une séance cardio, abandon et retrait d'exercice ; minuteur de repos persistant, nettoyé, sans notification sur PC ; Strength Score conforme à D-312 (absence de sexe ou de poids, bornes « < 10 » / « > 99 ») ; arrêt du GPS au démontage ; aucun catalogue d'entraînement dans le départ ; D-317 jamais appliqué à la saisie ; jetons seulement, cibles ≥ 44 px dans les CSS lus.
+
+### Reclassement de C-005 en bloquant
+- Chaîne complète établie : `SetRow.tsx:97-115` → `validateSetEntry` (`session.ts:112`, bornes 0 à 1 000 kg seulement) → `validateSet` ; aucun contrôle de `outlierRatio` avant l'écriture, champ `confirmed` (`types.ts:250`) jamais écrit. Faute plausible : **200 kg tapé au lieu de 100** après trois séances à 100 kg × 8 → accepté sans alerte, affiché comme record (`SummaryFigures.tsx:34`), puis **200 kg prescrits** à la séance suivante (phrase « Vérifie ta saisie » seulement).
+- Preuve : `partie7a-ecrans.test.ts`, tests C-005 (saisie acceptée, témoin à 100 kg ; prescription 200 kg). Bloquant : mauvaise charge prescrite, trop lourde.
+
+### C-063 — important — séance du jour proposée de nouveau après avoir été faite (C-018 confirmé)
+- `TodaySessionCard.tsx:85-88` → `programDayFor` (`programDay.ts:46-56`) : avec des jours rattachés, `recentClosed` n'est lu qu'en rotation et `ClosedWorkoutLike` ne porte pas de date. Lundi, « Lundi — Haut » faite et close → la carte repropose « Lundi — Haut » avec « Lancer la séance » ; l'aperçu calcule les charges de la progression suivante ; un appui crée une deuxième séance le même jour.
+- Preuve : test rouge C-018. Correction : passer la date des séances closes et rendre « faite aujourd'hui » ou le prochain jour ; D-316 à compléter par Ali.
+
+### C-064 — important — semaine de reprise reconduite au 2e cycle dans un même montage (C-020 requalifié)
+- `CycleView.tsx:75`, `:93`, `:118`, `:241` : l'état `rampUp` est prérempli depuis l'onboarding pour le premier cycle seulement, mais n'est jamais remis à faux. Premier cycle lancé avec la reprise, clos « sans suite » sans quitter l'écran → l'interrupteur reste coché et `startFresh` lance le 2e cycle avec la reprise (contraire à D-267, D-315). À chaque nouvelle ouverture, l'état repart bien de faux.
+- Preuve : lecture du chemin (relecteur) ; le test existant (`CycleView.test.tsx:276-292`) remonte l'écran par `later(1)` et ne couvre pas ce chemin. Correction : `setRampUp(answers?.rampUp ?? false)`.
+
+### C-065 — important — échanger deux jours de la semaine dans l'éditeur de routine échoue
+- `RoutinesView.tsx:169-193` avec `trainingRoutineRepository.ts:226` : unicité contrôlée contre la base, jour par jour, dans l'ordre affiché. Jour 1 « Aucun » → « Lundi » et Jour 2 « Lundi » → « Aucun » (ou échange Lundi ↔ Mardi) : le premier `updateDay` trouve encore Jour 2 sur Lundi → `invalid`, transaction annulée, message générique « saveError ».
+- Preuve : lecture du code (requête `SELECT 1 FROM routine_day WHERE … weekday = ?` avant l'écriture du second jour). Correction : libérer d'abord les jours qui changent, ou contrôler à la fin.
+
+### C-066 — important — profils de matériel : « 12,16 » lu comme un seul poids de 12,16 kg
+- `EquipmentView.tsx:166-173` avec `parseNumber` (`trainingText.ts:20`, `.replace(',', '.')`) : la liste attend des points-virgules ; une virgule est lue comme décimale et acceptée sans erreur (kettlebell de 12,16 kg, disque de 20,1 kg) → grille de charges fausse.
+- Preuve : test rouge C-066. Correction : refuser une liste qui contient une virgule suivie d'un entier, ou découper.
+
+### C-067 — important — suivi GPS en cours perdu (mémoire seulement) et « Abandonner » sans confirmation
+- `CardioGps.tsx:21`, `:34`, `:49-57`, `:105` : tracé, distance et début ne vivent qu'en mémoire React ; WebView tuée en poche, changement de section (`TrainingScreen.tsx:115-123`) ou autorisation retirée → tout est perdu sans message (§ 18.3 : séance en cours restaurée depuis SQLite). `CardioGps.tsx:187` : « Abandonner le suivi » jette le suivi en un appui, à côté de « Arrêter et reporter ».
+- Preuve : lecture (relecteur). Correction : brouillon persistant du suivi ; confirmation de l'abandon.
+
+### C-068 — important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier
+- `SetRow.tsx:210`, `ActiveSession.tsx:474` : le X voisin de « Valider » supprime aussitôt la série et sa saisie (le retrait d'un exercice entier, lui, est confirmé, `ActiveSession.tsx:579`). `SetRow.tsx:118-122`, `:178` : Entrée dans « Répétitions » → la ligne passe à « Validée », le champ est démonté, le focus tombe sur `body` (§ 18.6, parcours clavier PC). Même perte de focus à chaque case du journal des facteurs (`RecoveryToday.tsx:300`, `:308`, clé `hlc` qui remonte le fieldset).
+- Preuve : lecture (relecteurs). Correction : confirmation ou « Annuler » ; focus déplacé sur la série suivante ; clé stable.
+
+### C-069 — important — « Accepter » peut écraser une série déjà validée
+- `ExerciseProgression.tsx:287-291` : `decide` part de l'instantané `sets` des props ; `workoutRepository.ts:595` accepte la mise à jour d'une série faite. Valider la série 1 à 90 × 8 puis « Accepter » avant le rendu → la série validée prend la charge proposée.
+- Preuve : lecture (relecteur), survenue peu probable. Correction : relire dans la transaction et ignorer les séries `done`.
+
+### C-070 — important — texte faux : « Musculation seule, cardio non compté »
+- `fr.recovery.ts:40-41`, affiché par `RecoveryToday.tsx:123`, `:163` : le cardio est compté dans l'Exertion (`domain/recovery/config.ts:57`, `cardioCounted: true`, D-220 ; `fr.cardio.ts:4` le dit).
+- Preuve : lecture des deux catalogues et de la constante. Correction : texte conditionnel.
+
+### C-071 — important — tractions et dips : champ « Charge (kg) » sans dire « lest » (C-024 confirmé)
+- `SetRow.tsx:189` : même libellé pour tous les exercices ; la convention du domaine est le lest seul (`estimate1rm.ts:18-20`) et le Strength Score ajoute le poids de corps (`strengthScore.ts:118`, `totalLoad: true`). Saisir 85 (poids total) → 1RM calculé sur 170 kg.
+- Preuve : lecture. Correction : libellé « Lest (kg) » et aide pour `bodyweight-reps`.
+
+### C-072 à C-085 — mineurs, améliorations et points à vérifier
+- C-072 important, à vérifier — `ActiveSession.tsx:472` puis `workoutRepository.ts:614` : correction d'une série validée sans trace (§ 13.4 « correction tracée ») ; idem `HistorySetRow.tsx:70-94` / `correctSet` (seule `corrected_at` est gardée ; vider la charge d'une série `load-reps` est accepté et la sort du tonnage et du 1RM).
+- C-073 important — `RoutinesView.tsx:461`, `:564-570`, `:594-604` : « Retour aux routines » abandonne un brouillon modifié sans confirmation ; retraits de jour et d'exercice non confirmés (supprimés à l'enregistrement sans annulation).
+- C-074 mineur — `TodaySessionCard.tsx:75`, `:88`, `RecoveryToday.tsx:240`, `TodayPcSide.tsx:129` : jour local lu au rendu, aucune relecture à minuit (PC ouvert de 23:50 à 00:10 → séance de la veille proposée).
+- C-075 mineur — `TodayScreen.tsx:152-155`, `:172-190` : échec de lecture du profil ou des pesées → tout l'écran remplacé par « loadFailed », sans « Réessayer » (§ 18.3) ; `TodaySessionCard.tsx:109` : échec de lecture rendu `null`, silencieux.
+- C-076 mineur — `display.ts:38-39`, `RecoveryToday.tsx:215`, `:219` : « min », « h » et `toLocaleString('fr-FR')` en dur hors i18n ; « · » et « — » en dur (`ActiveSession.tsx:377`, `GeneratedSession.tsx:365`, `SummaryFigures.tsx:14`).
+- C-077 mineur — `ActiveSession.tsx:215`, `:480` : double appui sur « Valider » ou « Ajouter une série » (deux repos lancés, deux séries ajoutées) ; `RoutinesView.tsx:685`, `:786` : « Ajouter le programme » / « Nouvelle routine » sans garde (deux routines) ; `EquipmentView.tsx:325` sans `busy`.
+- C-078 mineur — `SetRow.tsx:82` : saisie non validée gardée en mémoire seulement (perdue si la WebView est tuée) ; `CardioView.tsx:252-266` : un report GPS écrase une modification en cours.
+- C-079 mineur — erreurs non journalisées ou non rattrapées : `ActiveSession.tsx:189`, `:500` (`reload()` sans `catch`), `StartSession.tsx:55`, `RoutinesView.tsx:727-733`, `LibraryView.tsx:583`, `EquipmentView.tsx:402`.
+- C-080 mineur — `ExerciseProgression.tsx:170`, `:212` : référence `live` partagée entre relances, une lecture ancienne peut écraser la nouvelle ; `SetRow.tsx:203`, `ActiveSession.tsx:391` : listes qui écrivent à chaque flèche du clavier.
+- C-081 mineur — `EquipmentView.tsx:211-217`, `:124` : nombre de disques par poids non modifiable (`count: 1`), poids en double accepté (clé React en double) ; `EquipmentView.tsx:462-463` : suppression d'un profil actif en deux écritures hors transaction.
+- C-082 mineur — `HistoryView.tsx:22`, `:35-36` : journal limité aux 50 dernières séances (les plus anciennes ne peuvent être ni corrigées ni supprimées), 50 lectures `getClosed`.
+- C-083 à vérifier (appareil) — `CardioView.tsx:301`, `:305` : `inputMode="numeric"` sur l'heure et la durée ; le clavier numérique iOS n'a pas « : ». Libellé de durée sans « mm:ss » (`fr.cardio.ts:17`, `:30`) ; distance faussée après arrière-plan sans avertissement (H-35) ; `role="status"` mis à jour tous les 10 m (annonces VoiceOver).
+- C-084 mineur — `StrengthScore.tsx:108` : « 0 groupes » (règle 0 et 1 au singulier, FIX-0241) ; vocabulaire : « Varied »/« Variée », « deload »/« décharge », « Ischio-jambiers »/« Ischios », « cet appareil »/« cet iPhone », « 1000 kg » sans séparateur (`fr.training.ts:336`) ; noms des boutons « Monter/Descendre/Retirer » identiques sur chaque ligne (`RoutinesView.tsx:552-570`).
+- C-085 amélioration — `fr.routines.ts` (textes d'habitudes CircleTasks) importé au départ par `fr.ts:5` et listé dans `start-modules.json:53`, seules des clés de `weekdayName` servent ; `src/features/training/content02.originals.json` ne sert qu'à un test ; paramètres `{x}` non typés dans les `*Text.ts` ; `LibraryView.tsx:511-522` libellés « Répétitions » pour un exercice au temps ; `HistoryView.tsx:72` `setTimeout` non nettoyé.

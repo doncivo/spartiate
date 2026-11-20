@@ -111,3 +111,104 @@ src/platform/healthkit/types.ts	6	2026-11-20	relecteur dossier Santé
 src/platform/healthkit/unavailable.ts	6	2026-11-20	relecteur dossier Santé	
 src/platform/healthkit/validation.ts	6	2026-11-20	relecteur dossier Santé	
 src-tauri/src/healthkit.rs	8a	2026-11-20	relecteur dossier Santé	lu pour la partie 6
+src/features/app/TodayScreen.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/app/TodayScreen.css	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/app/TodayPcSide.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/session/TodaySessionCard.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/session/todaySessionPreview.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/trainingState.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/cycle/CycleView.css	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/cycle/CycleView.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/cycle/currentCycle.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/cycle/sessionLink.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/FactorJournalCard.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/RecoveryProgress.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/RecoveryToday.css	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/RecoveryToday.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/UnusualValuesCard.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/display.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/recovery/factorJournal.ts	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/strength/StrengthScore.css	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/strength/StrengthScore.tsx	7a	2026-11-20	relecteur Aujourd'hui	
+src/features/training/session/ActiveSession.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/SetRow.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/ExerciseProgression.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/GeneratedSession.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/StartSession.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/SessionScreen.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/SummaryFigures.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/WorkoutSummary.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/CircuitUi.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/RecoverySession.tsx	7a	2026-11-20	relecteur séance	
+src/features/training/session/redDayState.ts	7a	2026-11-20	relecteur séance	
+src/features/training/session/restTimer.ts	7a	2026-11-20	relecteur séance	
+src/features/training/session/generationInput.ts	7a	2026-11-20	relecteur séance	
+src/features/training/session/prescriptionContext.ts	7a	2026-11-20	relecteur séance	
+src/features/training/session/Session.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/session/GeneratedSession.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/session/Summary.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/session/Circuit.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/session/Progression.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/session/RecoverySession.css	7a	2026-11-20	relecteur séance	motifs (couleurs, cibles) et lecture partielle
+src/features/training/RoutinesView.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/LibraryView.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/EquipmentView.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/TrainingScreen.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/TrainingScreen.css	7a	2026-11-20	relecteur routines	
+src/features/training/RoutineCircuitUi.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/content.ts	7a	2026-11-20	relecteur routines	
+src/features/training/labels.ts	7a	2026-11-20	relecteur routines	
+src/features/training/loadDisplay.ts	7a	2026-11-20	relecteur routines	
+src/features/training/library/ExerciseSheetStats.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/library/Sheet.css	7a	2026-11-20	relecteur routines	
+src/features/training/media/ExerciseMedia.css	7a	2026-11-20	relecteur routines	
+src/features/training/media/ExerciseMedia.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/media/exerciseMediaFiles.ts	7a	2026-11-20	relecteur routines	
+src/features/training/history/History.css	7a	2026-11-20	relecteur routines	
+src/features/training/history/HistoryDetail.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/history/HistorySetRow.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/history/HistoryTimelineView.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/history/HistoryView.tsx	7a	2026-11-20	relecteur routines	
+src/features/training/content02.originals.json	7a	2026-11-20	relecteur routines	structure et usage seulement (fixture de test)
+src/features/cardio/Cardio.css	7a	2026-11-20	relecteur cardio	
+src/features/cardio/CardioGps.tsx	7a	2026-11-20	relecteur cardio	
+src/features/cardio/CardioProgress.tsx	7a	2026-11-20	relecteur cardio	
+src/features/cardio/CardioView.tsx	7a	2026-11-20	relecteur cardio	
+src/features/cardio/gpsFigures.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/cardioText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/circuitText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/progressionText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/recoveryFactorsText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/recoveryText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/routineCircuitText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/strengthText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/timerText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/todayPcText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/todayText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/trainingCycleText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/trainingGenerationText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/trainingMediaText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/trainingRecoveryText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/trainingText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/workoutReplayText.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.cardio.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.circuit.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.progression.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.recovery.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.recoveryFactors.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.recoveryNotifications.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.routineCircuit.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.routines.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.strength.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.timer.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.today.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.todayPc.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.training.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.trainingCycle.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.trainingGeneration.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.trainingMedia.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.trainingRecovery.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/fr.workoutReplay.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/index.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/types.ts	7a	2026-11-20	relecteur cardio	
+src/i18n/plural.ts	7a	2026-11-20	relecteur cardio	
