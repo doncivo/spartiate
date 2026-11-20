@@ -65,7 +65,7 @@ describe('C-005 / C-028 : confirmation par une deuxième séance COMPLÈTE hors 
 });
 
 describe('C-005 records et 1RM affichés', () => {
-  const exercise = { metric: 'load-reps' } as const;
+  const exercise = { metric: 'load-reps', bodyweightFraction: null } as const;
   it('fiche : le record et le 1RM ignorent une séance aberrante non confirmée', () => {
     const stats = sheetStats([...base(), session(2, 200, [8, 8, 8])], exercise, NOW);
     expect(stats.record?.loadKg).toBe(100);

@@ -1,7 +1,7 @@
 import type { IsoDateTime } from '../types';
 import { confidenceOf } from './confidence';
 import { DEFAULT_PROGRESSION_CONFIG } from './config';
-import { analyzeHistory, current1rmFromSessions } from './estimate1rm';
+import { analyzeHistory, current1rmFromSessions, isUnconfirmedOutlier } from './estimate1rm';
 import type { Difficulty, Exercise, ExerciseSession, HistorySet } from './types';
 
 /**
@@ -55,12 +55,15 @@ const workSets = (session: ExerciseSession): HistorySet[] => session.sets.filter
 
 /**
  * Record de la fiche : charge la plus lourde d'une série de travail validée, puis le plus de répétitions à cette charge ; à égalité, la séance
- * la plus ancienne l'a établi. Charge nulle ou absente : jamais un record. Null : aucune série retenue.
+ * la plus ancienne l'a établi. Charge nulle ou absente : jamais un record. Null : aucune série retenue. FIX-ABERR (C-005) : une série aberrante
+ * non confirmée (`analyzeHistory`) n'est jamais le record.
  */
 export function sheetRecord(history: readonly ExerciseSession[]): SheetRecord | null {
   let record: SheetRecord | null = null;
+  const outlier = isUnconfirmedOutlier(analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG));
   for (const session of [...history].sort(byRecent)) {
     for (const set of workSets(session)) {
+      if (outlier(session.workoutId, set.position)) continue;
       if (set.loadKg !== null && set.loadKg > 0 && (record === null || set.loadKg > record.loadKg || (set.loadKg === record.loadKg && (set.reps as number) >= record.reps)))
         record = { loadKg: set.loadKg, reps: set.reps as number, endedAt: session.endedAt };
     }

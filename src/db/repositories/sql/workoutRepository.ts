@@ -323,7 +323,10 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     if (row.ended_at === null) invalid('workout', id);
     return row;
   };
-  /** Séries de travail validées des séances closes antérieures à `workout`, pour ses exercices (records). */
+  /**
+   * Séries non supprimées des séances closes antérieures à `workout`, pour ses exercices (records : seules les séries de travail validées
+   * comptent, `personalRecords` les filtre ; les autres servent à reconnaître une séance partielle, qui ne confirme pas une aberrante, FIX-ABERR).
+   */
   const historyFor = async (workout: WorkoutWithSets): Promise<WorkoutSet[]> => {
     const exercises = [...new Set(workout.sets.map((s) => s.exerciseId))];
     if (exercises.length === 0) return [];
@@ -333,7 +336,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       const part = exercises.slice(i, i + 400);
       const rows = await db.select<SetRow>(
         `SELECT s.* FROM workout_set s JOIN workout w ON w.id = s.workout_id
-         WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL AND w.id <> ? AND w.ended_at < ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_kind = 'work'
+         WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL AND w.id <> ? AND w.ended_at < ? AND s.deleted_at IS NULL
            AND s.exercise_id IN (${part.map(() => '?').join(', ')})`,
         [workout.id, before, ...part],
       );

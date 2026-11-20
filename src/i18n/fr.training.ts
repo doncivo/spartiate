@@ -315,6 +315,10 @@ export const trainingFr = {
   sessionLastRepsOne: 'Dernière fois : {reps} répétition',
   sessionLastDuration: 'Dernière fois : {n} s',
   sessionValidate: 'Valider la série',
+  sessionOutlierAsk: '{load} : c’est {percent} % de ta charge habituelle à ce nombre de répétitions ({usual}). Confirme si c’est juste, sinon corrige avant d’enregistrer.',
+  sessionOutlierAskAssisted: 'Assistance de {load} : bien moins que d’habitude à ce nombre de répétitions ({usual}), la charge soulevée serait {percent} % de l’habituelle. Confirme si c’est juste, sinon corrige avant d’enregistrer.',
+  sessionOutlierConfirm: 'Confirmer',
+  sessionOutlierCorrect: 'Corriger',
   // ERGO-01b P3 (D-238) : « − / + » de la série en cours (charge au cran du matériel, répétitions une à une).
   sessionStepMinus: '−',
   sessionStepPlus: '+',
