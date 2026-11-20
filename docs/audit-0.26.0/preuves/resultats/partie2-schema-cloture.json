@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "partie2-schema-cloture",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "docs/audit-0.26.0/preuves/partie2-schema.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-20T08:45:38.7840669Z",
+    "fin":  "2026-11-20T08:45:40.2602430Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

@@ -1,0 +1,243 @@
+{
+  "migrations": 19,
+  "checked": [
+    {
+      "table": "profile",
+      "columns": 8,
+      "triggers": [
+        "sync_profile_ai",
+        "sync_profile_au"
+      ]
+    },
+    {
+      "table": "body_weight",
+      "columns": 8,
+      "triggers": [
+        "sync_body_weight_ai",
+        "sync_body_weight_au"
+      ]
+    },
+    {
+      "table": "exercise",
+      "columns": 17,
+      "triggers": [
+        "sync_exercise_ai",
+        "sync_exercise_au"
+      ]
+    },
+    {
+      "table": "equipment_profile",
+      "columns": 6,
+      "triggers": [
+        "sync_equipment_profile_ai",
+        "sync_equipment_profile_au"
+      ]
+    },
+    {
+      "table": "routine",
+      "columns": 4,
+      "triggers": [
+        "sync_routine_ai",
+        "sync_routine_au"
+      ]
+    },
+    {
+      "table": "routine_day",
+      "columns": 5,
+      "triggers": [
+        "sync_routine_day_ai",
+        "sync_routine_day_au"
+      ]
+    },
+    {
+      "table": "routine_exercise",
+      "columns": 13,
+      "triggers": [
+        "sync_routine_exercise_ai",
+        "sync_routine_exercise_au",
+        "sync_routine_exercise_circuit_au"
+      ]
+    },
+    {
+      "table": "workout",
+      "columns": 10,
+      "triggers": [
+        "sync_workout_ai",
+        "sync_workout_au",
+        "sync_workout_close_decisions_au"
+      ]
+    },
+    {
+      "table": "workout_set",
+      "columns": 21,
+      "triggers": [
+        "sync_workout_set_ai",
+        "sync_workout_set_au",
+        "sync_workout_set_difficulty_au"
+      ]
+    },
+    {
+      "table": "progression_profile",
+      "columns": 7,
+      "triggers": [
+        "sync_progression_profile_ai",
+        "sync_progression_profile_au"
+      ]
+    },
+    {
+      "table": "recommendation_decision",
+      "columns": 12,
+      "triggers": [
+        "sync_recommendation_decision_ai",
+        "sync_recommendation_decision_au"
+      ]
+    },
+    {
+      "table": "mesocycle",
+      "columns": 16,
+      "triggers": [
+        "sync_mesocycle_ai",
+        "sync_mesocycle_au",
+        "sync_mesocycle_program_au"
+      ]
+    },
+    {
+      "table": "food",
+      "columns": 12,
+      "triggers": [
+        "sync_food_ai",
+        "sync_food_au"
+      ]
+    },
+    {
+      "table": "food_portion",
+      "columns": 6,
+      "triggers": [
+        "sync_food_portion_ai",
+        "sync_food_portion_au"
+      ]
+    },
+    {
+      "table": "meal_entry",
+      "columns": 14,
+      "triggers": [
+        "sync_meal_entry_ai",
+        "sync_meal_entry_au"
+      ]
+    },
+    {
+      "table": "nutrition_target",
+      "columns": 13,
+      "triggers": [
+        "sync_nutrition_target_ai",
+        "sync_nutrition_target_au",
+        "sync_nutrition_target_rest_au"
+      ]
+    },
+    {
+      "table": "day_completeness",
+      "columns": 4,
+      "triggers": [
+        "sync_day_completeness_ai",
+        "sync_day_completeness_au"
+      ]
+    },
+    {
+      "table": "recipe",
+      "columns": 5,
+      "triggers": [
+        "sync_recipe_ai",
+        "sync_recipe_au"
+      ]
+    },
+    {
+      "table": "recipe_ingredient",
+      "columns": 13,
+      "triggers": [
+        "sync_recipe_ingredient_ai",
+        "sync_recipe_ingredient_au"
+      ]
+    },
+    {
+      "table": "recovery_day",
+      "columns": 22,
+      "triggers": [
+        "sync_recovery_day_ai",
+        "sync_recovery_day_au"
+      ]
+    },
+    {
+      "table": "muscle_recovery",
+      "columns": 9,
+      "triggers": [
+        "sync_muscle_recovery_ai",
+        "sync_muscle_recovery_au"
+      ]
+    },
+    {
+      "table": "recovery_factor",
+      "columns": 5,
+      "triggers": [
+        "sync_recovery_factor_ai",
+        "sync_recovery_factor_au"
+      ]
+    },
+    {
+      "table": "measurement",
+      "columns": 5,
+      "triggers": [
+        "sync_measurement_ai",
+        "sync_measurement_au"
+      ]
+    },
+    {
+      "table": "progress_photo",
+      "columns": 4,
+      "triggers": [
+        "sync_progress_photo_ai",
+        "sync_progress_photo_au"
+      ]
+    },
+    {
+      "table": "food_favorite",
+      "columns": 5,
+      "triggers": [
+        "sync_food_favorite_ai",
+        "sync_food_favorite_au"
+      ]
+    },
+    {
+      "table": "data_reset",
+      "columns": 2,
+      "triggers": [
+        "sync_data_reset_ai",
+        "sync_data_reset_au"
+      ]
+    },
+    {
+      "table": "supplement",
+      "columns": 8,
+      "triggers": [
+        "sync_supplement_ai",
+        "sync_supplement_au"
+      ]
+    },
+    {
+      "table": "supplement_intake",
+      "columns": 6,
+      "triggers": [
+        "sync_supplement_intake_ai",
+        "sync_supplement_intake_au"
+      ]
+    },
+    {
+      "table": "cardio_session",
+      "columns": 10,
+      "triggers": [
+        "sync_cardio_session_ai",
+        "sync_cardio_session_au"
+      ]
+    }
+  ],
+  "limite": "Presence structurelle et references SQL, pas une preuve de capture de toutes les valeurs ni execution native."
+}

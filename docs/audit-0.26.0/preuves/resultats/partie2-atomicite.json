@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "partie2-atomicite",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "docs/audit-0.26.0/preuves/partie2-atomicite.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-20T08:47:37.8355356Z",
+    "fin":  "2026-11-20T08:47:39.9865308Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

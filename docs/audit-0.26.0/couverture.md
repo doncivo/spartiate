@@ -1,9 +1,9 @@
 # Couverture de relecture — AUDIT-0.26.0
 
 SHA : `8686a8fc2860f7a94eb193426cbcc640a33bac80`.
-108/2047 fichiers lus (5.28 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
+188/2047 fichiers lus (9.18 %). « Lu » indique une lecture complète dans la passe précisée, pas la validation de tous les scénarios métier. Les lectures partielles et scans ne sont pas comptés.
 
-Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
+Production et outillage : 186/1046 lus intégralement. Tests et supports : 1001 fichiers ; partie 11 par outils, lecture complète des règles critiques et échantillon motivé du reste (décision d’Ali des 16 et 19/11). Inventaire corrigé en partie 1 : 389 ajouts, dont 33 de production/outillage et 356 de tests/supports ; les 645 tests du compteur initial n’incluaient pas tout le banc. Les 81 fichiers vendored exclus restent listés. Configurations déclaratives et documents consultés sont cités dans les rapports de partie, hors de ce décompte de sources.
 
 | Fichier | Statut | Motif / preuve |
 | --- | --- | --- |
@@ -324,8 +324,8 @@ Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 
 | `src/db/driver.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
 | `src/db/drivers/sqliteWasm.test.ts` | à lire |  |
 | `src/db/drivers/sqliteWasm.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
-| `src/db/errorText.ts` | à lire |  |
-| `src/db/index.ts` | à lire |  |
+| `src/db/errorText.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/index.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/localWrite.test.ts` | à lire |  |
 | `src/db/localWrite.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
 | `src/db/migrationBackup.test.ts` | à lire |  |
@@ -374,64 +374,64 @@ Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 
 | `src/db/migrations/spartiateSchemaFixture.test.ts` | à lire |  |
 | `src/db/migrator.test.ts` | à lire |  |
 | `src/db/migrator.ts` | lu | Partie 2 : Ordre, sommes, version future, transactions, sauvegarde et réutilisation lus ; sans preuve native nouvelle. |
-| `src/db/parse/equipmentJson.ts` | à lire |  |
-| `src/db/parse/exerciseJson.ts` | à lire |  |
-| `src/db/parse/jsonText.ts` | à lire |  |
+| `src/db/parse/equipmentJson.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/parse/exerciseJson.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/parse/jsonText.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/parse/recoveryFactorJson.test.ts` | à lire |  |
-| `src/db/parse/recoveryFactorJson.ts` | à lire |  |
+| `src/db/parse/recoveryFactorJson.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/parse/recoveryJson.test.ts` | à lire |  |
-| `src/db/parse/recoveryJson.ts` | à lire |  |
+| `src/db/parse/recoveryJson.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/parse/trainingJson.test.ts` | à lire |  |
-| `src/db/repositories/bodyProgressRepository.ts` | à lire |  |
-| `src/db/repositories/bodyRepositories.ts` | à lire |  |
-| `src/db/repositories/cardioRepository.ts` | à lire |  |
-| `src/db/repositories/checklistRepository.ts` | à lire |  |
-| `src/db/repositories/common.ts` | à lire |  |
+| `src/db/repositories/bodyProgressRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/bodyRepositories.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/cardioRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/checklistRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/common.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/dataAccess.test.ts` | à lire |  |
 | `src/db/repositories/dataAccess.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
-| `src/db/repositories/dataResetRepository.ts` | à lire |  |
-| `src/db/repositories/dayCompletenessRepository.ts` | à lire |  |
-| `src/db/repositories/epochCarryReportRepository.ts` | à lire |  |
-| `src/db/repositories/equipmentProfileRepository.ts` | à lire |  |
-| `src/db/repositories/exerciseRepository.ts` | à lire |  |
-| `src/db/repositories/exportImportRepository.ts` | à lire |  |
-| `src/db/repositories/foodFavoriteRepository.ts` | à lire |  |
-| `src/db/repositories/foodRepository.ts` | à lire |  |
-| `src/db/repositories/goalRepository.ts` | à lire |  |
+| `src/db/repositories/dataResetRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/dayCompletenessRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/epochCarryReportRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/equipmentProfileRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/exerciseRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/exportImportRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/foodFavoriteRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/foodRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/goalRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/repositories/index.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
-| `src/db/repositories/mealEntryRepository.ts` | à lire |  |
-| `src/db/repositories/mesocycleRepository.ts` | à lire |  |
-| `src/db/repositories/nutritionTargetRepository.ts` | à lire |  |
+| `src/db/repositories/mealEntryRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/mesocycleRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/nutritionTargetRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/repositories/observeWrites.test.ts` | à lire |  |
 | `src/db/repositories/observeWrites.ts` | lu | Partie 2 : Cache borné des statements, fermeture, signaux et observateurs lus ; effets transactionnels à confronter aux appelants. |
-| `src/db/repositories/occurrenceDedupRepository.ts` | à lire |  |
-| `src/db/repositories/progressionRepository.ts` | à lire |  |
-| `src/db/repositories/recipeRepository.ts` | à lire |  |
-| `src/db/repositories/recoveryFactorRepository.ts` | à lire |  |
-| `src/db/repositories/recoveryRepository.ts` | à lire |  |
-| `src/db/repositories/recoverySampleRepository.ts` | à lire |  |
-| `src/db/repositories/reminderRepository.ts` | à lire |  |
-| `src/db/repositories/routineRepository.ts` | à lire |  |
-| `src/db/repositories/settingsRepository.ts` | à lire |  |
-| `src/db/repositories/spaceRepository.ts` | à lire |  |
+| `src/db/repositories/occurrenceDedupRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/progressionRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/recipeRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/recoveryFactorRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/recoveryRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/recoverySampleRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/reminderRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/routineRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/settingsRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/spaceRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/repositories/sql/bodyHealthMetrics.test.ts` | à lire |  |
 | `src/db/repositories/sql/bodyProgressRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/bodyProgressRepository.ts` | à lire |  |
+| `src/db/repositories/sql/bodyProgressRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/bodyRepositories.test.ts` | à lire |  |
-| `src/db/repositories/sql/bodyRepositories.ts` | à lire |  |
+| `src/db/repositories/sql/bodyRepositories.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/cardioRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/cardioRepository.ts` | à lire |  |
+| `src/db/repositories/sql/cardioRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/checklistRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/checklistRepository.ts` | à lire |  |
+| `src/db/repositories/sql/checklistRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/dataResetRepository.ts` | lu | Partie 3 : Instantanés fusion/remplacement, export, traces et effacement SQL intégralement lus. A-009 : colonne inconnue de table connue ignorée en fusion, preuve ciblée journal/instantané. |
 | `src/db/repositories/sql/dayCompletenessRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/dayCompletenessRepository.ts` | à lire |  |
+| `src/db/repositories/sql/dayCompletenessRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/epochCarryReports.test.ts` | à lire |  |
-| `src/db/repositories/sql/epochCarryReports.ts` | à lire |  |
+| `src/db/repositories/sql/epochCarryReports.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/equipmentProfileRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/equipmentProfileRepository.ts` | à lire |  |
+| `src/db/repositories/sql/equipmentProfileRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/exerciseRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/exerciseRepository.ts` | à lire |  |
+| `src/db/repositories/sql/exerciseRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/exportImportBodyProgress.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportCardio.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportCircuit.test.ts` | à lire |  |
@@ -445,7 +445,7 @@ Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 
 | `src/db/repositories/sql/exportImportRecovery.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportRecoveryFactor.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/exportImportRepository.ts` | à lire |  |
+| `src/db/repositories/sql/exportImportRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/exportImportRoutineCircuit.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportSupplement.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportSv18.test.ts` | à lire |  |
@@ -453,81 +453,81 @@ Production et outillage : 106/1046 lus intégralement. Tests et supports : 1001 
 | `src/db/repositories/sql/exportImportTargetOrder.test.ts` | à lire |  |
 | `src/db/repositories/sql/exportImportTraining.test.ts` | à lire |  |
 | `src/db/repositories/sql/foodFavoriteRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/foodFavoriteRepository.ts` | à lire |  |
+| `src/db/repositories/sql/foodFavoriteRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/foodRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/foodRepository.ts` | à lire |  |
+| `src/db/repositories/sql/foodRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/fullExport.test.ts` | à lire |  |
 | `src/db/repositories/sql/goalRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/goalRepository.ts` | à lire |  |
-| `src/db/repositories/sql/index.ts` | à lire |  |
+| `src/db/repositories/sql/goalRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/repositories/sql/index.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/mealEntryRenpho.test.ts` | à lire |  |
 | `src/db/repositories/sql/mealEntryRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/mealEntryRepository.ts` | à lire |  |
+| `src/db/repositories/sql/mealEntryRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/mesocycleRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/mesocycleRepository.ts` | à lire |  |
+| `src/db/repositories/sql/mesocycleRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/nutritionTargetRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/nutritionTargetRepository.ts` | à lire |  |
-| `src/db/repositories/sql/occurrenceDedup.ts` | à lire |  |
+| `src/db/repositories/sql/nutritionTargetRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/repositories/sql/occurrenceDedup.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/progressionRepository.i408.test.ts` | à lire |  |
 | `src/db/repositories/sql/progressionRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/progressionRepository.ts` | à lire |  |
+| `src/db/repositories/sql/progressionRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/recipeRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/recipeRepository.ts` | à lire |  |
+| `src/db/repositories/sql/recipeRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/recoveryFactorRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/recoveryFactorRepository.ts` | à lire |  |
+| `src/db/repositories/sql/recoveryFactorRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/recoveryRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/recoveryRepository.ts` | à lire |  |
+| `src/db/repositories/sql/recoveryRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/recoveryRepositoryLatest.test.ts` | à lire |  |
 | `src/db/repositories/sql/recoveryRepositoryReader.test.ts` | à lire |  |
 | `src/db/repositories/sql/recoverySampleRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/recoverySampleRepository.ts` | à lire |  |
+| `src/db/repositories/sql/recoverySampleRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/reminderRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/reminderRepository.ts` | à lire |  |
+| `src/db/repositories/sql/reminderRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/rev01.ingredientName.test.ts` | à lire |  |
 | `src/db/repositories/sql/routineCircuit.test.ts` | à lire |  |
 | `src/db/repositories/sql/routineRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/routineRepository.ts` | à lire |  |
+| `src/db/repositories/sql/routineRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/settingsRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/settingsRepository.ts` | à lire |  |
+| `src/db/repositories/sql/settingsRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/spaceRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/spaceRepository.ts` | à lire |  |
-| `src/db/repositories/sql/sqlHelpers.ts` | à lire |  |
+| `src/db/repositories/sql/spaceRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/repositories/sql/sqlHelpers.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/supplementRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/supplementRepository.ts` | à lire |  |
-| `src/db/repositories/sql/syncConflicts.ts` | à lire |  |
-| `src/db/repositories/sql/syncRepository.ts` | à lire |  |
+| `src/db/repositories/sql/supplementRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/repositories/sql/syncConflicts.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/sql/syncRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/repositories/sql/syncUnknown.ts` | lu | Partie 2 : Réintégration par pages/savepoints, garde et état persistant lus ; nuance la piste de partie 1, affichage à vérifier partie 3. |
 | `src/db/repositories/sql/taskRepository.done.test.ts` | à lire |  |
 | `src/db/repositories/sql/taskRepository.perf.test.ts` | à lire |  |
 | `src/db/repositories/sql/taskRepository.purge.test.ts` | à lire |  |
 | `src/db/repositories/sql/taskRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/taskRepository.ts` | à lire |  |
+| `src/db/repositories/sql/taskRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/testSetup.ts` | à lire |  |
 | `src/db/repositories/sql/trainingRoutineRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/trainingRoutineRepository.ts` | à lire |  |
-| `src/db/repositories/sql/userDataRepository.ts` | à lire |  |
+| `src/db/repositories/sql/trainingRoutineRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
+| `src/db/repositories/sql/userDataRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/workoutCircuit.test.ts` | à lire |  |
 | `src/db/repositories/sql/workoutClosure.test.ts` | à lire |  |
 | `src/db/repositories/sql/workoutDifficulty.test.ts` | à lire |  |
 | `src/db/repositories/sql/workoutRepository.test.ts` | à lire |  |
-| `src/db/repositories/sql/workoutRepository.ts` | à lire |  |
+| `src/db/repositories/sql/workoutRepository.ts` | lu | Partie 2 : Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md. |
 | `src/db/repositories/sql/workoutWarmup.test.ts` | à lire |  |
 | `src/db/repositories/storage.ts` | lu | Partie 1 : Contrats, fabrique liée à la transaction et association catalogue/repositories lus ; atomicité effective à vérifier partie 2. |
-| `src/db/repositories/supplementRepository.ts` | à lire |  |
-| `src/db/repositories/syncConflictRepository.ts` | à lire |  |
-| `src/db/repositories/syncRepository.ts` | à lire |  |
-| `src/db/repositories/syncUnknownRepository.ts` | à lire |  |
-| `src/db/repositories/taskRepository.ts` | à lire |  |
-| `src/db/repositories/trainingRoutineRepository.ts` | à lire |  |
-| `src/db/repositories/userDataRepository.ts` | à lire |  |
-| `src/db/repositories/workoutRepository.ts` | à lire |  |
-| `src/db/seed/defaultSpaces.ts` | à lire |  |
-| `src/db/seed/externalEventFixtures.ts` | à lire |  |
-| `src/db/seed/sampleData.ts` | à lire |  |
+| `src/db/repositories/supplementRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/syncConflictRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/syncRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/syncUnknownRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/taskRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/trainingRoutineRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/userDataRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/repositories/workoutRepository.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/seed/defaultSpaces.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/seed/externalEventFixtures.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
+| `src/db/seed/sampleData.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/db/serializedDriver.test.ts` | lu | Partie 2 : File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue. |
 | `src/db/serializedDriver.ts` | lu | Partie 2 : File, transactions et tests existants intégralement lus ; A-008 reproduit sous rejet de rollback injecté, écriture suivante perdue. |
 | `src/db/spaceOwnership.test.ts` | à lire |  |
-| `src/db/testHooks.ts` | à lire |  |
+| `src/db/testHooks.ts` | lu | Partie 2 : Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2. |
 | `src/domain/appLock.test.ts` | à lire |  |
 | `src/domain/appLock.ts` | à lire |  |
 | `src/domain/appStatus.test.ts` | à lire |  |

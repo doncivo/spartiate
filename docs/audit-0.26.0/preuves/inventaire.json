@@ -2220,17 +2220,17 @@
   },
   {
     "fichier": "src/db/errorText.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/index.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/localWrite.test.ts",
@@ -2570,24 +2570,24 @@
   },
   {
     "fichier": "src/db/parse/equipmentJson.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/parse/exerciseJson.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/parse/jsonText.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/parse/recoveryFactorJson.test.ts",
@@ -2598,10 +2598,10 @@
   },
   {
     "fichier": "src/db/parse/recoveryFactorJson.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/parse/recoveryJson.test.ts",
@@ -2612,10 +2612,10 @@
   },
   {
     "fichier": "src/db/parse/recoveryJson.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/parse/trainingJson.test.ts",
@@ -2626,38 +2626,38 @@
   },
   {
     "fichier": "src/db/repositories/bodyProgressRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/bodyRepositories.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/cardioRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/checklistRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/common.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/dataAccess.test.ts",
@@ -2675,66 +2675,66 @@
   },
   {
     "fichier": "src/db/repositories/dataResetRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/dayCompletenessRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/epochCarryReportRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/equipmentProfileRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/exerciseRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/exportImportRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/foodFavoriteRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/foodRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/goalRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/index.ts",
@@ -2745,24 +2745,24 @@
   },
   {
     "fichier": "src/db/repositories/mealEntryRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/mesocycleRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/nutritionTargetRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/observeWrites.test.ts",
@@ -2780,73 +2780,73 @@
   },
   {
     "fichier": "src/db/repositories/occurrenceDedupRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/progressionRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/recipeRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/recoveryFactorRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/recoveryRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/recoverySampleRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/reminderRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/routineRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/settingsRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/spaceRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/sql/bodyHealthMetrics.test.ts",
@@ -2864,10 +2864,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/bodyProgressRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/bodyRepositories.test.ts",
@@ -2878,10 +2878,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/bodyRepositories.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/cardioRepository.test.ts",
@@ -2892,10 +2892,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/cardioRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/checklistRepository.test.ts",
@@ -2906,10 +2906,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/checklistRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/dataResetRepository.ts",
@@ -2927,10 +2927,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/dayCompletenessRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/epochCarryReports.test.ts",
@@ -2941,10 +2941,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/epochCarryReports.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/equipmentProfileRepository.test.ts",
@@ -2955,10 +2955,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/equipmentProfileRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/exerciseRepository.test.ts",
@@ -2969,10 +2969,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/exerciseRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/exportImportBodyProgress.test.ts",
@@ -3067,10 +3067,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/exportImportRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/exportImportRoutineCircuit.test.ts",
@@ -3123,10 +3123,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/foodFavoriteRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/foodRepository.test.ts",
@@ -3137,10 +3137,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/foodRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/fullExport.test.ts",
@@ -3158,17 +3158,17 @@
   },
   {
     "fichier": "src/db/repositories/sql/goalRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/index.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/mealEntryRenpho.test.ts",
@@ -3186,10 +3186,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/mealEntryRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/mesocycleRepository.test.ts",
@@ -3200,10 +3200,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/mesocycleRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/nutritionTargetRepository.test.ts",
@@ -3214,17 +3214,17 @@
   },
   {
     "fichier": "src/db/repositories/sql/nutritionTargetRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/occurrenceDedup.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/progressionRepository.i408.test.ts",
@@ -3242,10 +3242,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/progressionRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/recipeRepository.test.ts",
@@ -3256,10 +3256,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/recipeRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/recoveryFactorRepository.test.ts",
@@ -3270,10 +3270,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/recoveryFactorRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/recoveryRepository.test.ts",
@@ -3284,10 +3284,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/recoveryRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/recoveryRepositoryLatest.test.ts",
@@ -3312,10 +3312,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/recoverySampleRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/reminderRepository.test.ts",
@@ -3326,10 +3326,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/reminderRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/rev01.ingredientName.test.ts",
@@ -3354,10 +3354,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/routineRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/settingsRepository.test.ts",
@@ -3368,10 +3368,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/settingsRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/spaceRepository.test.ts",
@@ -3382,17 +3382,17 @@
   },
   {
     "fichier": "src/db/repositories/sql/spaceRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/sqlHelpers.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/supplementRepository.test.ts",
@@ -3403,24 +3403,24 @@
   },
   {
     "fichier": "src/db/repositories/sql/supplementRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/syncConflicts.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/sql/syncRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/sql/syncUnknown.ts",
@@ -3459,10 +3459,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/taskRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/testSetup.ts",
@@ -3480,17 +3480,17 @@
   },
   {
     "fichier": "src/db/repositories/sql/trainingRoutineRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/userDataRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/workoutCircuit.test.ts",
@@ -3522,10 +3522,10 @@
   },
   {
     "fichier": "src/db/repositories/sql/workoutRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture integrale 20/11 : bornes, mapping, SQL, suppression et transactions ; synthese et limites dans partie-02.md."
   },
   {
     "fichier": "src/db/repositories/sql/workoutWarmup.test.ts",
@@ -3543,80 +3543,80 @@
   },
   {
     "fichier": "src/db/repositories/supplementRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/syncConflictRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/syncRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/syncUnknownRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/taskRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/trainingRoutineRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/userDataRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/repositories/workoutRepository.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/seed/defaultSpaces.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/seed/externalEventFixtures.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/seed/sampleData.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/db/serializedDriver.test.ts",
@@ -3641,10 +3641,10 @@
   },
   {
     "fichier": "src/db/testHooks.ts",
-    "statut": "à lire",
+    "statut": "lu",
     "motif": "",
-    "partie": null,
-    "preuve": null
+    "partie": 2,
+    "preuve": "Lecture int?grale : contrats repository, transactions appelantes, horloges et suppression ; impl?mentations SQL crois?es dans la partie 2."
   },
   {
     "fichier": "src/domain/appLock.test.ts",
