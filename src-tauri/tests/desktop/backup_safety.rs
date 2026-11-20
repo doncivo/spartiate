@@ -2,8 +2,8 @@
 
 use rusqlite::Connection;
 use spartiate_lib::backup::{
-    create_daily_backup, create_migration_backup, restore_backup_file, RestoreStep, BACKUP_DIR,
-    DB_FILE,
+    create_daily_backup, create_migration_backup, recover_interrupted_restore, restore_backup_file,
+    RestoreStep, BACKUP_DIR, DB_FILE,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -218,8 +218,54 @@ fn c138_the_swap_never_replaces_an_existing_database() {
             Ok(())
         },
     );
-    assert!(result.is_err(), "l'échange refuse de remplacer");
+    assert_eq!(
+        result.unwrap_err().code,
+        "rollback-failed",
+        "l'échange refuse de remplacer et le retour arrière aussi"
+    );
     assert_eq!(fs::read(&db).unwrap(), b"fichier etranger");
     let old = PathBuf::from(format!("{}.restore-old", db.display()));
     assert!(old.is_file(), "l'ancienne base reste récupérable");
+
+    // La récupération archive l'ancienne base ; le fichier étranger en place n'est pas touché.
+    let recovery = recover_interrupted_restore(&db, &backups).unwrap();
+    assert_eq!(format!("{recovery:?}"), "Archived");
+    assert_eq!(fs::read(&db).unwrap(), b"fichier etranger");
+    assert!(!old.exists());
+    let archived: Vec<_> = fs::read_dir(&backups)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|n| n.starts_with("spartiate-pre-restore-") && !n.contains("20261005T101500Z"))
+        .collect();
+    assert_eq!(archived.len(), 1, "{archived:?}");
+    let kept = Connection::open(backups.join(&archived[0])).unwrap();
+    let title: String = kept
+        .query_row("SELECT title FROM task", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(title, "synthétique");
+}
+
+#[test]
+fn c137_recovery_archive_survives_rotation_when_the_clock_goes_back() {
+    let (_dir, db, backups) = restorable();
+    for i in 1..=3 {
+        fs::write(
+            backups.join(format!("spartiate-pre-restore-2099010{i}T000000Z.db")),
+            b"x",
+        )
+        .unwrap();
+    }
+    // Conflit : la base et son .restore-old coexistent (échange interrompu).
+    let old = PathBuf::from(format!("{}.restore-old", db.display()));
+    fs::copy(&db, &old).unwrap();
+    recover_interrupted_restore(&db, &backups).unwrap();
+    assert!(!old.exists());
+    let archives: Vec<String> = fs::read_dir(&backups)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|n| n.starts_with("spartiate-pre-restore-") && !n.contains("2099"))
+        .collect();
+    assert_eq!(archives.len(), 1, "l'archive créée existe : {archives:?}");
+    assert!(backups.join(&archives[0]).is_file());
+    assert_eq!(count_prefix(&backups, "spartiate-pre-restore-"), 3);
 }
