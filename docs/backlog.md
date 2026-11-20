@@ -225,16 +225,16 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-163 | audit Claude 0.27.0 | mineur — OS « other » si l'agent utilisateur est inconnu : synchro et sauvegardes masquées sans erreur | à faire (lot 0.28.0) |
 | C-164 | audit Claude 0.27.0 | amélioration — setters de faux exportés sans garde DEV ; `plugins/README.md` incomplet | à faire (lot 0.28.0) |
 | C-165 | audit Claude 0.27.0 | bloquant — donnée de sommeil publiée dans le dépôt public (docs et fixture de sommeil) | fait (DOC-PRIV, PR #156 ; historique : HIST-01) |
-| C-166 | audit Claude 0.27.0 | important — actions GitHub non figées par SHA dans build-ios.yml et build-windows.yml | à faire (lot 0.28.0) |
+| C-166 | audit Claude 0.27.0 | important — actions GitHub non figées par SHA dans build-ios.yml et build-windows.yml | fait (CI-PUB) |
 | C-167 | audit Claude 0.27.0 | mineur — budgets de performance de Spartiate peu gardés par des tests (perf sur code hérité) | à faire (lot 0.28.0) |
 | C-168 | audit Claude 0.27.0 | important — tests qui figent des défauts établis par l'audit (C-005, C-007, C-009…) | à faire (lot 0.28.0) |
 | C-169 | audit Claude 0.27.0 | important — règles majeures sans test (assisté, deux lignes, provisoire, fixture nominale du § 11.6) | à faire (lot 0.28.0) |
 | C-170 | audit Claude 0.27.0 | important — seuil de couverture training ≥ 90 % (§ 11.6) absent de `vitest.config.ts` | à faire (lot 0.28.0) |
 | C-171 | audit Claude 0.27.0 | important — test FIX-0272 sans portée : il passe même sans la garde de démontage | à faire (lot 0.28.0) |
-| C-172 | audit Claude 0.27.0 | important — signature sur le runner de `npm ci` ; publication d'un tag sans contrôle de la suite verte | à faire (lot 0.28.0) |
+| C-172 | audit Claude 0.27.0 | important — signature sur le runner de `npm ci` ; publication d'un tag sans contrôle de la suite verte | fait (CI-PUB) ; signature en job distinct reportée (D-360) |
 | C-173 | audit Claude 0.27.0 | important (documentaire) — CI sur main et PR seulement, contre « à chaque push de branche » | à faire (lot 0.28.0) |
-| C-174 | audit Claude 0.27.0 | mineur — `needs` de « suite verte » non vérifié ; contrôles `\|\| true` ; pipe sans pipefail | à faire (lot 0.28.0) |
-| C-175 | audit Claude 0.27.0 | mineur — cache cargo écrit sur tag, persist-credentials, artefacts sans rétention, pas de `npm audit` | à faire (lot 0.28.0) |
+| C-174 | audit Claude 0.27.0 | mineur — `needs` de « suite verte » non vérifié ; contrôles `\|\| true` ; pipe sans pipefail | fait (CI-PUB) |
+| C-175 | audit Claude 0.27.0 | mineur — cache cargo écrit sur tag, persist-credentials, artefacts sans rétention, pas de `npm audit` | fait (CI-PUB) |
 | C-176 | audit Claude 0.27.0 | mineur — tests qui se recalculent avec le code ; bornes lâches au lieu de valeurs exactes | à faire (lot 0.28.0) |
 | C-177 | audit Claude 0.27.0 | mineur — propriété du plafond auto-référente ; générateur sans assisté, poids de corps ni décharge | à faire (lot 0.28.0) |
 | C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | à faire (lot 0.28.0) |
@@ -268,6 +268,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-101 | revue FIX-PLANCHER | mineur — moyenne des cibles par jour du tableau de bord (`compareKcal`, features) à exposer depuis `weeklyBalance` de `src/domain/nutrition/journal.ts` ; test d’écran de la case « Accepter » du check-in | reporté (S) |
 | BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | reporté (S) |
 | BL-103 | revue FIX-SAISIE-NUTRI | mineur — test du minuteur de minuit de `useCurrentDay` en fausses horloges et test de démontage sans fuite ; motif `macro-too-large` dans `validateMealEntry` au lieu du test recopié dans QuickAddForm et EntryEditor | reporté (S) |
+| BL-104 | revue CI-PUB | mineur — build-ios.yml, contrôle de l'extension : afficher `extension-entitlements.err` si `codesign -d` échoue ; signature de l'installeur PC dans un job distinct (D-360, 0.28.1) | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0

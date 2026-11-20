@@ -41,7 +41,18 @@ Hors périmètre, reporté : signature dans un job distinct (non testable sans t
   SHA-256 avant `--clobber` ne se vérifient qu'au tag. `build-windows.yml` accepte `workflow_dispatch` sans publier ni signer : un
   lancement à blanc couvre `garde` (branche du notice), `npm ci --ignore-scripts`, la compilation et la collecte.
 
-## Décisions proposées
+## Passe code-reviewer (à froid, agent distinct) : à corriger, puis corrigé
+
+Avant la revue, l'appelant a trouvé que build-ios.yml et build-windows.yml n'étaient plus du YAML valide (`run: echo "…Hors tag : …"`, « : »
+dans un scalaire simple) : GitHub refusait le lancement manuel (« does not have workflow_dispatch trigger ») et un tag n'aurait rien publié. Rouge
+`087bde29` (test qui analyse les trois workflows avec `yaml`), vert suivant (bloc littéral). Revue : SHA identiques aux trois fichiers, `garde`
+correct (absent, en cours, non vert, rejoué, ignoré), chaîne `needs` jusqu'à la publication sans `always()`, `--ignore-scripts` sans risque (seul
+`fsevents` a un script), cache iOS en lecture seule sur tag, 382 tests verts. À corriger : (1) AGENTS.md : taguer seulement quand « suite verte » est
+verte sur le commit de main (corrigé) ; (2) D-358 à D-361 inscrites dans docs/decisions.md (fait) ; (3) lancements à blanc Windows et iOS à terminer
+en succès (consignés ci-dessous). Suggestions : (4) afficher le stderr de `codesign -d` en cas d'échec, (5) annulation de « Tests » par
+`concurrency` sur deux commits rapprochés de main (écrite dans AGENTS.md) : (4) au registre (BL-104).
+
+## Décisions : D-358, D-359, D-360, D-361 (docs/decisions.md)
 
 - **D-358** : les workflows de publication figent toutes leurs actions par SHA (les mêmes que `tests.yml`) ; un test statique (`scripts/release/ciPub.test.ts`) refuse tout `uses:` distant non figé dans les trois workflows. Monter une action est un commit qui change le SHA partout (révisable par Ali).
 - **D-359** : un job `garde` (permission `checks: read`, `GITHUB_TOKEN` seul) précède toute compilation ou signature sur tag, PC comme iPhone : le check « suite verte » du SHA du tag doit être terminé et vert (`scripts/release/check-suite-verte.mjs`). Conséquence : le tag se pose après la fin de la suite sur le commit de `main`, jamais sur un commit sans suite. Hors tag, le job réussit sans contrôle.
