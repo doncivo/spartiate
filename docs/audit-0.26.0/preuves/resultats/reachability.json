@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "reachability",
+    "executable":  "node.exe",
+    "arguments":  [
+                      "scripts/cleanup/reachability.mjs",
+                      "--json",
+                      "docs/audit-0.26.0/preuves/reachability.json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:30.4241560Z",
+    "fin":  "2026-11-16T08:16:34.2173381Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

@@ -1,0 +1,296 @@
+{
+  "config": {
+    "argv": [
+      "/opt/hostedtoolcache/node/22.23.4/x64/bin/node",
+      "/home/runner/work/spartiate/spartiate/node_modules/.bin/playwright",
+      "test",
+      "--project=perf",
+      "--no-deps",
+      "--reporter=github,json"
+    ],
+    "configFile": "/home/runner/work/spartiate/spartiate/playwright.config.ts",
+    "rootDir": "/home/runner/work/spartiate/spartiate/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": true,
+    "fullyParallel": true,
+    "globalSetup": "/home/runner/work/spartiate/spartiate/tests/e2e/globalSetup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "ci": {
+        "commitHref": "https://github.com/doncivo/spartiate/commit/8686a8fc2860f7a94eb193426cbcc640a33bac80",
+        "commitHash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+        "buildHref": "https://github.com/doncivo/spartiate/actions/runs/43801990156"
+      },
+      "gitCommit": {
+        "shortHash": "8686a8f",
+        "hash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+        "subject": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)",
+        "body": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+        "author": {
+          "name": "doncivo",
+          "email": "ali.s.cherif@gmail.com",
+          "time": 1794801953000
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "time": 1794801953000
+        },
+        "branch": "main"
+      },
+      "actualWorkers": 2
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/runner/work/spartiate/spartiate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "ci": {
+            "commitHref": "https://github.com/doncivo/spartiate/commit/8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "commitHash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "buildHref": "https://github.com/doncivo/spartiate/actions/runs/43801990156"
+          },
+          "gitCommit": {
+            "shortHash": "8686a8f",
+            "hash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "subject": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)",
+            "body": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+            "author": {
+              "name": "doncivo",
+              "email": "ali.s.cherif@gmail.com",
+              "time": 1794801953000
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "time": 1794801953000
+            },
+            "branch": "main"
+          },
+          "actualWorkers": 2
+        },
+        "id": "pc",
+        "name": "pc",
+        "testDir": "/home/runner/work/spartiate/spartiate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/runner/work/spartiate/spartiate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "ci": {
+            "commitHref": "https://github.com/doncivo/spartiate/commit/8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "commitHash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "buildHref": "https://github.com/doncivo/spartiate/actions/runs/43801990156"
+          },
+          "gitCommit": {
+            "shortHash": "8686a8f",
+            "hash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "subject": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)",
+            "body": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+            "author": {
+              "name": "doncivo",
+              "email": "ali.s.cherif@gmail.com",
+              "time": 1794801953000
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "time": 1794801953000
+            },
+            "branch": "main"
+          },
+          "actualWorkers": 2
+        },
+        "id": "iphone",
+        "name": "iphone",
+        "testDir": "/home/runner/work/spartiate/spartiate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/runner/work/spartiate/spartiate/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "ci": {
+            "commitHref": "https://github.com/doncivo/spartiate/commit/8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "commitHash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "buildHref": "https://github.com/doncivo/spartiate/actions/runs/43801990156"
+          },
+          "gitCommit": {
+            "shortHash": "8686a8f",
+            "hash": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+            "subject": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)",
+            "body": "REL-0.26.0 : version 0.26.0, CHANGELOG et reprise (lot 0.26.0) (#147)\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+            "author": {
+              "name": "doncivo",
+              "email": "ali.s.cherif@gmail.com",
+              "time": 1794801953000
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "time": 1794801953000
+            },
+            "branch": "main"
+          },
+          "actualWorkers": 2
+        },
+        "id": "perf",
+        "name": "perf",
+        "testDir": "/home/runner/work/spartiate/spartiate/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "github"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 2,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "perf-start.spec.ts",
+      "file": "perf-start.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "@perf démarrage jusqu'à Aujourd'hui, pc",
+          "ok": true,
+          "tags": [
+            "perf"
+          ],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "mesure",
+                  "description": "1142 ms (budget 1500 ms)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "perf",
+              "projectName": "perf",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1435,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-16T04:08:14.561Z",
+                  "annotations": [
+                    {
+                      "type": "mesure",
+                      "description": "1142 ms (budget 1500 ms)"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f3ae3170762d28f3e59-b3ffcd4a95d2ed90a38c",
+          "file": "perf-start.spec.ts",
+          "line": 13,
+          "column": 3
+        },
+        {
+          "title": "@perf démarrage jusqu'à Aujourd'hui, iphone",
+          "ok": true,
+          "tags": [
+            "perf"
+          ],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "mesure",
+                  "description": "1084 ms (budget 2000 ms)"
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "perf",
+              "projectName": "perf",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1359,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-16T04:08:14.535Z",
+                  "annotations": [
+                    {
+                      "type": "mesure",
+                      "description": "1084 ms (budget 2000 ms)"
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4f3ae3170762d28f3e59-ac9fbe243b6aab31c497",
+          "file": "perf-start.spec.ts",
+          "line": 13,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-16T04:08:08.601Z",
+    "duration": 8869.709,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

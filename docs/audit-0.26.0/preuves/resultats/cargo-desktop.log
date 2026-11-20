@@ -1,0 +1,1470 @@
+cargo.exe :  Downloading crates ...
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Downloading crates ...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+  Downloaded cipher v0.4.4
+  Downloaded ct-codecs v1.1.8
+  Downloaded inout v0.1.4
+  Downloaded minisign v0.7.9
+  Downloaded pbkdf2 v0.12.2
+  Downloaded rpassword v7.5.4
+  Downloaded rtoolbox v0.0.6
+  Downloaded salsa20 v0.10.2
+  Downloaded scrypt v0.11.0
+   Compiling cfg-if v1.0.5
+   Compiling windows-link v0.2.1
+   Compiling zerofrom v0.1.8
+   Compiling getrandom v0.4.3
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling litemap v0.8.3
+   Compiling writeable v0.6.4
+   Compiling utf8_iter v1.0.4
+   Compiling bytes v1.12.1
+   Compiling log v0.4.34
+   Compiling icu_properties_data v2.3.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling jobserver v0.1.35
+   Compiling cc v1.5.1
+   Compiling percent-encoding v2.3.2
+   Compiling scopeguard v1.2.0
+   Compiling siphasher v1.0.4
+   Compiling lock_api v0.4.14
+   Compiling thiserror v2.0.21
+   Compiling zmij v1.0.23
+   Compiling phf_shared v0.13.1
+   Compiling form_urlencoded v1.2.2
+   Compiling yoke v0.8.3
+   Compiling phf_generator v0.13.1
+   Compiling dunce v1.0.5
+   Compiling serde_core v1.0.229
+   Compiling zerovec v0.11.8
+   Compiling serde v1.0.229
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling equivalent v1.0.2
+   Compiling time-macros v0.2.32
+   Compiling deranged v0.5.8
+   Compiling powerfmt v0.2.0
+   Compiling time v0.3.55
+   Compiling tinystr v0.8.4
+   Compiling windows-sys v0.61.2
+   Compiling icu_locale_core v2.3.0
+   Compiling potential_utf v0.1.6
+   Compiling zerotrie v0.2.5
+   Compiling icu_provider v2.3.1
+   Compiling icu_collections v2.3.0
+   Compiling parking_lot_core v0.9.12
+   Compiling parking_lot v0.12.5
+   Compiling phf_macros v0.13.1
+   Compiling http v1.5.0
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling idna_adapter v1.2.2
+   Compiling serde_json v1.0.151
+   Compiling phf_codegen v0.13.1
+   Compiling winnow v1.0.4
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling idna v1.1.0
+   Compiling uuid v1.26.1
+   Compiling base64 v0.23.1
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling url v2.5.8
+   Compiling typeid v1.0.3
+   Compiling aho-corasick v1.1.5
+   Compiling regex-syntax v0.8.11
+   Compiling web-time v1.1.0
+   Compiling fnv v1.0.7
+   Compiling indexmap v2.14.2
+   Compiling regex-automata v0.4.18
+   Compiling phf v0.13.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling alloc-no-stdlib v3.0.0
+   Compiling alloc-stdlib v0.3.0
+   Compiling web_atoms v0.2.6
+   Compiling regex v1.13.1
+   Compiling semver v1.0.28
+   Compiling quick-xml v0.42.0
+   Compiling pin-project-lite v0.2.17
+   Compiling brotli-decompressor v6.0.1
+   Compiling string_cache v0.9.0
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling serde_spanned v1.1.1
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling brotli v9.0.0
+   Compiling anyhow v1.0.104
+   Compiling selectors v0.38.0
+   Compiling glob v0.3.4
+   Compiling ctor v1.0.13
+   Compiling cssparser v0.37.0
+   Compiling markup5ever v0.39.0
+   Compiling winapi-util v0.1.11
+   Compiling indexmap v1.9.3
+   Compiling same-file v1.0.6
+   Compiling html5ever v0.39.0
+   Compiling cfb v0.14.0
+   Compiling erased-serde v0.4.10
+   Compiling jsonptr v0.7.1
+   Compiling cargo-platform v0.1.9
+   Compiling typenum v1.20.1
+   Compiling generic-array v0.14.7
+   Compiling dom_query v0.28.0
+   Compiling schemars v0.8.22
+   Compiling cargo_metadata v0.19.2
+   Compiling json-patch v4.2.0
+   Compiling serde-untagged v0.1.9
+   Compiling infer v0.22.0
+   Compiling walkdir v2.5.0
+   Compiling plist v1.10.1
+   Compiling urlpattern v0.6.0
+   Compiling serde_with v3.24.0
+   Compiling stable_deref_trait v1.2.1
+   Compiling tauri-utils v2.10.1
+   Compiling libc v0.2.189
+   Compiling futures-core v0.3.34
+   Compiling smallvec v1.16.2
+   Compiling once_cell v1.21.4
+   Compiling block-buffer v0.10.4
+   Compiling vswhom-sys v0.1.3
+   Compiling option-ext v0.2.0
+   Compiling heck v0.5.0
+   Compiling vswhom v0.1.0
+   Compiling winreg v0.55.0
+   Compiling rustc_version v0.4.1
+   Compiling embed-resource v3.0.11
+   Compiling crossbeam-utils v0.8.23
+   Compiling dirs-sys v0.5.0
+   Compiling tracing-core v0.1.36
+   Compiling tauri-plugin v2.7.1
+   Compiling socket2 v0.6.5
+   Compiling mio v1.2.3
+   Compiling windows-strings v0.5.1
+   Compiling windows-result v0.4.1
+   Compiling tokio-macros v2.7.2
+   Compiling cpufeatures v0.2.17
+   Compiling tokio v1.53.1
+   Compiling tracing v0.1.44
+   Compiling dirs v7.0.0
+   Compiling tauri-winres v0.3.6
+   Compiling cargo_toml v1.0.1
+   Compiling tauri-build v2.7.1
+   Compiling simd-adler32 v0.3.10
+   Compiling foldhash v0.2.0
+   Compiling hashbrown v0.17.1
+   Compiling windows-core v0.62.2
+   Compiling bitflags v2.13.2
+   Compiling adler2 v2.0.1
+   Compiling tauri v2.12.1
+   Compiling crypto-common v0.1.7
+   Compiling base64 v0.22.1
+   Compiling futures-task v0.3.34
+   Compiling slab v0.4.12
+   Compiling futures-io v0.3.34
+   Compiling digest v0.10.7
+   Compiling crc32fast v1.5.2
+   Compiling miniz_oxide v0.9.1
+   Compiling windows-threading v0.2.1
+   Compiling windows-future v0.3.2
+   Compiling flate2 v1.1.10
+   Compiling sha2 v0.10.9
+   Compiling num-traits v0.2.19
+   Compiling miniz_oxide v0.8.9
+   Compiling windows-numerics v0.3.1
+   Compiling windows-collections v0.3.2
+   Compiling fdeflate v0.3.7
+   Compiling raw-window-handle v0.6.2
+   Compiling subtle v2.6.1
+   Compiling futures-sink v0.3.34
+   Compiling windows v0.62.2
+   Compiling dpi v0.1.2
+   Compiling webview2-com-sys v0.39.1
+   Compiling cmake v0.1.58
+   Compiling aws-lc-sys v0.45.0
+   Compiling crossbeam-channel v0.5.17
+   Compiling windows-version v0.1.7
+   Compiling byteorder v1.5.0
+   Compiling png v0.17.16
+   Compiling webview2-com v0.39.1
+   Compiling cookie v0.18.2
+   Compiling getrandom v0.3.4
+   Compiling futures-util v0.3.34
+   Compiling ico v0.5.0
+   Compiling png v0.18.1
+   Compiling keyboard-types v0.8.3
+   Compiling pxfm v0.1.30
+   Compiling unicode-segmentation v1.13.3
+   Compiling aws-lc-rs v1.18.1
+   Compiling tao v0.37.1
+   Compiling moxcms v0.8.1
+   Compiling muda v0.20.0
+   Compiling tauri-codegen v2.7.1
+   Compiling tauri-runtime v2.12.1
+   Compiling wry v0.57.0
+   Compiling softbuffer v0.4.8
+   Compiling ring v0.17.14
+   Compiling byteorder-lite v0.1.0
+   Compiling foldhash v0.1.5
+   Compiling zeroize v1.9.0
+   Compiling arrayvec v0.7.8
+   Compiling bytemuck v1.25.2
+   Compiling allocator-api2 v0.2.21
+   Compiling hashbrown v0.15.5
+   Compiling image v0.25.10
+   Compiling serialize-to-javascript v0.1.2
+   Compiling tauri-runtime-wry v2.12.1
+   Compiling tauri-macros v2.7.1
+   Compiling tray-icon v0.25.1
+   Compiling window-vibrancy v0.8.1
+   Compiling getrandom v0.2.17
+   Compiling crc-catalog v2.5.0
+   Compiling parking v2.2.1
+   Compiling mime v0.3.17
+   Compiling event-listener v5.4.2
+   Compiling crc v3.4.0
+   Compiling hashlink v0.10.0
+   Compiling libsqlite3-sys v0.39.1
+   Compiling futures-channel v0.3.34
+   Compiling crossbeam-queue v0.3.14
+   Compiling spin v0.9.9
+   Compiling ryu v1.0.23
+   Compiling untrusted v0.9.0
+   Compiling rustls-pki-types v1.15.1
+   Compiling http-body v1.1.0
+   Compiling rustls v0.23.46
+   Compiling rustls-webpki v0.103.16
+   Compiling tokio-stream v0.1.19
+   Compiling rust_decimal v1.43.0
+   Compiling futures-intrusive v0.5.0
+   Compiling either v1.18.0
+   Compiling tower-service v0.3.3
+   Compiling try-lock v0.2.5
+   Compiling want v0.3.1
+   Compiling sqlx-core v0.8.6
+   Compiling httparse v1.10.1
+   Compiling windows_x86_64_msvc v0.53.1
+   Compiling futures-executor v0.3.34
+   Compiling serde_urlencoded v0.7.1
+   Compiling flume v0.11.1
+   Compiling atoi v2.0.0
+   Compiling tauri-plugin-fs v2.6.0
+   Compiling atomic-waker v1.1.2
+   Compiling hyper v1.11.1
+   Compiling sqlx-sqlite v0.8.6
+(C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\source\src-tauri\vendor\sqlx-sqlite)
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:192:67
+    |
+192 |     use time::format_description::BorrowedFormatItem::{Component, Literal, Optional};
+    |                                                                   ^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated tuple variant `time::format_description::Component::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:195:52
+    |
+195 |     const YEAR: BorrowedFormatItem<'_> = Component(Year({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Year`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:196:35
+    |
+196 |         let mut value = modifier::Year::default();
+    |                                   ^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::YearRepr::Full`: used only in the
+deprecated `Year` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:42
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |                                          ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Month`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:204:53
+    |
+204 |     const MONTH: BorrowedFormatItem<'_> = Component(Month({
+    |                                                     ^^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Month`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:205:35
+    |
+205 |         let mut value = modifier::Month::default();
+    |                                   ^^^^^
+
+warning: use of deprecated unit variant `time::format_description::modifier::MonthRepr::Numerical`: used only in the
+deprecated `Month` component
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:43
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |                                           ^^^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::Component::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:218:52
+    |
+218 |     const HOUR: BorrowedFormatItem<'_> = Component(Hour({
+    |                                                    ^^^^
+
+warning: use of deprecated struct `time::format_description::modifier::Hour`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:219:35
+    |
+219 |         let mut value = modifier::Hour::default();
+    |                                   ^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:259:13
+    |
+259 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:261:13
+    |
+261 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:263:23
+    |
+263 |             Optional(&Literal(b" ")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:264:23
+    |
+264 |             Optional(&Literal(b"T")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:266:13
+    |
+266 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:268:23
+    |
+268 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:270:23
+    |
+270 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:273:23
+    |
+273 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:281:13
+    |
+281 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:283:13
+    |
+283 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:285:13
+    |
+285 |             Literal(b" "),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:287:13
+    |
+287 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:289:23
+    |
+289 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:291:23
+    |
+291 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:293:23
+    |
+293 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:300:13
+    |
+300 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:302:13
+    |
+302 |             Literal(b"-"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:304:13
+    |
+304 |             Literal(b"T"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:306:13
+    |
+306 |             Literal(b":"),
+    |             ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:308:23
+    |
+308 |             Optional(&Literal(b":")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:310:23
+    |
+310 |             Optional(&Literal(b".")),
+    |                       ^^^^^^^
+
+warning: use of deprecated tuple variant `time::format_description::BorrowedFormatItem::Literal`: use `StringLiteral`
+instead; raw bytes are not recommended
+   --> vendor\sqlx-sqlite\src\types\time.rs:312:23
+    |
+312 |             Optional(&Literal(b"Z")),
+    |                       ^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::padding`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:197:9
+    |
+197 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::repr`: use one of the various `Year*`
+components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:198:9
+    |
+198 |         value.repr = modifier::YearRepr::Full;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::iso_week_based`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:199:9
+    |
+199 |         value.iso_week_based = false;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Year::sign_is_mandatory`: use one of the various
+`Year*` components instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:200:9
+    |
+200 |         value.sign_is_mandatory = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::padding`: use `MonthShort`, `MonthLong`,
+or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:206:9
+    |
+206 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::repr`: use `MonthShort`, `MonthLong`, or
+`MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:207:9
+    |
+207 |         value.repr = modifier::MonthRepr::Numerical;
+    |         ^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Month::case_sensitive`: use `MonthShort`,
+`MonthLong`, or `MonthNumeric` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:208:9
+    |
+208 |         value.case_sensitive = true;
+    |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::padding`: use `Hour12` or `Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:220:9
+    |
+220 |         value.padding = modifier::Padding::Zero;
+    |         ^^^^^^^^^^^^^
+
+warning: use of deprecated field `time::format_description::modifier::Hour::is_12_hour_clock`: use `Hour12` or
+`Hour24` instead
+   --> vendor\sqlx-sqlite\src\types\time.rs:221:9
+    |
+221 |         value.is_12_hour_clock = false;
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `sqlx-sqlite` (lib) generated 40 warnings
+   Compiling windows-targets v0.53.5
+   Compiling sync_wrapper v1.0.2
+   Compiling ipnet v2.12.2
+   Compiling tower-layer v0.3.3
+   Compiling tower v0.5.3
+   Compiling sqlx-macros-core v0.8.6
+   Compiling hyper-util v0.1.21
+   Compiling windows-sys v0.60.2
+   Compiling zerocopy v0.8.59
+   Compiling tokio-rustls v0.26.6
+   Compiling tauri-plugin-updater v2.13.1
+   Compiling tauri-plugin-autostart v2.7.0
+   Compiling tauri-plugin-sql v2.5.0
+(C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\source\src-tauri\vendor\tauri-plugin-sql)
+   Compiling tauri-plugin-opener v2.7.0
+   Compiling tauri-plugin-process v2.4.0
+   Compiling tauri-plugin-dialog v2.8.1
+warning: `sqlx-sqlite` (lib) generated 40 warnings (40 duplicates)
+   Compiling hyper-rustls v0.27.10
+   Compiling ppv-lite86 v0.2.21
+   Compiling sqlx-macros v0.8.6
+   Compiling tower-http v0.6.11
+   Compiling rustls-platform-verifier v0.7.1
+   Compiling http-body-util v0.1.5
+   Compiling rand_core v0.9.5
+   Compiling tokio-util v0.7.19
+   Compiling windows-registry v0.6.1
+   Compiling inout v0.1.4
+   Compiling os_info v3.15.0
+   Compiling fastrand v2.5.0
+   Compiling tempfile v3.27.0
+   Compiling auto-launch v0.6.0
+   Compiling cipher v0.4.4
+   Compiling reqwest v0.13.5
+   Compiling rand_chacha v0.9.0
+   Compiling sqlx v0.8.6
+   Compiling rfd v0.16.0
+   Compiling hmac v0.12.1
+   Compiling hashlink v0.12.2
+   Compiling spartiate v0.26.0 (C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\source\src-tauri)
+   Compiling open v5.4.4
+   Compiling fallible-iterator v0.3.0
+   Compiling minisign-verify v0.2.5
+   Compiling fallible-streaming-iterator v0.1.9
+   Compiling rusqlite v0.41.1
+   Compiling pbkdf2 v0.12.2
+   Compiling rand v0.9.5
+   Compiling salsa20 v0.10.2
+   Compiling keyring v3.6.3
+   Compiling tauri-plugin-single-instance v2.5.2
+   Compiling rtoolbox v0.0.6
+   Compiling rpassword v7.5.4
+warning: linker stdout: Création de la bibliothèque
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\spartiate_lib.dll.lib et de l'objet
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\spartiate_lib.dll.exp
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `spartiate` (lib) generated 1 warning
+   Compiling scrypt v0.11.0
+   Compiling ct-codecs v1.1.8
+   Compiling minisign v0.7.9
+warning: linker stdout: Création de la bibliothèque
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\desktop-1cc5e2bb6d63c7cc.lib et de
+l'objet C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\desktop-1cc5e2bb6d63c7cc.exp
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `spartiate` (test "desktop") generated 1 warning
+warning: linker stdout: Création de la bibliothèque
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\spartiate.lib et de l'objet
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\spartiate.exp
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `spartiate` (bin "spartiate") generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18m 31s
+     Running tests\desktop\main.rs
+(C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\.runtime\cargo-target\debug\deps\desktop-1cc5e2bb6d63c7cc.exe)
+
+running 848 tests
+test applog::i04_5_code_field_is_sanitized_with_the_shared_vectors ... ok
+test applog::i04_5_sanitize_detail_matches_the_shared_vectors ... ok
+test applog::i04_4_a_line_above_4_kib_is_truncated_with_a_mark ... ok
+test applog::i04_forms_are_strict_and_invalid_values_are_replaced ... ok
+test applog::i04_4_a_corrupted_file_is_read_with_replacement_and_marked_without_panic ... ok
+test applog::i04_4_and_8_clear_removes_both_files_then_logs_cleared_is_the_first_entry ... ok
+test applog::i04_4_reading_returns_the_last_entries_previous_file_first ... ok
+test applog::i04_more_than_100_entries_are_refused_and_nothing_is_written ... ok
+test applog::i04_4_a_log_file_that_is_a_link_is_neither_read_nor_written ... ok
+test applog::i04_a_burst_of_the_same_entry_is_limited_to_10_per_minute_then_summarized ... ok
+test applog::i04_internal_writes_wait_in_memory_until_init_then_are_written ... ok
+test applog::i5_05_the_webview_journal_uses_the_directory_given_to_init ... ok
+test applog::i04_qa_paths_urls_and_tokens_in_a_detail_never_reach_the_file ... ok
+test applog::lecture_jusqu_a_2000_entrees_les_plus_recentes ... ok
+test applog::i04_4_a_logs_folder_that_is_a_link_is_neither_read_nor_written ... ok
+test backup::missing_database_is_not_an_error_and_creates_nothing ... ok
+test backup::missing_database_with_existing_version_is_an_error ... ok
+test backup::failure_is_reported_and_leaves_no_partial_file ... ok
+test backup::stamp_and_name_format ... ok
+test backup::copies_after_truncate_checkpoint ... ok
+test backup::orphan_tmp_files_are_removed_at_the_start_of_a_backup ... ok
+test backup::rerunning_with_the_same_stamp_replaces_the_backup ... ok
+test backup_summary::y_tech_04_16_a_backup_reports_its_device_platform_and_decoded_epoch ... ok
+test backup::copies_a_wal_database_with_all_rows_even_without_checkpoint ... ok
+test backup::keeps_only_the_five_latest_migration_backups_and_spares_daily_ones ... ok
+test backup_summary::y_tech_04_16_a_file_over_the_size_bound_is_listed_without_being_read ... ok
+test backup_summary::y_tech_04_16_a_folder_name_with_special_characters_is_read_like_any_other ... ok
+test backup_summary::y_tech_04_16_an_oversized_identifier_gives_none ... ok
+test backup_summary::y_tech_04_16_the_listing_serializes_the_new_fields_in_camel_case ... ok
+test backup_summary::y_tech_04_16_missing_tables_and_rows_give_none_for_the_field_only ... ok
+test backup_summary::y_tech_04_17_a_backup_left_in_wal_mode_is_read_without_leaving_a_journal_or_changing_bytes ... ok
+test backup_summary::y_tech_04_16_only_the_self_row_designates_the_device ... ok
+test backup_summary::y_tech_04_17_an_unreadable_backup_stays_listed_and_the_others_are_not_affected ... ok
+test backup_summary::y_tech_04_17_listing_never_writes_into_a_backup ... ok
+test backup_summary::y_tech_04_16_the_listing_keeps_its_order_newest_first ... ok
+test backup_summary::y_tech_04_16_an_epoch_that_is_not_a_json_text_or_is_oversized_gives_none ... ok
+test backup_versions::i5_01_every_schema_version_declares_exactly_the_triggers_it_introduces_and_every_table ... ok
+test backup_versions::i5_01_no_legacy_trigger_is_admitted_on_a_spartiate_table_at_any_version ... ok
+test applog::i04_qa_batches_of_maximal_lines_never_exceed_two_files_of_256_kib ... ok
+test backup_versions::i5_01_the_migrations_fixture_covers_every_schema_version_up_to_the_app_one ... ok
+test backup_versions::a_real_spartiate_v8_backup_is_admitted_and_reset_triggers_restores_exactly_its_triggers ... ok
+test backup_versions::a_restored_v7_backup_then_migration_0008_ends_with_the_34_sync_triggers ... ok
+test backup_versions::a_restored_v8_backup_then_migration_0009_ends_with_the_40_sync_triggers ... ok
+test backup_versions::a_real_spartiate_v9_backup_is_admitted_and_reset_triggers_restores_exactly_its_40_triggers ... ok
+test backup_versions::k05_4_the_three_replaced_triggers_have_a_superseded_body_valid_from_15_to_17 ... ok
+test applog::i04_4_rotation_keeps_at_most_two_files_of_256_kib ... ok
+test capture_ios::cap_ios_01_11_dictation_is_on_device_only_and_nothing_is_written_or_sent ... ok
+test capture_ios::cap_ios_01_15_capture_capability_is_ios_only_with_the_exact_list_and_ocr_stays_windows_only ... ok
+test capture_ios::cap_ios_01_15_crates_are_ios_dependencies_only_and_registered_for_ios_only ... ok
+test capture_ios::cap_ios_01_5_every_contract_command_exists_in_swift_with_the_same_fields ... ok
+test capture_ios::cap_ios_01_5_plugins_are_called_by_rust_only ... ok
+test capture_ios::cap_ios_01_5_reject_codes_are_the_contract_codes_and_go_through_one_function ... ok
+test capture_ios::cap_ios_01_5_swift_has_no_french_text_nor_label ... ok
+test capture_ios::cap_ios_01_5_vision_runs_off_the_main_and_ipc_queues_with_a_time_guard ... ok
+test capture_ios::cap_ios_01_every_method_resolves_or_rejects_on_all_paths ... ok
+test config::a07_haptics_capability_grants_exactly_the_three_commands ... ok
+test config::backups_capability_grants_only_the_five_backup_commands_to_the_main_window_on_windows ... ok
+test config::bundle_metadata_is_filled ... ok
+test config::d01_9_tooltip_and_no_notification_plugin ... ok
+test config::d02_2_autostart_uses_minimized_argument ... ok
+test config::desktop_capability_is_scoped_to_windows_and_the_main_window ... ok
+test config::export_capability_grants_only_the_two_export_commands_to_the_main_window_on_windows ... ok
+test config::files_ios_01_10_ios_workflow_checks_the_plugin_targets ... ok
+test config::files_ios_01_4_export_ios_capability_is_exact_and_no_capability_grants_the_plugin ... ok
+test config::files_ios_01_4_plugin_is_ios_only_and_the_ios_handler_has_only_the_save_command ... ok
+test config::global_tauri_is_explicitly_disabled ... ok
+test config::health_files_read_is_registered_in_its_own_ios_capability ... ok
+test config::healthkit_commands_are_registered_in_the_minimal_ios_capability ... ok
+test config::i02_signing_capability_grants_exactly_the_one_command ... ok
+test config::i02_signing_command_exists_for_ios_only ... ok
+test config::i03_biometric_capability_grants_exactly_status_and_authenticate ... ok
+test config::i03_privacy_shield_capability_grants_exactly_set_enabled ... ok
+test config::i04_9_log_capabilities_are_exact_and_only_for_the_main_window ... ok
+test config::i04_9_the_only_eprintln_is_in_applog_and_the_journal_starts_first ... ok
+test config::i4_05_off_capability_is_exact_and_only_for_the_main_window ... ok
+test config::import_capability_grants_only_the_open_file_command_to_the_main_window_on_windows ... ok
+test config::ios_log_lives_in_documents_with_a_fallback ... ok
+test config::live_activity_commands_are_registered_in_the_minimal_ios_capability ... ok
+test config::lot_m_local_plugins_acl_prefix_matches_runtime_name ... ok
+test config::lot_m_plugins_are_ios_only_dependencies ... ok
+test config::lot_m_plugins_are_registered_for_ios_only ... ok
+test config::main_window_starts_hidden_on_windows_only ... ok
+test config::n01_ios_notifications_capability_grants_exactly_the_listed_permissions ... ok
+test config::n01_notification_plugin_is_registered_for_ios_only ... ok
+test config::n03_actions_plugin_is_registered_for_ios_only_after_the_official_plugin ... ok
+test config::no_fs_plugin_is_registered_for_the_webview ... ok
+test config::no_private_key_material_in_configuration ... ok
+test config::opener_scope_is_limited_to_the_releases_repository ... ok
+test config::p04_ios_16_backups_capability_and_handler_are_exact ... ok
+test config::p04_ios_a_single_setup_runs_recovery_then_vision_cleanup ... ok
+test config::p04_ios_sql_plugin_is_registered_late_on_iphone_only ... ok
+test config::rel_tech_01_no_remote_debugging_in_delivered_configuration ... ok
+test config::setup_recovers_first_then_creates_the_main_window_before_anything_that_uses_it ... ok
+test config::sync_1_handlers_equal_the_build_manifest ... ok
+test config::sync_2_main_capability_grants_exactly_twenty_one_commands ... ok
+test config::sync_3_pairing_capability_grants_exactly_three_commands_and_no_core_permission ... ok
+test config::sync_4_no_other_capability_grants_sync_permissions ... ok
+test config::sync_5_no_capability_applying_to_main_grants_window_creation ... ok
+test config::sync_7_ios_capability_grants_exactly_its_list_and_no_pairing_window_command ... ok
+test config::sync_8_no_capability_grants_the_folder_bookmark_plugin ... ok
+test config::updater_is_configured_with_spartiate_key_and_endpoint ... ok
+test db_diagnostics::dossier_absent ... ok
+test db_diagnostics::dossier_introuvable ... ok
+test db_diagnostics::fichier_present_avec_taille_et_wal ... ok
+test export::a_stale_temporary_from_an_interrupted_export_does_not_block_the_next_one ... ok
+test export::atomic_write_creates_the_file_and_leaves_no_temporary ... ok
+test export::atomic_write_replaces_an_existing_file_only_at_the_end ... ok
+test export::bodies_above_the_cap_are_refused_before_any_copy ... ok
+test export::failure_in_the_middle_leaves_no_partial_file_and_keeps_the_existing_one_intact ... ok
+test export::failure_on_a_new_target_leaves_nothing_at_all ... ok
+test export::json_array_bodies_are_accepted_as_bytes ... ok
+test export::long_names_are_cut_to_200_characters_keeping_the_extension ... ok
+test export::nothing_to_reveal_before_the_first_export ... ok
+test export::only_local_disk_paths_are_accepted ... ok
+test export::only_the_export_formats_are_offered_as_a_filter ... ok
+test export::reserved_device_names_are_prefixed_case_insensitively_before_the_first_dot ... ok
+test export::suggested_names_are_reduced_to_a_plain_file_name ... ok
+test export::the_name_header_is_base64_of_utf8_and_bounded ... ok
+test export::trailing_spaces_and_dots_are_removed ... ok
+test export_ios::files_ios_01_3_a_body_above_64_mib_is_refused_before_anything_else ... ok
+test export_ios::files_ios_01_3_a_panic_during_presentation_still_removes_the_temporary ... ok
+test export_ios::files_ios_01_3_a_second_save_while_one_is_presented_is_busy ... ok
+test export_ios::files_ios_01_3_an_exports_entry_that_is_not_a_plain_folder_is_refused_without_writing ... ok
+test backup_versions::k05_4_a_backup_newer_than_the_app_is_still_refused_as_newer_schema ... ok
+test export_ios::files_ios_01_3_missing_or_unreadable_name_header_is_bad_name ... ok
+test export_ios::files_ios_01_3_names_are_reduced_like_on_the_pc ... ok
+test export_ios::files_ios_01_3_cancel_is_not_an_error_and_removes_the_temporary ... ok
+test export_ios::files_ios_01_3_startup_purge_removes_an_exports_entry_that_is_a_file ... ok
+test export_ios::files_ios_01_3_plugin_rejections_keep_known_codes_and_remove_the_temporary ... ok
+test export_ios::files_ios_01_3_success_writes_under_exports_then_removes_everything ... ok
+test export_ios::files_ios_01_3_startup_purge_removes_leftovers_without_following_links ... ok
+test export_ios::files_ios_01_3_the_exports_folder_is_created_when_missing ... ok
+test export_ios::files_ios_01_3_the_type_is_derived_from_the_extension_never_from_the_request ... ok
+test export_ios::files_ios_01_4_contract_commands_and_fields_match_swift_and_rust ... ok
+test export_ios::files_ios_01_4_plugin_exposes_no_command_to_the_webview ... ok
+test export_ios::files_ios_01_4_reject_codes_are_known_to_rust_and_swift_rejects_only_through_codes ... ok
+test export_ios::files_ios_01_4_swift_has_no_french_text_nor_label ... ok
+test export_ios::files_ios_01_4_swift_saves_to_files_and_never_shares ... ok
+test export_ios::files_ios_01_4_types_match_between_fixture_swift_and_rust ... ok
+test import::spa005_a_file_over_the_limit_is_refused_without_being_read ... ok
+test import::spa005_extension_is_case_insensitive_and_limited_to_zip_archives ... ok
+test import::spa005_limit_is_two_megabytes_like_the_typescript_side ... ok
+test import::spa005_network_and_relative_paths_are_refused_before_any_access ... ok
+test export_ios::files_ios_01_i4_silent_presentation_failures_reject_and_rust_bounds_the_wait ... ok
+test import::spa005_other_types_directories_and_missing_files_are_refused ... ok
+test logic::action_ids_round_trip ... ok
+test logic::fallback_labels_are_complete_and_assume_sync_not_configured ... ok
+test logic::labels_come_from_the_front ... ok
+test logic::labels_deserialize_from_camel_case ... ok
+test logic::menu_order_matches_story ... ok
+test import::spa005_reads_the_chosen_file_exactly_including_binary_bytes ... ok
+test logic::minimized_launch_is_read_from_arguments ... ok
+test logic::only_the_main_window_hides_on_close ... ok
+test logic::sync_now_is_never_greyed ... ok
+test logic::sync_now_is_silent_when_configured_and_opens_settings_otherwise ... ok
+test logic::sync_now_label_comes_from_the_front ... ok
+test notification_actions::n03_crate_is_a_pure_ios_swift_bridge ... ok
+test notification_actions::n03_contract_commands_match_build_swift_and_the_ts_adapter ... ok
+test notification_actions::n03_needs_no_info_plist_key_and_no_background_mode ... ok
+test notification_actions::n03_package_swift_targets_ios_14_for_banner_and_list ... ok
+test notification_actions::n03_file_format_keys_are_shared_by_swift_and_ts ... ok
+test notification_actions::n03_swift_has_no_user_visible_text ... ok
+test notification_actions::n03_swift_never_sends_cancels_or_reads_notifications ... ok
+test notification_actions::n03_swift_takes_the_delegate_and_keeps_it ... ok
+test notification_actions::n03_swift_writes_the_action_before_the_completion_handler ... ok
+test ocr::a_tiny_image_declaring_huge_dimensions_is_refused ... ok
+test ocr::cleans_blank_lines_control_characters_and_spacing ... ok
+test ocr::declared_dimensions_are_checked_before_any_allocation ... ok
+test ocr::error_codes_are_stable_for_the_front ... ok
+test ocr::garbage_that_looks_like_a_png_is_an_engine_error_not_a_crash ... ok
+test ocr::keeps_accents_and_caps_the_number_of_lines ... ok
+test ocr::picks_french_preferring_fr_fr ... ok
+test ocr::a_blank_page_gives_no_line ... ok
+test ocr::q04_missing_french_pack_is_reported_not_crashed ... ok
+test ocr::q04_ocr_sources_never_write_to_disk ... ok
+test ocr::reads_a_jpeg_photo_and_keeps_bullets_for_the_front_to_strip ... ok
+test ocr::q04_no_temporary_file_is_left_after_success_or_error ... ok
+test ocr::reads_a_printed_french_list_with_windows_media_ocr ... ok
+test ocr::sniffs_formats_from_magic_bytes_only ... ok
+test ocr::status_never_fails_and_reports_consistently ... ok
+test ocr::status_survives_the_end_of_the_thread_that_first_used_winrt ... ok
+test ocr_vision::cap_ios_01_2_an_unusable_confidence_is_absent_not_zero ... ok
+test ocr_vision::cap_ios_01_2_confidences_are_scaled_to_a_hundred_and_text_is_cleaned ... ok
+test ocr_vision::cap_ios_01_2_serialized_lines_omit_confidence_for_windows_and_status_omits_reason ... ok
+test ocr_vision::cap_ios_01_3_declared_dimensions_read_png_and_jpeg_headers_without_decoding ... ok
+test ocr_vision::cap_ios_01_3_invalid_inputs_are_rejected_before_the_plugin_is_called ... ok
+test ocr_vision::cap_ios_01_3_the_plugin_receives_the_image_in_base64_with_french_first ... ok
+test ocr_vision::cap_ios_01_3_valid_images_pass_the_checks ... ok
+test ocr_vision::cap_ios_01_5_the_ocr_modules_write_no_file_and_open_no_connection ... ok
+test ocr::rejects_empty_oversized_and_unknown_inputs ... ok
+test ocr_vision::cap_ios_01_a_rejected_read_carries_the_code_and_never_text ... ok
+test ocr_vision::cap_ios_01_blank_lines_are_dropped_and_the_count_is_capped ... ok
+test ocr_vision::cap_ios_01_every_swift_code_maps_to_the_documented_rust_code ... ok
+test ocr_vision::cap_ios_01_lines_are_sorted_top_to_bottom_then_left_to_right ... ok
+test ocr_vision::cap_ios_01_only_one_read_at_a_time ... ok
+test ocr_vision::cap_ios_01_status_reports_french_or_the_reason ... ok
+test ocr_vision::cap_ios_01_status_serializes_cleanup_failure_only_when_true ... ok
+test ocr_vision::cap_ios_01_temporary_photo_copies_are_removed_after_every_read_and_a_failure_is_remembered ... ok
+test ocr_vision::cap_ios_01_the_cut_happens_after_the_sort_and_truncation_is_reported ... ok
+test off::a_client_refusing_the_scheme_reports_tls_and_the_wire_form_is_stable ... ok
+test ocr_vision::cap_ios_01_a_silent_plugin_cannot_freeze_the_caller_and_the_flag_follows_the_real_end ... ok
+test off::a_redirect_to_another_host_is_not_followed ... ok
+test off::a_redirect_to_another_port_of_the_same_host_is_not_followed ... ok
+test off::an_oversized_response_is_refused ... ok
+test off::errors_serialize_to_the_stable_wire_form ... ok
+test off::http_429_is_rate_limited_with_retry_after_and_503_is_http ... ok
+test off::inputs_are_validated_before_any_network_call ... ok
+test off::invalid_json_is_bad_response ... ok
+test off::more_than_two_same_host_redirects_are_refused ... ok
+test off::product_found_keeps_only_the_useful_nutriment_keys ... ok
+test off::rate_window_admits_ten_searches_per_minute_with_an_injected_clock ... ok
+test off::search_returns_at_most_twenty_filtered_products ... ok
+test off::technical_logs_hold_event_names_and_status_but_never_the_barcode_or_the_text ... ok
+test off::the_eleventh_search_is_refused_without_any_network_call ... ok
+test off::the_request_carries_nothing_but_the_url_the_fields_and_the_user_agent ... ok
+test off::unknown_product_is_found_false_for_status_zero_and_404 ... ok
+test off::urls_are_built_by_the_url_api_and_stay_https_in_production ... ok
+test quit::confirmation_before_the_deadline_lets_the_app_quit_at_once ... ok
+test quit::confirmation_without_pending_exit_is_ignored_and_grace_is_bounded ... ok
+test quit::silent_front_does_not_block_the_exit_beyond_the_grace_period ... ok
+test restore::p04_1_daily_backup_errors_are_reported ... ok
+test restore::p04_1_daily_backup_includes_rows_still_in_the_wal ... ok
+test restore::p04_1_daily_backup_is_created_once_per_day_and_replaced_on_demand ... ok
+test restore::p04_2_keeps_the_14_latest_daily_backups_and_spares_the_other_families ... ok
+test restore::p04_4_listing_gives_kind_size_task_count_and_ignores_other_files ... ok
+test off::a_mute_server_times_out_and_a_closed_port_is_offline ... ok
+test restore::p04_6_restore_replaces_the_database_after_a_safety_copy_and_leaves_no_leftover ... ok
+test restore::p04_6_restore_works_when_the_database_file_is_missing ... ok
+test restore::p04_6_keeps_only_the_three_latest_pre_restore_copies ... ok
+test restore::p04_7_an_older_schema_is_restored_as_is_for_the_migrations_to_replay ... ok
+test restore::p04_7_check_refuses_corrupt_and_newer_files ... ok
+test restore::p04_7_newer_corrupt_missing_or_foreign_names_are_refused_and_nothing_changes ... ok
+test restore::p04_8_a_database_held_open_makes_the_swap_fail_without_changing_anything ... ok
+test restore::p04_daily_names_and_days ... ok
+test restore::p04_names_with_paths_or_unknown_shape_are_rejected ... ok
+test restore_hardening::p04_a_backups_folder_that_is_a_link_is_refused ... ok
+test restore_hardening::p04_a_database_over_512_mib_is_refused_without_being_read ... ok
+test backup_versions::restore_recreates_sync_capture_triggers_even_without_search_index_doc ... ok
+test restore_hardening::p04_a_pending_restore_blocks_a_new_one_and_never_deletes_the_old_files ... ok
+test restore::p04_8_a_simulated_failure_puts_the_old_files_back_including_the_wal ... ok
+test restore_hardening::p04_a_view_named_schema_migrations_or_task_is_not_read_by_the_listing ... ok
+test restore_hardening::p04_backup_files_are_opened_with_trusted_schema_off ... ok
+test restore_hardening::p04_days_use_the_real_number_of_days_of_the_month ... ok
+test restore_hardening::p04_links_and_non_regular_files_are_not_plain_files ... ok
+test restore_hardening::p04_messages_and_labels_do_not_leak_absolute_paths ... ok
+test restore_hardening::p04_pruning_also_removes_the_shm_and_wal_of_a_purged_backup ... ok
+test restore_hardening::p04_recovery_after_a_finished_swap_moves_the_leftovers_instead_of_deleting_them ... ok
+test restore_hardening::p04_recovery_base_back_but_wal_still_in_restore_old ... ok
+test restore_hardening::p04_a_restore_resets_the_triggers_of_the_restored_database ... ok
+test restore_hardening::p04_recovery_database_present_with_only_a_wal_restore_old ... ok
+test restore_hardening::p04_recovery_failure_leaves_everything_in_place_and_creates_no_database ... ok
+test restore_hardening::p04_recovery_puts_the_old_database_back_when_the_main_file_is_missing ... ok
+test restore_hardening::p04_recovery_refuses_a_restore_old_that_is_a_link_and_touches_nothing ... ok
+test restore_hardening::p04_recovery_without_any_restore_file_does_nothing ... ok
+test restore_hardening::p04_the_app_schema_version_is_the_highest_migration_file ... ok
+test restore_hardening::p04_the_archive_timestamp_is_a_valid_utc_stamp_in_the_pre_restore_family ... ok
+test restore_hardening::p04_a_trapped_database_is_refused ... ok
+test restore_hardening::p04_the_migration_backup_command_returns_only_a_file_name ... ok
+test restore_hardening::p04_the_listing_does_not_count_tasks_through_a_view ... ok
+test restore_hardening::y01_restore_recovered_at_startup_writes_no_marker ... ok
+test restore_hardening::y02_restore_marker_written_by_the_y1_marker_only_when_a_sync_folder_is_configured ... ok
+test restore_hardening::p04_the_swap_moves_wal_and_shm_before_the_main_file ... ok
+test restore_identity::y_tech_04_10_the_old_identity_row_is_kept_as_a_non_self_device_with_its_positions ... ok
+test restore_identity::y_tech_04_11_a_backup_that_knows_the_current_identity_as_a_peer_hands_the_self_flag_back_without_position ... ok
+test restore_identity::y_tech_04_11_a_current_database_without_identity_or_unreadable_leaves_the_restored_file_as_it_is ... ok
+test restore_hardening::p04_reset_triggers_removes_foreign_triggers_and_recreates_the_reference_ones ... ok
+test restore_identity::y_tech_04_11_without_a_device_setting_the_self_row_of_the_current_database_is_the_identity ... ok
+test restore_identity::y_tech_04_12_a_refused_restoration_leaves_the_database_and_its_identity_untouched ... ok
+test restore_identity::y_tech_04_12_restoring_twice_gives_the_same_result ... ok
+test restore_identity::y_tech_04_12_a_forced_stop_during_a_local_rollback_leaves_the_current_identity ... ok
+test restore_identity::y_tech_04_13_a_current_identity_absent_from_the_backup_gets_a_row_without_position ... ok
+test restore_identity::y_tech_04_12_a_forced_stop_at_each_step_of_a_p04_restoration_leaves_the_current_identity ... ok
+test restore_identity::y_tech_04_14_the_forgotten_identity_stays_forgotten_and_the_device_never_forgets_itself ... ok
+test restore_identity::y_tech_04_15_restoring_a_copy_of_the_same_identity_changes_nothing_in_sync_state ... ok
+test restore_identity::y_tech_04_9_restoring_a_copy_made_by_the_forgotten_identity_keeps_the_current_identity ... ok
+test restore_identity::y_tech_04_i1_a_current_database_that_fails_for_another_reason_than_corruption_refuses_the_restoration ... ok
+test restore_identity_sync::y_tech_04_b1_restoring_a_copy_of_the_same_identity_keeps_its_publication_state_and_its_signatures ... ok
+test restore_ios::i06_a9_child_exits_after_committed_schema_19 ... ok
+test restore_identity_sync::y_tech_04_b1_the_publication_state_of_the_other_device_is_replaced_by_the_one_of_the_current_device ... ok
+test restore_ios::i06_local_rollback_is_chosen_by_the_command_flag_after_the_sql_guard ... ok
+
+running 1 test
+test restore_ios::i06_a9_committed_19_survives_process_exit_and_native_rollback_recovers_18 ... ok
+test backup_versions::k05_4_a_version_17_or_18_backup_is_refused_by_the_schema_1_app ... ok
+test restore_identity_sync::y_tech_04_b1_the_unpublished_writes_of_the_other_device_are_resigned_with_the_current_identity ... ok
+test restore_ios::p04_ios_11_the_key_is_the_one_of_the_domain ... ok
+test restore_ios::p04_ios_11_unreadable_current_base_writes_true_with_valid_device_and_clock ... ok
+test restore_ios::i06_update_restore_is_a_local_rollback_without_any_sync_marker ... ok
+test restore_ios::p04_ios_12_marker_outcome_is_returned_not_configured_or_failed ... ok
+test backup_versions::k05_4_reset_triggers_recreates_the_bodies_of_the_backup_version_and_never_a_column_the_backup_lacks ... ok
+test restore_ios::p04_ios_5_failed_recovery_registers_no_sql_plugin_and_keeps_the_files ... ok
+test backup_versions::k05_4_a_body_of_another_version_is_refused ... ok
+test restore_ios::p04_ios_11_unreadable_current_database_writes_true_and_metadata_is_kept ... ok
+test restore_ios::p04_ios_5_sql_plugin_is_registered_only_after_a_successful_recovery ... ok
+test restore_ios::p04_ios_4_same_rust_code_on_the_platform_data_folder ... ok
+test restore_ios::p04_ios_b1_the_sql_plugin_checks_for_a_pending_restore_before_creating_the_database ... ok
+test restore_ios::p04_ios_b1_failed_immediate_recovery_closes_the_gate_and_keeps_the_files ... ok
+test restore_ios::p04_ios_6_restore_requires_every_sql_pool_to_be_closed ... ok
+test restore_ios::p04_ios_i1_an_unsafe_restore_old_is_set_aside ... ok
+test restore_ios::p04_ios_i1_conflicting_files_are_set_aside_never_deleted_then_recovery_succeeds ... ok
+test restore_ios::p04_ios_i2_marker_retry_revalidates_the_name_and_reports_its_outcome ... ok
+test restore_ios::p04_ios_11_an_old_version_never_disables_the_current_lock ... ok
+test restore_ios::p04_ios_b1_failed_rollback_is_recovered_immediately_and_never_leaves_an_empty_base ... ok
+test restore_ios::p04_ios_marker_before_staged_there_is_no_marker_and_nothing_to_recover ... ok
+test restore_ios::p04_ios_11_a_version_with_lock_stays_locked_and_the_reverse_changes_nothing ... ok
+test restore_ios::p04_ios_marker_after_the_swap_with_restore_old_is_archived_and_confirmed ... ok
+test restore_ios::p04_ios_marker_after_the_swap_without_restore_old_is_nothing_and_still_confirmed ... ok
+test restore_ios::p04_ios_marker_cancellation_failure_after_staged_never_confirms_even_without_the_staged_file ... ok
+test restore_ios::p04_ios_marker_cancellation_failure_before_put_back_never_confirms_even_without_the_restore_old ... ok
+test restore_ios::p04_ios_marker_during_the_renames_with_the_database_missing_is_put_back_and_cancelled ... ok
+test restore_ios::p04_ios_marker_clean_swap_failure_with_blocked_undo_is_never_confirmed_and_blocks_a_new_restore ... ok
+test restore_ios::p04_ios_marker_provisional_without_a_matching_token_is_cancelled_whatever_the_recovery ... ok
+test restore_ios::p04_ios_marker_staged_removed_puts_back_the_previous_pending_marker ... ok
+test restore_ios::p04_ios_marker_staged_to_first_rename_reports_staged_removed_and_cancels_the_marker ... ok
+test restore_ios::p04_ios_set_aside_destination_is_created_exclusively_never_overwritten ... ok
+test restore_ios::p04_ios_marker_is_written_before_the_swap_and_undone_when_the_swap_fails ... ok
+test restore_ios::p04_ios_set_aside_is_refused_unless_the_gate_failed_on_a_conflict_and_no_pool_is_open ... ok
+test restore_ios::p04_ios_marker_with_an_unreadable_database_in_place_stays_provisional_and_blocks_a_new_restore ... ok
+test restore_ios::p04_ios_set_aside_folders_are_purged_after_30_days ... ok
+test restore_ios::p04_ios_set_aside_of_an_unsafe_old_base_takes_its_journal_and_reports_a_fresh_base ... ok
+test restore_ios::p04_ios_set_aside_moves_an_abnormal_backups_entry_itself_then_recovery_succeeds ... ok
+test restore_ios::p04_ios_restore_stamps_a_fresh_token_that_the_database_in_place_carries ... ok
+test restore_qa_ios::p04_ios_qa_a_safety_copy_that_cannot_be_written_stops_before_anything_moves ... ok
+test backup_versions::i5_01_reset_triggers_never_puts_legacy_triggers_on_settings_or_routine ... ok
+test restore_ios::p04_ios_provisional_marker_is_settled_after_a_forced_stop_at_each_step ... ok
+test restore_ios::p04_ios_provisional_marker_restores_the_previous_pending_marker_when_the_version_never_landed ... ok
+test restore_qa_ios::p04_ios_qa_future_schema_is_refused_past_schema_is_restored_for_the_migrations_to_replay ... ok
+test restore_qa_ios::p04_ios_qa_kill_after_staging_keeps_the_old_database_and_drops_the_staged_copy ... ok
+test restore_qa_ios::p04_ios_qa_kill_after_the_swap_opens_on_the_restored_state_and_archives_the_old_files ... ok
+test restore_qa_ios::p04_ios_qa_corrupted_backups_are_refused_and_nothing_changes ... ok
+test restore_qa_ios::p04_ios_qa_kill_before_the_copy_leaves_the_old_database_untouched ... ok
+test restore_recovery::p04_a_backups_folder_that_is_a_link_refuses_daily_and_migration_backups ... ok
+test restore_recovery::p04_a_resumed_archive_targets_the_same_name_as_the_interrupted_one ... ok
+test restore_recovery::p04_a_partial_archive_is_finished_at_the_next_startup_without_losing_anything ... ok
+test restore_recovery::p04_a_staged_leftover_that_is_not_a_plain_file_is_refused_and_nothing_moves ... ok
+test restore_qa_ios::p04_ios_qa_disk_full_at_any_step_changes_nothing_and_leaves_no_partial_file ... ok
+test restore_qa_ios::p04_ios_qa_kill_between_the_old_files_moved_and_the_new_one_in_place_puts_the_old_back_with_its_wal ... ok
+test restore_recovery::p04_normalize_sql_only_collapses_ascii_whitespace ... ok
+test restore_recovery::p04_archiving_never_mixes_with_an_orphan_wal_or_shm_at_the_target_name ... ok
+test restore_recovery::p04_reset_triggers_also_removes_a_trigger_whose_type_has_another_case ... ok
+test restore_qa_ios::p04_ios_qa_kill_during_the_copy_discards_the_partial_staged_file ... ok
+test restore_recovery::p04_rotation_removes_the_wal_and_shm_of_a_pre_restore_name_whose_base_is_absent ... ok
+test restore_recovery::p04_utc_stamp_on_known_dates ... ok
+test restore_recovery::p04_reset_triggers_leaves_a_single_file_without_wal_or_journal ... ok
+test restore_recovery::p04_the_staged_wal_shm_and_journal_leftovers_are_removed ... ok
+test restore_qa_ios::p04_ios_qa_kill_in_the_middle_of_the_recovery_is_finished_by_the_next_launch ... ok
+test signing::a_date_that_does_not_follow_its_key_is_unreadable ... ok
+test restore_wal_guard::dep01_no_wal_beside_the_file_changes_nothing ... ok
+test signing::creation_date_is_optional ... ok
+test signing::duplicated_keys_are_unreadable ... ok
+test signing::creation_not_before_expiration_or_longer_than_400_days_is_unreadable ... ok
+test signing::empty_truncated_or_non_plist_content_is_unreadable ... ok
+test signing::error_codes_are_the_two_documented_strings ... ok
+test signing::invalid_utf8_inside_the_plist_is_unreadable ... ok
+test signing::leap_day_and_year_bounds_are_accepted ... ok
+test restore_wal_guard::dep01_a_wal_with_the_same_page_size_does_not_block_the_check ... ok
+test signing::missing_expiration_date_is_unreadable ... ok
+test signing::malformed_or_impossible_dates_are_unreadable ... ok
+test signing::only_the_first_plist_is_read ... ok
+test restore_wal_guard::dep01_a_wal_with_another_page_size_refuses_the_file_and_logs_a_fixed_event ... ok
+test signing::output_never_carries_team_identifier_devices_or_name ... ok
+test signing::reads_both_dates_from_a_plist_surrounded_by_binary_bytes ... ok
+test signing::missing_file_is_profile_missing ... ok
+test signing::source_reads_only_the_two_documented_keys ... ok
+test signing::source_opens_without_following_links_and_checks_the_descriptor ... ok
+test signing::whitespace_between_key_and_date_is_tolerated ... ok
+test signing::reads_the_profile_next_to_the_executable_and_nothing_else ... ok
+test speech::cap_ios_01_10_error_messages_never_carry_recognized_text_or_system_text ... ok
+test speech::cap_ios_01_10_listen_returns_the_text_and_releases_the_flag ... ok
+test signing::truncated_file_is_unreadable ... ok
+test speech::cap_ios_01_10_stop_without_listening_has_no_effect_and_does_not_call_the_plugin ... ok
+test speech::cap_ios_01_10_only_one_listen_at_a_time_and_the_second_is_refused_busy ... ok
+test speech::cap_ios_01_10_the_modules_have_no_file_or_network_api ... ok
+test speech::cap_ios_01_12_without_the_offline_model_listen_is_refused_once_and_never_retried_online ... ok
+test signing::empty_file_directory_and_oversized_file_are_unreadable ... ok
+test restore_recovery::p04_after_a_restore_the_search_index_still_follows_new_tasks ... ok
+test speech::cap_ios_01_a_locale_other_than_french_is_refused_before_the_plugin ... ok
+test speech::cap_ios_01_every_swift_code_maps_to_the_documented_rust_code ... ok
+test speech::cap_ios_01_17_status_of_an_absent_or_mute_plugin_is_unavailable_with_a_reason ... ok
+test speech::i_05_request_permissions_returns_both_states_read_afterwards ... ok
+test speech::i_05_status_reads_the_five_states_and_flags_anything_else_unknown ... ok
+test speech::i_05_open_settings_reports_success_or_a_visible_failure ... ok
+test sql_closed::sec01_14_the_refusal_hook_is_wired_before_the_plugin_is_built ... ok
+test speech::cap_ios_01_10_the_sixty_second_limit_is_enforced_by_rust_and_returns_the_text ... ok
+test restore_recovery::p04_a_type_with_a_modified_case_in_sqlite_master_is_refused ... ok
+test sqlite_engine::dep01_rusqlite_engine_is_at_least_3_54_0 ... ok
+test sqlite_engine::dep01_plugin_sql_engine_is_at_least_3_54_0 ... ok
+test sync_bookmark::y_ios_01_1_plugin_exposes_no_command_to_the_webview_and_rust_is_its_only_caller ... ok
+test sync_bookmark::y_ios_01_13_cancelled_picker_changes_nothing_and_an_error_is_a_code_only ... ok
+test sync_bookmark::y_ios_01_1_reject_codes_are_known_sync_error_codes_on_both_sides ... ok
+test sync_bookmark::y_ios_01_1_swift_has_no_french_text_nor_label ... ok
+test sync_bookmark::y_ios_01_3_cloud_file_is_downloaded_within_sixty_seconds_then_read ... ok
+test sync_bookmark::y_ios_01_3_reduced_cycle_budget_bounds_every_download ... ok
+test sync_bookmark::y_ios_01_3_download_timeout_error_and_cycle_budget ... ok
+test sync_bookmark::y_ios_01_4_links_replaced_components_and_paths_outside_the_root_are_refused_before_any_io ... ok
+test sync_bookmark::y_ios_01_5_folder_json_of_the_pc_is_read_unchanged ... ok
+test sync_bookmark::y_ios_01_1_every_contract_command_exists_in_swift_and_rust_with_the_same_fields ... ok
+test speech::cap_ios_01_10_an_early_end_cancels_the_limit_timer ... ok
+test sync_bookmark::y_ios_01_6_lost_moved_or_missing_bookmark_is_folder_unreachable_until_chosen_again ... ok
+test sync_bookmark::y_ios_01_6_stale_bookmark_is_refreshed_and_rewritten_without_user_action ... ok
+test sync_bookmark::y_ios_01_7_folder_kind_follows_the_plugin ... ok
+test sync_bookmark::y_ios_01_hydrate_budget_ms_out_of_bounds_is_bad_name ... ok
+test speech::cap_ios_01_17_a_silent_plugin_is_visible_not_frozen ... ok
+test sync_bookmark::y_ios_01_not_configured_triggers_one_resolve_then_one_retry ... ok
+test sync_bookmark::y_ios_01_package_swift_platform_exists_in_its_tools_version ... ok
+test sync_bookmark::y_ios_01_swift_hardening_from_the_security_audit ... ok
+test sync_bookmark::y_ios_05_10_deadline_for_each_command ... ok
+test sync_bookmark::y_ios_05_11_interaction_commands_run_on_the_calling_thread_without_deadline ... ok
+test sync_bookmark::y_ios_05_12_app_state_is_not_refused_behind_an_abandoned_file_call ... ok
+test sync_bookmark::y_ios_01_5_chosen_folder_keeps_its_bookmark_in_folder_json_and_never_returns_the_path ... ok
+test sync_bookmark::y_ios_05_12_off_queue_commands_match_the_swift_source ... ok
+test sync_bookmark::y_ios_05_12_one_abandoned_call_then_immediate_cloud_pending_until_it_answers ... ok
+test sync_bookmark::y_ios_05_12_the_place_is_reserved_before_sending ... ok
+test sync_bookmark::y_ios_05_13_timeout_log_names_the_command_only ... ok
+test restore_qa_ios::p04_ios_qa_truncated_backups_are_refused_and_nothing_changes ... ok
+test sync_bookmark::y_ios_05_12_late_append_effect_is_caught_by_segment_mismatch ... ok
+test sync_bookmark::y_ios_05_16_the_guard_never_answers_the_call ... ok
+test sync_bookmark::y_ios_05_17_unreadable_state_is_cloud_and_links_stay_error ... ok
+test sync_bookmark::y_ios_05_15_every_coordination_is_guarded_and_cancelled ... ok
+test sync_bookmark::y_ios_05_18_layer_values_are_consistent ... ok
+test sync_bookmark::y_ios_05_8_9_scan_returns_at_the_deadline_and_releases_the_core_lock ... ok
+test sync_bookmark::y_ios_05_14_production_transport_is_wrapped_by_the_deadline ... ok
+test sync_bookmark::y_ios_06_01_shared_guard_checks_foreground_ownership_and_presenter ... ok
+test sync_bookmark::y_ios_06_02_both_interactions_guard_before_claiming_or_presenting ... ok
+test sync_bookmark::y_ios_05_8_muted_call_is_cloud_pending_at_the_deadline ... ok
+test sync_bookmark::y_ios_06_03_interactive_dismissal_and_delegate_callbacks_answer_once ... ok
+test sync_bookmark::y_ios_01_large_pages_are_split_into_calls_of_one_mebibyte_at_most ... ok
+test sync_closed_segments::y_tech_02_closed_after_an_interrupted_append_counts_what_the_state_could_announce ... ok
+test sync_closed_segments::y_tech_02_closed_schema ... ok
+test sync_bookmark::y_ios_05_7_every_command_passes_through_unchanged ... ok
+test sync_closed_segments::y_tech_02_closed_rebuilt_from_its_own_state_only ... ok
+test sync_crypto::print_rust_sealed ... ignored, génération ponctuelle des vecteurs
+test sync_crypto::y08_1_two_seals_differ_and_open_to_the_same_text ... ok
+test sync_crypto::y08_2_line_length_is_checked_before_base64 ... ok
+test sync_crypto::y08_2_padding_hides_size_and_rejects_tampering ... ok
+test sync_crypto::y08_3_moved_reordered_copied_or_relabelled_records_do_not_open ... ok
+test sync_crypto::y08_4_limits_match_typescript_and_vectors ... ok
+test sync_crypto::y08_4_vectors_aad_padding_headers ... ok
+test sync_crypto::y08_4_vectors_kid_record_key_and_recovery_key ... ok
+test sync_closed_segments::y_tech_02_closed_written_by_rust ... ok
+test sync_crypto::y08_5_key_types_have_no_debug_nor_serialize ... ok
+test sync_crypto::y08_5_kid_is_16_hex_and_reveals_nothing_of_the_key ... ok
+test sync_crypto::y08_8_recovery_key_round_trip_tolerant_input_and_checksum ... ok
+test sync_crypto::y08_header_is_strict ... ok
+test sync_crypto::y08_qr_text_round_trip_and_strictness ... ok
+test sync_crypto::y08_4_vectors_lines_open_in_rust_and_rust_lines_have_the_same_length ... ok
+test sync_fault_plan::y_tech_03_12_mem_fs_a_refused_rename_keeps_the_temporary_file ... ok
+test sync_fault_plan::y_tech_03_12_mem_fs_remove_file_fails_with_the_armed_code_and_keeps_the_file ... ok
+test sync_fault_plan::y_tech_03_12_mem_fs_a_removal_accepted_but_not_propagated_comes_back_after_exactly_n_cycles ... ok
+test sync_fault_plan::y_tech_03_12_mem_fs_write_refused_leaves_no_partial_byte_unless_the_plan_asks_for_it ... ok
+test sync_fault_plan::y_tech_03_12_mem_fs_without_a_plan_still_never_fails_a_removal ... ok
+test sync_fault_plan::y_tech_03_13_a_read_with_hydration_downloads_the_placeholder ... ok
+test sql_closed::sec01_14_refusals_are_logged_with_a_stable_code_and_bursts_are_bounded ... ok
+test sync_fault_plan::y_tech_03_13_the_fake_plugin_lists_the_placeholder_under_the_real_name_in_the_cloud_and_remove_takes_it_away ... ok
+test sync_fault_plan::y_tech_03_14_in_historic_mode_mem_fs_leaves_the_evicted_file_too ... ok
+test sync_fault_plan::y_tech_03_15_download_error_leaves_the_file_in_the_cloud_until_its_rank_is_past ... ok
+test sync_fault_plan::y_tech_03_14_in_historic_mode_the_placeholder_stays_and_the_file_reappears_at_the_next_listing ... ok
+test sync_fault_plan::y_tech_03_15_eviction_after_a_read_is_armed_by_name_and_rank_on_both_fakes ... ok
+test sync_fault_plan::y_tech_03_15_the_fake_plugin_comes_back_after_exactly_n_cycles ... ok
+test sync_fault_plan::y_tech_03_15_overwrite_before_read_returns_the_other_devices_content_on_both_fakes ... ok
+test sync_fault_plan::y_tech_03_15_the_fake_plugin_never_uses_delay_ms_nor_the_clock_for_a_bank_test ... ok
+test sync_fault_plan::y_tech_03_15_the_fake_plugin_write_refused_leaves_no_partial_byte_unless_asked ... ok
+test sync_fault_plan::y_tech_03_2_only_the_first_removal_of_the_designated_file_fails_on_mem_fs ... ok
+test sync_fault_plan::y_tech_03_1_the_reference_plans_are_read_strictly_with_one_plan_per_effect ... ok
+test sync_fault_plan::y_tech_03_2_only_the_first_removal_of_the_designated_file_fails_on_the_fake_plugin ... ok
+test sync_fault_plan::y_tech_03_3_the_strict_reader_refuses_and_names_the_entry ... ok
+test sync_fault_plan::y_tech_03_3_an_entry_a_fake_cannot_replay_fails_at_arming_and_names_it ... ok
+test sync_fault_plan::y_tech_03_3_the_shared_refusal_table_gives_the_same_message_as_typescript ... ok
+test sync_fault_plan::y_tech_03_4_two_runs_of_the_same_plan_and_calls_give_identical_results_and_logs ... ok
+test sync_fault_plan::y_tech_03_4_the_bank_files_contain_no_delay_no_retry_and_no_skipped_test ... ok
+test sync_fixes::a4_fake_high_segments_are_filtered_on_their_header_only ... ok
+test sync_fixes::a3_a_pairing_device_is_never_crowded_out_by_fake_folders ... ok
+test sync_fixes::b1_own_state_of_a_newer_format_is_never_rewritten ... ok
+test sync_fixes::b1_an_absurd_clear_header_number_is_ignored ... ok
+test sync_fixes::b1_replaced_own_state_is_rebuilt_from_its_clear_header_and_can_be_rewritten ... ok
+test sync_fixes::b3_snapshot_cache_is_dropped_at_the_start_of_a_scan ... ok
+test sync_fixes::b5_no_log_buffer_in_production ... ok
+test sync_fixes::i506_listed_components_pass_names_given_by_the_system_but_never_a_path ... ok
+test sync_fixes::r11_error_codes_match_typescript ... ok
+test sync_fixes::b4_folder_info_checks_the_root_without_starting_a_cycle ... ok
+test sync_fixes::r16_kid_of_a_device_whose_state_is_in_the_cloud ... ok
+test sync_fixes::r15_snapshot_pages_do_not_reread_the_file ... ok
+test sync_fixes::r18_snapshot_budget_checked_before_sealing ... ok
+test sync_fixes::r19_unsafe_path_components_are_refused ... ok
+test sync_fixes::r1_folder_info_revalidates_the_root ... ok
+test sync_fixes::r20_aad_fields_are_never_truncated ... ok
+test sync_fixes::r17_paired_by_received_before_binding_is_kept ... ok
+test sync_fixes::r2_key_create_and_import_revalidate_the_root ... ok
+test sync_fixes::r4_rebuild_waits_for_its_own_state_in_the_cloud ... ok
+test sync_fixes::s10_proposed_folder_is_created_only_after_validation ... ok
+test sync_fixes::r5_snapshot_writers_are_unique_and_capped ... ok
+test sync_fixes::s1_missing_pairing_page_is_refused_before_any_dialog_or_window ... ok
+test sync_fixes::s2_scan_reads_states_only_for_candidates_and_lists_epochs_only_for_kept_devices ... ok
+test sync_fixes::s3_write_atomic_never_truncates_a_hard_linked_temp_file ... ok
+test sync_fixes::a1_self_and_keep_are_listed_before_hostile_folders ... ok
+test sync_fixes::s5_payload_is_zeroized_and_qr_parsing_keeps_no_intermediate_map ... ok
+test sync_closed_segments::y_tech_02_closed_segments_common_table ... ok
+test sync_fixes::s8_show_failure_destroys_the_window_and_clears_the_instance ... ok
+test sync_fixes::s4_import_requires_a_state_that_decrypts_with_the_candidate_key ... ok
+test sync_fixes::s7_a_dropped_high_segment_never_blocks_appends_nor_rebuilds ... ok
+test sync_folder::y01_14_real_icloud_placeholder_is_hydrated_on_the_checked_handle ... ignored, iCloud pour Windows réel : CT_SYNC_TEST_DIR
+test sync_folder::y01_6_accepts_a_plain_local_folder_with_a_warning_kind ... ok
+test sync_fixes::s9_usage_is_kept_when_the_same_key_comes_back ... ok
+test sync_folder::y01_6_normalizes_final_paths_and_refuses_network_prefixes ... ok
+test sync_folder::y01_6_refuses_junctions_and_symbolic_links_on_any_component ... ok
+test sync_folder::y01_7_root_replaced_by_a_junction_between_two_operations_is_refused ... ok
+test sync_folder::y01_13_files_are_opened_relative_to_the_checked_folder_and_hard_links_are_refused_for_writing ... ok
+test sync_folder::y01_full_flow_on_disk_with_the_production_backend ... ok
+test sync_forget::attack_crossed_declarations_only_the_oldest_counts ... ok
+test sync_fixes::s2_global_entry_budget_cuts_the_scan ... ok
+test sync_forget::attack_foreign_state_forgets_nobody ... ok
+test sync_forget::a_device_paired_later_learns_every_forget_from_any_active ... ok
+test sync_forget::device_forget_dialog_for_a_device_never_read ... ok
+test sync_forget::attack_forgotten_device_cannot_forget_or_delete_the_one_that_forgot_it ... ok
+test sync_forget::device_forget_hlc_ignores_the_target_forgotten_devices_and_far_future_hlcs_and_refuses_a_non_strict_one ... ok
+test sync_forget::device_forget_dialog_shows_what_rust_read_and_outcomes ... ok
+test sync_forget::forget_detail_texts_are_all_present_in_the_compiled_file ... ok
+test sync_forget::forgotten_delete_passes_are_bounded_and_keep_state_last ... ok
+test sync_bookmark::y_ios_01_5_streamed_tail_matches_the_full_parse_on_every_case ... ok
+test sync_forget::device_forget_refusals_before_any_dialog ... ok
+test sync_forget::local_date_time_is_24h_and_civil ... ok
+test sync_forget::condition_h_is_read_by_rust_from_its_own_announced_snapshot ... ok
+test sync_forget::read_snapshot_tail_returns_only_the_end_of_the_announced_snapshot ... ok
+test sync_forget::forgotten_delete_removes_only_strict_names_state_last_records_done_and_is_idempotent ... ok
+test sync_forget::forgotten_delete_refusals_one_by_one_delete_nothing ... ok
+test sync_forget::registry_rebuilt_case_ii_for_a_device_that_never_published ... ok
+test sync_forget::registry_rebuilt_case_i_when_own_state_is_ok_and_never_shrinks_after_restart ... ok
+test sync_forget::registry_rebuild_refusals ... ok
+test sync_forget::registry_unreadable_is_io_and_nothing_is_written ... ok
+test sync_forget::registry_rebuilt_case_iii_when_own_state_was_replaced_and_an_active_acknowledged_it ... ok
+test sync_forget::phantom_never_seen_does_not_block_a_seen_device_without_folder_does ... ok
+test sync_forget::shared_table_covers_forgotten ... ok
+test sync_forget::shared_table_cutoff ... ok
+test sync_forget::shared_table_declaration_hlc ... ok
+test sync_forget::scan_exposes_accepted_ids_only_same_as_the_registry ... ok
+test sync_forget::shared_table_eligible_snapshot ... ok
+test sync_forget::shared_table_forget_gaps ... ok
+test sync_forget::shared_table_forget_order ... ok
+test sync_forget::shared_table_forgotten_delete_check ... ok
+test sync_forget::shared_table_learn ... ok
+test sync_forget::shared_table_seen_devices ... ok
+test sync_forget::shared_table_own_snapshot_epoch ... ok
+test sync_forget::shared_table_write_state_forgotten ... ok
+test sync_forget::replayed_state_after_restart_is_rollback_even_before_the_first_cycle_and_nothing_is_deleted ... ok
+test sync_forget::device_forget_refused_from_48_declarations_before_the_dialog ... ok
+test sync_bookmark::y_ios_01_5_tail_of_a_64_mib_snapshot_is_streamed_with_bounded_memory ... ok
+test sync_forget::snapshot_end_read_then_paged_read_reads_the_file_once_each ... ok
+test sync_forget::write_state_publishes_the_master_list_and_refuses_any_other ... ok
+test sync_forget::self_forgotten_is_permanent_even_if_the_verdict_changes_after_restart_and_after_a_rebuild ... ok
+test sync_forget_qa::qa_differential_cutoff_matches_typescript ... ok
+test sync_forget_qa::qa_device_cited_only_by_a_forgotten_device_is_not_known_and_does_not_block ... ok
+test sync_forget::snapshot_end_is_read_once_per_session_across_scans_and_reused_for_the_paged_read ... ok
+test sync_forget_qa::qa_differential_forget_order_matches_typescript ... ok
+test sync_forget::x_state_deleted_by_a_third_party_before_x_is_forgotten_z_stays_forgotten ... ok
+test sync_forget_qa::qa_forget_order_ignores_a_declaration_whose_hlc_is_not_strict ... ok
+test sync_forget_qa::qa_differential_learn_matches_typescript ... ok
+test sync_forget::x_forgets_z_then_a_forgets_x_z_stays_forgotten_after_x_files_are_gone_and_after_restart ... ok
+test sync_forget_qa::qa_differential_forgotten_delete_check_matches_typescript ... ok
+test sync_fs_conformance::y_ios_01_2_conformance_table_on_bookmark_fs_with_the_fake_plugin ... ok
+test sync_fs_conformance::y_ios_01_2_conformance_table_on_the_in_memory_sync_fs ... ok
+test sync_forget::y_tech_01_cutoff_follows_an_ack_lowered_by_a_replacement_and_a_replayed_higher_ack_is_rollback ... ok
+test sync_fs_conformance::y_tech_03_16_fault_cases_on_bookmark_fs_with_the_fake_plugin ... ok
+test sync_fs_conformance::y_tech_03_16_fault_cases_on_the_in_memory_sync_fs ... ok
+test sync_forget_qa::qa_interrupted_write_of_forgotten_json_leaves_no_declaration_and_the_next_attempt_succeeds ... ok
+test sync_fs_conformance::y_tech_03_16_not_applicable_declarations_name_a_known_implementation_and_a_missing_capability ... ok
+test sync_fs_conformance::y_tech_03_18_every_rust_fake_loads_the_conformance_table_and_the_reference_fault_plans ... ok
+test sync_health::a_health_folder_that_cannot_be_listed_is_present_but_not_listed ... ok
+test sync_health::an_exact_file_name_wins_over_a_case_variant ... ok
+test sync_health::an_exact_folder_wins_over_a_cloud_placeholder_without_any_download ... ok
+test sync_health::bookmark_cloud_parent_is_materialized_within_the_budget_then_read ... ok
+test sync_health::bookmark_cloud_parent_over_the_budget_is_to_download_never_absent ... ok
+test sync_health::bookmark_reads_only_through_status_download_and_read_from ... ok
+test sync_health::choosing_a_folder_that_holds_a_health_folder_is_not_refused ... ok
+test sync_forget_qa::qa_forgotten_json_of_another_folder_or_identity_is_rebuilt_and_a_corrupt_one_is_io ... ok
+test sync_health::core_without_a_linked_folder_refuses_the_health_read ... ok
+test sync_health::devices_only_lets_the_sync_own_paths_through ... ok
+test sync_health::devices_only_refuses_every_operation_outside_devices ... ok
+test sync_health::health_download_budget_stays_under_the_plugin_call_deadline ... ok
+test sync_health::a_full_sync_cycle_never_reads_writes_or_lists_the_health_folder ... ok
+test sync_forget_qa::qa_fake_device_folder_never_seen_does_not_block_the_deletion_and_can_still_be_forgotten ... ok
+test sync_health::i506_the_listing_error_is_named_by_a_fixed_code ... ok
+test sync_health::i506_a_folder_found_by_normalized_name_is_listed_and_read_under_its_real_name ... ok
+test sync_health::lab_folder_with_hrv_file_reads_it_present_with_its_size ... ok
+test sync_health::i506_the_read_guard_still_refuses_separators_dots_and_controls ... ok
+test sync_health::only_the_health_module_names_the_health_folder ... ok
+test sync_health::pista_cloud_placeholder_folder_is_downloaded_then_read ... ok
+test sync_health::pista_a_local_plain_file_named_sante_is_never_downloaded_nor_taken_for_the_folder ... ok
+test sync_health::pista_probe_after_download_describes_sante_as_a_local_folder ... ok
+test sync_health::pista_invisible_or_odd_characters_in_the_folder_name_are_ignored ... ok
+test sync_health::pista_cloud_placeholder_folder_under_another_case_is_also_downloaded ... ok
+test sync_health::reader_accepts_at_most_four_distinct_names ... ok
+test sync_health::pista_probe_describes_every_root_entry_with_fixed_codes_and_no_name ... ok
+test sync_health::pista_the_sync_filter_never_applies_to_the_health_read ... ok
+test sync_health::reader_finds_the_folder_and_files_under_another_case_or_accent ... ok
+test sync_health::reader_refuses_near_miss_body_names_and_more_than_fourteen_before_any_access ... ok
+test sync_health::reader_refuses_every_name_outside_the_four_files_before_any_access ... ok
+test sync_health::reader_never_follows_a_listed_name_outside_the_four_files ... ok
+test sync_health::reader_reports_absent_unreadable_and_cloud_files_by_state ... ok
+test sync_health::reader_returns_the_four_files_and_never_writes ... ok
+test sync_health::report_tells_a_missing_health_folder_from_a_missing_file ... ok
+test sync_health::reader_returns_the_ten_body_files_in_order_and_never_writes ... ok
+test sync_health::report_separates_to_download_from_unreadable ... ok
+test sync_health::core_reads_the_health_folder_through_its_own_access_and_keeps_the_sync_untouched ... ok
+test sync_health::whitelist_is_exactly_the_four_recovery_files_and_the_ten_body_files ... ok
+test sync_ios_y02::y_ios_02_11_cancel_dismissal_or_plugin_error_is_a_refusal_and_no_alert_outside_the_foreground ... ok
+test sync_health::the_sync_core_wraps_its_folder_in_devices_only_and_has_one_health_entry_point ... ok
+test sync_ios_y02::y_ios_02_13_swift_alert_uses_cancel_style_and_preferred_action_without_any_label ... ok
+test sync_ios_y02::y_ios_02_1_only_the_two_sync_key_accounts_are_accepted ... ok
+test sync_ios_y02::y_ios_02_11_each_dialog_sends_compiled_texts_cancel_first ... ok
+test sync_ios_y02::y_ios_02_1_write_is_delete_add_then_identical_reread_or_nothing ... ok
+test sync_ios_y02::y_ios_02_4_key_stays_in_memory_once_read_and_errors_are_never_kept ... ok
+test sync_ios_y02::y_ios_02_4_locked_or_failing_keychain_is_unavailable_never_absent ... ok
+test sync_ios_y02::y_ios_02_3_ios_vault_is_compiled_for_ios_and_keyring_never_serves_the_sync_key ... ok
+test sync_ios_y02::y_ios_02_4_qa_locked_keychain_is_visible_never_a_new_key_then_unlocked_resumes_with_the_same_key ... ok
+test sync_fs_conformance::y_ios_01_2_conformance_table_on_std_fs ... ok
+test sync_ios_y02::y_ios_02_barcode_scanner_is_pinned_like_the_npm_package ... ok
+test sync_ios_y02::y_ios_02_keychain_bytes_are_zeroized_on_every_path ... ok
+test sync_ios_y02::y_ios_02_11_qa_alert_closed_by_going_to_background_is_a_refusal_that_blocks_the_next_attempt_for_ten_minutes ... ok
+test sync_health::scan_ignores_the_health_folder_without_anomaly_and_without_purge ... ok
+test sync_fs_conformance::y_tech_03_16_fault_cases_on_std_fs_through_the_injection_wrapper ... ok
+test sync_ios_y02::y_ios_02_5_scanned_text_and_recovery_key_are_imported_from_main_and_scan_true_is_refused ... ok
+test sync_key::y08_17_keychain_attributes_and_accounts ... ok
+test sync_key::y08_16_errors_never_copy_the_input ... ok
+test sync_ios_y02::y_ios_02_6_import_needs_the_foreground_and_replacing_another_key_asks_first ... ok
+test sync_key::y08_6_create_status_and_key_exists ... ok
+test sync_key::y08_18_nonce_budget_warns_then_refuses ... ok
+test sync_key::y08_7_vault_keeps_its_service_and_round_trips ... ok
+test sync_key::y08_14_import_is_limited_to_five_calls_per_ten_minutes_and_needs_the_foreground ... ok
+test sync_key::y08_14_import_requires_the_folder_and_a_matching_kid ... ok
+test sync_key::y08_6_create_refused_on_a_folder_with_data_even_in_the_cloud ... ok
+test sync_pairing::y08_10_dialog_config_has_two_buttons_cancel_by_default_and_compiled_texts ... ok
+test sync_key::y08_14_qr_import_sets_paired_by_and_epoch_and_replacing_a_key_asks_first ... ok
+test sync_key::y_ios_02_key_origin_is_written_before_the_key_and_a_failure_fails_the_creation ... ok
+test sync_pairing::y08_11_preconditions_without_dialog ... ok
+test sync_pairing::y08_11_one_dialog_at_a_time ... ok
+test sync_key::y08_7_and_16_key_never_leaves_the_vault_and_logs_hold_no_secret ... ok
+test sync_pairing::y08_10_refusal_returns_consent_denied_and_blocks_ten_minutes ... ok
+test sync_pairing::y08_12_exact_url_and_vite_only_in_debug ... ok
+test sync_pairing::y08_12_mode_is_bound_to_the_instance ... ok
+test sync_pairing::y08_12_never_reuses_a_window_and_checks_label_url_hwnd ... ok
+test sync_pairing::y08_12_token_is_single_use_and_bound_to_the_generation ... ok
+test sync_pairing::y08_12_pairing_window_is_never_declared_in_the_configuration ... ok
+test sync_pairing::y08_13_one_timer_per_generation_old_timers_have_no_effect ... ok
+test sync_pairing_qa::sync_pairing_qa_8_a_destroyed_window_never_produces_an_arrival ... ok
+test sync_pairing_qa::sync_pairing_qa_9_baseline_survives_a_new_code_and_the_arrival_is_seen_after_it ... ok
+test sync_pairing_qa::sync_pairing_qa_8_a_stale_generation_or_other_window_cannot_renew_or_verify ... ok
+test sync_pairing_qa::sync_pairing_qa_9_each_new_window_takes_its_own_baseline ... ok
+test sync_pairing_y06::y06_18_close_only_targets_the_calling_instance ... ok
+test sync_pairing_y06::y06_18_webview_is_hardened_before_it_is_shown ... ok
+test sync_key::y08_9_foreign_device_is_marked_per_device ... ok
+test sync_pairing_y06::y06_18_window_decisions_destroy_and_never_hide ... ok
+test sync_pairing_y06::y06_1_page_carries_the_marker_and_is_listed_by_exact_key ... ok
+test sync_pairing::y08_11_unreadable_file_blocks_ten_minutes ... ok
+test sync_pairing_y06::y06_4_already_open_and_not_foreground_have_their_own_codes ... ok
+test sync_key::y_ios_02_key_origin_write_failure_fails_the_import_and_stores_no_key ... ok
+test sync_pairing_y06::y06_16_arrival_logs_hold_no_secret ... ok
+test sync_pairing::y08_11_three_openings_per_ten_minutes_refusals_included_persisted ... ok
+test sync_pairing_y06::y06_9_association_before_the_first_scan_is_an_arrival ... ok
+test sync_pairing_y06::y06_9_already_paired_device_other_pc_and_import_instance_do_not_close ... ok
+test sync_pairing_y06::y06_9_arrival_of_the_paired_device_closes_the_show_window_once ... ok
+test sync_pairing_y06::y06_9_state_not_authenticated_never_counts ... ok
+test sync_pairing_y06::y06_9_reference_is_the_folder_listing_at_opening ... ok
+test sync_publish_bound::y_ios_02_fix_02_swift_remove_deletes_the_icloud_placeholder_under_for_deleting ... ok
+test sync_publish_bound::y_ios_02_fix_02_delete_own_removes_an_evicted_orphan_snapshot_placeholder ... ok
+test sync_pairing_y06::y06_9_paired_by_is_completed_by_rust_when_the_engine_omits_it ... ok
+test sync_qa_crypto::service::y08_14_a_refused_import_leaves_the_vault_and_state_untouched ... ok
+test sync_qa_crypto::y01_11_strict_file_names_refuse_every_windows_and_icloud_variant ... ok
+test sync_qa_crypto::y01_11_strict_identifiers_refuse_traversal_case_and_unicode ... ok
+test sync_qa_crypto::service::y08_14_qr_expiry_tolerance_is_exactly_two_minutes ... ok
+test sync_qa_crypto::y08_14_qr_text_bounds_and_hostile_fields ... ok
+test sync_qa_crypto::y08_1_base64_is_canonical_one_string_per_ciphertext ... ok
+test sync_qa_crypto::y08_1_every_region_of_the_payload_is_authenticated ... ok
+test sync_qa_crypto::y08_1_hostile_line_shapes_are_refused_without_panic ... ok
+test sync_qa_crypto::y08_1_line_prefix_exposes_nothing_beyond_the_sealed_payload ... ok
+test sync_qa_crypto::y08_2_a_non_utf8_plaintext_sealed_by_a_buggy_writer_is_refused_on_open ... ok
+test sync_qa_crypto::y08_1_seal_refuses_a_version_the_reader_cannot_parse ... ok
+test sync_qa_crypto::y08_2_padding_boundaries_and_hostile_plaintext_frames ... ok
+test sync_qa_crypto::y08_3_aad_separates_the_three_kinds_even_with_equal_numbers ... ok
+test sync_qa_crypto::service::y08_14_hostile_inputs_are_refused_before_any_folder_access ... ok
+test sync_qa_crypto::y08_5_generated_keys_are_distinct_and_not_degenerate ... ok
+test sync_qa_crypto::y08_5_key_length_and_vault_value_edge_cases ... ok
+test sync_qa_crypto::y08_2_plaintext_size_boundaries_seal_and_open ... ok
+test sync_qa_crypto::y08_8_recovery_key_hostile_inputs_are_refused_without_panic ... ok
+test sync_qa_crypto::y08_8_recovery_key_nonzero_padding_bits_are_refused ... ok
+test sync_qa_crypto::y08_header_numeric_bounds_and_hostile_documents ... ok
+test sync_publish_bound::y_ios_02_fix_02_state_is_written_with_the_orphan_snapshot_still_listed ... ok
+test sync_qa_crypto::y08_8_recovery_key_detects_every_single_character_substitution_of_a_fixed_key ... ok
+test sync_qa_folder::persisted::y01_4_unreadable_or_foreign_folder_json_is_treated_as_not_configured_without_panic ... ok
+test sync_qa_folder::persisted::y01_7_a_case_only_rename_of_the_linked_folder_is_still_the_same_folder ... ok
+test sync_publish_bound::y_ios_02_fix_02_rebuild_own_matches_the_publish_bound_table ... ok
+test sync_qa_folder::y01_13_names_with_windows_traps_never_reach_the_disk_through_stdfs ... ok
+test sync_qa_folder::y01_6_a_drive_root_is_not_a_usable_sync_folder ... ok
+test sync_qa_folder::y01_2_no_capability_grants_a_dialog_or_fs_permission_to_any_window ... ok
+test sync_qa_folder::y01_6_dot_dot_components_and_verbatim_prefix_tricks_are_refused ... ok
+test sync_qa_folder::y01_6_drive_relative_device_and_malformed_paths_are_refused ... ok
+test sync_qa_folder::y01_6_only_cloud_reparse_tags_are_accepted ... ok
+test sync_qa_folder::persisted::y01_7_a_linked_folder_replaced_by_a_junction_is_refused_at_the_next_load ... ok
+test sync_qa_folder::y01_6_case_and_trailing_slash_do_not_change_the_folder_identity ... ok
+test sync_pairing_y06::y06_3_dev_server_answering_index_html_is_refused_the_pairing_page_is_accepted ... ok
+test sync_qa_folder::y01_6_trailing_dot_space_and_stream_names_do_not_alias_another_folder ... ok
+test sync_qa_folder::persisted::y01_7_a_tampered_folder_json_is_revalidated_and_never_written_through ... ok
+test sync_qa_folder::y01_6_short_8_3_names_are_refused_when_the_volume_creates_them ... ok
+test sync_qa_folder::y01_6_subst_drive_is_refused_even_though_windows_calls_it_fixed ... ok
+test sync_reset::an_orphan_next_key_left_by_a_crash_is_adopted_never_replaced ... ok
+test sync_reset::a_foreign_state_with_a_forged_notice_or_an_unknown_announcer_suspends_nothing ... ok
+test sync_reset::a_complete_reset_logs_no_key_no_recovery_key_and_no_qr_text ... ok
+test sync_reset::a_device_not_yet_reassociated_is_only_forgotten_by_an_explicit_choice ... ok
+test sync_reset::announcement_is_mastered_by_rust_and_no_k2_data_precedes_it ... ok
+test sync_reset::audit2_membership_comes_from_local_proofs_and_never_overwrites_v1 ... ok
+test sync_reset::audit6_old_key_withdrawal_fails_closed_when_a_state_is_still_in_the_cloud ... ok
+test sync_reset::audit3_switch_rechecks_its_own_k2_state_before_erasing_anything ... ok
+test sync_reset::audit2_own_state_in_the_cloud_is_cloud_pending_never_an_ordinary_import ... ok
+test sync_reset::audit7_and_review10_next_key_is_erased_even_without_a_registry ... ok
+test sync_reset::audit8_no_append_nor_snapshot_in_the_target_epoch_before_the_announcement ... ok
+test sync_reset::audit5_own_state_back_only_for_the_last_state_written_under_k ... ok
+test sync_reset::audit_low_switch_rechecks_its_own_k2_state_before_deleting_state_next ... ok
+test sync_reset::files_of_the_new_epoch_never_open_with_k_and_no_key_byte_is_in_the_folder ... ok
+test sync_reset::final_remarks_replayed_older_k_state_never_lowers_the_cutoff ... ok
+test sync_qa_crypto::y08_3_nonces_are_never_repeated_over_many_seals ... ok
+test sync_reset::p14_forget_during_a_reset_two_exceptions_only ... ok
+test sync_reset::p14_initiator_cannot_forget_once_its_switch_has_begun ... ok
+test sync_reset::p16_rust_refuses_to_open_any_other_epoch_during_a_reset ... ok
+test sync_reset::p15_superseded_registry_is_closed_when_its_winner_is_forgotten ... ok
+test sync_reset::a_switch_interrupted_before_each_of_its_writes_is_resumed_at_restart_with_the_same_outcome ... ok
+test sync_reset::pairing_payload_carries_k2_and_the_new_epoch_during_the_transition ... ok
+test sync_reset::p14_switch_waits_until_the_announced_k2_snapshot_covers_each_retained_forgotten ... ok
+test sync_reset::p16_a_restore_applied_before_the_announcement_competes_by_epoch_order ... ok
+test sync_reset::reset_key_creates_k2_under_next_returns_only_its_kid_and_resumes_without_a_new_key ... ok
+test sync_reset::reset_key_dialog_refused_or_background_or_rate_limited_creates_nothing ... ok
+test sync_reset::p17_import_failure_is_persisted_and_cleared ... ok
+test sync_reset::reset_key_refusals_before_any_dialog_and_nothing_created ... ok
+test sync_reset::review1_withdrawal_needs_a_seen_announcement_and_a_newer_state ... ok
+test sync_reset::shared_table_reset_precondition ... ok
+test sync_reset::shared_table_reset_waiting ... ok
+test sync_reset::shared_table_reset_winner ... ok
+test sync_reset::shared_table_restore_candidates ... ok
+test sync_reset::shared_table_stale_acks ... ok
+test sync_reset::shared_table_valid_reset ... ok
+test sync_reset::review2_old_recovery_key_is_refused_as_key_mismatch_on_a_device_that_moved_on ... ok
+test sync_reset::second_review_forget_after_reassociation_ignores_an_ack_in_an_epoch_the_forgotten_never_published ... ok
+test sync_reset::second_review_pairing_ignores_a_forgotten_or_expired_device_still_in_the_cloud ... ok
+test sync_reset::second_review_withdrawal_is_proven_by_a_newer_author_state_read_after_the_import_even_without_the_notice ... ok
+test sync_separation::sp_circletasks_qr_recovery_key_and_headers_are_refused ... ok
+test sync_separation::sp_circletasks_sealed_line_does_not_decrypt ... ok
+test sync_separation::sp_clean_spartiate_folder_with_its_own_file_family_is_accepted ... ok
+test sync_separation::sp_constants_are_spartiate_own ... ok
+test sync_separation::sp_empty_or_spartiate_folder_is_accepted ... ok
+test sync_separation::sp_folder_holding_circletasks_state_file_is_refused_whatever_its_name ... ok
+test sync_separation::sp_folder_holding_only_ctj_or_cts_files_is_refused ... ok
+test sync_separation::sp_folder_inside_the_circletasks_tree_is_refused ... ok
+test sync_separation::sp_folder_named_circletasks_is_refused ... ok
+test sync_separation::sp_iphone_path_choose_bookmarked_folder_applies_the_same_guard ... ok
+test sync_separation::sp_not_downloaded_circletasks_state_file_is_refused_without_reading_it ... ok
+test sync_reset::single_device_switches_at_the_first_scan_and_the_old_recovery_key_imports_nothing ... ok
+test sync_separation::sp_refusal_writes_no_folder_json_nor_own_json ... ok
+test sync_separation::sp_refusal_keeps_the_previously_bound_spartiate_folder ... ok
+test sync_store::y01_12_device_without_state_reports_its_kid_and_a_third_device_folder ... ok
+test sync_store::y01_11_strict_names_conflict_copies_and_bad_parameters ... ok
+test sync_store::y01_12_more_than_sixteen_devices_never_drop_self_or_keep ... ok
+test sync_store::y01_12_listing_cut_at_ten_thousand_entries_and_folder_size_limits ... ok
+test sync_reset::the_old_key_still_opens_old_files_but_reads_and_forges_nothing_written_after ... ok
+test sync_reset::y_tech_02_lost_reset_republishes_without_closed ... ok
+test sync_store::y01_12_scan_reports_headers_states_files_and_availability ... ok
+test sync_store::y01_12_reading_edge_cases_cloud_pending_truncated_more_and_rollback ... ok
+test sync_store::y01_13_and_14_bounds_checked_before_hydration_and_cloud_errors_are_not_fatal ... ok
+test sync_store::y01_12_snapshots_and_own_file_deletion ... ok
+test sync_store::y01_13_plaintext_never_reaches_the_folder ... ok
+test sync_reset::three_devices_reassociate_then_everyone_switches_and_k_reads_nothing_written_after ... ok
+test sync_store::y01_13_append_checks_segment_records_and_first_record_is_computed ... ok
+test sync_store::y01_14_files_beyond_the_head_are_never_hydrated ... ok
+test sync_store::y01_15_hlc_order_and_first_append_of_a_new_epoch ... ok
+test sync_store::y01_15_write_state_compares_head_paired_by_and_reserved_fields ... ok
+test sync_store::y01_16_restore_marker_written_only_when_a_folder_is_configured ... ok
+test sync_store::y01_4_folder_is_remembered_after_restart_and_only_a_label_is_returned ... ok
+test sync_store::y01_7_folder_that_became_unsafe_or_unreachable_is_refused_without_writing ... ok
+test sync_store::y01_5_device_binding_is_frozen_and_a_new_folder_resets_own_json ... ok
+test sync_store::y01_17_forget_removes_own_json_and_keeps_the_key_unless_asked ... ok
+test sync_store::y01_13_segment_and_call_limits_match_the_cross_vectors ... ok
+test sync_store::y01_15_own_json_survives_restart_is_ignored_for_another_key_and_rebuilt_from_acks ... ok
+test sync_store::y_fix_05_c9_first_append_cut_leaves_no_closed_entry_and_the_reader_goes_past_it ... ok
+test sync_store::y_ios_02_abandon_orphan_epoch_refused_while_a_reset_is_in_progress ... ok
+test sync_store::y_fix_05_c10_cut_append_after_a_registered_segment_closes_only_the_registered_one ... ok
+test sync_store::y_ios_07_evicted_head_refuses_before_write_then_next_segment_needs_no_read_or_hydration ... ok
+test sync_store::y_ios_02_delete_own_still_refuses_the_current_epoch ... ok
+test sync_tz::y_ios_02_15_system_zone_is_read_here ... ok
+test sync_store::y_ios_02_abandon_orphan_epoch_resets_own_json_only_and_is_idempotent ... ok
+test sync_tz::y_ios_02_15_unknown_zone_shows_the_utc_time_and_says_so ... ok
+test sync_y_tech_02::y_tech_02_a_refusal_blocks_in_memory_when_it_cannot_be_written ... ok
+test sync_y_tech_02::y_tech_02_a_refusal_during_a_marker_block_keeps_the_counters ... ok
+test sync_store::y_ios_07_partial_write_cloud_pending_never_claims_before_write ... ok
+test sync_y_tech_02::y_tech_02_an_opening_that_cannot_be_counted_opens_no_dialog ... ok
+test sync_y_tech_02::y_tech_02_a_refusal_that_cannot_be_written_survives_a_restart ... ok
+test sync_y_tech_02::y_tech_02_an_unreadable_file_during_a_marker_block_is_logged ... ok
+test sync_y_tech_02::y_tech_02_an_expired_marker_that_cannot_be_removed_answers_io ... ok
+test sync_store::y_ios_02_abandon_orphan_epoch_refuses_a_truncated_listing ... ok
+test sync_y_tech_02::y_tech_02_refusal_marker_carries_its_deadline_and_answers_io_when_it_cannot_be_removed ... ok
+test sync_y_tech_02::y_tech_02_scan_reports_a_folder_over_one_gib_without_failing ... ok
+test sync_y_tech_02::y_tech_02_scan_reports_the_nonce_budget_warning ... ok
+test training_schema::i1_01_a_version_1_backup_without_the_training_tables_is_still_accepted ... ok
+test training_schema::i1_01_every_published_table_has_its_two_capture_triggers_in_the_reference ... ok
+test training_schema::i1_01_the_training_triggers_do_not_exist_in_version_1 ... ok
+test sync_store::y_ios_02_abandon_orphan_epoch_refusals ... ok
+test sync_reset::concurrent_resets_the_greater_epoch_wins_and_the_loser_steps_back_without_any_keyless_instant ... ok
+test training_schema::i1_01_a_tampered_training_trigger_is_refused ... ok
+test training_schema::i1_01_a_version_2_backup_with_the_training_tables_is_accepted ... ok
+test training_schema::i2_01_the_version_6_triggers_do_not_exist_before_version_6 ... ok
+test training_schema::i1_02_a_version_3_backup_is_accepted_and_has_no_workout_trigger ... ok
+test training_schema::i3_02_the_mesocycle_triggers_do_not_exist_before_version_7 ... ok
+test training_schema::i1_03_a_version_4_backup_with_the_guarded_workout_triggers_is_accepted ... ok
+test training_schema::i4_02_the_nutrition_triggers_do_not_exist_before_version_8 ... ok
+test training_schema::fix_0181_a_version_15_backup_with_the_favorite_triggers_is_accepted_and_a_tampered_one_is_refused ... ok
+test training_schema::i4_07_the_recipe_and_day_triggers_do_not_exist_before_version_9 ... ok
+test training_schema::i2_01_a_version_5_backup_with_the_local_progression_tables_is_accepted_and_adds_no_trigger ... ok
+test training_schema::i5_01_the_recovery_triggers_do_not_exist_before_version_10_and_the_local_tables_have_none ... ok
+test training_schema::i2_01_a_version_6_backup_with_the_published_progression_tables_is_accepted ... ok
+test training_schema::i6_03b_the_routine_circuit_trigger_does_not_exist_before_version_14 ... ok
+test training_schema::i3_02_a_version_7_backup_with_the_published_mesocycle_table_is_accepted ... ok
+test training_schema::i5_01_a_version_10_backup_with_the_recovery_tables_is_accepted_and_a_tampered_one_is_refused ... ok
+test training_schema::i4_02_a_version_8_backup_with_the_published_nutrition_tables_is_accepted ... ok
+test training_schema::i6_06_the_cardio_triggers_exist_only_from_the_cardio_version_and_the_track_has_none ... ok
+test training_schema::prog01_the_app_schema_version_is_the_latest_migration_after_the_cardio_one ... ok
+test training_schema::reset_01_the_data_reset_triggers_do_not_exist_before_version_16 ... ok
+test updater::equal_or_older_version_is_not_offered ... ok
+test training_schema::i6_03b_a_version_14_backup_with_the_routine_circuit_trigger_is_accepted_and_a_tampered_one_is_refused ... ok
+test updater::modified_package_is_refused ... ok
+test updater::newer_version_is_offered_with_its_notes ... ok
+test updater::old_signed_package_cannot_pass_for_a_newer_version ... ok
+test updater::package_signed_with_another_key_is_refused ... ok
+test updater::placeholder_public_key_never_installs_anything ... ok
+test updater::signature_without_version_is_refused ... ok
+test updater::signed_package_is_downloaded_and_verified ... ok
+test window::build_window_from_config_creates_the_main_window_once_and_hidden ... ok
+test window::the_failure_dialog_gives_the_code_and_a_next_step_without_a_personal_path ... ok
+test window::the_windows_configuration_does_not_let_tauri_create_the_main_window ... ok
+test window_fit::constants_match_the_window_configuration ... ok
+test window_fit::full_hd_with_taskbar_keeps_the_default_size_centered_in_the_work_area ... ok
+test window_fit::high_dpi_screen_is_converted_to_logical_units_before_fitting ... ok
+test window_fit::restored_position_off_screen_is_brought_back_into_a_work_area ... ok
+test window_fit::restored_position_with_a_visible_title_bar_is_left_alone ... ok
+test window_fit::restored_position_with_no_work_area_left_is_reported ... ok
+test window_fit::secondary_monitor_on_the_left_keeps_negative_coordinates ... ok
+test window_fit::small_but_sufficient_work_area_shrinks_the_window_down_to_the_minimum ... ok
+test window_fit::work_area_below_the_minimum_is_reported_never_lowered ... ok
+test training_schema::i6_06_a_backup_newer_than_the_cardio_version_is_refused_as_newer_schema ... ok
+test training_schema::i6_05_a_version_17_backup_with_the_supplement_triggers_is_accepted_and_a_tampered_one_is_refused ... ok
+test training_schema::i4_07_a_version_9_backup_with_the_recipe_tables_is_accepted_and_a_tampered_one_is_refused ... ok
+test backup_versions::i5_01_for_every_schema_version_reset_triggers_recreates_exactly_the_triggers_of_a_migrated_base has been running for over 60 seconds
+test updater::unreachable_or_missing_manifest_is_an_error_not_a_panic ... ok
+test training_schema::i6_06_a_cardio_version_backup_is_accepted_a_tampered_or_old_project_one_is_refused ... ok
+test backup_versions::i5_01_for_every_schema_version_reset_triggers_recreates_exactly_the_triggers_of_a_migrated_base ... ok
+test sync_closed_segments::y_tech_02_closed_cap_drops_the_oldest ... ok
+
+test result: ok. 846 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 64.18s

@@ -1,0 +1,3 @@
+.runtime/
+!resultats/*.log
+!resultats/*.log.gz

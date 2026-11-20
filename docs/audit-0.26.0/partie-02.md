@@ -1,0 +1,28 @@
+# Partie 2 — données, repositories et migrations
+
+Tag `v0.26.0`, SHA `8686a8fc2860f7a94eb193426cbcc640a33bac80`. Budget L. Poursuite de toutes les parties demandée par Ali le 19/11 : les commits intermédiaires ne sont pas des arrêts de travail.
+
+## Lectures et premières conclusions
+
+- PRD § 20/21 lu ; détails historiques à confronter aux décisions et migrations réellement publiées.
+- Migrateur, sauvegarde avant migration, sérialiseur, driver Wasm, signaux d'écriture, observation des écritures, registre et **19 migrations intégralement lus**. Aucun changement du schéma réalisé par l'audit.
+- Migrations par transaction, vérification des sommes et refus d'une version supérieure ; tableaux de capture figés, extensions de champs capturées par déclencheurs supplémentaires. Séances ouvertes exclues des captures ; clôture met séance/séries/décisions en file. Concordance exhaustive catalogue/déclencheurs à établir par outils dans la suite de cette partie.
+- La piste « réintégration seulement au journal » de partie 1 est **nuancée** par `src/db/repositories/sql/syncUnknown.ts`, lu entièrement : un état `REINTEGRATION_FAILURE_META` est persisté pour les échecs de ligne et au mieux pour l'échec global. Il reste à vérifier l'affichage et le cas où la persistance échoue aussi ; ne pas transformer la piste en constat sans ces vérifications.
+- **A-008 bloquant sous injection de panne** : rollback en échec, connexion réutilisée, écriture suivante acquittée mais perdue à la réouverture. Détail et limites dans `bloquants.md`. Le test existant `serializedDriver.test.ts` a été lu intégralement : il couvre le rollback normal et la perte de transaction, mais son cas de nettoyage en échec ne vérifie pas une écriture suivante durable. Aucun test existant modifié.
+
+## Clôture de la passe du 20/11
+
+**Passe de partie 2 terminée**, avec A-008 ouvert ; cela ne signifie ni application corrigée ni validation native. Tous les fichiers de production de `src/db` sont lus intégralement, interfaces et héritage compris. Le seul support restant, `sql/testSetup.ts`, relève du banc de partie 11. Le relevé total atteint 188/2 047 fichiers, sans assimiler les recherches dans les appelants à des lectures intégrales.
+
+- **Contrats d'écriture** : les opérations composées de séance reposent selon la méthode sur une transaction interne ou sur `DataAccess.transaction`. Les chemins consultés de séance active et de confirmation d'import utilisent cette transaction. L'import valide les valeurs, reconstruit son plan à la confirmation, conserve les bases des champs et retire la garde en sortie. Le reset parcourt les dépendances des tables et filtre l'horizon ; son orchestration distante reste en partie 3.
+- **Séances ouvertes** : absence volontaire de publication avant clôture ; clôture capture séance et séries. Les champs de circuit ajoutés en migration 13 sont publiés à la clôture, sans capture UPDATE indépendante. Ce choix explique le premier échec de l'assertion structurelle, pas un défaut de production.
+- **Conservation et lecture** : les suppressions de photos conservent le fichier jusqu'au traitement dédié ; les données de récupération distinguent auteur et lecteur ; les échantillons locaux ont une rétention de 120 jours. Les pauses de mésocycle malformées sont signalées comme illisibles et conservées lors de l'arrêt d'un cycle précédent. Certains parseurs d'exercices/matériel retournent une liste vide et les compléments filtrent les lignes JSON illisibles : la visibilité et le risque de réécriture de ces replis restent à suivre avec leurs écrans (parties 4/5/7), sans nouveau défaut démontré ici.
+- **SQL de synchronisation** : identifiants issus du catalogue, valeurs liées, lectures valeurs/horloges cohérentes, file retirée par séquence, horloges et tombstones ordonnés. L'héritage contient des méthodes visant l'ancien schéma ; leur présence seule ne prouve pas un chemin exécutable. La politique des plafonds et de réintégration relève de la partie 3.
+
+## Preuves ciblées
+
+`preuves/partie2-schema.test.mjs` applique les 19 migrations réelles sur SQLite en mémoire, vérifie clés/colonnes du catalogue, ordre des parents, déclencheurs, intégrité et clés étrangères : **1 test vert**, résultat `partie2-schema-cloture`. Le premier résultat `partie2-schema` est conservé : l'assertion exigeait à tort un UPDATE indépendant pour les champs de circuit. L'assertion corrigée vérifie leur contrat de clôture ; aucun test produit supprimé ou relâché. Ce contrôle structurel ne démontre pas toutes les captures dynamiques possibles.
+
+`preuves/partie2-atomicite.test.mjs` utilise les repositories et le sérialiseur réels, SQLite en mémoire et une panne SQL injectée : **2 tests verts** (`resultats/partie2-atomicite`). Une clôture interrompue laisse séance/séries/file inchangées ; sa réussite publie séance et série au même HLC. Un import interrompu à la seconde pesée ne laisse ni première pesée, ni horloge, ni file, ni garde. Ces résultats couvrent le rollback réussi et ne contredisent pas A-008, où le rollback lui-même échoue. Le transport Tauri et la sauvegarde native restent à confronter en partie 8.
+
+Passe propriétaire : intégrité et durabilité prioritaires. Passe module : lecture intégrale ci-dessus. Passe QA : trois tests ciblés verts, preuve rouge A-008 conservée, aucune suite complète. Passe revue : portée des tests et exceptions de clôture relues ; pas de conclusion « natif confirmé ». Aucun code de production modifié. Dispense de reconstruction du bundle motivée dans `avancement.md` par le périmètre d'écriture imposé ; aucune nouvelle mesure prétendue. **Suite immédiate : partie 3.**

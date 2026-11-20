@@ -1,0 +1,89 @@
+✖ A-002 : la feuille utilise les tokens de couleur (2.9571ms)
+✖ A-003 : les dépendances directes React et Zustand figurent dans les licences (2.3729ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 165.2082
+
+✖ failing tests:
+
+test at docs\audit-0.26.0\preuves\partie0-rouges.test.mjs:6:1
+✖ A-002 : la feuille utilise les tokens de couleur (2.9571ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /background:\s*#[0-9a-f]+/i. Input:
+
+  '\n' +
+    '.ct-sheet__backdrop {\n' +
+    '  position: fixed;\n' +
+    '  inset: 0;\n' +
+    '  background: #6e6687;\n' +
+    '  display: flex;\n' +
+    '  flex-direction: column;\n' +
+    '  justify-content: flex-end;\n' +
+    '  z-index: 100;\n' +
+    '  padding-top: max(40px, calc(var(--ct-safe-area-top) + 12px));\n' +
+    '  box-sizing: border-box;\n' +
+    '}\n' +
+    '\n' +
+    '.ct-sheet {\n' +
+    '  max-height: 100%;\n' +
+    '  background: var(--ct-color-surface);\n' +
+    '  border-radius: var(--ct-radius-xl) var(--ct-radius-xl) 0 0;\n' +
+    '  display: flex;\n' +
+    '  flex-direction: column;\n' +
+    '  gap: var(--ct-space-3);\n' +
+    '  padding: 12px 20px calc(28px + var(--ct-safe-area-bottom)) 20px;\n' +
+    '  box-sizing: border-box;\n' +
+    '  overflow-y: auto;\n' +
+    '}\n' +
+    '\n' +
+    '.ct-sheet:focus-visible {\n' +
+    '  outline: none;\n' +
+    '}\n' +
+    '\n' +
+    '.ct-sheet__handle {\n' +
+    '  align-self: center;\n' +
+    '  width: 40px;\n' +
+    '  height: 5px;\n' +
+    '  border-radius: var(--ct-radius-pill);\n' +
+    '  background: var(--ct-color-border-strong);\n' +
+    '}\n' +
+    '\n' +
+    '\n' +
+    '.ct-sheet--tall {\n' +
+    '  height: 100%;\n' +
+    '}\n'
+
+      at TestContext.<anonymous> (file:///C:/Dev/spartiate-codex/docs/audit-0.26.0/preuves/partie0-rouges.test.mjs:8:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n.ct-sheet__backdrop {\n  position: fixed;\n  inset: 0;\n  background: #6e6687;\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  z-index: 100;\n  padding-top: max(40px, calc(var(--ct-safe-area-top) + 12px));\n  box-sizing: border-box;\n}\n\n.ct-sheet {\n  max-height: 100%;\n  background: var(--ct-color-surface);\n  border-radius: var(--ct-radius-xl) var(--ct-radius-xl) 0 0;\n  display: flex;\n  flex-direction: column;\n  gap: var(--ct-space-3);\n  padding: 12px 20px calc(28px + var(--ct-safe-area-bottom)) 20px;\n  box-sizing: border-box;\n  overflow-y: auto;\n}\n\n.ct-sheet:focus-visible {\n  outline: none;\n}\n\n.ct-sheet__handle {\n  align-self: center;\n  width: 40px;\n  height: 5px;\n  border-radius: var(--ct-radius-pill);\n  background: var(--ct-color-border-strong);\n}\n\n\n.ct-sheet--tall {\n  height: 100%;\n}\n',
+    expected: /background:\s*#[0-9a-f]+/i,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at docs\audit-0.26.0\preuves\partie0-rouges.test.mjs:11:1
+✖ A-003 : les dépendances directes React et Zustand figurent dans les licences (2.3729ms)
+  AssertionError [ERR_ASSERTION]: react-dom absent de docs/licences.md
+      at TestContext.<anonymous> (file:///C:/Dev/spartiate-codex/docs/audit-0.26.0/preuves/partie0-rouges.test.mjs:16:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

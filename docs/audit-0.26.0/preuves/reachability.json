@@ -1,0 +1,4155 @@
+{
+  "roots": [
+    "src/main.tsx",
+    "src/features/sync/pairing-window/main.tsx"
+  ],
+  "nbFichiers": 1887,
+  "vivants": 865,
+  "deadSrc": [
+    "src/db/index.ts",
+    "src/db/repositories/sql/testSetup.ts",
+    "src/db/seed/sampleData.ts",
+    "src/domain/csvImport.ts",
+    "src/domain/dateInput.ts",
+    "src/domain/donePeriod.ts",
+    "src/domain/eventTestKit.ts",
+    "src/domain/historyExport.ts",
+    "src/domain/itemFilter.ts",
+    "src/domain/notificationStatus.ts",
+    "src/domain/projectRules.ts",
+    "src/domain/routineReport.ts",
+    "src/domain/routineTestKit.ts",
+    "src/domain/sync/repairs.ts",
+    "src/domain/taskPostpone.ts",
+    "src/domain/taskRules.ts",
+    "src/domain/taskSchedule.ts",
+    "src/domain/taskTrash.ts",
+    "src/features/app/todayTestPreload.ts",
+    "src/features/signing/testKit.ts",
+    "src/features/sync/testKit.ts",
+    "src/platform/barcode/testing.ts",
+    "src/platform/desktop/testing.ts",
+    "src/platform/notifications/fakeBridge.ts",
+    "src/platform/ocr/index.ts",
+    "src/platform/ocr/nativeOcr.ts",
+    "src/platform/ocr/testing.ts",
+    "src/platform/ocr/types.ts",
+    "src/platform/off/testing.ts",
+    "src/platform/speech/testing.ts",
+    "src/platform/systemSettings/testing.ts"
+  ],
+  "deadTests": [
+    {
+      "test": "src/platform/ocr/nativeOcr.test.ts",
+      "dead": [
+        "src/platform/ocr/index.ts",
+        "src/platform/ocr/nativeOcr.ts",
+        "src/platform/ocr/types.ts"
+      ],
+      "live": []
+    }
+  ],
+  "mixedTests": [
+    {
+      "test": "src/db/localWrite.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/localWrite.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/observeWrites.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts",
+        "src/db/repositories/observeWrites.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/bodyHealthMetrics.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/bodyProgress/measurements.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/bodyProgressRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/bodyProgress/measurements.ts",
+        "src/domain/types.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/db/driver.ts",
+        "src/db/repositories/sql/index.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/bodyRepositories.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/cardioRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/cardio/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/checklistRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts",
+        "src/db/repositories/common.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/dayCompletenessRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/localWrite.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/equipmentProfileRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exerciseRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/common.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportBodyProgress.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportCardio.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/cardio/index.ts",
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/fullExport.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportCircuit.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/exportImport/sha256.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportFoodFavorite.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/fullExport.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportHealthBody.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/nutrition/renphoDay.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportMesocycle.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/training/programPause.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportNutrition.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportOpenWorkout.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportProgression.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/exportImport/sha256.ts",
+        "src/domain/training/prescribe.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportRecipes.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportRecovery.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportRecoveryFactor.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts",
+        "src/db/migrations/index.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportRoutineCircuit.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/fullExport.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/exportImport/sha256.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportSupplement.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/fullExport.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts",
+        "src/db/migrations/index.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportSv18.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/exportImport/sha256.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/training/types.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportSyncParity.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportTargetOrder.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/exportImportTraining.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/plan.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/exportImport/sha256.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/foodFavoriteRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/favorites.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/foodRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/food.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/fullExport.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/fullExport.ts",
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/goalRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/mealEntryRenpho.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/renphoDay.ts",
+        "src/domain/nutrition/mealEntry.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/mealEntryRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/mealEntry.ts",
+        "src/domain/nutrition/dayTotals.ts",
+        "src/domain/types.ts",
+        "src/domain/hlc.ts",
+        "src/db/repositories/sql/mealEntryRepository.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/mesocycleRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/training/programPause.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/nutritionTargetRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/targetRecord.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/progressionRepository.i408.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/prescribe.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/progressionRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/config.ts",
+        "src/domain/training/prescribe.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recipeRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/recipeTypes.ts",
+        "src/domain/types.ts",
+        "src/db/localWrite.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recoveryFactorRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recoveryRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recoveryRepositoryLatest.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recoveryRepositoryReader.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/storage.ts",
+        "src/domain/sync/syncTables.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/recoverySampleRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/repositories/recoverySampleRepository.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/reminderRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/rev01.ingredientName.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/foodSearch.ts",
+        "src/domain/nutrition/recipe.ts",
+        "src/domain/nutrition/recipeTypes.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/routineCircuit.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/routineRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/settingsRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/spaceRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/supplementRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/taskRepository.done.test.ts",
+      "dead": [
+        "src/domain/donePeriod.ts",
+        "src/db/seed/sampleData.ts",
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/taskRepository.perf.test.ts",
+      "dead": [
+        "src/db/seed/sampleData.ts",
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/taskRepository.purge.test.ts",
+      "dead": [
+        "src/db/seed/sampleData.ts",
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/taskRepository.test.ts",
+      "dead": [
+        "src/db/seed/sampleData.ts",
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/trainingRoutineRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/workoutCircuit.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/workoutClosure.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/workoutDifficulty.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/workoutRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/dataAccess.ts",
+        "src/db/repositories/sql/index.ts"
+      ]
+    },
+    {
+      "test": "src/db/repositories/sql/workoutWarmup.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/dataAccess.ts",
+        "src/db/repositories/sql/index.ts"
+      ]
+    },
+    {
+      "test": "src/db/spaceOwnership.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/db/seed/sampleData.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/db/driver.ts",
+        "src/db/drivers/sqliteWasm.ts",
+        "src/db/migrator.ts",
+        "src/db/seed/defaultSpaces.ts"
+      ]
+    },
+    {
+      "test": "src/domain/csvImport.test.ts",
+      "dead": [
+        "src/domain/csvImport.ts",
+        "src/domain/historyExport.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/csvImportHardening.test.ts",
+      "dead": [
+        "src/domain/csvImport.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/donePeriod.test.ts",
+      "dead": [
+        "src/domain/donePeriod.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/domain/model/index.ts"
+      ]
+    },
+    {
+      "test": "src/domain/eventKinds.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts"
+      ],
+      "live": [
+        "src/domain/eventKinds.ts",
+        "src/domain/eventRules.ts",
+        "src/domain/model/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/eventOccurrences.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts"
+      ],
+      "live": [
+        "src/domain/eventOccurrences.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/eventReminders.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts"
+      ],
+      "live": [
+        "src/domain/eventReminders.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/eventRules.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts"
+      ],
+      "live": [
+        "src/domain/eventRules.ts",
+        "src/domain/model/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/historyExport.test.ts",
+      "dead": [
+        "src/domain/historyExport.ts",
+        "src/domain/itemFilter.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/notificationLedger.test.ts",
+      "dead": [
+        "src/domain/notificationStatus.ts"
+      ],
+      "live": [
+        "src/domain/notificationLedger.ts"
+      ]
+    },
+    {
+      "test": "src/domain/notificationPlan.qa.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/localDate.ts",
+        "src/domain/model/index.ts",
+        "src/domain/notificationPlan.ts",
+        "src/domain/quietHours.ts",
+        "src/domain/recap.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/notificationPlan.snooze.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/notificationActions.ts",
+        "src/domain/notificationPlan.ts",
+        "src/domain/quietHours.ts",
+        "src/domain/recap.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/notificationPlan.test.ts",
+      "dead": [
+        "src/domain/eventTestKit.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/notificationPlan.ts",
+        "src/domain/quietHours.ts",
+        "src/domain/recap.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/notificationWindow.test.ts",
+      "dead": [
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/notificationPlan.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/projectRules.test.ts",
+      "dead": [
+        "src/domain/itemFilter.ts",
+        "src/domain/projectRules.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/qaRoutinesLot.test.ts",
+      "dead": [
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/routineSchedule.ts",
+        "src/domain/routineStreaks.ts"
+      ]
+    },
+    {
+      "test": "src/domain/recap.test.ts",
+      "dead": [
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/recap.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/routineReport.firstDay.test.ts",
+      "dead": [
+        "src/domain/routineReport.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/week.ts"
+      ]
+    },
+    {
+      "test": "src/domain/routineReport.test.ts",
+      "dead": [
+        "src/domain/routineReport.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/localDate.ts",
+        "src/domain/routineSchedule.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/routineSchedule.test.ts",
+      "dead": [
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/routineSchedule.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/routineStats.perf.test.ts",
+      "dead": [
+        "src/domain/routineReport.ts",
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/localDate.ts",
+        "src/domain/routineStreaks.ts"
+      ]
+    },
+    {
+      "test": "src/domain/routineStreaks.test.ts",
+      "dead": [
+        "src/domain/routineTestKit.ts"
+      ],
+      "live": [
+        "src/domain/localDate.ts",
+        "src/domain/routineStreaks.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/sync/catalogue.test.ts",
+      "dead": [
+        "src/domain/sync/repairs.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/sync/epoch.ts",
+        "src/domain/sync/syncTables.ts"
+      ]
+    },
+    {
+      "test": "src/domain/taskPostpone.test.ts",
+      "dead": [
+        "src/domain/taskPostpone.ts"
+      ],
+      "live": [
+        "src/domain/localDate.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/taskRules.test.ts",
+      "dead": [
+        "src/domain/taskRules.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/taskSchedule.test.ts",
+      "dead": [
+        "src/domain/taskSchedule.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/domain/model/index.ts"
+      ]
+    },
+    {
+      "test": "src/domain/taskTrash.test.ts",
+      "dead": [
+        "src/domain/taskTrash.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/domain/timeFormat.test.ts",
+      "dead": [
+        "src/domain/dateInput.ts"
+      ],
+      "live": [
+        "src/domain/timeFormat.ts"
+      ]
+    },
+    {
+      "test": "src/domain/week.test.ts",
+      "dead": [
+        "src/domain/taskSchedule.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/types.ts",
+        "src/domain/week.ts"
+      ]
+    },
+    {
+      "test": "src/features/app/desktop.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.ts",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/app/navigation.ts"
+      ]
+    },
+    {
+      "test": "src/features/app/ErgoToday.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/recovery/index.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/nutrition/NutritionRemainingCard.tsx",
+        "src/features/nutrition/useCases.ts",
+        "src/features/recovery/RecoveryToday.tsx",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/lazyScreens.tsx",
+        "src/features/app/SectionNotice.tsx"
+      ]
+    },
+    {
+      "test": "src/features/app/ErgoToday02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/app/todayTestPreload.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/nutrition/useCases.ts",
+        "src/i18n/formatPrefs.ts",
+        "src/ui/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/TodayScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/app/SectionNotice.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/lazyScreens.tsx",
+        "src/features/app/navigation.ts",
+        "src/features/app/SectionNotice.tsx",
+        "src/features/strength/StrengthScore.tsx"
+      ]
+    },
+    {
+      "test": "src/features/app/startup.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/appStore.ts",
+        "src/features/app/container.ts",
+        "src/features/app/startup.ts"
+      ]
+    },
+    {
+      "test": "src/features/app/timeZoneWatcher.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/clock.ts",
+        "src/domain/types.ts",
+        "src/features/app/container.ts",
+        "src/features/app/timeZoneWatcher.ts"
+      ]
+    },
+    {
+      "test": "src/features/app/TodayScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/app/todayTestPreload.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/ui/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/TodayScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/app/updateFailure.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/i18n/appUpdateRestoreText.ts",
+        "src/platform/backup/index.ts",
+        "src/platform/dbDiagnostics.ts",
+        "src/features/settings/AboutSection.tsx",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStore.ts",
+        "src/features/app/container.ts",
+        "src/features/app/DbFailureDetails.tsx",
+        "src/features/app/updateRestore.ts"
+      ]
+    },
+    {
+      "test": "src/features/app/updateRestoreReview.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/i18n/appUpdateRestoreText.ts",
+        "src/platform/backup/index.ts",
+        "src/platform/backup/recovery.ts",
+        "src/platform/sync/memory.ts",
+        "src/sync/index.ts",
+        "src/sync/log.ts",
+        "src/features/app/UpdateRestoreAction.tsx",
+        "src/features/app/updateRestore.ts"
+      ]
+    },
+    {
+      "test": "src/features/bodyProgress/BodyProgress.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/i18n/format.ts",
+        "src/platform/privacyShield/index.ts",
+        "src/features/bodyProgress/BodyProgress.tsx"
+      ]
+    },
+    {
+      "test": "src/features/bodyProgress/BodyProgressErgo02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/ui/useLayout.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/platform/privacyShield/index.ts",
+        "src/features/bodyProgress/BodyProgress.tsx",
+        "src/i18n/bodyProgressText.ts",
+        "src/ui/MissingValue.tsx"
+      ]
+    },
+    {
+      "test": "src/features/cardio/CardioGps.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/geolocation/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/cardio/CardioGps.tsx",
+        "src/features/cardio/CardioView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/cardio/CardioProgress.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/cardio/index.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/cardio/CardioProgress.tsx"
+      ]
+    },
+    {
+      "test": "src/features/cardio/CardioView.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/cardio/CardioView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/ErgoP5.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/logs/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/logs/LogsScreen.tsx",
+        "src/features/settings/SettingsScreen.tsx",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/ErgoScreens.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/bodyProgress/BodyProgress.tsx",
+        "src/features/cardio/CardioProgress.tsx",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts",
+        "src/features/onboarding/OnboardingFlow.tsx",
+        "src/features/recovery/RecoveryProgress.tsx",
+        "src/features/settings/AppearanceScreen.tsx",
+        "src/features/settings/BodyScreen.tsx",
+        "src/features/settings/ExportImportScreen.tsx",
+        "src/features/settings/SettingsScreen.tsx",
+        "src/features/settings/SettingsScreenPc.tsx",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/notifications/supplementActions.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/supplementNotificationPlan.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.supplementNotifications.ts",
+        "src/platform/notifications/index.ts",
+        "src/features/notifications/supplementActions.ts",
+        "src/features/notifications/supplementWake.ts",
+        "src/features/notifications/supplementNotifications.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/checkIn/CheckInErgo02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/localDate.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts",
+        "src/features/nutrition/checkIn/CheckInView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/CheckInErgo03.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/localDate.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/dayType.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/index.ts",
+        "src/domain/types.ts",
+        "src/features/nutrition/dayType.ts",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/ErgoNutrition.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/ErgoP2.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionRemainingCard.tsx",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/journal/DayCompleteness.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/NutritionRemainingCard.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/useCases.ts",
+        "src/features/nutrition/NutritionRemainingCard.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/NutritionScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/localDate.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts",
+        "src/platform/desktop/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/NutritionStates.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/localDate.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/dataAccess.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/recipes/Recipes.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/dataAccess.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/scan/scanBarcode.test.ts",
+      "dead": [
+        "src/platform/barcode/testing.ts"
+      ],
+      "live": [
+        "src/platform/barcode/index.ts",
+        "src/features/nutrition/scan/scanBarcode.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/catalogueSearch.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/ciqual.ts",
+        "src/domain/nutrition/food.ts",
+        "src/domain/types.ts",
+        "src/features/nutrition/catalogue/ciqualCatalogue.ts",
+        "src/features/nutrition/search/catalogueSearch.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/CustomFood.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/Favorites.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/FavoritesCiqual.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/catalogue/ciqualCatalogue.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/offLookup.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/off/testing.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/food.ts",
+        "src/domain/nutrition/offProduct.ts",
+        "src/domain/types.ts",
+        "src/platform/off/parse.ts",
+        "src/features/nutrition/search/offLookup.ts",
+        "src/features/nutrition/search/catalogueSearch.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/search/OffSearch.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/barcode/testing.ts",
+        "src/platform/off/testing.ts",
+        "src/platform/systemSettings/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/nutrition/food.ts",
+        "src/domain/nutrition/offProduct.ts",
+        "src/domain/types.ts",
+        "src/platform/barcode/index.ts",
+        "src/platform/off/index.ts",
+        "src/platform/off/parse.ts",
+        "src/platform/systemSettings/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/StrategyErgo03.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/nutrition/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/nutrition/NutritionScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/supplements/SupplementsFix0242.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/supplementNotificationPlan.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/i18n/supplementsText.ts",
+        "src/features/nutrition/supplements/SupplementsView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/supplements/SupplementsTodayCard.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/platform/desktop/log.ts",
+        "src/features/nutrition/supplements/SupplementsTodayCard.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/supplements/SupplementsView.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/nutrition/supplements/SupplementsView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/supplements/SupplementsViewErgo02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/nutrition/supplements/SupplementsView.tsx",
+        "src/i18n/supplementsText.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/useCases.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/nutrition/index.ts",
+        "src/domain/nutrition/foodSearch.ts",
+        "src/domain/types.ts",
+        "src/features/nutrition/useCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/useNutritionStale.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/dataAccess.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/nutrition/NutritionScreen.tsx",
+        "src/features/nutrition/useNutritionData.ts",
+        "src/platform/desktop/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/nutrition/workoutSync.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/nutrition/NutritionRemainingCard.tsx",
+        "src/features/nutrition/useNutritionData.ts"
+      ]
+    },
+    {
+      "test": "src/features/onboarding/launch.basePresence.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/onboarding/draft.ts",
+        "src/domain/types.ts",
+        "src/features/onboarding/launch.ts"
+      ]
+    },
+    {
+      "test": "src/features/onboarding/onboardingData.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/id.ts",
+        "src/domain/onboarding/index.ts",
+        "src/domain/types.ts",
+        "src/features/training/content.ts",
+        "src/features/onboarding/onboardingData.ts",
+        "src/domain/onboarding/draft.ts"
+      ]
+    },
+    {
+      "test": "src/features/onboarding/OnboardingErgo02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/healthkit/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/content.ts",
+        "src/features/onboarding/OnboardingFlow.tsx"
+      ]
+    },
+    {
+      "test": "src/features/onboarding/OnboardingFlow.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/content.ts",
+        "src/domain/id.ts",
+        "src/domain/onboarding/index.ts",
+        "src/features/onboarding/onboardingData.ts",
+        "src/features/onboarding/OnboardingFlow.tsx"
+      ]
+    },
+    {
+      "test": "src/features/onboarding/OnboardingHost.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/content.ts",
+        "src/features/onboarding/OnboardingHost.tsx",
+        "src/features/onboarding/onboardingData.ts"
+      ]
+    },
+    {
+      "test": "src/features/recovery/RecoveryFactors.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/recovery/RecoveryProgress.tsx",
+        "src/features/recovery/RecoveryToday.tsx"
+      ]
+    },
+    {
+      "test": "src/features/recovery/RecoveryToday.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/recovery/RecoveryToday.tsx"
+      ]
+    },
+    {
+      "test": "src/features/security/AppLockGate.test.tsx",
+      "dead": [
+        "src/features/signing/testKit.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/platform/biometric/index.ts",
+        "src/platform/privacyShield/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/settings/SettingsScreen.tsx",
+        "src/features/security/AppLockGate.tsx",
+        "src/features/security/appLockStore.ts",
+        "src/features/security/excursion.ts",
+        "src/features/security/startAppLock.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/AppearanceScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/model/index.ts",
+        "src/domain/types.ts",
+        "src/i18n/formatPrefs.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/AppearanceScreen.tsx",
+        "src/features/settings/appearance.ts",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/AppleHealthScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/healthkit/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/appStore.ts",
+        "src/features/app/navigation.ts",
+        "src/platform/desktop/log.ts",
+        "src/platform/files/index.ts",
+        "src/features/settings/AppleHealthScreen.tsx",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/backup.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/BackupRow.tsx",
+        "src/features/settings/backupScheduler.ts",
+        "src/features/settings/backupStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/backupOrigin.sheet.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/BackupSheet.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/BodyScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/BodyScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/ExportFull.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/types.ts",
+        "src/platform/files/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/ExportImportScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/ExportImportScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/files/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/ExportImportScreen.tsx",
+        "src/sync/dataReset.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/sync/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/healthBodyImport/service.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/nutrition/renphoDay.ts",
+        "src/domain/types.ts",
+        "src/domain/health/bodyShortcutFiles.ts",
+        "src/platform/shortcutFiles/index.ts",
+        "src/features/settings/healthBodyImport/service.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/HealthBodyImportSection.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/health/bodyShortcutFiles.ts",
+        "src/domain/types.ts",
+        "src/platform/shortcutFiles/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/HealthBodyImportSection.tsx",
+        "src/platform/desktop/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/logs/logsRow.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/desktop/log.ts",
+        "src/platform/logs/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/AboutSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/logs/sentinel.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/platform/desktop/log.ts",
+        "src/platform/files/index.ts",
+        "src/platform/logs/index.ts",
+        "src/sync/log.ts",
+        "src/features/app/container.ts",
+        "src/features/app/saveFile.ts",
+        "src/features/settings/backupStore.ts",
+        "src/features/settings/logs/logExport.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/logs/syncReport.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/features/settings/logs/logExport.ts",
+        "src/features/settings/logs/syncReport.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/PlusErgo02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/i18n/index.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStore.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/prog01AfterMerge.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/exportImport/archive.ts",
+        "src/domain/exportImport/sha256.ts",
+        "src/domain/exportImport/zip.ts",
+        "src/domain/hlc.ts",
+        "src/domain/id.ts",
+        "src/domain/onboarding/index.ts",
+        "src/domain/onboarding/draft.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/domain/training/types.ts",
+        "src/domain/types.ts",
+        "src/platform/files/index.ts",
+        "src/sync/dataReset.ts",
+        "src/sync/log.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/onboarding/onboardingData.ts",
+        "src/features/training/content.ts",
+        "src/features/settings/ExportImportScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/recoveryImport/afterRecompute.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/types.ts",
+        "src/platform/shortcutFiles/index.ts",
+        "src/features/settings/recoveryImport/service.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/recoveryImport/service.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/recovery/index.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/recoverySampleRepository.ts",
+        "src/platform/shortcutFiles/index.ts",
+        "src/features/settings/recoveryImport/service.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/RecoveryImportSection.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/healthkit/index.ts",
+        "src/platform/shortcutFiles/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/AppleHealthScreen.tsx",
+        "src/platform/desktop/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/RecoveryNotificationsSection.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/notifications/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/RecoveryNotificationsSection.tsx",
+        "src/platform/desktop/log.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/ResetDataScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/ResetDataScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/restoreIos.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/features/app/DbFailureDetails.tsx",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/notice.ts",
+        "src/features/settings/restoreMemoPeek.ts",
+        "src/features/signing/signingRun.ts",
+        "src/features/sync/RestoreMarkerResume.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncRestoreControl.ts",
+        "src/features/settings/BackupSheet.tsx",
+        "src/features/settings/backupStore.ts",
+        "src/features/settings/restoreMemo.ts",
+        "src/features/settings/restoreQuiesce.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/restoreQa.closed.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/BackupRow.tsx",
+        "src/features/settings/BackupSheet.tsx",
+        "src/features/settings/backupStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/restoreQa.sheet.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/backup/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/settings/BackupSheet.tsx",
+        "src/features/settings/backupStore.ts",
+        "src/features/settings/restoreMemo.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/restoreQuiet.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/quiet.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/index.ts",
+        "src/features/app/container.ts",
+        "src/features/settings/restoreQuiesce.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/SettingsPc.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStore.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/SettingsScreen.desktop.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/updater/index.ts",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/SettingsScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/index.ts",
+        "src/features/app/appStore.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/platform/biometric/index.ts",
+        "src/features/settings/SettingsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/settingsUseCases.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/types.ts",
+        "src/features/settings/settingsUseCases.ts"
+      ]
+    },
+    {
+      "test": "src/features/settings/SigningAbout.dom.test.tsx",
+      "dead": [
+        "src/features/signing/testKit.ts"
+      ],
+      "live": [
+        "src/platform/signing/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/navigation.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/signing/signingRun.ts",
+        "src/features/signing/signingNotice.ts",
+        "src/features/settings/AboutSection.tsx",
+        "src/features/settings/SettingsScreen.tsx",
+        "src/features/signing/SigningAbout.tsx"
+      ]
+    },
+    {
+      "test": "src/features/settings/TimerTestRow.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/TimerTestRow.tsx"
+      ]
+    },
+    {
+      "test": "src/features/shortcuts/shortcuts.dom.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/shortcuts.ts",
+        "src/features/shortcuts/ShortcutsHelp.tsx",
+        "src/features/shortcuts/ShortcutsSettingsSection.tsx",
+        "src/features/shortcuts/registerShellShortcuts.ts"
+      ]
+    },
+    {
+      "test": "src/features/signing/signingNotice.test.ts",
+      "dead": [
+        "src/features/signing/testKit.ts"
+      ],
+      "live": [
+        "src/domain/signingNotice.ts",
+        "src/platform/signing/index.ts",
+        "src/platform/signing/tauriSigningAlert.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/signing/signingRun.ts",
+        "src/features/signing/signingNotice.ts",
+        "src/domain/appStatus.ts"
+      ]
+    },
+    {
+      "test": "src/features/signing/signingNoticeQa.test.ts",
+      "dead": [
+        "src/features/signing/testKit.ts"
+      ],
+      "live": [
+        "src/platform/signing/index.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/signing/signingRun.ts"
+      ]
+    },
+    {
+      "test": "src/features/strength/StrengthScore.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/strength/StrengthScore.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/carryReportBanner.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/epochCarryReport.ts",
+        "src/domain/sync/epochCarryReportView.ts",
+        "src/domain/types.ts",
+        "src/sync/epochCarryReportBanner.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/carryReportBannerRace.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/container.ts",
+        "src/features/sync/carryReportBannerLine.ts",
+        "src/features/sync/syncRestoreState.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/carryReportReview2.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/epochCarryReport.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/carryReportOpen.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/carryWarnings.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts",
+        "src/features/sync/syncStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/ConflictList.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/UndoToast.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/deviceNames.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/syncStore.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/finalRemarks.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/domain/sync/format.ts",
+        "src/i18n/fr.syncPairing.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/join.ts",
+        "src/features/sync/pairingStatus.ts",
+        "src/features/sync/pairing-window/pairingPlatform.ts",
+        "src/features/sync/pairing-window/PairingView.tsx",
+        "src/features/sync/SyncSettingsSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/forgetBanner.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/platform/sync/memory.ts",
+        "src/sync/index.ts",
+        "src/sync/forget.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/forgetBannerQa.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/sync/forget.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/olderDeviceBanner.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncStore.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/olderDeviceText.retry.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/sync/startSync.ts",
+        "src/i18n/fr.syncOlderDevice.ts",
+        "src/i18n/syncOlderDeviceText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/pairing-window/pairingQa.test.tsx",
+      "dead": [
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/sync/limits.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.syncPairing.ts",
+        "src/platform/sync/index.ts",
+        "src/features/sync/pairing-window/pairingPlatform.ts",
+        "src/features/sync/pairing-window/PairingView.tsx",
+        "src/features/sync/pairing-window/RecoveryKeyEntry.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/pairing-window/PairingView.test.tsx",
+      "dead": [
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/sync/limits.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.syncPairing.ts",
+        "src/platform/sync/index.ts",
+        "src/features/sync/pairing-window/pairingPlatform.ts",
+        "src/features/sync/pairing-window/pairingText.ts",
+        "src/features/sync/pairing-window/PairingView.tsx",
+        "src/features/sync/pairing-window/RecoveryKeyEntry.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/pairingDefects.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/platform/sync/index.ts",
+        "src/i18n/fr.syncPairing.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/IosPairingScreen.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/pairingReview17.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/pairingScreens.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/platform/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/IosPairingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/publishBlockedCause.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/i18n/fr.syncPublishCause.ts",
+        "src/i18n/syncPublishCauseText.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts",
+        "src/features/sync/syncStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/quit.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/sync/startSync.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/resetBanner.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/sync/reset.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/restoreChoiceHost.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/syncRestoreText.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/RestoreChoiceHost.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/segmentGapText.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/startSync.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/limits.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/pairingStatus.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncStore.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/startSyncQa.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/pairingStatus.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsDedup.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/occurrenceDedup.ts",
+        "src/domain/types.ts",
+        "src/i18n/syncCarryReportText.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsDedup.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsForget.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/memory.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsForget.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsOwnDeletion.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/domain/sync/format.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsOwnDeletion.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/syncStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsPairing.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/sync/JoinProgress.tsx",
+        "src/features/sync/pairingStatus.ts",
+        "src/features/sync/SyncDetailsPairing.tsx",
+        "src/features/sync/SyncSettingsSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsPairingQa.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/sync/pairingStatus.ts",
+        "src/features/sync/SyncDetailsPairing.tsx",
+        "src/features/sync/JoinProgress.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsPending.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsReset.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.syncReset.ts",
+        "src/platform/sync/memory.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsReset.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncDetailsVersion.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/appStatus.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/SyncDetailsVersion.tsx",
+        "src/features/sync/SyncStatusLine.tsx",
+        "src/features/sync/SyncSettingsSection.tsx",
+        "src/platform/sync/memory.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/syncedData.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/TodayScreen.tsx",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/settings/BodyScreen.tsx",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/sync/startSync.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncNowButton.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/RestoreChoiceDialog.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/SyncStatusLine.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/syncQa.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/desktop.ts",
+        "src/features/settings/BackupSheet.tsx",
+        "src/platform/backup/index.ts",
+        "src/features/sync/SyncStatusLine.tsx",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncRefonte.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/memory.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/app/UndoToast.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncScreens.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/RestoreChoiceDialog.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/SyncStatusLine.tsx",
+        "src/features/sync/startSync.ts",
+        "src/i18n/syncRestoreText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/SyncSettingsSection.test.tsx",
+      "dead": [
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/domain/sync/format.ts",
+        "src/db/repositories/index.ts",
+        "src/platform/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/SyncSettingsSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/waitingLong.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/limits.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/yIos01.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/AppStatusBanner.tsx",
+        "src/features/app/container.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/SyncDetailsForget.tsx",
+        "src/features/sync/SyncSettingsSection.tsx",
+        "src/features/sync/syncText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/yIos02.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/compat.ts",
+        "src/domain/types.ts",
+        "src/domain/sync/format.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/sync/IosPairingScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/SyncSettingsSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/yIos02Pairing.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/clock.ts",
+        "src/domain/sync/errorFamily.ts",
+        "src/platform/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/sync/index.ts",
+        "src/features/sync/syncText.ts",
+        "src/i18n/fr.syncFolder.ts",
+        "src/i18n/fr.syncPairing.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/SyncSettingsSection.tsx"
+      ]
+    },
+    {
+      "test": "src/features/sync/yTech02Warnings.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/syncBanners.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/i18n/syncRescue.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/RestoreChoiceDialog.tsx",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncStore.ts",
+        "src/i18n/syncRestoreText.ts"
+      ]
+    },
+    {
+      "test": "src/features/sync/yTech02WarningsQa.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/index.ts",
+        "src/platform/sync/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/syncStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/training/cycle/CycleView.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/Ergo02Load.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/session/SetRow.tsx",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/media/ExerciseMedia.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/Ergo02Screens.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/geolocation/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/cardio/CardioView.tsx",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/media/ExerciseMedia.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/history/History.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/history/HistoryReplay.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/history/HistoryTimeline.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/history/HistoryView.tsx",
+        "src/features/training/history/HistoryTimelineView.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/RoutineCircuit.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/RoutineCircuitUi.tsx",
+        "src/features/training/session/ActiveSession.tsx",
+        "src/features/training/session/CircuitUi.tsx",
+        "src/features/training/session/StartSession.tsx",
+        "src/features/training/session/ExerciseProgression.tsx",
+        "src/features/training/session/RecoverySession.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/RoutineReorder.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/RoutineCircuitUi.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/Circuit.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/session/ActiveSession.tsx",
+        "src/features/training/session/CircuitUi.tsx",
+        "src/features/training/session/ExerciseProgression.tsx",
+        "src/features/training/session/StartSession.tsx",
+        "src/features/training/session/RecoverySession.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/CycleSessionLink.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ErgoP1.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/training/session/todaySessionPreview.ts"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ErgoSession.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgression.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgressionConstraints.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgressionCycle.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgressionNotes.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgressionPair.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/i18n/fr.progression.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseProgressionPosition.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/ExerciseWarmup.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/GeneratedSession.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/training/programPause.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/session/GeneratedSession.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/RecoverySplitProposed.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/recovery/index.ts",
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/cycle/currentCycle.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/session/RecoverySession.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/RedDay.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/recovery/index.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/cycle/currentCycle.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/restTimer.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/training/session/restTimer.ts"
+      ]
+    },
+    {
+      "test": "src/features/training/session/SessionClosure.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/training/TrainingScreen.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/SessionScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/platform/liveActivity/index.ts",
+        "src/platform/notifications/timerNotification.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/session/TodaySessionCard.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/TodaySessionCycle.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/localDate.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/ui/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/session/TodaySessionCard.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/session/TodaySessionPc.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/ui/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/training/session/todaySessionPreview.ts"
+      ]
+    },
+    {
+      "test": "src/features/training/session/TodaySessionPreview.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/remoteChanges.ts",
+        "src/features/training/session/TodaySessionCard.tsx",
+        "src/features/training/session/todaySessionPreview.ts"
+      ]
+    },
+    {
+      "test": "src/features/training/session/TodaySessionUnreadable.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/training/index.ts",
+        "src/domain/training/config.ts",
+        "src/domain/training/mesocycle.ts",
+        "src/domain/types.ts",
+        "src/ui/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/trainingState.ts",
+        "src/features/training/session/prescriptionContext.ts",
+        "src/features/training/session/todaySessionPreview.ts",
+        "src/features/training/session/TodaySessionCard.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/TrainingScreen.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/id.ts",
+        "src/domain/types.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/training/TrainingScreen.tsx",
+        "src/features/training/media/ExerciseMedia.tsx"
+      ]
+    },
+    {
+      "test": "src/features/training/trainingState.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/training/index.ts",
+        "src/domain/types.ts",
+        "src/features/training/content.ts",
+        "src/features/training/trainingState.ts"
+      ]
+    },
+    {
+      "test": "src/features/updater/UpdateBanner.test.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/container.ts",
+        "src/features/updater/UpdateBanner.tsx",
+        "src/features/updater/updaterStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/updater/updater.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/platform/desktop/testing.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/index.ts",
+        "src/features/app/container.ts",
+        "src/features/updater/updateChecks.ts",
+        "src/features/updater/updaterStore.ts"
+      ]
+    },
+    {
+      "test": "src/features/updater/updaterNoPlugin.test.ts",
+      "dead": [
+        "src/platform/desktop/testing.ts",
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/platform/index.ts",
+        "src/platform/desktop/tauriDesktop.ts",
+        "src/features/app/container.ts",
+        "src/features/updater/updateChecks.ts",
+        "src/features/updater/updaterStore.ts"
+      ]
+    },
+    {
+      "test": "src/i18n/formatPrefs.qa.test.ts",
+      "dead": [
+        "src/domain/dateInput.ts"
+      ],
+      "live": [
+        "src/i18n/format.ts",
+        "src/i18n/formatPrefs.ts"
+      ]
+    },
+    {
+      "test": "src/platform/backup/triggers.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/drivers/sqliteWasm.ts",
+        "src/db/migrator.ts",
+        "src/db/migrations/index.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "src/platform/notifications/supplementCategory.test.ts",
+      "dead": [
+        "src/platform/notifications/fakeBridge.ts"
+      ],
+      "live": [
+        "src/domain/types.ts",
+        "src/platform/notifications/notificationLedger.ts",
+        "src/platform/notifications/tauriNotificationActions.ts",
+        "src/platform/notifications/tauriNotifications.ts",
+        "src/platform/notifications/types.ts"
+      ]
+    },
+    {
+      "test": "src/platform/notifications/tauriNotifications.test.ts",
+      "dead": [
+        "src/platform/notifications/fakeBridge.ts"
+      ],
+      "live": [
+        "src/domain/notificationLedger.ts",
+        "src/domain/notificationInstant.ts",
+        "src/domain/notificationId.ts",
+        "src/domain/types.ts",
+        "src/platform/notifications/notificationLedger.ts",
+        "src/platform/notifications/tauriNotifications.ts",
+        "src/platform/notifications/types.ts"
+      ]
+    },
+    {
+      "test": "src/platform/off/off.test.ts",
+      "dead": [
+        "src/platform/off/testing.ts"
+      ],
+      "live": [
+        "src/platform/off/tauriOff.ts",
+        "src/platform/off/parse.ts",
+        "src/platform/off/index.ts"
+      ]
+    },
+    {
+      "test": "src/platform/signing/signing.test.ts",
+      "dead": [
+        "src/platform/notifications/fakeBridge.ts"
+      ],
+      "live": [
+        "src/platform/notifications/types.ts",
+        "src/platform/signing/index.ts",
+        "src/platform/signing/tauriSigning.ts",
+        "src/platform/signing/tauriSigningAlert.ts",
+        "src/features/app/container.ts"
+      ]
+    },
+    {
+      "test": "src/platform/speech/speech.test.ts",
+      "dead": [
+        "src/platform/speech/testing.ts"
+      ],
+      "live": [
+        "src/platform/speech/index.ts"
+      ]
+    },
+    {
+      "test": "src/platform/systemSettings/systemSettings.test.ts",
+      "dead": [
+        "src/platform/systemSettings/testing.ts"
+      ],
+      "live": [
+        "src/platform/systemSettings/index.ts",
+        "src/platform/systemSettings/tauriSystemSettings.ts"
+      ]
+    },
+    {
+      "test": "tests/fixtures/legacy-schema/repairs.ts",
+      "dead": [
+        "src/domain/sync/repairs.ts"
+      ],
+      "live": [
+        "src/sync/deps.ts"
+      ]
+    },
+    {
+      "test": "tests/fixtures/pairingMatrixKit.tsx",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts",
+        "src/features/sync/testKit.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/types.ts",
+        "src/db/repositories/index.ts",
+        "src/features/app/AppContainerContext.tsx",
+        "src/features/app/appStatus.ts",
+        "src/features/app/container.ts",
+        "src/features/app/navigation.ts",
+        "src/features/sync/startSync.ts",
+        "src/features/sync/SyncDetailsScreen.tsx",
+        "src/features/sync/SyncSettingsSection.tsx",
+        "src/platform/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/apply.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/sync/apply.ts",
+        "src/sync/guarded.ts",
+        "src/sync/log.ts",
+        "src/sync/repair.ts",
+        "src/sync/deps.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/capsRules.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/i0/weightIdentity.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/sync/format.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/domain/types.ts",
+        "src/sync/apply.ts",
+        "src/sync/guarded.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/pairing/needsPairing.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/hlc.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/platform/sync/index.ts",
+        "src/platform/sync/types.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/pairing/stateTransitions.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/publisherRules.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/hlc.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/domain/types.ts",
+        "src/sync/publisher.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/purgeKit.ts",
+      "dead": [
+        "src/domain/taskTrash.ts"
+      ],
+      "live": [
+        "src/domain/model/index.ts",
+        "src/domain/types.ts",
+        "src/features/app/container.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/purgeRules.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/model/index.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/sync/retention.ts",
+        "src/domain/types.ts",
+        "src/features/app/container.ts",
+        "src/sync/log.ts",
+        "src/sync/maintenance.ts",
+        "src/sync/guarded.ts",
+        "src/sync/apply.ts",
+        "src/sync/purge.ts",
+        "src/domain/sync/syncTables.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/reset01/dataResetLocal.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/dataReset.ts",
+        "src/domain/onboarding/draft.ts",
+        "src/domain/types.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/sync/log.ts",
+        "src/sync/dataReset.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/reset01/dataResetRowRule.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/sync/format.ts",
+        "src/domain/sync/syncTables.ts",
+        "src/domain/types.ts",
+        "src/sync/apply.ts",
+        "src/sync/dataReset.ts",
+        "src/sync/guarded.ts",
+        "src/sync/log.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/serviceBanners.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/hlc.ts",
+        "src/domain/sync/limits.ts",
+        "src/domain/types.ts",
+        "src/platform/sync/index.ts",
+        "src/sync/index.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/snapshotGuards.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/clock.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/syncRepository.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/hlc.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/tombstoneProperties.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/domain/sync/format.ts",
+        "src/domain/types.ts",
+        "src/sync/apply.ts",
+        "src/sync/guarded.ts",
+        "src/sync/log.ts",
+        "src/sync/maintenance.ts",
+        "src/sync/deps.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/versions/applyRecette.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/sync/compat.ts",
+        "src/domain/sync/format.ts",
+        "src/domain/sync/parse.ts",
+        "src/domain/types.ts",
+        "src/sync/apply.ts",
+        "src/sync/guarded.ts",
+        "src/sync/log.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/versions/reintegrate.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/migrator.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/sync/compat.ts",
+        "src/domain/types.ts"
+      ]
+    },
+    {
+      "test": "tests/unit/sync/versions/reintegrateQa.test.ts",
+      "dead": [
+        "src/db/repositories/sql/testSetup.ts"
+      ],
+      "live": [
+        "src/db/driver.ts",
+        "src/db/migrator.ts",
+        "src/db/repositories/index.ts",
+        "src/domain/types.ts"
+      ]
+    }
+  ]
+}

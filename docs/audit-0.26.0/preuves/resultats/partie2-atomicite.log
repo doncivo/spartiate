@@ -1,0 +1,11 @@
+﻿✔ cloture : echec final annule series et captures, puis cloture coherente (163.7678ms)
+✔ import : echec de seconde pesee annule premiere pesee, horloges, file et garde (203.3568ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1780.6154
+

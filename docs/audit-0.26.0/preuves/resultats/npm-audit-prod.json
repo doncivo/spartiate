@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "npm-audit-prod",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "audit",
+                      "--omit=dev",
+                      "--json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:10.3454090Z",
+    "fin":  "2026-11-16T08:16:14.9073890Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

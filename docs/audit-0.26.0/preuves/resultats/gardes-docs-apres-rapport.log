@@ -1,0 +1,51 @@
+
+ RUN  v5.0.3 C:/Dev/spartiate-codex
+
+ ❯ |node| scripts/release/identity.test.ts (25 tests | 1 failed) 1153ms
+   ❯ critère 1 : identité technique (1)
+     × ni fr.circletasks.planner ni circletasks.db actifs dans les fichiers suivis hors exemptions D-41 404ms <!-- ancien-ok: citation du résultat de test historique, aucune identité active -->
+npx.cmd : warning: in the working copy of '.claude/agents/x.md', LF will be replaced by CRLF the next time Git touches
+it
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+warning: in the working copy of 'docs/decisions.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/install-pc.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src-tauri/Cargo.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/c.ts', LF will be replaced by CRLF the next time Git touches it
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |node| scripts/release/identity.test.ts > critère 1 : identité technique > ni fr.circletasks.planner ni <!-- ancien-ok: citation du résultat de test historique, aucune identité active -->
+circletasks.db actifs dans les fichiers suivis hors exemptions D-41 <!-- ancien-ok: citation du résultat de test historique, aucune identité active -->
+AssertionError: expected [ …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "docs/audit-0.26.0/preuves/resultats/unitaires.log:3559 fr.circletasks.planner", <!-- ancien-ok: citation du résultat de test historique, aucune identité active -->
++   "docs/audit-0.26.0/preuves/resultats/unitaires.log:3559 circletasks.db", <!-- ancien-ok: citation du résultat de test historique, aucune identité active -->
++ ]
+
+ ❯ scripts/release/identity.test.ts:194:19
+    192|       for (const hit of activeMentions(text.join('\n'), [OLD_ID, OLD_D…
+    193|     }
+    194|     expect(found).toEqual([]);
+       |                   ^
+    195|   });
+    196| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  1 failed | 77 passed (78)
+   Start at  19:41:09
+   Duration  4.63s (tests 71%, import 18%, transform 8%, worker 2%)

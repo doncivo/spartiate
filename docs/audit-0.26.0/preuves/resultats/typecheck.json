@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "typecheck",
+    "executable":  "npm.cmd",
+    "arguments":  [
+                      "run",
+                      "typecheck"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:05:51.9703695Z",
+    "fin":  "2026-11-16T08:07:52.2821986Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

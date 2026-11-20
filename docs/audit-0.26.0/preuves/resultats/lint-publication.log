@@ -1,0 +1,16 @@
+
+> spartiate@0.26.0 lint
+> eslint . --ignore-pattern docs/audit-0.26.0/preuves/.runtime/**
+
+
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\couverture-ci.mjs
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\partie0-rouges.test.mjs
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\scan.mjs
+  1:1  warning  Unused eslint-disable directive (no problems were reported)
+
+✖ 3 problems (0 errors, 3 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.

@@ -1,0 +1,1043 @@
+{
+  "couleurs": [
+    {
+      "fichier": "src/db/seed/defaultSpaces.ts",
+      "ligne": 14,
+      "extrait": "export const SPACE_PRO_COLOR = '#2f6b7a' as HexColor;"
+    },
+    {
+      "fichier": "src/db/seed/defaultSpaces.ts",
+      "ligne": 15,
+      "extrait": "export const SPACE_PERSO_COLOR = '#b5483b' as HexColor;"
+    },
+    {
+      "fichier": "src/domain/spaceRules.ts",
+      "ligne": 40,
+      "extrait": "[choice('teal', '#2f6b7a'), choice('violet', '#5b43a8'), choice('green', '#3e7c5a'), choice('blue', '#1f6698')],"
+    },
+    {
+      "fichier": "src/domain/spaceRules.ts",
+      "ligne": 41,
+      "extrait": "[choice('brick', '#b5483b'), choice('ochre', '#8a6d1f'), choice('rose', '#b04a7a'), choice('plum', '#6a3d6e')],"
+    },
+    {
+      "fichier": "src/domain/todayList.ts",
+      "ligne": 38,
+      "extrait": "/** Type d'un événement local (E-02) ou jour férié (E-03) : style du bandeau (anniversaire #FBE7E4, férié vert) ; absent pour un événement externe. */"
+    },
+    {
+      "fichier": "src/features/app/FileSaveFailure.css",
+      "ligne": 1,
+      "extrait": "/* Échec d'enregistrement d'un fichier (FILES-IOS-01 critère 9) : rouge des erreurs (#9E3F33), bouton « Réessayer » de 44 px au moins. */"
+    },
+    {
+      "fichier": "src/features/app/UndoToast.css",
+      "ligne": 9,
+      "extrait": "box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);"
+    },
+    {
+      "fichier": "src/features/settings/BackupSheet.css",
+      "ligne": 11,
+      "extrait": "background: rgba(0, 0, 0, 0.45);"
+    },
+    {
+      "fichier": "src/features/settings/SettingsScreen.css",
+      "ligne": 79,
+      "extrait": "/* I-04 critère 10 : échec du journal technique, rouge #9E3F33 (jeton du thème, variante sombre comprise). */"
+    },
+    {
+      "fichier": "src/features/shortcuts/ShortcutsHelp.css",
+      "ligne": 10,
+      "extrait": "background: rgb(28 22 48 / 0.45);"
+    },
+    {
+      "fichier": "src/features/shortcuts/ShortcutsHelp.css",
+      "ligne": 27,
+      "extrait": "box-shadow: 0 24px 60px rgb(28 22 48 / 0.28);"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 1,
+      "extrait": "/* Écran « Associer au PC » de l'iPhone (Appairage.html : fond #15101F, textes #FFFFFF et #C9BEE6, cadre #2A2140, étapes #231B36). */"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 3,
+      "extrait": "--ct-ios-pair-bg: #15101f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 4,
+      "extrait": "--ct-ios-pair-text: #ffffff;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 5,
+      "extrait": "--ct-ios-pair-muted: #c9bee6;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 6,
+      "extrait": "--ct-ios-pair-panel: #231b36;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 7,
+      "extrait": "--ct-ios-pair-line: #5a4f78;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 8,
+      "extrait": "--ct-ios-pair-done: #8fcb9f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 9,
+      "extrait": "--ct-ios-pair-accent: #f2a7a0;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 174,
+      "extrait": "background: rgba(21, 16, 31, 0.72);"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 224,
+      "extrait": "background: rgba(21, 16, 31, 0.72);"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 239,
+      "extrait": "--ct-ios-pair-bg: #15101f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 240,
+      "extrait": "--ct-ios-pair-text: #ffffff;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 241,
+      "extrait": "--ct-ios-pair-muted: #c9bee6;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 242,
+      "extrait": "--ct-ios-pair-panel: #231b36;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 243,
+      "extrait": "--ct-ios-pair-line: #5a4f78;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 244,
+      "extrait": "--ct-ios-pair-done: #8fcb9f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 245,
+      "extrait": "--ct-ios-pair-accent: #f2a7a0;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 250,
+      "extrait": "--ct-ios-pair-bg: #15101f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 251,
+      "extrait": "--ct-ios-pair-text: #ffffff;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 252,
+      "extrait": "--ct-ios-pair-muted: #c9bee6;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 253,
+      "extrait": "--ct-ios-pair-panel: #231b36;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 254,
+      "extrait": "--ct-ios-pair-line: #5a4f78;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 255,
+      "extrait": "--ct-ios-pair-done: #8fcb9f;"
+    },
+    {
+      "fichier": "src/features/sync/IosPairingScreen.css",
+      "ligne": 256,
+      "extrait": "--ct-ios-pair-accent: #f2a7a0;"
+    },
+    {
+      "fichier": "src/features/sync/pairing-window/PairingView.tsx",
+      "ligne": 302,
+      "extrait": "<rect width={drawn.size} height={drawn.size} fill=\"#ffffff\" />"
+    },
+    {
+      "fichier": "src/features/sync/pairing-window/PairingView.tsx",
+      "ligne": 303,
+      "extrait": "<path d={drawn.d} fill=\"#000000\" />"
+    },
+    {
+      "fichier": "src/features/sync/pairing-window/pairing.css",
+      "ligne": 173,
+      "extrait": "background: #ffffff;"
+    },
+    {
+      "fichier": "src/features/sync/pairing-window/pairing.css",
+      "ligne": 268,
+      "extrait": "color: #000000;"
+    },
+    {
+      "fichier": "src/ui/AppShell.css",
+      "ligne": 77,
+      "extrait": "box-shadow: -8px 0 24px rgba(0, 0, 0, 0.14);"
+    },
+    {
+      "fichier": "src/ui/ChoiceDialog.css",
+      "ligne": 9,
+      "extrait": "background: rgba(0, 0, 0, 0.45);"
+    },
+    {
+      "fichier": "src/ui/ConfirmDialog.css",
+      "ligne": 9,
+      "extrait": "background: rgba(0, 0, 0, 0.45);"
+    },
+    {
+      "fichier": "src/ui/SegmentedControl.css",
+      "ligne": 29,
+      "extrait": "box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);"
+    },
+    {
+      "fichier": "src/ui/Sheet.css",
+      "ligne": 5,
+      "extrait": "background: #6e6687;"
+    },
+    {
+      "fichier": "src/ui/StatusBanner.tsx",
+      "ligne": 19,
+      "extrait": "* Bandeau d'état discret sous l'en-tête (A-09) : texte secondaire sur fond #F3F1F6, hauteur réduite, marges de sécurité iOS"
+    },
+    {
+      "fichier": "src/ui/Switch.tsx",
+      "ligne": 19,
+      "extrait": "* fond #2E2150 actif / #DDD9E4 inactif). Bouton `role=\"switch\"` (`aria-checked`), zone"
+    },
+    {
+      "fichier": "src/ui/Toast.css",
+      "ligne": 17,
+      "extrait": "background: rgba(255, 255, 255, 0.14);"
+    }
+  ],
+  "textesJsx": [
+    {
+      "fichier": "src/features/nutrition/supplements/SupplementsTodayCard.tsx",
+      "ligne": 70,
+      "extrait": "const updateTrouble = async (change: (prev: SupplementActionTrouble) => SupplementActionTrouble): Promise<void> => {"
+    },
+    {
+      "fichier": "src/features/nutrition/supplements/SupplementsView.tsx",
+      "ligne": 412,
+      "extrait": "<span className=\"ct-hero__num\">{tSupplements('todayCount', { taken: items.filter((i) => i.taken).length, total: items.length })}</span>"
+    },
+    {
+      "fichier": "src/features/onboarding/StepsPlan.tsx",
+      "ligne": 122,
+      "extrait": "<li key={day.dayOrder}>{tOnboarding('splitDayLine', { name: day.name, n: day.exercises.length, sets: day.exercises.reduce((sum, line) => sum + line.sets, 0) })}</li>"
+    },
+    {
+      "fichier": "src/features/training/EquipmentView.tsx",
+      "ligne": 151,
+      "extrait": "{[check.has('machines') ? tTraining('machines') : null, check.has('cables') ? tTraining('cables') : null].filter((x) => x !== null).join(', ')} <VerifyTag show />"
+    },
+    {
+      "fichier": "src/features/training/LibraryView.tsx",
+      "ligne": 268,
+      "extrait": "<p>{exercise.equipment.length === 0 ? tTraining('noEquipment') : exercise.equipment.map((id) => equipmentName.get(id) ?? id).join(', ')}</p>"
+    },
+    {
+      "fichier": "src/features/training/LibraryView.tsx",
+      "ligne": 310,
+      "extrait": "<p className=\"ct-training__muted\">{exercise.muscles.map((m) => muscleName.get(m.id) ?? m.id).join(' · ')}</p>"
+    },
+    {
+      "fichier": "src/ui/TabRail.tsx",
+      "ligne": 99,
+      "extrait": "<div className=\"ct-tab-rail__list\">{allItems.map((item, index) => renderTab(item, index))}</div>"
+    }
+  ],
+  "marqueursTests": [
+    {
+      "fichier": "src/App.test.tsx",
+      "ligne": 37,
+      "extrait": "await waitFor(() => expect(useAppStore.getState().dbStatus).toBe('ready'), { timeout: 10_000 });"
+    },
+    {
+      "fichier": "src/db/serializedDriver.test.ts",
+      "ligne": 48,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 10));"
+    },
+    {
+      "fichier": "src/db/serializedDriver.ts",
+      "ligne": 77,
+      "extrait": "timer = setTimeout(() => {"
+    },
+    {
+      "fichier": "src/features/app/DbFailureDetails.tsx",
+      "ligne": 30,
+      "extrait": "const timer = setTimeout(() => setStalled(true), watchdogMs());"
+    },
+    {
+      "fichier": "src/features/app/idle.ts",
+      "ligne": 3,
+      "extrait": "* `requestIdleCallback` par défaut : repli sur `setTimeout(fallbackDelayMs)` (ADR 0001, avenant PERF-02)."
+    },
+    {
+      "fichier": "src/features/app/idle.ts",
+      "ligne": 7,
+      "extrait": "const handle = window.requestIdleCallback(task, { timeout: timeoutMs });"
+    },
+    {
+      "fichier": "src/features/app/idle.ts",
+      "ligne": 10,
+      "extrait": "const handle = window.setTimeout(task, fallbackDelayMs);"
+    },
+    {
+      "fichier": "src/features/app/lazyScreens.test.tsx",
+      "ligne": 143,
+      "extrait": "const request = vi.fn((cb: () => void, _options?: { timeout: number }) => callbacks.push(cb));"
+    },
+    {
+      "fichier": "src/features/cardio/CardioGps.test.tsx",
+      "ligne": 189,
+      "extrait": "await new Promise((r) => setTimeout(r, 0));"
+    },
+    {
+      "fichier": "src/features/notifications/supplementActions.test.ts",
+      "ligne": 296,
+      "extrait": "const flush = () => new Promise((resolve) => setTimeout(resolve, 0));"
+    },
+    {
+      "fichier": "src/features/notifications/supplementWake.test.ts",
+      "ligne": 68,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 0));"
+    },
+    {
+      "fichier": "src/features/notifications/supplementWake.test.ts",
+      "ligne": 72,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 10));"
+    },
+    {
+      "fichier": "src/features/nutrition/search/OffSearch.test.tsx",
+      "ligne": 255,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 60));"
+    },
+    {
+      "fichier": "src/features/nutrition/shared.tsx",
+      "ligne": 73,
+      "extrait": "window.setTimeout(() => target?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }), 320);"
+    },
+    {
+      "fichier": "src/features/security/appLockScreenFailure.test.tsx",
+      "ligne": 19,
+      "extrait": "await new Promise<void>((resolve) => setTimeout(resolve, 0));"
+    },
+    {
+      "fichier": "src/features/settings/TimerTestRow.tsx",
+      "ligne": 73,
+      "extrait": "const first = setTimeout(() => void resume(), 0);"
+    },
+    {
+      "fichier": "src/features/settings/backupStore.ts",
+      "ligne": 160,
+      "extrait": "await new Promise<void>((resolve) => globalThis.setTimeout(resolve, RESTART_ANNOUNCE_MS));"
+    },
+    {
+      "fichier": "src/features/settings/backupStore.ts",
+      "ligne": 166,
+      "extrait": "await new Promise<void>((resolve) => globalThis.setTimeout(resolve, RESTART_ANNOUNCE_MS));"
+    },
+    {
+      "fichier": "src/features/settings/logs/logsUnavailable.test.tsx",
+      "ligne": 47,
+      "extrait": "expect(await screen.findByText('Aucune entrée', {}, { timeout: 10_000 })).toBeInTheDocument();"
+    },
+    {
+      "fichier": "src/features/settings/logs/useLogJournal.ts",
+      "ligne": 28,
+      "extrait": "const timer = setTimeout(() => {"
+    },
+    {
+      "fichier": "src/features/settings/recoveryImport/index.ts",
+      "ligne": 110,
+      "extrait": "reread = window.setTimeout(() => {"
+    },
+    {
+      "fichier": "src/features/settings/recoveryImport/index.ts",
+      "ligne": 136,
+      "extrait": "const timer = window.setTimeout(trigger, options.delayMs ?? 3000);"
+    },
+    {
+      "fichier": "src/features/settings/restoreQuiesce.ts",
+      "ligne": 33,
+      "extrait": "const paused = await Promise.race([pauseSigning(container).then(() => true), new Promise<boolean>((resolve) => (timer = setTimeout(() => resolve(false), timeoutMs)))]);"
+    },
+    {
+      "fichier": "src/features/sync/startSync.ts",
+      "ligne": 160,
+      "extrait": "const setTimer = env.setTimeout ?? ((handler, ms) => setTimeout(handler, ms));"
+    },
+    {
+      "fichier": "src/features/sync/syncRestoreControl.ts",
+      "ligne": 14,
+      "extrait": "const finished = await Promise.race([running.then(() => true, () => true), new Promise<boolean>((resolve) => (timer = setTimeout(() => resolve(false), timeoutMs)))]);"
+    },
+    {
+      "fichier": "src/features/training/history/HistoryView.tsx",
+      "ligne": 72,
+      "extrait": "setTimeout(() => listHeading.current?.focus(), 0);"
+    },
+    {
+      "fichier": "src/features/training/session/ActiveSession.tsx",
+      "ligne": 150,
+      "extrait": "const first = setTimeout(() => void resume(), 0);"
+    },
+    {
+      "fichier": "src/features/updater/updateChecks.ts",
+      "ligne": 15,
+      "extrait": "setTimeout(handler: () => void, ms: number): number;"
+    },
+    {
+      "fichier": "src/features/updater/updateChecks.ts",
+      "ligne": 22,
+      "extrait": "setTimeout: (handler, ms) => window.setTimeout(handler, ms),"
+    },
+    {
+      "fichier": "src/features/updater/updateChecks.ts",
+      "ligne": 62,
+      "extrait": "const launch = timers.setTimeout(() => void tick(), LAUNCH_CHECK_DELAY_MS);"
+    },
+    {
+      "fichier": "src/i18n/fr.scan.ts",
+      "ligne": 109,
+      "extrait": "timeout: 'La lecture a pris trop de temps. Réessaie, ou lis la photo avec le moteur intégré, plus lent.',"
+    },
+    {
+      "fichier": "src/platform/files/browser.ts",
+      "ligne": 22,
+      "extrait": "window.setTimeout(() => URL.revokeObjectURL(url), 10_000);"
+    },
+    {
+      "fichier": "src/platform/files/iosFiles.test.tsx",
+      "ligne": 71,
+      "extrait": "const files = createIosFiles(api(() => new Promise((resolve) => setTimeout(() => resolve({ completed: false }), 30_000))));"
+    },
+    {
+      "fichier": "src/platform/geolocation/geolocation.test.ts",
+      "ligne": 82,
+      "extrait": "expect(calls.options).toEqual([{ enableHighAccuracy: true, timeout: 10_000, maximumAge: 0 }]);"
+    },
+    {
+      "fichier": "src/platform/geolocation/tauriGeolocation.ts",
+      "ligne": 15,
+      "extrait": "options: { enableHighAccuracy: boolean; timeout: number; maximumAge: number },"
+    },
+    {
+      "fichier": "src/platform/geolocation/tauriGeolocation.ts",
+      "ligne": 46,
+      "extrait": "const id = await plugin.watchPosition({ enableHighAccuracy: true, timeout: WATCH_TIMEOUT_MS, maximumAge: 0 }, (position, error) => {"
+    },
+    {
+      "fichier": "src/platform/haptics/haptics.test.ts",
+      "ligne": 5,
+      "extrait": "const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));"
+    },
+    {
+      "fichier": "src/platform/ocr/testing.ts",
+      "ligne": 46,
+      "extrait": "if (fake.delayMs > 0) await new Promise((resolve) => setTimeout(resolve, fake.delayMs));"
+    },
+    {
+      "fichier": "src/platform/quiet.ts",
+      "ligne": 33,
+      "extrait": "const result = await Promise.race([done, new Promise<boolean>((resolve) => (timer = setTimeout(() => resolve(false), timeoutMs)))]);"
+    },
+    {
+      "fichier": "src/platform/speech/speech.test.ts",
+      "ligne": 36,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 20));"
+    },
+    {
+      "fichier": "src/platform/speech/tauriSpeech.ts",
+      "ligne": 85,
+      "extrait": "const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));"
+    },
+    {
+      "fichier": "src/platform/sync/faultPlan.test.ts",
+      "ligne": 194,
+      "extrait": "[/\\bsetTimeout\\s*\\(/, 'setTimeout('],"
+    },
+    {
+      "fichier": "src/platform/sync/faultPlan.test.ts",
+      "ligne": 205,
+      "extrait": "it('les motifs reconnaissent test.skip, it.skipIf, describe.todo, xit et .only(', () => {"
+    },
+    {
+      "fichier": "src/platform/sync/faultPlan.test.ts",
+      "ligne": 207,
+      "extrait": "for (const sample of ['test.skip(', 'it.skipIf(', 'describe.todo(', 'it.todo(', 'describe.skip(', 'xit(', 'it.only(']) expect(disabled.test(sample), sample).toBe(true);"
+    },
+    {
+      "fichier": "src/platform/tauri/sqlDriver.ts",
+      "ligne": 44,
+      "extrait": "const sleep = options.sleep ?? ((ms) => new Promise<void>((resolve) => setTimeout(resolve, ms)));"
+    },
+    {
+      "fichier": "src/sync/scheduler.ts",
+      "ligne": 78,
+      "extrait": "let timeout: ReturnType<typeof setTimeout> | undefined;"
+    },
+    {
+      "fichier": "src/sync/scheduler.ts",
+      "ligne": 80,
+      "extrait": "timeout = setTimeout(resolve, budgetMs);"
+    },
+    {
+      "fichier": "src/sync/scheduler.ts",
+      "ligne": 193,
+      "extrait": "let timeout: ReturnType<typeof setTimeout> | undefined;"
+    },
+    {
+      "fichier": "src/sync/scheduler.ts",
+      "ligne": 194,
+      "extrait": "await Promise.race([run('quit'), new Promise<void>((resolve) => (timeout = setTimeout(resolve, budgetMs)))]);"
+    },
+    {
+      "fichier": "src/sync/service.ts",
+      "ligne": 77,
+      "extrait": "const setTimer = options.setTimeout ?? ((handler, ms) => setTimeout(handler, ms));"
+    },
+    {
+      "fichier": "src/ui/Toast.tsx",
+      "ligne": 53,
+      "extrait": "const id = setTimeout(() => onTimeoutRef.current?.(), remaining.current);"
+    },
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 42,
+      "extrait": "test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.');"
+    },
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 124,
+      "extrait": "test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.');"
+    },
+    {
+      "fichier": "tests/e2e/I-02.spec.ts",
+      "ligne": 172,
+      "extrait": "test.skip(isPhone(testInfo), 'Comportement du projet pc.');"
+    },
+    {
+      "fichier": "tests/e2e/I-03.spec.ts",
+      "ligne": 41,
+      "extrait": "test.skip(!isPhone(testInfo), 'La biométrie injectée représente l’iPhone.');"
+    },
+    {
+      "fichier": "tests/e2e/I-03.spec.ts",
+      "ligne": 142,
+      "extrait": "test.skip(isPhone(testInfo), 'Projet pc seulement.');"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 106,
+      "extrait": "test.skip(({ isMobile }) => !isMobile, 'La mise à jour par SideStore concerne l’iPhone (projet iphone).');"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 111,
+      "extrait": "await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 114,
+      "extrait": "await expect(page.getByText('Version 0.3.0', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 117,
+      "extrait": "await expect(page.getByLabel('Taille (cm)')).toHaveValue('181', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 125,
+      "extrait": "await expect(page.getByRole('alert').first()).toHaveText('Impossible d’ouvrir la base de données.', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 158,
+      "extrait": "{ timeout: APP_READY_TIMEOUT_MS },"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 169,
+      "extrait": "await expect(page.getByRole('alert').first()).toContainText('la sauvegarde de sécurité a échoué', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/I-06.spec.ts",
+      "ligne": 182,
+      "extrait": "await expect(restore).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/P-04.spec.ts",
+      "ligne": 114,
+      "extrait": "await expect.poll(async () => (await backupState(page)).restarts, { timeout: 5000 }).toBe(1);"
+    },
+    {
+      "fichier": "tests/e2e/P-04.spec.ts",
+      "ligne": 124,
+      "extrait": "await page.waitForTimeout(1500);"
+    },
+    {
+      "fichier": "tests/e2e/RESET-01-repartir-de-zero.spec.ts",
+      "ligne": 40,
+      "extrait": "await expect(dialog(page)).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/V0-7-1-mise-en-page.spec.ts",
+      "ligne": 12,
+      "extrait": "test.skip(!isPhone(testInfo), 'défauts propres à l’iPhone (440 px)');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 16,
+      "extrait": "* budget de 30 s, sans `test.slow()` ni nouvel essai (consigne d’Ali)."
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 40,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 41,
+      "extrait": "test.setTimeout(BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 63,
+      "extrait": "await expect.poll(async () => (await inspect(room, 'iphone')).scanBudgets.length, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(before.scanBudgets.length);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 72,
+      "extrait": "await expect.poll(async () => (await inspect(room, 'iphone')).scanBudgets.length, { timeout: APP_READY_TIMEOUT_MS }).toBeGreaterThan(hidden.scanBudgets.length);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 75,
+      "extrait": "await expect.poll(async () => (await inspect(room, 'iphone')).rows[`body_weight|weight|${today}|manual`], { timeout: APP_READY_TIMEOUT_MS }).toBe(1);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 86,
+      "extrait": "await expect(page.getByRole('navigation')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 87,
+      "extrait": "await expect(page.locator('.ct-status-banner').filter({ hasText: IOS_TEXT })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-01.spec.ts",
+      "ligne": 93,
+      "extrait": "await expect(page.locator('.ct-status-banner').filter({ hasText: IOS_TEXT })).toHaveCount(0, { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 24,
+      "extrait": "/** Budget : deux apps démarrées, une dizaine de cycles et d'écrans, une arrivée (consigne d'Ali : ni `test.slow()` ni nouvel essai). */"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 41,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 42,
+      "extrait": "test.setTimeout(BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 55,
+      "extrait": "await expect(pc.page.getByRole('button', { name: SHOW_QR })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 64,
+      "extrait": "await expect(associate).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 130,
+      "extrait": "await expect(page.getByText('Cet iPhone est associé au PC')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 160,
+      "extrait": "test.skip(info.project.name !== 'pc', 'PC seulement');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 161,
+      "extrait": "test.setTimeout(BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 169,
+      "extrait": "await expect(show).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02-parcours.spec.ts",
+      "ligne": 173,
+      "extrait": "await expect(window.getByRole('img', { name: 'QR code d’association' })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 15,
+      "extrait": "* sans `test.slow()` ni nouvel essai (consigne d'Ali)."
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 31,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 32,
+      "extrait": "test.setTimeout(BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 50,
+      "extrait": "await expect(page.getByTestId('sync-camera-denied')).toHaveText('L’accès à la caméra est refusé', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 70,
+      "extrait": "await expect(page.getByText('Cet iPhone est associé au PC')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 81,
+      "extrait": "test.skip(info.project.name !== 'iphone', 'iPhone seulement');"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 82,
+      "extrait": "test.setTimeout(BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 99,
+      "extrait": "await page.getByRole('button', { name: 'Associer cet iPhone au PC : scanner le code d’association' }).click({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/Y-IOS-02.spec.ts",
+      "ligne": 111,
+      "extrait": "await expect(page.getByText('Cet iPhone est associé au PC')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/db-open-failure.spec.ts",
+      "ligne": 44,
+      "extrait": "await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: READY_BUDGET_MS });"
+    },
+    {
+      "fichier": "tests/e2e/db-open-failure.spec.ts",
+      "ligne": 56,
+      "extrait": "await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: READY_BUDGET_MS });"
+    },
+    {
+      "fichier": "tests/e2e/helpers/app.ts",
+      "ligne": 10,
+      "extrait": "await expect(page.getByRole('navigation')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/helpers/app.ts",
+      "ligne": 24,
+      "extrait": "timeout: APP_READY_TIMEOUT_MS,"
+    },
+    {
+      "fichier": "tests/e2e/helpers/sync.ts",
+      "ligne": 51,
+      "extrait": "await expect(page.getByRole('navigation')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/helpers/sync.ts",
+      "ligne": 112,
+      "extrait": "await expect(page.getByRole('button', { name: 'Synchroniser', exact: true })).toBeEnabled({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/layoutHelper.spec.ts",
+      "ligne": 12,
+      "extrait": "test.skip(!isPhone(testInfo), 'Mesure à 440 × 956.');"
+    },
+    {
+      "fichier": "tests/e2e/lot-f-qa.spec.ts",
+      "ligne": 58,
+      "extrait": "await page.waitForTimeout(1500);"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 21,
+      "extrait": "* `test.slow()` ni nouvel essai)."
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 43,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 44,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 79,
+      "extrait": "await expect(iphoneRow.getByText('Oublié', { exact: true })).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 106,
+      "extrait": "const reloaded = iphone.page.waitForEvent('load', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 109,
+      "extrait": "await expect(iphone.page.getByRole('navigation')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 124,
+      "extrait": "* 39,3 s (pc) ; budget 70 s, près du double de ce pire (consigne d'Ali : ni `test.slow()` ni nouvel essai)."
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 138,
+      "extrait": "test.setTimeout(CANCEL_BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 166,
+      "extrait": "await expect(row.getByRole('status')).toHaveText('Oubli annulé', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 173,
+      "extrait": "await expect(failedLine).toContainText(`L’oubli de ${target}`, { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y10-oublier-appareil.spec.ts",
+      "ligne": 211,
+      "extrait": "await expect(failedLine).toContainText('trop de demandes, réessaie dans 10 minutes', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 18,
+      "extrait": "* `test.slow()` ni nouvel essai)."
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 36,
+      "extrait": "await expect(key).toHaveText(/^SP1(-[0-9A-Z]{5})+$/, { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 70,
+      "extrait": "await expect(resetSlot(page).getByText('Nouvelle clé créée.')).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 75,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 76,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 110,
+      "extrait": "await expect(field).toBeVisible({ timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 133,
+      "extrait": "test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 134,
+      "extrait": "test.setTimeout(PARCOURS_BUDGET_MS);"
+    },
+    {
+      "fichier": "tests/e2e/parcours/Y11-reinitialiser.spec.ts",
+      "ligne": 141,
+      "extrait": "await expect(resetSlot(pc.page)).toContainText('Réinitialisation terminée', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/setup/settle.ts",
+      "ligne": 21,
+      "extrait": "await new Promise<void>((resolve) => setTimeout(resolve, 0));"
+    },
+    {
+      "fichier": "tests/sim/syncFolderSim.ts",
+      "ligne": 169,
+      "extrait": "await new Promise((resolve) => setTimeout(resolve, 20));"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 70,
+      "extrait": "const run = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', CAPTURE_SCRIPT, '-ProcessId', String(pid), '-Out', out], { encoding: 'utf8', timeout: 120_000 });"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 100,
+      "extrait": "test.setTimeout(240_000);"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 119,
+      "extrait": ".poll(async () => (app.exitCode !== null ? 'exited' : (await cdpReachable(cdpPort)) ? 'reachable' : 'waiting'), { message: 'WebView2 injoignable par CDP', timeout: APP_READY_TIMEOUT_MS })"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 133,
+      "extrait": "await expect.poll(() => mainPage() !== undefined, { message: 'page principale introuvable parmi les cibles CDP (origine Tauri attendue)', timeout: APP_READY_TIMEOUT_MS }).toBe(true);"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 138,
+      "extrait": "await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/smoke/pc-demarrage.spec.ts",
+      "ligne": 172,
+      "extrait": "await expect.poll(() => app.exitCode !== null || app.signalCode !== null, { message: 'binaire de fumée toujours actif après taskkill', timeout: 15_000 }).toBe(true);"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 101,
+      "extrait": "const run = spawnSync('powershell', argv, { encoding: 'utf8', timeout: timeoutMs });"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 131,
+      "extrait": "if (child.pid !== undefined && child.exitCode === null) spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { encoding: 'utf8', timeout: TASKKILL_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 157,
+      "extrait": "const run = spawnSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', CAPTURE_SCRIPT, '-ProcessId', String(pid), '-Out', out], { encoding: 'utf8', timeout: CAPTURE_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 170,
+      "extrait": "test.setTimeout(TEST_TIMEOUT_MS);"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 205,
+      "extrait": "const run = spawnSync(installer, ['/S'], { encoding: 'utf8', timeout: SILENT_INSTALL_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 234,
+      "extrait": ".poll(async () => (child.exitCode !== null ? 'exited' : (await cdpReachable(cdpPort)) ? 'reachable' : 'waiting'), { message: 'WebView2 de l’application installée injoignable par CDP', timeout: APP_READY_TIMEOUT_MS })"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 247,
+      "extrait": "await expect.poll(() => mainPage() !== undefined, { message: 'page principale de l’application installée introuvable', timeout: APP_READY_TIMEOUT_MS }).toBe(true);"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 250,
+      "extrait": "await expect(page.locator('.app-shell')).toHaveAttribute('data-db-status', 'ready', { timeout: APP_READY_TIMEOUT_MS });"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 271,
+      "extrait": "await expect.poll(() => child.exitCode !== null || child.signalCode !== null, { message: 'application installée toujours active après taskkill', timeout: APP_KILL_TIMEOUT_MS }).toBe(true);"
+    },
+    {
+      "fichier": "tests/smoke/pc-installeur.spec.ts",
+      "ligne": 282,
+      "extrait": "await expect.poll(() => existsSync(installDir), { message: `dossier d'installation toujours présent : ${installDir}`, timeout: INSTALL_DIR_GONE_TIMEOUT_MS }).toBe(false);"
+    },
+    {
+      "fichier": "tests/unit/sync/forget/forgetHygiene.test.ts",
+      "ligne": 33,
+      "extrait": "[/(?<!test\\.)\\bsetTimeout\\s*\\(/, 'setTimeout( ... ) (hors test.setTimeout, budget d’un parcours)'],"
+    },
+    {
+      "fichier": "tests/unit/sync/forget/forgetHygiene.test.ts",
+      "ligne": 85,
+      "extrait": "const timeouts = [...source.matchAll(/timeout:\\s*([A-Za-z_0-9]+)/g)].map((m) => m[1]);"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 28,
+      "extrait": "await page.waitForTimeout(500);"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 35,
+      "extrait": "await page.waitForTimeout(400);"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 224,
+      "extrait": "await page.waitForTimeout(400);"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 258,
+      "extrait": "await page.waitForTimeout(300);"
+    },
+    {
+      "fichier": "tests/visual/capture.spec.ts",
+      "ligne": 323,
+      "extrait": "await page.waitForTimeout(300);"
+    }
+  ],
+  "horlogesDomaine": [
+    {
+      "fichier": "src/domain/clock.ts",
+      "ligne": 4,
+      "extrait": "* Horloge injectable. Aucune règle métier n'appelle `Date.now()` ni `new Date()`"
+    },
+    {
+      "fichier": "src/domain/clock.ts",
+      "ligne": 13,
+      "extrait": "nowMs: () => Date.now(),"
+    },
+    {
+      "fichier": "src/domain/taskTrash.ts",
+      "ligne": 6,
+      "extrait": "* fourni par l'appelant (`Clock`, jamais `Date.now()` ici)."
+    }
+  ],
+  "importsDomaine": [],
+  "sqlHorsDepot": [],
+  "doublonsExacts": []
+}

@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "i18n-keys",
+    "executable":  "node.exe",
+    "arguments":  [
+                      "scripts/cleanup/i18nKeys.mjs",
+                      "--json",
+                      "docs/audit-0.26.0/preuves/i18n-keys.json"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T08:16:44.2612597Z",
+    "fin":  "2026-11-16T08:16:53.6163626Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

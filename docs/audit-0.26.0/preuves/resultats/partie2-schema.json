@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "partie2-schema",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "docs/audit-0.26.0/preuves/partie2-schema.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-20T08:45:11.7871198Z",
+    "fin":  "2026-11-20T08:45:13.1560600Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

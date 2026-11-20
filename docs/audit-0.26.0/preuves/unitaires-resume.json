@@ -1,0 +1,248 @@
+[
+  {
+    "fichier": "src/features/onboarding/OnboardingHost.test.tsx",
+    "test": "Hôte de l’onboarding : premier lancement sur base vide (I3-07) base vide et jamais terminé : l’onboarding s’affiche tout seul",
+    "erreurs": [
+      "Error: Unable to find an element with the text: Toi, which matches selector 'h1'. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+    ],
+    "positions": [
+      "src/features/onboarding/OnboardingHost.test.tsx:46"
+    ]
+  },
+  {
+    "fichier": "src/features/training/history/HistoryReplay.test.tsx",
+    "test": "rejeu depuis l’historique « Refaire cette séance » (ex-« Rejouer », I6-03b) crée une séance ouverte préremplie (cibles, aucune série faite) et ouvre la séance active",
+    "erreurs": [
+      "Error: Unable to find role=\"button\" and name `/Haut A/`"
+    ],
+    "positions": [
+      "src/features/training/history/HistoryReplay.test.tsx:27",
+      "src/features/training/history/HistoryReplay.test.tsx:44"
+    ]
+  },
+  {
+    "fichier": "src/features/training/history/HistoryTimeline.test.tsx",
+    "test": "déroulé série par série ordre réel, écarts en texte, repos réel face à la cible, repos inconnu pour un instant manquant",
+    "erreurs": [
+      "Error: Unable to find role=\"button\" and name `/Haut A/`"
+    ],
+    "positions": [
+      "src/features/training/history/HistoryTimeline.test.tsx:41",
+      "src/features/training/history/HistoryTimeline.test.tsx:62"
+    ]
+  },
+  {
+    "fichier": "src/features/training/session/ErgoSession.test.tsx",
+    "test": "ERGO-01 : série en cours en bloc central une seule série en cours (aria-current), la première à faire, annoncée « Série en cours » et mise en avant par sa classe",
+    "erreurs": [
+      "Error: Unable to find role=\"button\" and name `/^Démarrer « Haut A »/`"
+    ],
+    "positions": [
+      "src/features/training/session/ErgoSession.test.tsx:60",
+      "src/features/training/session/ErgoSession.test.tsx:77"
+    ]
+  },
+  {
+    "fichier": "src/features/training/session/ExerciseWarmup.test.tsx",
+    "test": "rampe annoncée puis insérée (critères 1 à 3, matériel d’Antony) proposition 62,5 kg : rampe annoncée ; rien n’est inséré sans geste",
+    "erreurs": [
+      "Error: Unable to find role=\"region\" and name \"Développé couché à la barre\""
+    ],
+    "positions": [
+      "src/features/training/session/ExerciseWarmup.test.tsx:59",
+      "src/features/training/session/ExerciseWarmup.test.tsx:60",
+      "src/features/training/session/ExerciseWarmup.test.tsx:85"
+    ]
+  },
+  {
+    "fichier": "src/features/training/session/GeneratedSession.test.tsx",
+    "test": "séance proposée (I3-01) propose la séance du jour avec séries, plages et repos, durée estimée ; Importé dit indisponible ; rien n’est écrit",
+    "erreurs": [
+      "Error: Unable to find role=\"button\" and name \"Proposer une séance\""
+    ],
+    "positions": [
+      "src/features/training/session/GeneratedSession.test.tsx:61",
+      "src/features/training/session/GeneratedSession.test.tsx:87"
+    ]
+  },
+  {
+    "fichier": "src/features/training/session/SessionScreen.test.tsx",
+    "test": "démarrer une séance (critère 1) sans séance ouverte : séance vide, routine ou copie ; sans historique, la copie dit pourquoi",
+    "erreurs": [
+      "Error: Unable to find role=\"button\" and name \"Séance vide\""
+    ],
+    "positions": [
+      "src/features/training/session/SessionScreen.test.tsx:113"
+    ]
+  },
+  {
+    "fichier": "scripts/release/purge.test.ts",
+    "test": "lot (h) : archivage CircleTasks (D-40) aucun document ou source actif ne pointe vers l’ancien emplacement",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "scripts/release/purge.test.ts:181"
+    ]
+  },
+  {
+    "fichier": "tests/unit/syncCodec.test.ts",
+    "test": "vecteurs croisés (Y-08 critère 4) bourrage au multiple de 4 Kio supérieur (4 Kio au minimum), longueur annoncée et zéros contrôlés",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/syncCodec.test.ts:70"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/capsRules.test.ts",
+    "test": "plafonds (Y-02 critère 20) sync_unknown : 50 000 champs au plus, les plus anciens (hlc) partent d’abord",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/capsRules.test.ts:45"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/epochCarryReplacedParentResume.test.ts",
+    "test": "Y-FIX-04 : reprise et convergence (critères 9, 10, 14) exécution de référence sans arrêt : 501 tâches rattachées, deux pages, notice bornée sans doublon",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/epochCarryReplacedParentResume.test.ts:97"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/epochCarryReplacedParentResume.test.ts",
+    "test": "Y-FIX-04 : reprise et convergence (critères 9, 10, 14) critère 9 : arrêt brutal avant la première page de `reapply` : même résultat que sans arrêt",
+    "erreurs": [
+      "AssertionError: expected null not to be null"
+    ],
+    "positions": [
+      "tests/unit/sync/epochCarryReplacedParentResume.test.ts:115"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/epochCarryReplacedParentResume.test.ts",
+    "test": "Y-FIX-04 : reprise et convergence (critères 9, 10, 14) critère 9 : arrêt brutal entre les deux pages de `reapply` : même résultat que sans arrêt",
+    "erreurs": [
+      "AssertionError: expected null not to be null"
+    ],
+    "positions": [
+      "tests/unit/sync/epochCarryReplacedParentResume.test.ts:115"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/epochCarryReplacedParentResume.test.ts",
+    "test": "Y-FIX-04 : reprise et convergence (critères 9, 10, 14) critère 9 : arrêt brutal après la dernière page de `reapply` : même résultat que sans arrêt",
+    "erreurs": [
+      "AssertionError: expected null not to be null"
+    ],
+    "positions": [
+      "tests/unit/sync/epochCarryReplacedParentResume.test.ts:115"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/epochCarryReplacedParentRules.test.ts",
+    "test": "Y-FIX-04 : règles voisines du report d’un enfant de parent remplacé critère 4 : parent reporté avec l’enfant, dans une autre page de `reapply` : lien gardé, aucun rattachement",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/epochCarryReplacedParentRules.test.ts:102"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/stateRewrites.test.ts",
+    "test": "Y-TECH-01 : état publié réécrit seulement s'il a changé, entre appareils actifs trois appareils inactifs : même borne",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/stateRewrites.test.ts:100"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/stateRewritesQa.test.ts",
+    "test": "Y-TECH-01 QA : 4 appareils actifs écritures locales (une tous les 3 tours, appareils à tour de rôle) : au plus une republication par appareil et par écriture, plus le rafraîchissement ; bases identiques",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/stateRewritesQa.test.ts:81"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/stateRewritesQa.test.ts",
+    "test": "Y-TECH-01 QA : appareil hors ligne qui revient 4 appareils : le dernier est absent 4 heures, les autres écrivent ; au retour, convergence et retour au calme",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/stateRewritesQa.test.ts:125"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/visibleLosses.test.ts",
+    "test": "TRI-04 : une opération en attente de son parent, abandonnée au plafond, est signalée le dépassement de 10 000 opérations mises de côté lève « received-unapplied » et survit à un redémarrage",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/visibleLosses.test.ts:97"
+    ]
+  },
+  {
+    "fichier": "src/db/repositories/sql/checklistRepository.test.ts",
+    "test": "ChecklistRepository et ChecklistItemRepository (SQL) createWithItems (C-04) crée la checklist et ses 200 items en une transaction en moins de 300 ms",
+    "erreurs": [
+      "AssertionError: expected 331.97909999999956 to be less than 300"
+    ],
+    "positions": [
+      "src/db/repositories/sql/checklistRepository.test.ts:152"
+    ]
+  },
+  {
+    "fichier": "src/db/repositories/sql/exportImportBodyProgress.test.ts",
+    "test": "export / import des mensurations et des fiches de photos (I6-02) ligne hors bornes, à l’identifiant faux ou au nom de fichier avec chemin : refusée à l’import, rien n’est écrit",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "src/db/repositories/sql/exportImportBodyProgress.test.ts:92"
+    ]
+  },
+  {
+    "fichier": "src/db/repositories/sql/exportImportCardio.test.ts",
+    "test": "export / import des séances cardio (I6-06) ligne hors bornes : refusée à l’import, rien n’est écrit",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "src/db/repositories/sql/exportImportCardio.test.ts:95"
+    ]
+  },
+  {
+    "fichier": "src/db/repositories/sql/exportImportSupplement.test.ts",
+    "test": "export / import des compléments (I6-05) ligne incohérente : refusée à l’import, rien n’est écrit",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "src/db/repositories/sql/exportImportSupplement.test.ts:95"
+    ]
+  },
+  {
+    "fichier": "tests/unit/sync/forget/forgetSecondReview.test.ts",
+    "test": "(5) arrêts autour de la condition (h) référence sans arrêt, puis arrêt avant chaque écriture de A (instantané, état, suppression, transactions) : rien de perdu",
+    "erreurs": [
+      "Error: Test timed out in 5000ms."
+    ],
+    "positions": [
+      "tests/unit/sync/forget/forgetSecondReview.test.ts:321"
+    ]
+  }
+]

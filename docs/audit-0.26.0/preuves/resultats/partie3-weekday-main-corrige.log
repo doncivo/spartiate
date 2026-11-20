@@ -1,0 +1,30 @@
+﻿✔ weekday 20 vers lecteur 19 : journal (3.9155ms)
+✖ weekday 20 vers lecteur 19 : snapshot (5.5751ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1155.8756
+
+✖ failing tests:
+
+test at docs\audit-0.26.0\preuves\partie3-weekday-main.test.mjs:41:46
+✖ weekday 20 vers lecteur 19 : snapshot (5.5751ms)
+  AssertionError [ERR_ASSERTION]: La valeur reçue doit rester disponible pour la réintégration après mise à jour
+  
+  undefined !== 4
+  
+      at TestContext.<anonymous> (file:///C:/Dev/spartiate-codex/docs/audit-0.26.0/preuves/partie3-weekday-main.test.mjs:75:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+

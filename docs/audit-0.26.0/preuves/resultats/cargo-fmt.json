@@ -1,0 +1,13 @@
+﻿{
+    "nom":  "cargo-fmt",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "fmt",
+                      "--check"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T10:06:22.1268415Z",
+    "fin":  "2026-11-16T10:06:33.8627645Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

@@ -1,0 +1,30 @@
+{
+  "sha": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+  "limite": "SQLite Node, vraie enveloppe TypeScript ; rejet de transport injecté avant ROLLBACK, aucune panne native ni donnée réelle utilisée.",
+  "observations": [
+    {
+      "failRollback": false,
+      "acknowledged": 1,
+      "beforeClose": [
+        "avant",
+        "suivante-acquittee"
+      ],
+      "afterReopen": [
+        "avant",
+        "suivante-acquittee"
+      ]
+    },
+    {
+      "failRollback": true,
+      "acknowledged": 1,
+      "beforeClose": [
+        "avant",
+        "suivante-acquittee",
+        "transaction-refusee"
+      ],
+      "afterReopen": [
+        "avant"
+      ]
+    }
+  ]
+}

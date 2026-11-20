@@ -1,0 +1,22 @@
+
+ RUN  v5.0.3 C:/Dev/spartiate-codex
+
+npx.cmd : warning: in the working copy of '.claude/agents/x.md', LF will be replaced by CRLF the next time Git touches
+it
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+warning: in the working copy of 'docs/decisions.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/install-pc.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src-tauri/Cargo.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/a.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/b.rs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/c.ts', LF will be replaced by CRLF the next time Git touches it
+
+ Test Files  5 passed (5)
+      Tests  78 passed (78)
+   Start at  19:43:04
+   Duration  3.67s (tests 77%, import 15%, transform 6%, worker 2%)

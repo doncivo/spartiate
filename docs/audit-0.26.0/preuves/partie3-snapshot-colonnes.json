@@ -1,0 +1,23 @@
+{
+  "sha": "8686a8fc2860f7a94eb193426cbcc640a33bac80",
+  "limite": "Vraies fonctions applyOps/mergeSnapshot ; repository synthétique en mémoire, catalogue 18 dérivé du 19. Ne simule ni transport ni SQLite ni purge native.",
+  "observations": [
+    {
+      "route": "journal",
+      "curseur": 0,
+      "conserves": [
+        {
+          "table": "nutrition_target",
+          "field": "rest_kcal",
+          "value": 2200,
+          "sv": 19
+        }
+      ]
+    },
+    {
+      "route": "snapshot",
+      "curseur": 17,
+      "conserves": []
+    }
+  ]
+}

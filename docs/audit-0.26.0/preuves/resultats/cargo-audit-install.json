@@ -1,0 +1,16 @@
+﻿{
+    "nom":  "cargo-audit-install",
+    "executable":  "cargo.exe",
+    "arguments":  [
+                      "install",
+                      "cargo-audit",
+                      "--locked",
+                      "--root",
+                      "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\outils"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex\\docs\\audit-0.26.0\\preuves\\.runtime\\source\\src-tauri",
+    "debut":  "2026-11-16T10:55:17.2388264Z",
+    "fin":  "2026-11-16T11:20:01.3351935Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

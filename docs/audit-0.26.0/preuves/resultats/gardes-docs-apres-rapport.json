@@ -1,0 +1,22 @@
+﻿{
+    "nom":  "gardes-docs-apres-rapport",
+    "executable":  "npx.cmd",
+    "arguments":  [
+                      "vitest",
+                      "run",
+                      "--coverage.enabled=false",
+                      "--maxWorkers=1",
+                      "--project",
+                      "node",
+                      "scripts/release/identity.test.ts",
+                      "scripts/release/agents.test.ts",
+                      "scripts/release/docs-paths.test.ts",
+                      "scripts/release/prd-split.test.ts",
+                      "scripts/release/rename.test.ts"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-16T18:41:05.0314574Z",
+    "fin":  "2026-11-16T18:41:14.4934517Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

@@ -1,0 +1,21 @@
+
+> spartiate@0.26.0 test:bundle
+> vitest run --config vitest.bundle.config.ts
+
+
+ RUN  v5.0.3 C:/Dev/spartiate-codex
+
+npm.cmd : (node:18476) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead
+to security vulnerabilities, as the arguments are not escaped, only concatenated.
+Au caractère C:\Dev\spartiate-codex\docs\audit-0.26.0\preuves\executer.ps1:29 : 3
++   & $Executable @Arguments > $journal 2>&1
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:18476) [D...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  4 passed (4)
+      Tests  173 passed (173)
+   Start at  11:01:18
+   Duration  293.54s (tests 99%)

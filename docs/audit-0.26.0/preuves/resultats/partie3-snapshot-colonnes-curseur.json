@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "partie3-snapshot-colonnes-curseur",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "--test-isolation=none",
+                      "docs/audit-0.26.0/preuves/partie3-snapshot-colonnes.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-19T19:54:54.4091197Z",
+    "fin":  "2026-11-19T19:54:57.0780859Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

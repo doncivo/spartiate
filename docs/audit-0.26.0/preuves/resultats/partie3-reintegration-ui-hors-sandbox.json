@@ -1,0 +1,16 @@
+﻿{
+    "nom":  "partie3-reintegration-ui-hors-sandbox",
+    "executable":  "node",
+    "arguments":  [
+                      "node_modules/vitest/vitest.mjs",
+                      "run",
+                      "--coverage.enabled=false",
+                      "--maxWorkers=1",
+                      "src/features/sync/yIos02.test.tsx"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-19T19:48:06.7282326Z",
+    "fin":  "2026-11-19T19:48:19.9204810Z",
+    "code":  0,
+    "etat":  "rÃ©ussi"
+}

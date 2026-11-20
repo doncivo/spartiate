@@ -1,0 +1,14 @@
+﻿{
+    "nom":  "partie1-rouges",
+    "executable":  "node",
+    "arguments":  [
+                      "--test",
+                      "--test-isolation=none",
+                      "docs/audit-0.26.0/preuves/partie1-rouges.test.mjs"
+                  ],
+    "dossier":  "C:\\Dev\\spartiate-codex",
+    "debut":  "2026-11-19T13:24:10.0122907Z",
+    "fin":  "2026-11-19T13:24:10.3632553Z",
+    "code":  1,
+    "etat":  "Ã©chec"
+}

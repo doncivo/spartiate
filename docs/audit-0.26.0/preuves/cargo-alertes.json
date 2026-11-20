@@ -1,0 +1,82 @@
+{
+  "database": {
+    "advisory-count": 1509,
+    "last-commit": "02e2517f457a359fc6d3440ea4560c8ea188fee8",
+    "last-updated": "2026-11-15T10:59:21+01:00"
+  },
+  "dependencyCount": 634,
+  "vulnerabilites": [
+    {
+      "id": "RUSTSEC-2023-0071",
+      "paquet": "rsa",
+      "version": "0.9.10",
+      "titre": "Marvin Attack: potential key recovery through timing sidechannels",
+      "corrige": [
+        ">=0.10.0"
+      ]
+    }
+  ],
+  "avertissements": [
+    {
+      "kind": "unmaintained",
+      "paquet": "proc-macro-error",
+      "version": "1.0.4",
+      "id": "RUSTSEC-2024-0370",
+      "corrige": []
+    },
+    {
+      "kind": "unmaintained",
+      "paquet": "zbus_names",
+      "version": "4.3.4",
+      "id": "RUSTSEC-2026-0371",
+      "corrige": []
+    },
+    {
+      "kind": "unmaintained",
+      "paquet": "zvariant",
+      "version": "5.15.0",
+      "id": "RUSTSEC-2026-0370",
+      "corrige": []
+    },
+    {
+      "kind": "unmaintained",
+      "paquet": "zvariant_derive",
+      "version": "5.15.0",
+      "id": "RUSTSEC-2026-0372",
+      "corrige": []
+    },
+    {
+      "kind": "unsound",
+      "paquet": "glib",
+      "version": "0.18.5",
+      "id": "RUSTSEC-2024-0429",
+      "corrige": [
+        ">=0.20.0"
+      ]
+    },
+    {
+      "kind": "unsound",
+      "paquet": "rustix",
+      "version": "1.1.5",
+      "id": "RUSTSEC-2026-0486",
+      "corrige": [
+        ">=1.1.6"
+      ]
+    },
+    {
+      "kind": "unsound",
+      "paquet": "tokio",
+      "version": "1.53.1",
+      "id": "RUSTSEC-2026-0386",
+      "corrige": [
+        ">=1.51.6, <1.52.0",
+        ">=1.53.3"
+      ]
+    },
+    {
+      "kind": "yanked",
+      "paquet": "async-executor",
+      "version": "1.14.0"
+    }
+  ]
+}
