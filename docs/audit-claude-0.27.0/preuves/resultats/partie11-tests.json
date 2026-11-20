@@ -1,0 +1,108 @@
+{
+ "fichiers": 879,
+ "desactives": [
+  "src/platform/sync/faultPlan.test.ts:205: it('les motifs reconnaissent test.skip, it.skipIf, describe.todo, xit et .only(', () => {",
+  "src/platform/sync/faultPlan.test.ts:207: for (const sample of ['test.skip(', 'it.skipIf(', 'describe.todo(', 'it.todo(', 'describe.skip(', 'x",
+  "tests/e2e/I-02.spec.ts:42: test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.');",
+  "tests/e2e/I-02.spec.ts:124: test.skip(!isPhone(testInfo), 'Le profil de signature injecté représente l’iPhone.');",
+  "tests/e2e/I-02.spec.ts:172: test.skip(isPhone(testInfo), 'Comportement du projet pc.');",
+  "tests/e2e/I-03.spec.ts:41: test.skip(!isPhone(testInfo), 'La biométrie injectée représente l’iPhone.');",
+  "tests/e2e/I-03.spec.ts:142: test.skip(isPhone(testInfo), 'Projet pc seulement.');",
+  "tests/e2e/I-06.spec.ts:106: test.skip(({ isMobile }) => !isMobile, 'La mise à jour par SideStore concerne l’iPhone (projet iphon",
+  "tests/e2e/V0-7-1-mise-en-page.spec.ts:12: test.skip(!isPhone(testInfo), 'défauts propres à l’iPhone (440 px)');",
+  "tests/e2e/Y-IOS-01.spec.ts:40: test.skip(info.project.name !== 'iphone', 'iPhone seulement');",
+  "tests/e2e/Y-IOS-02-parcours.spec.ts:41: test.skip(info.project.name !== 'iphone', 'iPhone seulement');",
+  "tests/e2e/Y-IOS-02-parcours.spec.ts:160: test.skip(info.project.name !== 'pc', 'PC seulement');",
+  "tests/e2e/Y-IOS-02.spec.ts:31: test.skip(info.project.name !== 'iphone', 'iPhone seulement');",
+  "tests/e2e/Y-IOS-02.spec.ts:81: test.skip(info.project.name !== 'iphone', 'iPhone seulement');",
+  "tests/e2e/layoutHelper.spec.ts:12: test.skip(!isPhone(testInfo), 'Mesure à 440 × 956.');",
+  "tests/e2e/parcours/Y10-oublier-appareil.spec.ts:43: test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');",
+  "tests/e2e/parcours/Y11-reinitialiser.spec.ts:75: test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');",
+  "tests/e2e/parcours/Y11-reinitialiser.spec.ts:133: test.skip(info.project.name !== 'pc', 'lancé une fois, depuis le projet pc');"
+ ],
+ "focalises": [
+  "src/platform/sync/faultPlan.test.ts:207"
+ ],
+ "sansAssertion": [
+  "src/ui/theme/contrastCss.test.ts: 'garde : l’inventaire voit les jetons de toutes les feuilles', () => {",
+  "tests/visual/capture.spec.ts: `capture ${screen.name}`, async ({ browser }) => {"
+ ],
+ "attentesArbitraires": [
+  "tests/e2e/P-04.spec.ts:124: await page.waitForTimeout(1500);",
+  "tests/e2e/lot-f-qa.spec.ts:58: await page.waitForTimeout(1500);",
+  "tests/visual/capture.spec.ts:28: await page.waitForTimeout(500);",
+  "tests/visual/capture.spec.ts:35: await page.waitForTimeout(400);",
+  "tests/visual/capture.spec.ts:224: await page.waitForTimeout(400);",
+  "tests/visual/capture.spec.ts:258: await page.waitForTimeout(300);",
+  "tests/visual/capture.spec.ts:323: await page.waitForTimeout(300);"
+ ],
+ "horlogeReelle": [
+  "tests/e2e/I-06.spec.ts",
+  "tests/e2e/Y-IOS-01.spec.ts",
+  "tests/smoke/pc-installeur.spec.ts",
+  "tests/unit/sync/forget/forgetHygiene.test.ts"
+ ],
+ "aleatoire": [],
+ "seuilsCouverture": [
+  "src/domain/** 80 %"
+ ],
+ "workflows": {
+  ".github/workflows/build-ios.yml": {
+   "permissionsGlobales": "ABSENT",
+   "permissionsParJob": [
+    "contents: read",
+    "contents: read"
+   ],
+   "actionsNonFigees": [
+    "actions/checkout@v4",
+    "actions/setup-node@v4",
+    "actions/cache@v4",
+    "actions/upload-artifact@v4",
+    "actions/upload-artifact@v4",
+    "actions/upload-artifact@v4",
+    "actions/upload-artifact@v4",
+    "actions/upload-artifact@v4",
+    "actions/checkout@v4",
+    "actions/download-artifact@v4",
+    "actions/download-artifact@v4"
+   ],
+   "actionsFigees": 1,
+   "secrets": [
+    "RELEASES_TOKEN"
+   ],
+   "pullRequestTarget": false,
+   "scriptInjection": []
+  },
+  ".github/workflows/build-windows.yml": {
+   "permissionsGlobales": "permissions: contents: read",
+   "permissionsParJob": [
+    "contents: read"
+   ],
+   "actionsNonFigees": [
+    "actions/checkout@v4",
+    "actions/setup-node@v4",
+    "actions/cache@v4",
+    "actions/cache/restore@v4",
+    "actions/upload-artifact@v4",
+    "actions/download-artifact@v4"
+   ],
+   "actionsFigees": 1,
+   "secrets": [
+    "TAURI_SIGNING_PRIVATE_KEY",
+    "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
+    "RELEASES_TOKEN"
+   ],
+   "pullRequestTarget": false,
+   "scriptInjection": []
+  },
+  ".github/workflows/tests.yml": {
+   "permissionsGlobales": "permissions: contents: read",
+   "permissionsParJob": [],
+   "actionsNonFigees": [],
+   "actionsFigees": 49,
+   "secrets": [],
+   "pullRequestTarget": false,
+   "scriptInjection": []
+  }
+ }
+}

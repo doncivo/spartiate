@@ -1,0 +1,41 @@
+{
+ "points": [
+  "src/main.tsx",
+  "src/features/sync/pairing-window/main.tsx"
+ ],
+ "atteints": 805,
+ "total": 835,
+ "inaccessibles": 30,
+ "fichiers": [
+  "src/db/index.ts",
+  "src/db/repositories/sql/testSetup.ts",
+  "src/db/seed/sampleData.ts",
+  "src/domain/csvImport.ts",
+  "src/domain/dateInput.ts",
+  "src/domain/eventTestKit.ts",
+  "src/domain/historyExport.ts",
+  "src/domain/itemFilter.ts",
+  "src/domain/notificationStatus.ts",
+  "src/domain/projectRules.ts",
+  "src/domain/routineReport.ts",
+  "src/domain/routineTestKit.ts",
+  "src/domain/sync/repairs.ts",
+  "src/domain/taskPostpone.ts",
+  "src/domain/taskRules.ts",
+  "src/domain/taskSchedule.ts",
+  "src/domain/taskTrash.ts",
+  "src/features/app/todayTestPreload.ts",
+  "src/features/signing/testKit.ts",
+  "src/features/sync/testKit.ts",
+  "src/platform/barcode/testing.ts",
+  "src/platform/desktop/testing.ts",
+  "src/platform/notifications/fakeBridge.ts",
+  "src/platform/ocr/index.ts",
+  "src/platform/ocr/nativeOcr.ts",
+  "src/platform/ocr/testing.ts",
+  "src/platform/ocr/types.ts",
+  "src/platform/off/testing.ts",
+  "src/platform/speech/testing.ts",
+  "src/platform/systemSettings/testing.ts"
+ ]
+}
