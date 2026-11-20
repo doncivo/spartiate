@@ -104,7 +104,7 @@
   /* Interrupteur (Reglages.html .sw en clair ; sombre : lavande comme --ct-edit-track, à valider sur la capture Reglages-Sombre). */
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #857e70;
+  --ct-color-switch-off: #bdb5a5;
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
@@ -348,7 +348,7 @@
   --ct-color-accent-on: #ede7dc;
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #857e70;
+  --ct-color-switch-off: #bdb5a5;
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
@@ -447,12 +447,6 @@ h6 {
  * (une classe) fixent leur propre taille. Le zoom de l'utilisateur n'est jamais bloqué (index.html : pas de maximum-scale).
  */
 @supports (-webkit-touch-callout: none) {
-  /* A11Y (C-113) : Dynamic Type. WebKit iOS ne suit la taille de texte du système (Réglages > Luminosité > Taille du texte) que pour la police
-     système « body » ; tout est en rem, donc tout grandit avec elle. Au réglage par défaut elle vaut 17 px (16 px sur PC, inchangé). */
-  html {
-    font: -apple-system-body;
-  }
-
   input,
   select,
   textarea {
