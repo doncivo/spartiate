@@ -23,3 +23,27 @@ workflows de publication ne doivent pas casser, donc changements minimaux et vé
    artefact de journaux avec `retention-days` ; `cargo-audit` installé en version fixée ; `npm audit --omit=dev --audit-level=high` dans `tests.yml`.
 
 Hors périmètre, reporté : signature dans un job distinct (non testable sans tag et sans clé : décision proposée).
+
+## Passes agent du module et qa-test
+
+- Rouge : 55562609 (`scripts/release/ciPub.test.ts`, import de `check-suite-verte.mjs` absent). Vert : voir le commit suivant.
+- Fichiers : `build-windows.yml`, `build-ios.yml`, `tests.yml`, `scripts/release/check-suite-verte.mjs`, `scripts/release/ciPub.test.ts`,
+  `scripts/ios/geolocation.test.ts` (attente de texte adaptée à `grep <<<`), `docs/release-pc.md`. Ni `src/sync/**` ni code applicatif.
+- SHA : ceux de `tests.yml` pour checkout, setup-node, cache (et `cache/restore`), upload-artifact, download-artifact ; `rust-toolchain`
+  était déjà figé. Aucune action nouvelle, aucune lecture d'API nécessaire.
+- `npm ci --ignore-scripts` : seul `fsevents` (macOS, optionnel) a `hasInstallScript` dans `package-lock.json` ; sans effet sur Windows.
+  Le build iOS garde `npm ci` (il ne reçoit aucune clé de signature : signature ad hoc).
+- `npm audit --omit=dev --audit-level=high` : 0 vulnérabilité sur le graphe livré au 2026-11-20 ; DEP-01 du lot 0.29.0 n'a rien à ajouter.
+- Cas limites qa-test : check absent, en cours, en échec, relance (le plus récent gagne), entrée invalide, sortie 1 du script ; `needs` de
+  « suite verte » comparé aux jobs réels (tout sauf `visual`) ; `persist-credentials` et `retention-days` comptés sur chaque étape.
+- Limites : les workflows ne sont pas exécutés ici ; `build-ios.yml` se vérifie par une compilation `publish=false` (étape « Plugins iOS »
+  réécrite, `codesign -d` sans `|| true`, cache en lecture seule seulement sur tag) ; le job `garde` sur tag et les deux comparaisons
+  SHA-256 avant `--clobber` ne se vérifient qu'au tag. `build-windows.yml` accepte `workflow_dispatch` sans publier ni signer : un
+  lancement à blanc couvre `garde` (branche du notice), `npm ci --ignore-scripts`, la compilation et la collecte.
+
+## Décisions proposées
+
+- **D-358** : les workflows de publication figent toutes leurs actions par SHA (les mêmes que `tests.yml`) ; un test statique (`scripts/release/ciPub.test.ts`) refuse tout `uses:` distant non figé dans les trois workflows. Monter une action est un commit qui change le SHA partout (révisable par Ali).
+- **D-359** : un job `garde` (permission `checks: read`, `GITHUB_TOKEN` seul) précède toute compilation ou signature sur tag, PC comme iPhone : le check « suite verte » du SHA du tag doit être terminé et vert (`scripts/release/check-suite-verte.mjs`). Conséquence : le tag se pose après la fin de la suite sur le commit de `main`, jamais sur un commit sans suite. Hors tag, le job réussit sans contrôle.
+- **D-360** : la signature de l'installeur dans un job distinct (checkout sans cache, `npm ci --ignore-scripts`, seul à recevoir la clé) est reportée en 0.28.1 : elle n'est testable ni sans tag ni sans clé. En attendant, le job PC installe sans scripts et la clé n'est reçue que par l'étape de signature. `--clobber` laisse une trace (SHA-256 ancien et nouveau, avertissement) sans bloquer la relance d'une publication interrompue.
+- **D-361** : `cargo-audit` est installé en version fixée (`CARGO_AUDIT_VERSION`, 0.23.0), portée par la clé de cache ; `npm audit --omit=dev --audit-level=high` s'exécute dans le job `cargo audit` ; le cache cargo de `build-ios.yml` est en lecture seule sur tag (clé exacte, comme PC : monter la version avant la compilation à blanc pour qu'il soit chaud) ; contrôles d'absence de `build-ios.yml` sans `|| true`.

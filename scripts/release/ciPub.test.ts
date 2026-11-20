@@ -107,7 +107,7 @@ describe('C-172 : contrôle du check « suite verte » avant publication', () =>
     for (const f of ['build-windows.yml', 'build-ios.yml']) {
       const publish = jobs(wf(f))['publish'] ?? '';
       expect(publish, f).toMatch(/gh release download/);
-      expect(publish.indexOf('gh release download'), f).toBeLessThan(publish.indexOf('--clobber'));
+      expect(publish.indexOf('gh release download'), f).toBeLessThan(publish.lastIndexOf('--clobber'));
       expect(publish, f).toMatch(/sha256|shasum -a 256/);
     }
   });
@@ -165,7 +165,8 @@ describe('C-175 : durcissement', () => {
   });
   it('cargo-audit est installé en version fixée, la clé de cache la porte', () => {
     const text = wf('tests.yml');
-    expect(text).toMatch(/cargo install cargo-audit --locked --version \d+\.\d+\.\d+/);
+    expect(text).toMatch(/CARGO_AUDIT_VERSION: "\d+\.\d+\.\d+"/);
+    expect(text).toContain('cargo install cargo-audit --locked --version "${CARGO_AUDIT_VERSION}"');
     expect(text).not.toMatch(/cargo-audit-\$\{\{ runner\.os \}\}-\$\{\{ steps\.mois/);
   });
   it('npm audit des dépendances livrées dans tests.yml', () => {
