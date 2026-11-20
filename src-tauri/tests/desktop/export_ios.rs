@@ -435,6 +435,12 @@ fn swift_literals() -> Vec<String> {
     out
 }
 
+/// Source Rust qui appelle une commande du plugin (lue à l'exécution : un fichier absent fait échouer le test, pas la compilation).
+fn rust_source(file: &str) -> String {
+    std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(file))
+        .unwrap_or_else(|_| panic!("src/{file} absent"))
+}
+
 #[test]
 fn files_ios_01_4_contract_commands_and_fields_match_swift_and_rust() {
     let contract: Value = serde_json::from_str(CONTRACT).unwrap();
@@ -451,8 +457,11 @@ fn files_ios_01_4_contract_commands_and_fields_match_swift_and_rust() {
             .iter()
             .map(|v| v.as_str().unwrap().to_owned())
             .collect();
+        // FIX-CONFID-IOS : plusieurs commandes ; chacune nomme sa structure d'arguments Swift et le fichier Rust qui l'appelle.
+        let args_struct = spec["argsStruct"].as_str().expect("argsStruct");
+        let rust = rust_source(spec["rust"].as_str().expect("rust"));
         let start = code
-            .find("struct PresentArgs: Decodable {")
+            .find(&format!("struct {args_struct}: Decodable {{"))
             .expect("structure d'arguments");
         let body = &code[start..start + code[start..].find('}').unwrap()];
         let fields: BTreeSet<String> = body
@@ -461,7 +470,7 @@ fn files_ios_01_4_contract_commands_and_fields_match_swift_and_rust() {
             .map(|l| l.split(':').next().unwrap().trim().to_owned())
             .collect();
         assert_eq!(fields, input, "{name} : champs d'entrée Swift");
-        assert!(code.contains("invoke.parseArgs(PresentArgs.self)"));
+        assert!(code.contains(&format!("invoke.parseArgs({args_struct}.self)")));
         for shape in spec["output"].as_array().unwrap() {
             for key in shape.as_array().unwrap() {
                 let key = key.as_str().unwrap();
@@ -470,18 +479,18 @@ fn files_ios_01_4_contract_commands_and_fields_match_swift_and_rust() {
                     "{name} : clé de sortie {key} absente du Swift"
                 );
                 assert!(
-                    EXPORT_IOS_RS.contains(&format!("get(\"{key}\")")),
+                    rust.contains(&format!("get(\"{key}\")")),
                     "{name} : clé {key} non lue par Rust"
                 );
             }
         }
         assert!(
-            EXPORT_IOS_RS.contains(&format!("call(\"{name}\"")),
+            rust.contains(&format!("call(\"{name}\"")),
             "{name} jamais appelé par Rust"
         );
         for field in &input {
             assert!(
-                EXPORT_IOS_RS.contains(&format!("\"{field}\":")),
+                rust.contains(&format!("\"{field}\":")),
                 "{name} : champ {field} absent de l'appel Rust"
             );
         }

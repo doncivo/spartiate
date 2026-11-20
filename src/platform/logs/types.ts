@@ -28,7 +28,8 @@ export function categoryOf(scope: string): LogCategory {
 /** Transport persistant (Rust dans l'app installée, mémoire ailleurs). Rejette `{ code }`. */
 export interface LogTransport {
   append(entries: readonly LogEntry[]): Promise<{ readonly writeError: string | null }>;
-  read(max: number): Promise<{ readonly entries: readonly LogEntry[]; readonly writeError: string | null }>;
+  /** `backupExclusion` (FIX-CONFID-IOS, iPhone) : échec de l'exclusion de la sauvegarde iCloud au démarrage (code), null sinon. */
+  read(max: number): Promise<{ readonly entries: readonly LogEntry[]; readonly writeError: string | null; readonly backupExclusion?: string | null }>;
   clear(): Promise<void>;
 }
 
@@ -37,6 +38,8 @@ export interface LogStatus {
   readonly writeError: string | null;
   /** Dernier échec de lecture (code), effacé à la prochaine lecture réussie. */
   readonly readError: string | null;
+  /** FIX-CONFID-IOS (C-152) : échec de l'exclusion de la sauvegarde iCloud de l'iPhone au démarrage (code), connu après une lecture. */
+  readonly backupExclusion?: string | null;
 }
 
 export interface LogJournal {

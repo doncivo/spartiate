@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { codeAndDetailOf, LOG_MASK, normalizeScope, sanitizeLogDetail } from './sanitize';
+import { ALLOWED_LOG_KEY_SUFFIXES, ALLOWED_LOG_KEYS, BODY_UNITS, BODY_WORDS, codeAndDetailOf, LOG_MASK, normalizeScope, sanitizeLogDetail } from './sanitize';
 import { categoryOf } from './types';
 
 interface Vector {
@@ -9,7 +9,14 @@ interface Vector {
   readonly expected: string;
 }
 
-const fixture = JSON.parse(readFileSync(new URL('../../../tests/fixtures/logs/sanitize-vectors.json', import.meta.url), 'utf8')) as { vectors: Vector[]; codeVectors: { code: string; valid: boolean }[] };
+const fixture = JSON.parse(readFileSync(new URL('../../../tests/fixtures/logs/sanitize-vectors.json', import.meta.url), 'utf8')) as {
+  vectors: Vector[];
+  codeVectors: { code: string; valid: boolean }[];
+  bodyUnits: string[];
+  bodyWords: string[];
+  allowedKeys: string[];
+  allowedKeySuffixes: string[];
+};
 const vectors = fixture.vectors;
 
 describe('I-04 critère 5 : assainissement du journal (vecteurs partagés avec Rust)', () => {
@@ -85,6 +92,15 @@ describe('I-04 critère 5 : assainissement du journal (vecteurs partagés avec R
     // Les codes et compteurs restent lisibles.
     expect(sanitizeLogDetail(REAL[0] ?? '')).toBe('sync-now {"reason":"open"}');
     expect(sanitizeLogDetail('replan open: unreadable (3)')).toBe('replan open: unreadable (3)');
+  });
+});
+
+describe('FIX-CONFID-IOS (C-151) : listes du masquage des valeurs corporelles, partagées avec Rust', () => {
+  it('unités, mots corporels et clés lisibles : exactement ceux de la fixture', () => {
+    expect([...BODY_UNITS]).toEqual(fixture.bodyUnits);
+    expect([...BODY_WORDS]).toEqual(fixture.bodyWords);
+    expect([...ALLOWED_LOG_KEYS]).toEqual(fixture.allowedKeys);
+    expect([...ALLOWED_LOG_KEY_SUFFIXES]).toEqual(fixture.allowedKeySuffixes);
   });
 });
 

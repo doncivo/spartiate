@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { tLogs } from '../../i18n/logsText';
 import { logDesktopFailure } from '../../platform';
@@ -27,6 +27,11 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
   const { journal, unavailable: journalUnavailable } = useLogJournal();
   const logStatus = useLogStatus(journal);
   const logFailureCode = logStatus.writeError ?? logStatus.readError ?? journalUnavailable;
+  const backupExclusion = logStatus.backupExclusion ?? null;
+  // FIX-CONFID-IOS (C-152) : l'issue de l'exclusion de la sauvegarde iCloud (posée au démarrage par Rust) arrive avec une lecture du journal.
+  useEffect(() => {
+    if (journal?.persistent) void journal.read(1);
+  }, [journal]);
 
   const checking = status === 'checking';
   const updaterConfigured = desktop?.updaterConfigured ?? false;
@@ -58,6 +63,11 @@ export function AboutSection({ heading = true }: { readonly heading?: boolean } 
           {hint && (
             <span className={status === 'checkFailed' ? 'ct-settings__hint ct-settings__hint--danger' : 'ct-settings__hint'} role="status">
               {hint}
+            </span>
+          )}
+          {backupExclusion && (
+            <span className="ct-settings__hint ct-settings__hint--missed" role="alert" data-kind="backup-exclusion">
+              {tLogs('backupExclusionFailed')} {tLogs('errorCode', { code: backupExclusion })}
             </span>
           )}
           {logFailureCode && (

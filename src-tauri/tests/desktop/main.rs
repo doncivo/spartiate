@@ -5,6 +5,7 @@
 
 mod applog;
 mod backup;
+mod backup_exclusion;
 mod backup_summary;
 mod backup_versions;
 mod capture_ios;

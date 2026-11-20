@@ -1,26 +1,33 @@
 //! Démarrage de l'iPhone (`setup` du builder, `cfg(target_os = "ios")`), ADR 0009 avenant lot F et ADR 0014.
 //!
-//! Ordre : (1) journal technique (`applog::init`, I-04) ; (2) purge des temporaires d'export restés dans `<cache>/exports/` (FILES-IOS-01),
-//! inscrite au journal avec le nombre d'entrées supprimées ; (3) récupération d'une restauration interrompue, puis SEULEMENT si elle
-//! réussit, enregistrement du plugin SQL (P-04-iOS, `startup_gate`) : aucune base n'est ouverte ni créée avant. Un échec n'arrête pas
-//! l'app : la WebView le lit par `backup_startup_status` et affiche l'écran d'erreur persistant avec le code.
+//! Ordre : (1) journal technique (`applog::init`, I-04) ; (2) exclusion de la sauvegarde iCloud de l'appareil (FIX-CONFID-IOS, C-152,
+//! C-147) posée sur les dossiers de la base, des sauvegardes locales et du journal, AVANT toute ouverture de la base, jamais bloquante ;
+//! (3) purge des temporaires d'export restés dans `<cache>/exports/` (FILES-IOS-01), inscrite au journal avec le nombre d'entrées
+//! supprimées ; (4) récupération d'une restauration interrompue, puis SEULEMENT si elle réussit, enregistrement du plugin SQL (P-04-iOS,
+//! `startup_gate`) : aucune base n'est ouverte ni créée avant. Un échec n'arrête pas l'app : la WebView le lit par `backup_startup_status`
+//! et affiche l'écran d'erreur persistant avec le code.
 
 use tauri::{App, Manager};
 
-/// Dossier du journal technique dans Documents (visible dans l'app Fichiers).
+/// Dossier du journal technique dans Documents (visible dans l'app Fichiers, exclu de la sauvegarde de l'appareil).
 const JOURNAL_DIR: &str = "Journal";
 
-/// `setup` de l'iPhone : la purge ne fait jamais échouer le démarrage (rattrapée au démarrage suivant, échec inscrit au journal).
+/// `setup` de l'iPhone : ni l'exclusion ni la purge ne font échouer le démarrage (échec inscrit au journal, repris au démarrage suivant).
 pub fn setup(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {
     let config_dir = app.path().app_config_dir().ok();
     // ios-demarrage : journal dans Documents/Journal (visible dans l'app Fichiers, UIFileSharingEnabled) ; repli sur le dossier de configuration.
-    match app.path().document_dir() {
-        Ok(documents) => crate::applog::init(documents.join(JOURNAL_DIR)),
-        Err(_) => match &config_dir {
-            Some(dir) => crate::applog::init(dir.join(crate::applog::LOG_DIR)),
-            None => crate::applog::write("logs", "no-data-dir"),
-        },
+    let journal_dir = match app.path().document_dir() {
+        Ok(documents) => Some(documents.join(JOURNAL_DIR)),
+        Err(_) => config_dir
+            .as_ref()
+            .map(|dir| dir.join(crate::applog::LOG_DIR)),
+    };
+    match &journal_dir {
+        Some(dir) => crate::applog::init(dir.clone()),
+        None => crate::applog::write("logs", "no-data-dir"),
     }
+    // FIX-CONFID-IOS (C-152, C-147, D-99 (1)) : base, photos, sauvegardes locales et journal hors de la sauvegarde iCloud de l'appareil.
+    crate::backup_exclusion::exclude_on_launch(app, config_dir.as_deref(), journal_dir.as_deref());
     match app.path().app_cache_dir() {
         Ok(cache_dir) => match crate::export_ios::purge_exports(&cache_dir) {
             Ok(0) => {}

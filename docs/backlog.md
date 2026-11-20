@@ -148,7 +148,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-086 | audit Claude 0.27.0 | important — cible de repos sous le plancher : l'écran demande une confirmation qui n'existe pas | à faire (lot 0.28.0) |
 | C-087 | audit Claude 0.27.0 | important — cible confirmée sous 1 200 kcal : cible de repos impossible à ajouter ou retirer | à faire (lot 0.28.0) |
 | C-088 | audit Claude 0.27.0 | important — tableau de bord : un jour de repos compté sur la cible d'entraînement | à faire (lot 0.28.0) |
-| C-089 | audit Claude 0.27.0 | important, à vérifier — photos « supprimées sans retour possible » encore présentes dans les sauvegardes | à faire (lot 0.28.0) |
+| C-089 | audit Claude 0.27.0 | important, à vérifier — photos « supprimées sans retour possible » encore présentes dans les sauvegardes | fait (FIX-CONFID-IOS) |
 | C-090 | audit Claude 0.27.0 | important — « +5 cm en 4 semaines » faux sur un historique espacé | à faire (lot 0.28.0) |
 | C-091 | audit Claude 0.27.0 | important — compléments : changer une heure efface la constance passée | à faire (lot 0.28.0) |
 | C-092 | audit Claude 0.27.0 | important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats | à faire (lot 0.28.0) |
@@ -199,19 +199,19 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | à faire (lot 0.28.0) |
 | C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | à faire (lot 0.28.0) |
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (lot 0.28.0) |
-| C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | à faire (lot 0.28.0) |
+| C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | fait (FIX-CONFID-IOS) |
 | C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | à faire (lot 0.28.0) |
 | C-142 | audit Claude 0.27.0 | à vérifier — `vault_ios.rs` : course sur le cache de la clé (dépend de la sérialisation par SyncCore) | à faire (lot 0.28.0) |
 | C-143 | audit Claude 0.27.0 | mineur — marqueur de démarrage illisible traité comme absent ; marqueur définitif écrit sans vérifier le jeton | à faire (lot 0.28.0) |
 | C-144 | audit Claude 0.27.0 | mineur — `db_diagnostics` renvoie des chemins absolus (ADR 0009) ; dates de sauvegarde mal validées | à faire (lot 0.28.0) |
 | C-145 | audit Claude 0.27.0 | mineur — export : lecteur réseau accepté, temporaire au-delà de 255 caractères, repli JSON avant plafond | à faire (lot 0.28.0) |
 | C-146 | audit Claude 0.27.0 | mineur — libellés du plateau et date de fin de Live Activity non bornés ; WM_ENDSESSION non traité | à faire (lot 0.28.0) |
-| C-147 | audit Claude 0.27.0 | mineur — journal iOS dans Documents/Journal, visible dans Fichiers et inclus dans la sauvegarde iCloud | à faire (lot 0.28.0) |
+| C-147 | audit Claude 0.27.0 | mineur — journal iOS dans Documents/Journal, visible dans Fichiers et inclus dans la sauvegarde iCloud | fait (FIX-CONFID-IOS) |
 | C-148 | audit Claude 0.27.0 | amélioration — copies de la clé en String non effacées ; texte d'erreur WinRT renvoyé ; code mort | à faire (lot 0.28.0) |
 | C-149 | audit Claude 0.27.0 | amélioration — description de l'installeur et du binaire héritée de CircleTasks ; capabilities mal décrites | à faire (lot 0.28.0) |
 | C-150 | audit Claude 0.27.0 | amélioration — `read_summary` compte la table task ; pas de fsync de dossier ni de secure_delete | à faire (lot 0.28.0) |
-| C-151 | audit Claude 0.27.0 | important — journal technique : valeurs corporelles non masquées | à faire (lot 0.28.0) |
-| C-152 | audit Claude 0.27.0 | important, à vérifier sur l'appareil — base, photos et journal dans la sauvegarde iCloud de l'iPhone | à faire (lot 0.28.0) |
+| C-151 | audit Claude 0.27.0 | important — journal technique : valeurs corporelles non masquées | fait (FIX-CONFID-IOS) |
+| C-152 | audit Claude 0.27.0 | important, à vérifier sur l'appareil — base, photos et journal dans la sauvegarde iCloud de l'iPhone | fait (FIX-CONFID-IOS) ; constat d’Ali à faire (H-38) |
 | C-153 | audit Claude 0.27.0 | important — folder-bookmark : un accès de sécurité de plus à chaque cycle de synchro | à faire (lot 0.28.0) |
 | C-154 | audit Claude 0.27.0 | important, à vérifier (D-26) — écriture iCloud sur un fichier évincé | à faire (lot 0.28.0) |
 | C-155 | audit Claude 0.27.0 | mineur — retour de fsync du dossier ignoré ; `download` qui dort jusqu'à 60 s sur la file série | à faire (lot 0.28.0) |

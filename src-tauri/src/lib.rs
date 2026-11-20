@@ -9,6 +9,8 @@
 /// Journal technique persistant (I-04, ADR 0014) : PC et iPhone.
 pub mod applog;
 pub mod backup;
+/// Exclusion de la sauvegarde iCloud de l'iPhone (FIX-CONFID-IOS, C-152) : compilée partout, appelée au démarrage iPhone.
+pub mod backup_exclusion;
 pub mod backup_triggers;
 #[cfg(desktop)]
 pub mod desktop;

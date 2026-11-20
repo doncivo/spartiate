@@ -120,6 +120,8 @@ Un refus est l'erreur `Error::Refused(code)` de code stable (`url`, `attach`, `v
 
 Hors du pool, donc non concernées : les sauvegardes, restaurations et vérifications de `backup.rs` (connexions `rusqlite` séparées, `VACUUM INTO` compris). La validation des chemins de leurs commandes n'est pas couverte par cet avenant. `capabilities/default.json` est inchangé (rien à retirer sans casser `execute`, pas de portée possible). Tests : `vendor/tauri-plugin-sql/src/guard_tests.rs` (24 tests du plugin), `tests/desktop/sql_closed.rs` (journal, câblage). Détail, rouge et vert : `docs/archive/circletasks/stories/SEC-01.md`.
 
+Écart au code amont (FIX-CONFID-IOS, D-330, 2026-11-20) : `wrapper.rs` du plugin vendored pose aussi `secure_delete = ON` par `SqliteConnectOptions::pragma` à l'ouverture de chaque connexion du pool (Rust, jamais la WebView : `PRAGMA secure_delete` reste hors de la liste blanche et refusé à `execute`, test `guard_tests.rs`). À reporter à toute mise à jour du plugin amont.
+
 ## Avenant FIX-A008 (2026-11-20) : échec fermé du pilote sérialisé (A-008, D-326)
 
 Si l'annulation d'une transaction ne peut pas être établie (ROLLBACK rejeté hors « no transaction is active », ou retrait de `sync_guard` en échec après une transaction perdue), le pilote sérialisé est empoisonné : toute opération suivante est refusée (`DbError('connection-poisoned')`), seul `close()` reste permis, et l'app n'offre que le redémarrage (aucune réouverture automatique, aucun rechargement : le pool sqlx survit côté Rust). Tests : `src/db/serializedDriver.a008.test.ts`. Détail : D-326, docs/FIX-A008.md.
