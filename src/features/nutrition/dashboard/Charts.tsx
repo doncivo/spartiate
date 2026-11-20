@@ -16,16 +16,19 @@ const PAD = 12;
 
 const stateText = (state: DayBar['state']): string => tNutrition(state === 'complete' ? 'barComplete' : state === 'partial' ? 'barPartial' : 'barUnknown');
 
-export function BarsChart({ bars, targetKcal }: { readonly bars: readonly DayBar[]; readonly targetKcal: number | null }) {
+export function BarsChart({ bars }: { readonly bars: readonly DayBar[] }) {
   const values = bars.map((b) => b.kcal ?? 0);
-  const max = Math.max(1, targetKcal ?? 0, ...values) * 1.1;
+  const max = Math.max(1, ...bars.map((b) => b.targetKcal ?? 0), ...values) * 1.1;
   const slot = (W - 2 * PAD) / Math.max(1, bars.length);
   const y = (kcal: number): number => H - PAD - (kcal / max) * (H - 2 * PAD);
   return (
     <>
       <svg className="ct-nutrition__chart" viewBox={`0 0 ${String(W)} ${String(H)}`} role="img" aria-label={tNutrition('barsLabel')}>
         <line className="ct-nutrition__chart-base" x1={PAD} x2={W - PAD} y1={H - PAD} y2={H - PAD} />
-        {targetKcal === null ? null : <line className="ct-nutrition__chart-target" x1={PAD} x2={W - PAD} y1={y(targetKcal)} y2={y(targetKcal)} />}
+        {/* FIX-PLANCHER (C-088) : un trait de cible par jour, selon son type (entraînement ou repos). */}
+        {bars.map((bar, i) =>
+          bar.targetKcal === null ? null : <line key={`t-${bar.date}`} className="ct-nutrition__chart-target" x1={PAD + i * slot} x2={PAD + (i + 1) * slot} y1={y(bar.targetKcal)} y2={y(bar.targetKcal)} />,
+        )}
         {bars.map((bar, i) => {
           const x = PAD + i * slot + slot * 0.15;
           const width = slot * 0.7;

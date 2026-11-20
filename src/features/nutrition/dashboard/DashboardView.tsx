@@ -28,7 +28,8 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
   const navigate = useNavigationStore((s) => s.navigate);
   const model = useMemo(() => dashboardModel(snapshot), [snapshot]);
   const { tdee } = snapshot;
-  const target = snapshot.target?.target ?? null;
+  // FIX-PLANCHER (C-088) : cible du type du jour (D-270), comme le Journal et Aujourd'hui.
+  const target = model.todayTarget;
   const today = snapshot.days.find((d) => d.date === snapshot.today);
   const remainingToday = today ? remainingForDay(target, today) : null;
   const measuredTerms = (tdee.basis === 'blend' || tdee.basis === 'measured') && tdee.measuredRaw !== null && tdee.meanKcal !== null && tdee.deltaKg !== null;
@@ -59,12 +60,12 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
               {model.balance.deltaKcal === null ? tNutrition('balanceAverage', { n: formatInt(model.balance.averageKcal) }) : tNutrition('balanceValue', { n: formatSigned(model.balance.deltaKcal) })}
             </p>
             <p className="ct-nutrition__muted ct-nutrition__num">
-              {target === null ? tNutrition('balanceNoTarget') : tNutrition('balanceVsTarget', { n: formatInt(target.kcal) })}
+              {model.compareKcal === null ? tNutrition('balanceNoTarget') : tNutrition('balanceVsTarget', { n: formatInt(model.compareKcal) })}
             </p>
           </>
         )}
         <p className="ct-nutrition__num">{tNutrition('coverageLine', { days: daysText(model.balance.completeDays), weighIns: weighInsText(model.balance.weighInDays) })}</p>
-        <BarsChart bars={model.bars} targetKcal={target?.kcal ?? null} />
+        <BarsChart bars={model.bars} />
         <p className="ct-nutrition__muted">{tNutrition('barsLegend')}</p>
         <p className="ct-nutrition__muted">{tNutrition('balanceExcluded')}</p>
       </section>

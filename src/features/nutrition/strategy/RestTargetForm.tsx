@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { DEFAULT_REST_GAP_KCAL, restTargetFromGap, restTargetFromKcal, weeklyAverageTarget, type RestPlan, type Target } from '../../../domain/nutrition';
+import { DEFAULT_REST_GAP_KCAL, confirmationCarriedOver, floorVerdict, restTargetFromGap, restTargetFromKcal, weeklyAverageTarget, type RestPlan, type Target } from '../../../domain/nutrition';
 import type { Weekday } from '../../../domain/types';
 import { formatInt, formatWeekdayList, tNutrition } from '../../../i18n/nutritionText';
 import { Button, SegmentedControl, Switch, WeekdayToggles } from '../../../ui';
@@ -12,7 +12,10 @@ import { NumberField, parseNumber } from '../shared';
  */
 type Mode = 'gap' | 'kcal';
 
-export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly target: Target; readonly plan: RestPlan | null; readonly defaultDays: readonly Weekday[]; readonly onSave: (plan: RestPlan | null) => Promise<boolean> }) {
+/** FIX-PLANCHER : résultat de l'écriture, pour dire la vraie cause (confirmation manquante, plancher de 800 kcal, échec). */
+export type RestSaveResult = 'saved' | 'saved-partial' | 'confirmation-required' | 'rejected' | 'error';
+
+export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly target: Target; readonly plan: RestPlan | null; readonly defaultDays: readonly Weekday[]; readonly onSave: (plan: RestPlan | null, lowFloorConfirmed: boolean) => Promise<RestSaveResult> }) {
   const [enabled, setEnabled] = useState(plan !== null);
   const [mode, setMode] = useState<Mode>('gap');
   const [gap, setGap] = useState(String(plan === null ? -DEFAULT_REST_GAP_KCAL : Math.max(0, target.kcal - plan.rest.kcal)));
@@ -23,19 +26,26 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
   useEffect(() => {
     if (plan === null && !touched.current) setDays(defaultDays);
   }, [plan, defaultDays]);
-  const [status, setStatus] = useState<'idle' | 'saved' | 'invalid' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'saved' | 'invalid' | 'error' | 'needsConfirm' | 'rejected'>('idle');
+  const [confirmed, setConfirmed] = useState(false);
 
   const value = parseNumber(mode === 'gap' ? gap : kcal);
   const rest: Target | null =
     typeof value !== 'number' || !(value >= 0) ? null : mode === 'gap' ? restTargetFromGap(target, -value) : value > 0 ? restTargetFromKcal(target, value) : null;
   const valid = rest !== null && rest.kcal > 0 && days.length > 0 && days.length < 7;
+  // FIX-PLANCHER (C-086, C-087) : plancher sur la plus basse des deux cibles ; une confirmation en vigueur n'est pas redemandée.
+  const nextPlan: RestPlan | null = rest === null ? null : { rest, trainingDays: days };
+  const verdict = nextPlan === null ? 'ok' : floorVerdict(target, nextPlan);
+  const carried = nextPlan !== null && confirmationCarriedOver({ target, plan }, { target, plan: nextPlan });
+  const needsBox = verdict === 'confirm' && !carried;
   const toggleDay = (day: Weekday): void => {
     touched.current = true;
     setDays((list) => (list.includes(day) ? list.filter((d) => d !== day) : [...list, day].sort((a, b) => a - b)));
   };
 
   async function save(next: RestPlan | null): Promise<void> {
-    setStatus((await onSave(next)) ? 'saved' : 'error');
+    const result = await onSave(next, confirmed);
+    setStatus(result === 'saved' || result === 'saved-partial' ? 'saved' : result === 'confirmation-required' ? 'needsConfirm' : result === 'rejected' ? 'rejected' : 'error');
   }
 
   return (
@@ -79,12 +89,21 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
           )}
           <WeekdayToggles label={tNutrition('trainingDays')} value={days} onToggle={toggleDay} />
           {rest !== null ? <p className="ct-nutrition__muted">{tNutrition('restTargetPreview', { kcal: formatInt(rest.kcal), carbs: formatInt(rest.carbG) })}</p> : null}
-          <Button variant="secondary" disabled={!valid} onClick={() => (valid && rest !== null ? void save({ rest, trainingDays: days }) : setStatus('invalid'))}>
+          {needsBox ? (
+            <label className="ct-nutrition__check">
+              <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
+              <span>{tNutrition('floorConfirm')}</span>
+            </label>
+          ) : null}
+          {verdict === 'rejected' ? <p role="alert">{tNutrition('floorRejected')}</p> : null}
+          <Button variant="secondary" disabled={!valid || verdict === 'rejected'} onClick={() => (valid && rest !== null ? void save({ rest, trainingDays: days }) : setStatus('invalid'))}>
             {tNutrition('restTargetSave')}
           </Button>
         </>
       ) : null}
       {status === 'saved' ? <p role="status">{tNutrition('restTargetSaved')}</p> : null}
+      {status === 'needsConfirm' ? <p role="alert">{tNutrition('floorConfirmNeeded')}</p> : null}
+      {status === 'rejected' ? <p role="alert">{tNutrition('floorRejected')}</p> : null}
       {status === 'error' ? <p role="alert">{tNutrition('restTargetError')}</p> : null}
     </div>
   );

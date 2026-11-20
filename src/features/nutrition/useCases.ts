@@ -6,6 +6,8 @@ import {
   aggregateDays,
   computeTotals,
   DEFAULT_NUTRITION_PREFS,
+  confirmationCarriedOver,
+  floorVerdict,
   upcomingTargets,
   estimateTdee,
   parseNutritionPrefs,
@@ -228,7 +230,14 @@ export async function recordCheckInDecision(
     return { outcome, record: await repo.record({ weekStart, target: proposal.target, source: 'auto', accepted: false, engineVersion, lowFloorConfirmed, restPlan: proposedRest }) };
   }
   if (outcome.action === 'customize' && outcome.target !== null) {
-    return { outcome, record: await repo.record({ weekStart, target: outcome.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed, restPlan: customRest(outcome.target) }) };
+    // FIX-PLANCHER (C-086) : le plancher vaut pour la plus basse des deux cibles, la cible de repos comprise.
+    const rest = customRest(outcome.target);
+    const verdict = floorVerdict(outcome.target, rest);
+    if (verdict === 'rejected') return { outcome: { ...outcome, action: 'rejected', target: null, source: null, retryable: true, warnings: [] }, record: null };
+    if (verdict === 'confirm' && !lowFloorConfirmed) {
+      return { outcome: { ...outcome, action: 'confirmation-required', target: null, source: null, retryable: true, warnings: ['below-floor'] }, record: null };
+    }
+    return { outcome, record: await repo.record({ weekStart, target: outcome.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed, restPlan: rest }) };
   }
   return { outcome, record: null };
 }
@@ -269,11 +278,11 @@ export type RestPlanWriteResult = 'saved' | 'saved-partial' | TargetWriteRefusal
  * (mêmes valeurs, source, semaine, version du moteur) s'écrivent dans UNE transaction (`record([…])`) : tout ou rien. Une cible future au plan
  * propre garde son plan ; sans plan ou au plan hérité (même écart et mêmes jours, check-in compris), elle reçoit le nouveau plan, du même écart,
  * sauf s'il demanderait une confirmation (< 1 200 kcal) ou serait refusé (< 800) : elle garde alors son plan d'avant (`saved-partial`).
- * Une copie ne force jamais `lowFloorConfirmed` pour un nouveau plan.
+ * Une copie ne force jamais `lowFloorConfirmed` pour un nouveau plan, sauf reprise d'une confirmation déjà en vigueur (FIX-PLANCHER).
  */
 export async function saveRestPlan(
   access: DataAccess,
-  input: { readonly today: LocalDate; readonly current: NutritionTargetRecord; readonly restPlan: RestPlan | null },
+  input: { readonly today: LocalDate; readonly current: NutritionTargetRecord; readonly restPlan: RestPlan | null; readonly lowFloorConfirmed?: boolean },
 ): Promise<RestPlanWriteResult> {
   // FIX-0271 : cibles futures lues et décisions écrites dans la MÊME transaction (une décision reçue entre les deux ne peut plus être ignorée).
   return access.transaction(async (repos) => {
@@ -282,7 +291,9 @@ export async function saveRestPlan(
     const decisions = await repo.list();
     const futures = upcomingTargets(decisions, input.today);
     const plan = input.restPlan;
-    const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: false, restPlan: plan };
+    // FIX-PLANCHER (C-087) : la confirmation en vigueur est reprise tant que la plus basse des deux cibles ne descend pas plus bas.
+    const restConfirmed = input.lowFloorConfirmed === true || confirmationCarriedOver({ target: input.current.target, plan: input.current.restPlan ?? null }, { target: input.current.target, plan });
+    const todayDraft: TargetRecordDraft = { weekStart: input.today, target: input.current.target, source: 'manual', accepted: true, engineVersion: null, lowFloorConfirmed: restConfirmed, restPlan: plan };
     const issues = validateTargetRecord(todayDraft);
     if (issues.includes('confirmation-required') && issues.length === 1) return 'confirmation-required';
     if (issues.length > 0) return 'rejected';
@@ -304,7 +315,7 @@ export async function saveRestPlan(
         continue;
       }
       const restPlan: RestPlan | null = plan === null ? null : { rest: restTargetFromGap(future.target, gap), trainingDays: plan.trainingDays };
-      const next: TargetRecordDraft = { ...keep, lowFloorConfirmed: false, restPlan };
+      const next: TargetRecordDraft = { ...keep, lowFloorConfirmed: confirmationCarriedOver({ target: future.target, plan: future.restPlan ?? null }, { target: future.target, plan: restPlan }), restPlan };
       if (validateTargetRecord(next).length === 0) copies.push(next);
       else {
         partial = true;

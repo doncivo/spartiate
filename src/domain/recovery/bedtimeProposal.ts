@@ -1,6 +1,6 @@
 import { RECOVERY_CONFIG } from './config';
 import { shiftDay } from './daySummary';
-import { bedtimeTarget, sleepNeed } from './sleepNeed';
+import { bedtimeTarget, debtNights, sleepNeed } from './sleepNeed';
 import type { NightRecord } from './types';
 
 export interface BedtimeProposal {
@@ -15,14 +15,15 @@ export interface BedtimeProposal {
 
 /**
  * Heure de coucher cible de la nuit à venir (§ 16.7). Besoin = `sleepNeed` avec l'exertion d'AUJOURD'HUI (la nuit qui suit) et la dette des
- * 7 derniers jours ; lever habituel = médiane des levers connus des 14 derniers jours civils (aujourd'hui compris). Sous 7 levers connus :
+ * 7 derniers jours (nuits valides seules, aujourd'hui compris) ; lever habituel = médiane des levers connus des 14 derniers jours civils (aujourd'hui compris). Sous 7 levers connus :
  * aucune heure (jamais un calcul sur un historique trop court). Pur.
  */
 export function bedtimeProposal(input: { readonly nights: readonly NightRecord[]; readonly today: string; readonly exertionToday: number }): BedtimeProposal {
   const cfg = RECOVERY_CONFIG;
   const sorted = [...input.nights].filter((n) => n.day <= input.today).sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0));
-  const debtFrom = shiftDay(input.today, -(cfg.sleep.debtDays - 1));
-  const asleep = sorted.filter((n) => n.day >= debtFrom && n.asleepMinutes !== null && Number.isFinite(n.asleepMinutes)).map((n) => n.asleepMinutes as number);
+  // FIX-RECUP (C-050, D-347) : dette de la nuit à venir = nuits VALIDES (≥ `validNightMinAsleepMinutes`) des `debtDays` jours jusqu'à aujourd'hui compris,
+  // soit `debtNights` du lendemain (source unique du seuil, D-130) : la nuit qui s'est terminée ce matin est passée pour la nuit à venir.
+  const asleep = debtNights(sorted, shiftDay(input.today, 1)).valid;
   const need = sleepNeed({ exertionPrevDay: input.exertionToday, previousAsleepMinutes: asleep });
   const wakeFrom = shiftDay(input.today, -(cfg.bedtime.wakeDays - 1));
   const wakes = sorted.filter((n) => n.day >= wakeFrom && n.wakeMinutes !== null && Number.isFinite(n.wakeMinutes)).map((n) => n.wakeMinutes as number);

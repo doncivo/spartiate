@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NUTRITION_CONFIG, type Target } from '../../../domain/nutrition';
+import { floorVerdictOfKcal, type Target } from '../../../domain/nutrition';
 import { tNutrition } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { NumberField, parseNumber } from '../shared';
@@ -14,6 +14,8 @@ export interface TargetFormProps {
   /** Écrit (ou refuse) la cible ; la confirmation du plancher est transmise. */
   readonly onSave: (target: Target, lowFloorConfirmed: boolean) => Promise<TargetSaveResult>;
   /** Valeurs lues à chaque modification (`null` si un champ n'est pas valide) : sert aux avertissements de l'appelant. */
+  /** FIX-PLANCHER (C-086) : écart de la cible de repos en vigueur (kcal, négatif) ; le plancher se contrôle sur la plus basse des deux cibles. */
+  readonly restGapKcal?: number | null;
   readonly onChange?: (target: Target | null) => void;
   readonly onCancel?: () => void;
   readonly children?: React.ReactNode;
@@ -25,7 +27,7 @@ const text = (n: number | undefined): string => (n === undefined ? '' : String(n
  * Cible de calories et de macros saisie par Ali (I4-03, § 15.2). Il a le dernier mot : ses valeurs sont enregistrées telles quelles, avec
  * la source « manuelle ». Seul le plancher est un garde-fou : sous 1 200 kcal, une confirmation explicite ; sous 800 kcal, refus.
  */
-export function TargetForm({ title, initial, submitLabel, onSave, onChange, onCancel, children }: TargetFormProps) {
+export function TargetForm({ title, initial, submitLabel, onSave, onChange, onCancel, restGapKcal = null, children }: TargetFormProps) {
   const [kcal, setKcal] = useState(text(initial?.kcal));
   const [protein, setProtein] = useState(text(initial?.proteinG));
   const [fat, setFat] = useState(text(initial?.fatG));
@@ -39,7 +41,8 @@ export function TargetForm({ title, initial, submitLabel, onSave, onChange, onCa
   const f = parseNumber(fat);
   const c = parseNumber(carb);
   const parsed: Target | null = typeof energy === 'number' && energy > 0 && typeof p === 'number' && typeof f === 'number' && typeof c === 'number' ? { kcal: energy, proteinG: p, fatG: f, carbG: c } : null;
-  const belowFloor = parsed !== null && parsed.kcal < NUTRITION_CONFIG.floorKcal && parsed.kcal >= NUTRITION_CONFIG.confirmedFloorKcal;
+  const verdict = parsed === null ? 'ok' : floorVerdictOfKcal(restGapKcal === null ? parsed.kcal : Math.min(parsed.kcal, Math.round(parsed.kcal + restGapKcal)));
+  const belowFloor = verdict === 'confirm';
 
   useEffect(() => {
     onChange?.(parsed);
@@ -55,7 +58,7 @@ export function TargetForm({ title, initial, submitLabel, onSave, onChange, onCa
     const result = await onSave(parsed, confirmed);
     setBusy(false);
     if (result === 'confirmation-required') setMessage(tNutrition('floorConfirmNeeded'));
-    else if (result === 'rejected') setMessage(parsed.kcal < NUTRITION_CONFIG.confirmedFloorKcal ? tNutrition('floorRejected') : tNutrition('targetInvalid'));
+    else if (result === 'rejected') setMessage(verdict === 'rejected' ? tNutrition('floorRejected') : tNutrition('targetInvalid'));
     else if (result === 'error') setMessage(tNutrition('writeError'));
   }
 
