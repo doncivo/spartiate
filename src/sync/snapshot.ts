@@ -2,7 +2,7 @@ import type { ExportedRow, FieldClock, Repositories, Tombstone } from '../db/rep
 import { APPLY_BATCH_OPS, isStrictHlc, isUnknownName, MAX_RECORD_PLAINTEXT_BYTES, PAGE_ROWS, SNAPSHOT_CHUNK_PLAINTEXT_BYTES, utf8Bytes, type DeviceAck, type EpochId, type SnapshotClocks, type SnapshotRecord, type SnapshotRow, type SyncField, type SyncOp, type SyncValue } from '../domain/sync/format';
 import { hlcIso, parseSnapshotRecord, snapshotRecordToText, snapshotRowToJson } from '../domain/sync/parse';
 import { isTooFarAhead } from '../domain/sync/drift';
-import { DATA_RESET_TABLE, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
+import { DATA_RESET_TABLE, TECHNICAL_COLUMNS, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
 import type { DeviceId, Hlc } from '../domain/types';
 import { applyOpsIsolated, mergeTouched, type ApplyContext } from './apply';
 import { META } from './meta';
@@ -320,10 +320,44 @@ async function hasMissingParent(catalogue: SyncCatalogue, repos: Repositories, t
   return false;
 }
 
-async function keepUnknownTableRows(deps: SyncDeps, repos: Repositories, snapshot: LoadedSnapshot): Promise<void> {
+/** Clé de ligne (table, identifiant) des lignes retenues par un remplacement. */
+const rowKey = (table: string, id: string): string => `${table}\u0000${id}`;
+
+/**
+ * FIX-A009 (A-009 ; ADR 0011 §7.2) : colonnes qu'une table CONNUE n'a pas encore dans ce schéma (migration additive suivante, ex.
+ * `routine_day.weekday` du schéma 20 lue par un schéma 19), reçues d'un instantané de schéma plus récent : gardées dans `sync_unknown` sous
+ * les mêmes validations que le journal (`apply.ts`, `keepUnknown`) : nom valide, jamais une colonne technique, locale, `id` ou `key`,
+ * identifiant valide, jamais un réglage local ; hlc propre du champ sinon `'*'`, base inconnue, `sv` de l'instantané. Avant, seul le journal
+ * les gardait : la reprise avançait le curseur couvert et la valeur n'était jamais réintégrée après la mise à jour du lecteur.
+ */
+async function keepUnknownColumns(catalogue: SyncCatalogue, repos: Repositories, t: SyncTable, row: ReadonlyMap<string, SyncValue>, clocks: SnapshotClocks, sv: number): Promise<void> {
+  const id = row.get(t.key);
+  const star = clocks.get('*');
+  if (typeof id !== 'string' || star === undefined || !catalogue.isValidRowId(t, id)) return;
+  if (t.idKind === 'setting' && catalogue.settingScope(id) === 'local') return;
+  for (const [field, value] of row) {
+    if (field === t.key || field === 'id' || field === 'key' || catalogue.column(t.name, field) || !isUnknownName(field)) continue;
+    if ((TECHNICAL_COLUMNS as readonly string[]).includes(field) || t.local.includes(field)) continue;
+    await repos.sync.putUnknown({ table: t.name, rowId: id, field, value, hlc: clocks.get(field) ?? star, base: null, sv });
+  }
+}
+
+/**
+ * Champs d'un instantané de schéma plus récent que ce schéma ignore : lignes des tables inconnues (I1-03) et colonnes inconnues des tables
+ * connues (FIX-A009). `retained` (remplacement) : seules les lignes connues que le remplacement a gardées ou mises de côté gardent leurs
+ * colonnes inconnues ; une ligne écartée (horizon de remise à zéro, réglage non partagé) n'en laisse aucune.
+ */
+async function keepUnknownTableRows(deps: SyncDeps, repos: Repositories, snapshot: LoadedSnapshot, retained?: ReadonlySet<string>): Promise<void> {
   if (snapshot.end.sv <= deps.sv) return;
   for (const [table, row, clocks] of rowsOf(snapshot.records)) {
-    if (deps.catalogue.table(table) || !isUnknownName(table)) continue;
+    const known = deps.catalogue.table(table);
+    if (known) {
+      const id = row.get(known.key);
+      if (retained && (typeof id !== 'string' || !retained.has(rowKey(known.name, id)))) continue;
+      await keepUnknownColumns(deps.catalogue, repos, known, row, clocks, snapshot.end.sv);
+      continue;
+    }
+    if (!isUnknownName(table)) continue;
     const key = typeof row.get('id') === 'string' ? 'id' : typeof row.get('key') === 'string' ? 'key' : null;
     const star = clocks.get('*');
     if (key === null || star === undefined) continue;
@@ -346,6 +380,8 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
   if (!admitSnapshot(deps, snapshot)) return 'clock-ahead';
   const touched = new Map<string, Set<string>>();
   const keep = new Map<string, Set<string>>();
+  /** FIX-A009 : lignes gardées ou mises de côté par le remplacement (seules leurs colonnes inconnues sont gardées). */
+  const retained = new Set<string>();
   const rows = rowsOf(snapshot.records);
   // RESET-01 (ADR 0011 avenant 36) : horizon de remise à zéro = le plus grand de celui de cet appareil et des lignes `data_reset` de l'instantané. Une
   // ligne créée avant lui n'est pas reprise (elle part avec les lignes absentes) : un instantané ancien ne ressuscite rien. `data_reset` n'est jamais vidée.
@@ -382,6 +418,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
           if (old.length > 0) await repos.sync.removeParked(old.map((p) => p.id));
           if (op) await repos.sync.park('missing-parent', t.name, id, max, JSON.stringify({ t: op.t, id: op.id, at: op.at, f: Object.fromEntries(op.f) }), hlcIso(deps.hlc.now()));
           deps.logger.log('replace-parked', { table: t.name, reason: 'missing-parent' });
+          retained.add(rowKey(t.name, id));
           continue;
         }
         const exists = (await repos.sync.existingIds(t, [id])).has(id);
@@ -393,6 +430,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
           [...clocks].map(([field, hlc]) => ({ field, hlc, base: null })),
         );
         addTouched(keep as Map<string, Set<string>>, t.name, [id]);
+        retained.add(rowKey(t.name, id));
         addTouched(touched, t.name, [id]);
       }
     });
@@ -433,7 +471,7 @@ export async function replaceFromSnapshot(deps: SyncDeps, snapshot: LoadedSnapsh
     await repos.sync.clearUnknown();
     await applySnapshotTombstones(deps, repos, snapshot, touched, true);
     await keepSnapshotUnknown(repos, snapshot);
-    await keepUnknownTableRows(deps, repos, snapshot);
+    await keepUnknownTableRows(deps, repos, snapshot, retained);
   });
   return { touched, conflicts: 0 };
 }
