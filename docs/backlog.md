@@ -126,13 +126,13 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | fait (FIX-PROGRAMME) |
 | C-065 | audit Claude 0.27.0 | important — échanger deux jours de la semaine dans l'éditeur de routine échoue | fait (FIX-PROGRAMME) |
 | C-066 | audit Claude 0.27.0 | important — profils de matériel : « 12,16 » lu comme un seul poids | à faire (lot 0.28.0) |
-| C-067 | audit Claude 0.27.0 | important — suivi GPS en cours perdu (mémoire seule) et « Abandonner » sans confirmation | à faire (lot 0.28.0) |
-| C-068 | audit Claude 0.27.0 | important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier | à faire (lot 0.28.0) |
+| C-067 | audit Claude 0.27.0 | important — suivi GPS en cours perdu (mémoire seule) et « Abandonner » sans confirmation | fait en partie (FIX-COQUILLE : confirmation ; brouillon GPS persistant non livré, D-222) |
+| C-068 | audit Claude 0.27.0 | important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier | fait en partie (FIX-COQUILLE : séance ; focus du journal des facteurs non traité) |
 | C-069 | audit Claude 0.27.0 | important — « Accepter » peut écraser une série déjà validée | à faire (lot 0.28.0) |
 | C-070 | audit Claude 0.27.0 | important — texte faux « Musculation seule, cardio non compté » | à faire (lot 0.28.0) |
 | C-071 | audit Claude 0.27.0 | important — tractions et dips : champ « Charge (kg) » sans dire « lest » | à faire (lot 0.28.0) |
 | C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | à faire (lot 0.28.0) |
-| C-073 | audit Claude 0.27.0 | important — brouillon de routine abandonné sans confirmation ; retraits de jour et d'exercice non confirmés | à faire (lot 0.28.0) |
+| C-073 | audit Claude 0.27.0 | important — brouillon de routine abandonné sans confirmation ; retraits de jour et d'exercice non confirmés | fait (FIX-COQUILLE) |
 | C-074 | audit Claude 0.27.0 | mineur — jour local lu au rendu, aucune relecture à minuit (séance de la veille proposée) | à faire (lot 0.28.0) |
 | C-075 | audit Claude 0.27.0 | mineur — échec de lecture du profil : Aujourd'hui remplacé sans « Réessayer » ; carte Séance muette en échec | à faire (lot 0.28.0) |
 | C-076 | audit Claude 0.27.0 | mineur — unités « min », « h » et séparateurs en dur hors i18n | à faire (lot 0.28.0) |
@@ -153,7 +153,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-091 | audit Claude 0.27.0 | important — compléments : changer une heure efface la constance passée | à faire (lot 0.28.0) |
 | C-092 | audit Claude 0.27.0 | important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats | à faire (lot 0.28.0) |
 | C-093 | audit Claude 0.27.0 | mineur — tendance du poids : échelle étirée par une pesée aberrante | à faire (lot 0.28.0) |
-| C-094 | audit Claude 0.27.0 | important — mesure corporelle supprimée d'un geste, sans confirmation ni annulation | à faire (lot 0.28.0) |
+| C-094 | audit Claude 0.27.0 | important — mesure corporelle supprimée d'un geste, sans confirmation ni annulation | fait (FIX-COQUILLE) |
 | C-095 | audit Claude 0.27.0 | important, à vérifier — virgule décimale dans les champs numériques de la nutrition (WebKit, WebView2) | fait (FIX-SAISIE-NUTRI) |
 | C-096 | audit Claude 0.27.0 | important — journal ouvert après minuit : saisie rattachée à la veille | fait (FIX-SAISIE-NUTRI) |
 | C-097 | audit Claude 0.27.0 | important — saisie enregistrée sur un autre jour que celui de l'ouverture | fait (FIX-SAISIE-NUTRI) |
@@ -173,9 +173,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | à faire (lot 0.28.0) |
 | C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | à faire (lot 0.28.0) |
 | C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | à faire (lot 0.28.0) |
-| C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | à faire (lot 0.28.0) |
-| C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | à faire (lot 0.28.0) |
-| C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | à faire (lot 0.28.0) |
+| C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | fait (FIX-COQUILLE) |
+| C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | fait (FIX-COQUILLE) |
+| C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | fait (FIX-COQUILLE) |
 | C-117 | audit Claude 0.27.0 | important — « Revoir mes réglages » écrase la durée de cycle choisie depuis (D-315) | fait (FIX-PROGRAMME) |
 | C-118 | audit Claude 0.27.0 | important — oublier le dossier et la clé sans dire que les données iCloud deviendront illisibles | à faire (lot 0.28.0) |
 | C-119 | audit Claude 0.27.0 | important, à vérifier — « À propos et licences » absent de Plus (§ 18.2) | à faire (lot 0.28.0) |
@@ -191,7 +191,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-129 | audit Claude 0.27.0 | mineur — promesses sans catch (notifications de récupération, synchro) ; « en cours » annoncé trop tôt | à faire (lot 0.28.0) |
 | C-130 | audit Claude 0.27.0 | mineur — réinitialisation sans rechargement si `syncNow` ne répond pas ; aucune sauvegarde après effacement | à faire (lot 0.28.0) |
 | C-131 | audit Claude 0.27.0 | mineur — format 12 h encore proposé ; boîtes natives au vouvoiement ; « Logs » et « Journaux » mêlés | à faire (lot 0.28.0) |
-| C-132 | audit Claude 0.27.0 | amélioration — 927 clés sur 1 715 de `fr.ts` jamais lues ; catalogues morts dans `start-modules.json` | à faire (lot 0.28.0) |
+| C-132 | audit Claude 0.27.0 | amélioration — 927 clés sur 1 715 de `fr.ts` jamais lues ; catalogues morts dans `start-modules.json` | fait en partie (FIX-COQUILLE : 163 clés mortes de fr.ts et fr.importCsv.ts retirées) |
 | C-133 | audit Claude 0.27.0 | amélioration — code mort hérité (csvImport, taskRules, planNotifications…) sans import de production | à faire (lot 0.28.0) |
 | C-134 | audit Claude 0.27.0 | à vérifier (D-36) — « code absent des captures d'écran » sans ligne UNVERIFIED ; couleurs d'appairage mal justifiées | à faire (lot 0.28.0) |
 | C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à faire (lot 0.28.0) |

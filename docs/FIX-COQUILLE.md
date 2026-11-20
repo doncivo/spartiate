@@ -33,7 +33,7 @@ product-owner (cette fiche), agent du module, qa-test, code-reviewer : consigné
 - C-068 : le focus perdu du journal des facteurs (`RecoveryToday.tsx`, clé `hlc`) n'est pas traité (zone récupération).
 - C-115 : « effet sur la transaction et le pool Rust » non vérifié ici (aucun rechargement n'est désormais déclenché par l'app pendant une migration ; un rechargement manuel par l'OS reste hors de portée).
 
-## Décisions proposées
+## Décisions : D-353, D-354, D-355, D-356 (docs/decisions.md)
 
 - **D-353** : la coquille a une dernière frontière d'erreur (`RootErrorBoundary`, `App.tsx`) : message statique et « Relancer l'app » ; sur pilote empoisonné, seule la consigne de fermer l'app (D-326 5). L'écran « Démarrage bloqué » est protégé par sa propre frontière.
 - **D-354** : une étape de démarrage `db.backup`, `db.schema`, `db.migration.N` ou `db.afterApply` a 120 s avant « Démarrage bloqué » (8 s ailleurs), et ce diagnostic n'offre jamais « Réessayer » ; l'ouverture de la base repart d'un délai de 15 s à chaque étape et ne propose pas « Réessayer » pendant ces étapes.
