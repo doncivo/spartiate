@@ -7,6 +7,7 @@ import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../app/navigation';
+import { tTraining } from '../../i18n/trainingText';
 import { TrainingScreen } from './TrainingScreen';
 
 /**
@@ -116,6 +117,7 @@ describe('éditeur de routine : grouper', () => {
     await waitFor(() => expect(within(day).queryByRole('region', { name: 'Groupe : Superset' })).toBeNull());
     await groupTwo(day);
     fireEvent.click(within(within(day).getByRole('group', { name: ROW })).getByRole('button', { name: 'Retirer' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: tTraining('remove') }));
     await waitFor(() => expect(within(day).queryByRole('region', { name: 'Groupe : Superset' })).toBeNull());
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer la routine' }));
     expect(await screen.findByText('Routine enregistrée')).toBeInTheDocument();
@@ -137,5 +139,47 @@ describe('séance démarrée depuis la routine groupée', () => {
     expect(within(header).getByText(`Suivant : ${BENCH} (tour 1 sur 2)`)).toBeInTheDocument();
     const rows = await db.driver.select<{ exercise_id: string; circuit_id: string | null }>('SELECT exercise_id, circuit_id FROM workout_set ORDER BY position');
     expect(rows.map((r) => r.exercise_id)).toEqual(['bench-press-barbell', 'row-barbell', 'bench-press-barbell', 'row-barbell', 'overhead-press-barbell', 'overhead-press-barbell']);
+  });
+});
+
+/** FIX-COQUILLE (C-073) : aucune perte de brouillon sans confirmation. */
+describe('éditeur de routine : confirmations (C-073)', () => {
+  it('« Retour aux routines » sur un brouillon intact : retour direct', async () => {
+    await openEditor();
+    fireEvent.click(screen.getByRole('button', { name: tTraining('backToRoutines') }));
+    await waitFor(() => expect(screen.queryByLabelText(tTraining('routineName'))).toBeNull());
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('« Retour aux routines » sur un brouillon modifié : confirmation, « Continuer » garde le brouillon, « Quitter » l’abandonne', async () => {
+    await openEditor();
+    fireEvent.change(screen.getByLabelText(tTraining('routineName')), { target: { value: 'Autre nom' } });
+    fireEvent.click(screen.getByRole('button', { name: tTraining('backToRoutines') }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(tTraining('leaveRoutineTitle'));
+    fireEvent.click(within(dialog).getByRole('button', { name: tTraining('leaveRoutineStay') }));
+    expect(screen.getByLabelText(tTraining('routineName'))).toHaveValue('Autre nom');
+    fireEvent.click(screen.getByRole('button', { name: tTraining('backToRoutines') }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: tTraining('leaveRoutineConfirm') }));
+    await waitFor(() => expect(screen.queryByLabelText(tTraining('routineName'))).toBeNull());
+  });
+
+  it('« Retirer le jour » : confirmation avant le retrait dans le brouillon', async () => {
+    const day = await openEditor();
+    fireEvent.click(within(day).getByRole('button', { name: tTraining('removeDay') }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(tTraining('removeDayTitle', { name: 'Haut A' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
+    expect(screen.getByRole('group', { name: 'Haut A' })).toBeInTheDocument();
+    fireEvent.click(within(day).getByRole('button', { name: tTraining('removeDay') }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: tTraining('remove') }));
+    await waitFor(() => expect(screen.queryByRole('group', { name: 'Haut A' })).toBeNull());
+  });
+
+  it('« Retirer » un exercice : confirmation, « Annuler » le garde', async () => {
+    const day = await openEditor();
+    fireEvent.click(within(within(day).getByRole('group', { name: ROW })).getByRole('button', { name: tTraining('remove') }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Annuler' }));
+    expect(within(day).getByRole('group', { name: ROW })).toBeInTheDocument();
   });
 });

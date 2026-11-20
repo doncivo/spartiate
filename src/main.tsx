@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { App } from './App';
+import { App, RootErrorBoundary } from './App';
 import { logFailure } from './platform';
 import './ui/theme/tokens.css';
 
@@ -15,6 +15,8 @@ void import('./features/app/logJournalBoot').then(
 
 createRoot(container).render(
   <StrictMode>
-    <App />
+    <RootErrorBoundary>
+      <App />
+    </RootErrorBoundary>
   </StrictMode>,
 );

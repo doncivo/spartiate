@@ -126,6 +126,13 @@ describe('mensurations', () => {
     await (await measures()).save(D(1), 'waist', 84);
     mount();
     fireEvent.click(await screen.findByRole('button', { name: /Supprimer la mesure du/ }));
+    // C-094 : rien n'est supprimé avant la confirmation ; « Annuler » garde la mesure.
+    const dialog = await screen.findByRole('alertdialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
+    expect(screen.getByText('84 cm')).toBeInTheDocument();
+    expect(await db.driver.select('SELECT deleted_at IS NOT NULL AS gone FROM measurement')).toEqual([{ gone: 0 }]);
+    fireEvent.click(screen.getByRole('button', { name: /Supprimer la mesure du/ }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Supprimer' }));
     await waitFor(() => expect(screen.queryByText('84 cm')).toBeNull());
     expect(await db.driver.select('SELECT deleted_at IS NOT NULL AS gone FROM measurement')).toEqual([{ gone: 1 }]);
   });
