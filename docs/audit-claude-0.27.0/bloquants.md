@@ -18,3 +18,11 @@ SHA audité : `d056640910db32cc9d08b940e9a6ae9e602d3b19` (`v0.27.0`). Les bloqua
 - Preuve : `preuves/partie7a-ecrans.test.ts` (saisie de 200 kg acceptée, témoin à 100 kg ; prescription de 200 kg après trois séances à 100 kg × 8) et `preuves/partie4-moteur.test.ts` (1 000 kg), sorties dans `preuves/resultats/`. Données synthétiques.
 - Limites : l'explication affichée invite à vérifier ; la charge reste celle saisie (aucune hausse), mais elle est prescrite comme référence.
 - Correction suggérée : alerte bloquante à la saisie au-delà de 150 % du 1RM courant, avec confirmation écrite dans `confirmed` ; tant que non confirmée, référence plafonnée à la dernière charge confirmée.
+
+## C-165 — moyenne de sommeil réelle d'Ali publiée dans un dépôt public (partie 9, 20/11)
+
+- **Ce qu'Ali peut voir** : `docs/FIX-0172.md:66` écrit « avec des nuits proches de ta moyenne habituelle ([retiré]) » ; le dépôt `doncivo/spartiate` est public (`gh repo view` : `PUBLIC`).
+- Classement : bloquant au sens de la définition de l'audit (fuite de donnée corporelle : le sommeil est une donnée corporelle du CLAUDE.md). Portée faible : une seule valeur agrégée, sans date ni série ; aucune autre valeur corporelle réelle trouvée par la recherche de motifs dans `docs/` (hors archives, PRD et maquettes), aucune base ni export dans l'historique.
+- Autres données d'usage réelles publiées, personnelles mais pas corporelles au sens du CLAUDE.md : cibles caloriques (`docs/AUDIT-USAGE.md:22`, D-267 (5)), constat « Besoin : [retiré] » (`docs/FIX-0115.md:22`).
+- Limites : la recherche porte sur des motifs (kg, ms, bpm, h, « moyenne Santé ») ; une valeur écrite autrement peut avoir échappé. La valeur reste dans l'historique git : la retirer de l'historique demanderait une réécriture, interdite par le CLAUDE.md.
+- Correction suggérée : retirer la valeur, règle écrite et contrôle par motif « aucune valeur corporelle réelle dans docs/ et tests/ », décision d'Ali sur la visibilité du dépôt.
