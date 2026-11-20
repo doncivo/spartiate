@@ -1749,9 +1749,21 @@ pub fn recover_interrupted_restore(
 /// le renommage), puis retrait de l'ancien nom. Si le retrait échoue, le déplacement est quand même fait (deux noms, un seul fichier) :
 /// l'échec est rendu seulement si le lien n'a pas pu être créé.
 fn place_without_replacing(from: &Path, to: &Path) -> io::Result<()> {
-    fs::hard_link(from, to)?;
-    let _ = fs::remove_file(from);
-    Ok(())
+    match fs::hard_link(from, to) {
+        Ok(()) => {
+            let _ = fs::remove_file(from);
+            Ok(())
+        }
+        Err(e) if e.kind() == io::ErrorKind::AlreadyExists => Err(e),
+        // Lien dur impossible pour une autre raison (système de fichiers, bac à sable iOS non vérifié) : repli sur le renommage après
+        // contrôle d'absence, avec la fenêtre de course de l'ancien code (limite écrite dans docs/SAUV-RUST.md), plutôt qu'un échec de
+        // toute restauration.
+        Err(_) if to.exists() => Err(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            "la cible existe déjà",
+        )),
+        Err(_) => fs::rename(from, to),
+    }
 }
 
 /// Échange la base par le fichier préparé. Tout ce qui est déplacé est remis en place si une étape échoue : l'ancienne base (et son
