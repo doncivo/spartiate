@@ -1,6 +1,6 @@
 # FIX-A009 — Colonnes nouvelles d'une table connue gardées à la réception d'un instantané (lot 0.28.0)
 
-Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Commits : rouge `07a94c57`, vert `6e648f3d`, qa-test (ce commit). Tests locaux : `tests/unit/sync` (176 fichiers, 1 915 tests ; seul échec : hygiène `new Date()` du fichier qa, corrigé et revérifié), `src/sync` et `src/domain/sync` (29 fichiers, 390 tests) verts ; `tsc` et `eslint` propres. Budget M. Branche `FIX-A009` depuis
+Statut : **en PR #161, fusion après CI verte.** Commits : rouge `07a94c57`, vert `6e648f3d`, qa-test (ce commit). Tests locaux : `tests/unit/sync` (176 fichiers, 1 915 tests ; seul échec : hygiène `new Date()` du fichier qa, corrigé et revérifié), `src/sync` et `src/domain/sync` (29 fichiers, 390 tests) verts ; `tsc` et `eslint` propres. Budget M. Branche `FIX-A009` depuis
 `origin/main` (`5f0b68a7`, après HIST-01). Aucune migration (schéma 20 inchangé), format sur disque inchangé. Lot 0.28.0, phase 1.4. Rôle : sync-icloud.
 Origine : audit Codex 0.26.0 (`origin/audit-0.26.0`, `docs/audit-0.26.0/bloquants.md`, A-009 et complément PROG-04) ; preuves
 `preuves/partie3-snapshot-colonnes.test.mjs` et `preuves/partie3-weekday-main.test.mjs` (reprises en Vitest dans `tests/unit/sync/versions/`,
@@ -93,3 +93,7 @@ remplacement), qu'il appartienne à une table inconnue ou à une table connue du
   rattachement, avant la lecture par l'appareil resté en 19.
 - Remplacement : une clé de réglage inconnue (`settings`, portée `unknown`) n'est pas gardée par `replaceFromSnapshot` (la fusion la garde par
   `applyOps`) ; aucun réglage publié dans le catalogue Spartiate à ce jour, sans effet visible.
+
+## Passe code-reviewer
+
+Revue 1 (à froid) : **approuvé pour le code**, aucun constat bloquant ni important ; mêmes validations que le journal, aucune ligne locale altérée, pas de doublon ni de résurrection, invariants intacts, performance égale au journal ; tests relancés 4/4, 4/4, 6/6. Suggestions : (1) test du filtre `retained` au remplacement d'époque : confié à FIX-A009b ; (2) colonnes gardées d'une ligne rejetée en fusion : choix explicite écrit dans l'avenant 38 ; (3) statut de la fiche : mis à jour. Revue 2 (orchestrateur) : **approuvé sous réserve de la CI verte** (PR #161).
