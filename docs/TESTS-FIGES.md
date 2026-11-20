@@ -44,7 +44,15 @@ Mesurée une fois (`vitest --coverage.enabled=true --project node src/domain/tra
 
 `SupplementsUnmount.fix0272.test.tsx` : `release` et `fail` à `null`, attente de leur affectation, 3 cas (résolution après démontage, rejet après démontage sans rejet perdu ni journal, rejet vue montée journalisé une fois). Mutation temporaire non commitée : suppression des trois gardes `live` de `SupplementsView.tsx` ; résultat : 2 tests rouges (« replan appelé 1 fois », « logFailure appelé 1 fois »), fichier restauré ensuite.
 
-## Décisions proposées
+## Passe code-reviewer (à froid, agent distinct) : approuvé
+
+Vecteurs recalculés à la main (nominal 8 séances : 60 kg en échelle [8,8,8] → [10,10,10], puis 62,5 kg ; changement de salle : 46 / 45 / 46,5 kg),
+D-365 non figé, `eightWeeks` sur le chemin de l'app, C-171 échoue sans les gardes, seuil de 90 % appliqué sur la couverture fusionnée seulement
+(aucune tranche partielle en échec), eslint et tsc propres. Suggestions : (a) tests verts d'emblée, mutation du moteur non lancée (écart consigné) ;
+(b) règle « un test qui figeait un défaut est corrigé dans un commit qui le dit » ajoutée à AGENTS.md ; (c) « lissée ≠ brute » faible, (d) test de
+déterminisme quasi tautologique, (e) garde avant `readPrefs` non couverte : registre BL-105.
+
+## Décisions : D-362, D-363, D-364, D-365 (docs/decisions.md)
 
 - **D-362** : tests qui figent un défaut non corrigé dans le lot (C-007, C-043, C-038, C-044, voisin de C-006) laissés tels quels et listés dans docs/TESTS-FIGES.md ; chaque ticket de correction réécrit l'attente dans le commit du correctif.
 - **D-363** : seuil de couverture `src/domain/training/**` à 90 % (§ 11.6, C-170), mesuré à 91,86 % de branches au minimum ; jamais relâché.
