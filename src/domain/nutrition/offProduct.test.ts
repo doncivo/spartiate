@@ -41,8 +41,8 @@ describe('offProductToDraft : énergie', () => {
     const r = offProductToDraft(raw({ nutriments: { 'energy-kj_100g': 264, proteins_100g: 11 } }), NOW);
     expect(r.ok && r.draft.per100g.kcal).toBe(63);
   });
-  it('kcal présent : prime sur les kJ', () => {
-    const r = offProductToDraft(raw({ nutriments: { 'energy-kcal_100g': 70, 'energy-kj_100g': 999, proteins_100g: 1 } }), NOW);
+  it('kcal présent et cohérent avec les kJ (écart ≤ 15 %) : prime sur les kJ', () => {
+    const r = offProductToDraft(raw({ nutriments: { 'energy-kcal_100g': 70, 'energy-kj_100g': 300, proteins_100g: 1 } }), NOW);
     expect(r.ok && r.draft.per100g.kcal).toBe(70);
   });
   it('énergie absente avec macros : kcal reste null (jamais calculé ni 0), signalé manquant', () => {

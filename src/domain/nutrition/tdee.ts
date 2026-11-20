@@ -120,10 +120,11 @@ export function measuredTdee(input: {
   return { value: meanKcal - (deltaKg / n) * NUTRITION_CONFIG.kcalPerKg, meanKcal, completeDays, deltaKg, reasons };
 }
 
-/** EMA de demi-vie 7 j : `α = 1 − 2^(−pas/7)`. Sans valeur précédente, le brut ; pas nul, la valeur précédente. */
+/** EMA de demi-vie 7 j : `α = 1 − 2^(−pas/7)`. Sans valeur précédente ou pas nul : le brut. */
 export function smoothTdee(input: { previous: number | null; raw: number; stepDays: number }): number {
   if (input.previous === null) return input.raw;
-  if (!(input.stepDays > 0)) return input.previous;
+  // Même jour : la mesure la plus récente remplace la valeur (C-036) ; elle ne peut pas être ignorée.
+  if (!(input.stepDays > 0)) return input.raw;
   const alpha = 1 - 2 ** (-input.stepDays / NUTRITION_CONFIG.tdeeHalfLifeDays);
   return input.previous + alpha * (input.raw - input.previous);
 }
@@ -220,4 +221,35 @@ export function estimateTdee(input: {
     coverage: coverageOfWindow(input.days, input.weighIns, input.endDate),
     reasons: [...formula.reasons, ...measured.reasons],
   };
+}
+
+/** Historique relu pour le lissage : 3 demi-vies (D-357). */
+export const TDEE_SMOOTHING_LOOKBACK_DAYS = 21;
+
+/**
+ * Dernière dépense mesurée lissée AVANT `endDate` (C-036) : l'EMA de demi-vie 7 j est rejouée jour par jour sur `lookbackDays` jours
+ * (dates de fin `endDate − lookbackDays` … `endDate − 1`), sans rien persister. `null` si aucune mesure n'est possible : jamais 0.
+ */
+export function previousSmoothedFor(input: {
+  readonly days: readonly DayTotals[];
+  readonly weighIns: readonly WeighIn[];
+  readonly endDate: LocalDate;
+  readonly lookbackDays?: number;
+}): { readonly date: LocalDate; readonly value: number } | null {
+  const trend = computeTrend(input.weighIns);
+  let state = null as { date: LocalDate; value: number } | null;
+  for (let back = input.lookbackDays ?? TDEE_SMOOTHING_LOOKBACK_DAYS; back >= 1; back -= 1) {
+    const date = addDays(input.endDate, -back);
+    const raw = measuredTdee({ days: input.days, trend, endDate: date }).value;
+    if (raw === null) continue;
+    state = { date, value: smoothTdee({ previous: state?.value ?? null, raw, stepDays: state ? dayCount(state.date, date) : 0 }) };
+  }
+  return state;
+}
+
+/** `estimateTdee` avec la valeur lissée précédente reconstituée de l'historique (§ 15.1 : lissage sur 7 jours). */
+export function estimateTdeeSmoothed(input: Omit<Parameters<typeof estimateTdee>[0], 'previousSmoothed'> & { readonly lookbackDays?: number }): TdeeEstimate {
+  const { lookbackDays, ...rest } = input;
+  const previousSmoothed = previousSmoothedFor({ days: input.days, weighIns: input.weighIns, endDate: input.endDate, ...(lookbackDays === undefined ? {} : { lookbackDays }) });
+  return estimateTdee({ ...rest, previousSmoothed });
 }

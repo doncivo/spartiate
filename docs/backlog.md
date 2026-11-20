@@ -91,11 +91,11 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | à faire (lot 0.28.0) |
 | C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | à faire (lot 0.28.0) |
 | C-031 | audit Claude 0.27.0 | important — check-in à deux cibles : cible de repos sous le plancher, refus à « Accepter » | fait (FIX-PLANCHER) |
-| C-032 | audit Claude 0.27.0 | important — correction des grammes d'une entrée : arrondis cumulés enregistrés | à faire (lot 0.28.0) |
-| C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | à faire (lot 0.28.0) |
-| C-034 | audit Claude 0.27.0 | important — Quick Add sans borne ni contrôle de cohérence des macros | à faire (lot 0.28.0) |
+| C-032 | audit Claude 0.27.0 | important — correction des grammes d'une entrée : arrondis cumulés enregistrés | fait (FIX-SAISIE-NUTRI) |
+| C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | fait (FIX-SAISIE-NUTRI) |
+| C-034 | audit Claude 0.27.0 | important — Quick Add sans borne ni contrôle de cohérence des macros | fait (FIX-SAISIE-NUTRI) |
 | C-035 | audit Claude 0.27.0 | mineur — rappel de complément perdu le jour du passage à l'heure d'été | à faire (lot 0.28.0) |
-| C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | à faire (lot 0.28.0) |
+| C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | fait (FIX-SAISIE-NUTRI, D-357) |
 | C-037 | audit Claude 0.27.0 | mineur — cible de repos : glucides ramenés à 0 sans recalcul des kcal ; floor contre round | à faire (lot 0.28.0) |
 | C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | à faire (lot 0.28.0) |
 | C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | à faire (lot 0.28.0) |
@@ -154,10 +154,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-092 | audit Claude 0.27.0 | important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats | à faire (lot 0.28.0) |
 | C-093 | audit Claude 0.27.0 | mineur — tendance du poids : échelle étirée par une pesée aberrante | à faire (lot 0.28.0) |
 | C-094 | audit Claude 0.27.0 | important — mesure corporelle supprimée d'un geste, sans confirmation ni annulation | à faire (lot 0.28.0) |
-| C-095 | audit Claude 0.27.0 | important, à vérifier — virgule décimale dans les champs numériques de la nutrition (WebKit, WebView2) | à faire (lot 0.28.0) |
-| C-096 | audit Claude 0.27.0 | important — journal ouvert après minuit : saisie rattachée à la veille | à faire (lot 0.28.0) |
-| C-097 | audit Claude 0.27.0 | important — saisie enregistrée sur un autre jour que celui de l'ouverture | à faire (lot 0.28.0) |
-| C-098 | audit Claude 0.27.0 | important — supprimer une autre entrée efface le formulaire en cours | à faire (lot 0.28.0) |
+| C-095 | audit Claude 0.27.0 | important, à vérifier — virgule décimale dans les champs numériques de la nutrition (WebKit, WebView2) | fait (FIX-SAISIE-NUTRI) |
+| C-096 | audit Claude 0.27.0 | important — journal ouvert après minuit : saisie rattachée à la veille | fait (FIX-SAISIE-NUTRI) |
+| C-097 | audit Claude 0.27.0 | important — saisie enregistrée sur un autre jour que celui de l'ouverture | fait (FIX-SAISIE-NUTRI) |
+| C-098 | audit Claude 0.27.0 | important — supprimer une autre entrée efface le formulaire en cours | fait (FIX-SAISIE-NUTRI) |
 | C-099 | audit Claude 0.27.0 | mineur — déclaration de journée écrite à chaque flèche (« Complète » enregistrée par erreur) | à faire (lot 0.28.0) |
 | C-100 | audit Claude 0.27.0 | mineur — prise issue d'un code scanné enregistrée en méthode « search » | à faire (lot 0.28.0) |
 | C-101 | audit Claude 0.27.0 | mineur — erreurs masquées en recherche, journal et compléments (§ 18.3) | à faire (lot 0.28.0) |
@@ -267,6 +267,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-100 | revue FIX-EXPORT | mineur — test C-108 : comparer la liste `WIPED` de `ResetDataScreen.tsx` (et non les clés du catalogue) à `RESET_TABLES`, mots clés de tables plus précis, commentaire du cas « horizon local illisible » | reporté (S) |
 | BL-101 | revue FIX-PLANCHER | mineur — moyenne des cibles par jour du tableau de bord (`compareKcal`, features) à exposer depuis `weeklyBalance` de `src/domain/nutrition/journal.ts` ; test d’écran de la case « Accepter » du check-in | reporté (S) |
 | BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | reporté (S) |
+| BL-103 | revue FIX-SAISIE-NUTRI | mineur — test du minuteur de minuit de `useCurrentDay` en fausses horloges et test de démontage sans fuite ; motif `macro-too-large` dans `validateMealEntry` au lieu du test recopié dans QuickAddForm et EntryEditor | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0

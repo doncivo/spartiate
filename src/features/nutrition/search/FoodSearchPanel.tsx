@@ -36,6 +36,8 @@ interface Selection {
   readonly grams: string;
   /** Fiche Open Food Facts périmée proposée faute de réseau : cause dite. */
   readonly staleCause?: string;
+  /** Calories recalculées depuis les kJ d'Open Food Facts (D-342). */
+  readonly energyFromKj?: boolean;
 }
 
 /** Résultat d'une saisie ou d'un scan de code, rendu sous le champ. */
@@ -106,7 +108,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           break;
         case 'found':
           state = null;
-          chosen = { food: toSearchable(result.food), grams: '100', ...(result.via === 'stale' && result.refreshFailure ? { staleCause: offFailureCause(result.refreshFailure) } : {}) };
+          chosen = { food: toSearchable(result.food), grams: '100', ...(result.via === 'stale' && result.refreshFailure ? { staleCause: offFailureCause(result.refreshFailure) } : {}), ...(result.energyFromKj ? { energyFromKj: true } : {}) };
           break;
         case 'not-found':
           state = { status: 'message', text: tNutrition('barcodeNotFound', { code: result.code }), createCode: result.code };
@@ -153,7 +155,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     try {
       const record = await chooseOnline(await data.repos.foods(), item.draft);
       setNotice(null);
-      setSelection({ food: toSearchable(record), grams: '100' });
+      setSelection({ food: toSearchable(record), grams: '100', ...(item.energyFromKj ? { energyFromKj: true } : {}) });
     } catch {
       setNotice(tNutrition('writeError'));
     } finally {
@@ -364,6 +366,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         <QuantityStep
           food={selection.food}
           staleCause={selection.staleCause}
+          energyFromKj={selection.energyFromKj === true}
           favorite={isFavorite(favorites.kept, selection.food.ref)}
           favoritesStatus={favorites.status}
           onToggleFavorite={onToggleFavorite}
@@ -670,6 +673,7 @@ function OnlineResults({ query, result, onPick }: OnlineResultsProps) {
 interface QuantityStepProps {
   readonly food: SearchableFood;
   readonly staleCause?: string | undefined;
+  readonly energyFromKj?: boolean;
   readonly favorite: boolean;
   readonly favoritesStatus: 'loading' | 'ready' | 'failed';
   readonly onToggleFavorite: (food: SearchableFood) => Promise<boolean>;
@@ -682,7 +686,7 @@ interface QuantityStepProps {
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, staleCause, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
@@ -766,6 +770,11 @@ function QuantityStep({ food, staleCause, favorite, favoritesStatus, onToggleFav
           <p className="ct-nutrition__muted">{tNutrition('offAttribution')}</p>
           {missingNutrients(food.per100g).length > 0 ? (
             <p className="ct-nutrition__muted">{tNutrition('offMissing', { list: missingList(missingNutrients(food.per100g)) })}</p>
+          ) : null}
+          {energyFromKj ? (
+            <p role="status" className="ct-nutrition__warning">
+              {tNutrition('offEnergyFromKj')}
+            </p>
           ) : null}
           {staleCause ? (
             <p role="status" className="ct-nutrition__warning">

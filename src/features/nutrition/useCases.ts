@@ -9,7 +9,7 @@ import {
   confirmationCarriedOver,
   floorVerdict,
   upcomingTargets,
-  estimateTdee,
+  estimateTdeeSmoothed,
   parseNutritionPrefs,
   resolveCheckIn,
   toMealEntryInput,
@@ -89,13 +89,12 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.measuredAt ?? '') < (b.measuredAt ?? '') ? -1 : 1))
     .map((w) => ({ date: w.date, kg: w.kg }));
   const reference = addDays(today, -1);
-  const tdee = estimateTdee({
+  const tdee = estimateTdeeSmoothed({
     endDate: reference,
     days,
     weighIns,
     profile: profile === null ? null : { sex: profile.sex, birthYear: profile.birthYear, heightCm: profile.heightCm },
     activity: prefs.activity,
-    previousSmoothed: null,
   });
   // PROG-01 : les séances closes ne servent qu'avec une cible de repos (aucune lecture de plus sinon).
   const strength = decisions.some((d) => d.restPlan !== null && d.restPlan !== undefined) ? await strengthDays(access) : new Set<LocalDate>();
@@ -105,13 +104,12 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
 /** Dépense estimée à une autre date de fin (le check-in analyse la semaine qui précède son jour, pas la veille d'aujourd'hui). */
 export function tdeeAt(snapshot: NutritionSnapshot, endDate: LocalDate): TdeeEstimate {
   const { profile, prefs } = snapshot;
-  return estimateTdee({
+  return estimateTdeeSmoothed({
     endDate,
     days: snapshot.days,
     weighIns: snapshot.weighIns,
     profile: profile === null ? null : { sex: profile.sex, birthYear: profile.birthYear, heightCm: profile.heightCm },
     activity: prefs.activity,
-    previousSmoothed: null,
   });
 }
 

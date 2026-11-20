@@ -220,6 +220,8 @@ export const nutritionFr = {
   add: 'Ajouter',
   kcalRequired: 'Indique les calories (un nombre).',
   valueInvalid: 'Une valeur n’est pas valide : un nombre positif est attendu.',
+  macrosInconsistent: 'Ces macros annoncent plus d’énergie que les calories saisies (4 kcal/g pour protéines et glucides, 9 pour les lipides), ou une macro dépasse 1 000 g : vérifie les valeurs.',
+  offEnergyFromKj: 'Les calories annoncées par Open Food Facts contredisent son énergie en kJ : la valeur affichée est calculée depuis les kJ (estimation).',
   kcalTooHigh: 'Cette valeur dépasse le plafond d’une ligne (10 000 kcal).',
   timeInvalid: 'Indique une heure valide.',
 

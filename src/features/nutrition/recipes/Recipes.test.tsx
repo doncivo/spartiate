@@ -102,7 +102,7 @@ describe('I4-07 : Recettes (section de Nutrition)', () => {
 
     // Ajout au journal par portion (défaut 1) : instantané de 155 kcal.
     fireEvent.click(within(r).getByRole('button', { name: 'Ajouter Bol de riz au journal' }));
-    expect(await within(r).findByLabelText('Nombre de portions')).toHaveValue(1);
+    expect(await within(r).findByLabelText('Nombre de portions')).toHaveValue('1');
     fireEvent.click(within(r).getByRole('button', { name: 'Ajouter au journal' }));
     await waitFor(async () => expect(await entries()).toHaveLength(1));
     const [entry] = await entries();
