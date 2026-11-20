@@ -359,7 +359,14 @@ jobs:
         id: webkit-deps-key
         run: |
           set -euo pipefail
-          PKGS=$(npx playwright install-deps --dry-run webkit | sha256sum | cut -c1-16)
+          # CI-PUB (revue CI) : la liste sert seulement de clé de cache ; si le --dry-run échoue sur le runner, clé de repli signalée (le cache
+          # sera simplement manqué), au lieu de masquer l'échec dans un pipe ou de faire tomber le job.
+          if DEPS=$(npx playwright install-deps --dry-run webkit 2>/dev/null); then
+            PKGS=$(printf '%s' "$DEPS" | sha256sum | cut -c1-16)
+          else
+            echo "::notice::playwright install-deps --dry-run a échoué : clé de cache de repli"
+            PKGS=inconnu
+          fi
           echo "image=${ImageOS}" >> "$GITHUB_OUTPUT"
           echo "pkgs=${PKGS}" >> "$GITHUB_OUTPUT"
           echo "semaine=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"

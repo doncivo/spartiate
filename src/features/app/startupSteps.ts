@@ -7,6 +7,23 @@ import { logFailure } from '../../platform/desktop/log';
  */
 export const STARTUP_STEP_DEADLINE_MS = 8_000;
 
+/**
+ * FIX-COQUILLE (C-115) : une sauvegarde ou une migration progresse parfois lentement (iPhone après une mise à jour) : délai propre aux étapes de
+ * base (db.backup, db.schema, db.migration.N, db.afterApply), et aucun rechargement proposé tant qu'elles tournent.
+ */
+export const DB_STEP_DEADLINE_MS = 120_000;
+const DB_WORK_STEP = /^db\.(backup|schema|migration|afterApply)(\.|$)/;
+
+/** Étape de travail sur la base (sauvegarde, migration) : la recharger en plein travail est interdit. */
+export function isDatabaseWorkStep(name: string): boolean {
+  return DB_WORK_STEP.test(name);
+}
+
+/** Délai au-delà duquel l'étape est dite bloquée. */
+export function stepDeadlineMs(name: string): number {
+  return isDatabaseWorkStep(name) ? DB_STEP_DEADLINE_MS : STARTUP_STEP_DEADLINE_MS;
+}
+
 export interface StartupStep {
   readonly name: string;
   readonly startedAt: number;
@@ -66,8 +83,8 @@ export function createStartupTracker(now: () => number = () => performance.now()
       notify();
     },
     current: () => open,
-    stalled(deadlineMs = STARTUP_STEP_DEADLINE_MS) {
-      return open && now() - open.startedAt > deadlineMs ? open : null;
+    stalled(deadlineMs) {
+      return open && now() - open.startedAt > (deadlineMs ?? stepDeadlineMs(open.name)) ? open : null;
     },
     history: () => closed,
     subscribe(listener) {

@@ -11,13 +11,15 @@ export interface StartupBlockedProps {
   readonly seconds: number;
   readonly onRetry: () => void;
   readonly onShare: () => Promise<ShareOutcome>;
+  /** Faux : migration en cours ou pilote empoisonné, un rechargement serait dangereux (C-115). */
+  readonly retry?: boolean;
 }
 
 /**
  * « Démarrage bloqué : <étape> » (ios-demarrage) : remplace l'écran blanc. « Réessayer » relance l'app ; « Partager le journal » ouvre la
  * feuille de partage avec le journal technique, qui ne contient que des codes, des durées et des versions (aucune donnée personnelle).
  */
-export function StartupBlocked({ step, seconds, onRetry, onShare }: StartupBlockedProps) {
+export function StartupBlocked({ step, seconds, onRetry, onShare, retry = true }: StartupBlockedProps) {
   const [note, setNote] = useState<string | null>(null);
   const share = async (): Promise<void> => {
     const outcome = await onShare().catch((): ShareOutcome => 'failed');
@@ -28,7 +30,7 @@ export function StartupBlocked({ step, seconds, onRetry, onShare }: StartupBlock
       <p role="alert">{tStartupBlocked('title', { step })}</p>
       <p>{tStartupBlocked('detail', { seconds })}</p>
       <div className="ct-db-failure__actions">
-        <Button onClick={onRetry}>{tStartupBlocked('retry')}</Button>
+        {retry && <Button onClick={onRetry}>{tStartupBlocked('retry')}</Button>}
         <Button variant="secondary" onClick={() => void share()}>
           {tStartupBlocked('share')}
         </Button>

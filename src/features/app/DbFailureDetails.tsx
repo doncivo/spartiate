@@ -6,6 +6,7 @@ import { startupRecoveryAvailable } from '../../platform/backup/recoveryAvailabl
 import { detectOs, detectRuntime } from '../../platform/runtime';
 import { appReload } from '../security/lockLayer';
 import { useAppStore, type DbFailure } from './appStore';
+import { stepDeadlineMs } from './startupSteps';
 import { UpdateRestoreActionLazy } from './lazyScreens';
 import type { UpdateRestoreOutcome } from './updateRestore';
 import './DbFailureDetails.css';
@@ -23,15 +24,23 @@ function watchdogMs(): number {
  * Chien de garde de l'ouverture : monté pendant « Chargement… ». Passé le délai, affiche l'étape en cours, l'environnement et « Réessayer »
  * au lieu d'attendre sans fin ; disparaît dès que l'ouverture aboutit ou échoue (l'écran d'échec prend le relais).
  */
+/** Étapes de travail de l'ouverture : recharger la page en plein travail est interdit (C-115). */
+const WORK_STEPS: ReadonlySet<string> = new Set(['schema', 'backup', 'migration', 'afterApply']);
+
 export function DbOpenWatchdog() {
   const progress = useAppStore((s) => s.dbProgress);
-  const [stalled, setStalled] = useState(false);
+  const [stalledKey, setStalledKey] = useState<string | null>(null);
+  const step = progress?.step ?? '';
+  const working = WORK_STEPS.has(step);
+  // C-115 : chaque étape de base (sauvegarde, migration) repart d'un délai complet, celui des étapes de base ; une migration lente n'est pas un blocage.
+  const progressKey = `${step}.${String(progress?.migration ?? '')}`;
+  const delayMs = working ? Math.max(watchdogMs(), stepDeadlineMs('db.' + step)) : watchdogMs();
   useEffect(() => {
-    const timer = setTimeout(() => setStalled(true), watchdogMs());
+    const timer = setTimeout(() => setStalledKey(progressKey), delayMs);
     return () => clearTimeout(timer);
-  }, []);
-  if (!stalled) return null;
-  const seconds = Math.round(watchdogMs() / 1000);
+  }, [progressKey, delayMs]);
+  if (stalledKey !== progressKey) return null;
+  const seconds = Math.round(delayMs / 1000);
   const failure: DbFailure = {
     phase: 'open',
     step: progress?.step ?? 'load',
@@ -41,8 +50,8 @@ export function DbOpenWatchdog() {
   };
   return (
     <>
-      <p role="alert">{t('app.dbStalled')}</p>
-      <DbFailureDetails failure={failure} />
+      <p role="alert">{t(working ? 'app.dbSlow' : 'app.dbStalled')}</p>
+      <DbFailureDetails failure={failure} retry={!working} />
     </>
   );
 }
