@@ -139,3 +139,5 @@ Conformes : Swift et Rust iOS plausibles (appel avant le plugin SQL, délai de 5
 ## Point d'étape (arrêt au double du budget, D-324)
 
 Le ticket a atteint le double de son budget M (≈ 273 k pour l'agent du module, plus les relectures) : arrêt (D-324). Branche poussée, PR #163 ouverte, **non fusionnée** (revue 1 à corriger). À la reprise : traiter les points 1 et 2 (rouge puis vert), 3, 4 et 6 ; relire la compilation build-ios de branche (run 44765785227) et la CI ; revue 2 ; fusion. Suivant ensuite : FIX-EXPORT.
+
+Compilation build-ios de la branche (publish=false, run 44765785227, sur `d2f49c48`) : **verte** ; le Swift de `ct-files` et le Rust iOS compilent. À relancer seulement si les corrections touchent le Swift.
