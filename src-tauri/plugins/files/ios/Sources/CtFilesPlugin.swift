@@ -3,7 +3,9 @@
 // Contrat : tests/fixtures/files/files-contract.json (commande, champs, codes, types), relu par un contrôle statique contre ce fichier et
 // src-tauri/src/export_ios.rs. Seul Rust appelle ce plugin (aucune permission pour la WebView).
 //
-// Une commande, `present({ path, mime })` -> `{ completed }` : présente le sélecteur « Enregistrer dans Fichiers »
+// Deux commandes. `excludeFromBackup({ paths })` -> `{ excluded }` (FIX-CONFID-IOS, appelée par src-tauri/src/backup_exclusion.rs au
+// démarrage) : exclut de la sauvegarde iCloud de l'appareil les dossiers de la base, des sauvegardes locales et du journal.
+// `present({ path, mime })` -> `{ completed }` : présente le sélecteur « Enregistrer dans Fichiers »
 // (`UIDocumentPickerViewController(forExporting:asCopy: true)`, iCloud Drive compris) sur le fichier temporaire écrit par Rust, qui le
 // supprime ensuite dans tous les cas. Aucun panneau de partage : rien ne quitte l'appareil par Mail, Messages ni AirDrop (H-03).
 //
@@ -29,6 +31,13 @@ struct PresentArgs: Decodable {
   let path: String
   let mime: String
 }
+
+struct ExcludeArgs: Decodable {
+  let paths: [String]
+}
+
+/// Dossiers par appel de `excludeFromBackup` (base, sauvegardes, journal : 3 aujourd'hui).
+private let maxExcludedFolders = 8
 
 /// Types attendus par extension (mêmes valeurs que `mime_for` de src-tauri/src/export_common.rs).
 private let mimeByExtension: [String: String] = [
@@ -201,6 +210,63 @@ class CtFilesPlugin: Plugin {
         }
       }
     }
+  }
+
+  /// FIX-CONFID-IOS : exclut de la sauvegarde iCloud de l'appareil chaque dossier désigné par Rust (base, sauvegardes locales, journal),
+  /// au démarrage, avant l'ouverture de la base. `{ excluded }` = nombre de dossiers dont l'exclusion est relue vraie ; tout échec rejette
+  /// `failed` (aucun chemin ni texte système). Appelé depuis la file `ipc` de Tauri (jamais le fil principal) : aucun appel UIKit ici.
+  @objc public func excludeFromBackup(_ invoke: Invoke) {
+    guard let input = try? invoke.parseArgs(ExcludeArgs.self), !input.paths.isEmpty, input.paths.count <= maxExcludedFolders
+    else {
+      reject(invoke, .failed)
+      return
+    }
+    let home = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true).resolvingSymlinksInPath().standardizedFileURL.path
+    var excluded = 0
+    for path in input.paths {
+      guard var url = checkedFolder(path, home: home) else {
+        reject(invoke, .failed)
+        return
+      }
+      var values = URLResourceValues()
+      values.isExcludedFromBackup = true
+      do {
+        try url.setResourceValues(values)
+      } catch {
+        reject(invoke, .failed)
+        return
+      }
+      // Relecture : une exclusion non relue vraie vaut échec (jamais d'issue supposée).
+      url.removeAllCachedResourceValues()
+      guard (try? url.resourceValues(forKeys: [.isExcludedFromBackupKey]))?.isExcludedFromBackup == true else {
+        reject(invoke, .failed)
+        return
+      }
+      excluded += 1
+    }
+    invoke.resolve(["excluded": excluded])
+  }
+}
+
+// FIX-CONFID-IOS (C-152, C-147 de l'audit Claude 0.27.0 ; D-99 (1)) : exclusion de la sauvegarde iCloud de l'appareil.
+extension CtFilesPlugin {
+  /// Dossier désigné par Rust, revérifié : chemin absolu, dossier ordinaire (pas un lien), sous le conteneur de l'app.
+  fileprivate func checkedFolder(_ path: String, home: String) -> URL? {
+    guard path.hasPrefix("/") else {
+      return nil
+    }
+    let url = URL(fileURLWithPath: path, isDirectory: true)
+    guard
+      let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey]),
+      values.isDirectory == true, values.isSymbolicLink != true
+    else {
+      return nil
+    }
+    let resolved = url.resolvingSymlinksInPath().standardizedFileURL.path
+    guard resolved.hasPrefix(home + "/") else {
+      return nil
+    }
+    return url
   }
 }
 

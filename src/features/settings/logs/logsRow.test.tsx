@@ -88,4 +88,19 @@ describe('I-04 : entonnoir logFailure et ligne « Logs » de Réglages', () => {
     });
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
   });
+
+  it('FIX-CONFID-IOS (C-152) : un échec d’exclusion de la sauvegarde iCloud est dit sur la ligne « Version … », avec son code', async () => {
+    transport.setBackupExclusion('timeout');
+    renderAbout('ios');
+    const alert = await screen.findByText(/n’ont pas pu être exclues de la sauvegarde iCloud de l’iPhone/);
+    expect(alert).toHaveTextContent('Les données de Spartiate n’ont pas pu être exclues de la sauvegarde iCloud de l’iPhone : elles peuvent y être copiées. Code : timeout');
+    expect(alert).toHaveAttribute('role', 'alert');
+    transport.setBackupExclusion(null);
+    cleanup();
+    renderAbout('ios');
+    await act(async () => {
+      await journal.read(1);
+    });
+    expect(screen.queryByText(/sauvegarde iCloud/)).toBeNull();
+  });
 });

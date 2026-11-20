@@ -64,14 +64,115 @@ function isSensitive(token: string): boolean {
   return hasTokenLike(token) || token.toLowerCase().includes('file:') || token.includes('\\') || hasDrivePath(chars) || hasPosixPath(chars) || hasUrlWithQuery(token) || hasEmail(chars) || hasHexRun(token);
 }
 
-/** Détail assaini (voir l'en-tête du module). */
+/**
+ * FIX-CONFID-IOS (C-151, § 22 : aucune donnée corporelle). Listes partagées avec Rust (`applog.rs`) et lues par les deux tests dans
+ * `tests/fixtures/logs/sanitize-vectors.json` : unités corporelles, mots corporels, clés dont la valeur numérique reste lisible (compteurs,
+ * versions ; aussi toute clé qui finit par un suffixe de `ALLOWED_LOG_KEY_SUFFIXES`). Comparaisons en minuscules.
+ */
+export const BODY_UNITS: readonly string[] = ['kg', '%', 'bpm', 'ms', 'kcal', 'h', 'min', 'cm'];
+export const BODY_WORDS: readonly string[] = ['poids', 'fc', 'hrv', 'vfc', 'rmssd', 'sommeil', 'masse', 'graisse', 'taille', 'tour', 'imc', 'calories', 'kcal', 'weight', 'sleep', 'hr', 'bpm', 'protéines', 'glucides', 'lipides'];
+export const ALLOWED_LOG_KEYS: readonly string[] = [
+  'version', 'schema_version', 'rules_version', 'sv', 'count', 'n', 'rows', 'files', 'segments', 'segment', 'tables', 'from', 'to', 'type_index', 'epoch', 'seq', 'localseq', 'ops',
+  'entries', 'acks', 'appended', 'created', 'deleted', 'updated', 'unchanged', 'skipped', 'skipped_old', 'skipped_no_energy', 'skipped_journal', 'skipped_deleted', 'resumed',
+  'rejected', 'read', 'kept', 'imported', 'added', 'absent', 'unreadable', 'uncovered', 'unexplained', 'tombstones', 'superseded', 'ignored', 'failed', 'duplicates', 'planned',
+  'settings', 'codes', 'step', 'stage', 'attempt', 'attempts', 'status', 'http', 'written', 'removed', 'nights_known', 'days', 'size', 'previous', 'complete', 'id', 'code',
+];
+export const ALLOWED_LOG_KEY_SUFFIXES: readonly string[] = ['count', 'version', 'known'];
+
+const isDigit = (char: string | undefined): boolean => char !== undefined && char >= '0' && char <= '9';
+const isUnitChar = (char: string | undefined): boolean => char !== undefined && (isAsciiAlpha(char) || char === '%');
+const isKeyChar = (char: string | undefined): boolean => char !== undefined && (isAsciiAlpha(char) || isDigit(char) || char === '_');
+const isWordChar = (char: string | undefined): boolean => isAlnum(char) || char === '%';
+
+/** Mot voisin comparé aux listes : signes de ponctuation retirés en tête et en fin (lettres, chiffres et `%` gardés), en minuscules. */
+function bare(word: string | undefined): string {
+  if (word === undefined) return '';
+  const chars = Array.from(word);
+  let start = 0;
+  let end = chars.length;
+  while (start < end && !isWordChar(chars[start])) start += 1;
+  while (end > start && !isWordChar(chars[end - 1])) end -= 1;
+  return chars.slice(start, end).join('').toLowerCase();
+}
+
+function isAllowedKey(key: string): boolean {
+  const lower = key.toLowerCase();
+  return lower !== '' && (ALLOWED_LOG_KEYS.includes(lower) || ALLOWED_LOG_KEY_SUFFIXES.some((suffix) => lower.endsWith(suffix)));
+}
+
+/**
+ * Le mot porte-t-il une valeur corporelle probable (voir les règles de la fixture) ? `previous` et `next` : mots voisins d'origine (non vides).
+ * Pour chaque nombre (chiffres, éventuellement suivis de parties `.` ou `,` + chiffres) : version à 3 parties ou plus séparées par des points
+ * gardée ; valeur d'une clé (`"clé":`, `clé=`, `clé:`) : gardée si la clé est permise, masquée si c'est un extrait JSON ou un mot corporel ;
+ * sinon masquée si décimale, suivie d'une unité (attachée, ou au mot suivant quand le nombre finit le mot), ou en tête de mot après un mot
+ * corporel ou une unité.
+ */
+function hasBodyNumber(word: string, previous: string | undefined, next: string | undefined): boolean {
+  const chars = Array.from(word);
+  let i = 0;
+  while (i < chars.length) {
+    if (!isDigit(chars[i])) {
+      i += 1;
+      continue;
+    }
+    const start = i;
+    let parts = 1;
+    let commas = false;
+    while (isDigit(chars[i])) i += 1;
+    while ((chars[i] === '.' || chars[i] === ',') && isDigit(chars[i + 1])) {
+      if (chars[i] === ',') commas = true;
+      parts += 1;
+      i += 1;
+      while (isDigit(chars[i])) i += 1;
+    }
+    const end = i;
+    if (parts >= 3 && !commas) continue;
+    const before = chars[start - 1];
+    let keyed = false;
+    if (before === ':' && chars[start - 2] === '"') {
+      const close = start - 2;
+      let open = close - 1;
+      while (open >= 0 && chars[open] !== '"') open -= 1;
+      const key = open >= 0 ? chars.slice(open + 1, close).join('') : '';
+      if (isAllowedKey(key)) continue;
+      return true;
+    }
+    if (before === '=' || before === ':') {
+      let k = start - 1;
+      while (k > 0 && isKeyChar(chars[k - 1])) k -= 1;
+      const key = chars.slice(k, start - 1).join('');
+      if (isAllowedKey(key)) continue;
+      if (BODY_WORDS.includes(key.toLowerCase())) return true;
+      keyed = key !== '';
+    }
+    if (parts >= 2) return true;
+    let u = end;
+    while (isUnitChar(chars[u])) u += 1;
+    const suffix = chars.slice(end, u).join('').toLowerCase();
+    if (suffix !== '' && BODY_UNITS.includes(suffix)) return true;
+    const endsWord = chars.slice(end).every((char) => !isAlnum(char) && char !== '%');
+    if (suffix === '' && endsWord && BODY_UNITS.includes(bare(next))) return true;
+    const startsWord = !keyed && chars.slice(0, start).every((char) => !isAlnum(char));
+    if (startsWord) {
+      const prev = bare(previous);
+      if (BODY_WORDS.includes(prev) || BODY_UNITS.includes(prev)) return true;
+    }
+  }
+  return false;
+}
+
+/** Détail assaini (voir l'en-tête du module et `hasBodyNumber`). */
 export function sanitizeLogDetail(raw: string): string {
   const cleaned = Array.from(raw, (char) => (isControl(char.codePointAt(0) ?? 0) ? ' ' : char)).join('');
   if (Array.from(cleaned).length > MAX_DETAIL_CHARS) return LOG_MASK;
+  const words = cleaned.split(' ');
+  const neighbour = (index: number, step: 1 | -1): string | undefined => {
+    for (let j = index + step; j >= 0 && j < words.length; j += step) if (words[j] !== '') return words[j];
+    return undefined;
+  };
   let maskNext = false;
-  return cleaned
-    .split(' ')
-    .map((word) => {
+  return words
+    .map((word, index) => {
       if (word === '') return word;
       if (maskNext) {
         maskNext = false;
@@ -81,7 +182,7 @@ export function sanitizeLogDetail(raw: string): string {
         maskNext = true;
         return LOG_MASK;
       }
-      return isSensitive(word) ? LOG_MASK : word;
+      return isSensitive(word) || hasBodyNumber(word, neighbour(index, -1), neighbour(index, 1)) ? LOG_MASK : word;
     })
     .join(' ');
 }

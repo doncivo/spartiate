@@ -1,6 +1,8 @@
 //! Plugin Swift ct-files de Spartiate (FILES-IOS-01, ADR 0009 avenant lot F point A1, décision du 2026-10-08) : présente le sélecteur
 //! « Enregistrer dans Fichiers » (`UIDocumentPickerViewController(forExporting:asCopy: true)`) sur un fichier temporaire écrit par Rust
 //! (`src-tauri/src/export_ios.rs`), qui le supprime ensuite dans tous les cas.
+//! FIX-CONFID-IOS (C-152) : seconde commande `excludeFromBackup`, appelée au démarrage par `src-tauri/src/backup_exclusion.rs` (exclusion
+//! de la sauvegarde iCloud de l'appareil pour la base, les sauvegardes locales et le journal).
 //!
 //! Aucune commande n'est exposée à la WebView (`build.rs`) : Rust seul appelle le plugin, par `CtFiles::call` (bloquant, toujours depuis
 //! `spawn_blocking`). L'erreur rendue est le **code** rejeté par Swift (jamais un message), `failed` à défaut. Préfixe `ct-` : aucun conflit

@@ -13,7 +13,7 @@ export function createTauriLogTransport(): LogTransport {
     },
     async read(max: number) {
       const { invoke } = await import('@tauri-apps/api/core');
-      return invoke<{ entries: LogEntry[]; writeError: string | null }>('log_read', { max });
+      return invoke<{ entries: LogEntry[]; writeError: string | null; backupExclusion: string | null }>('log_read', { max });
     },
     async clear() {
       const { invoke } = await import('@tauri-apps/api/core');

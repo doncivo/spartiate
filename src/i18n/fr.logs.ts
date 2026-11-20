@@ -20,6 +20,8 @@ export const logsFr = {
   writeError: 'Le journal n’a pas pu être écrit.',
   readError: 'Le journal n’a pas pu être lu : seules les entrées de cette session sont affichées.',
   errorCode: 'Code : {code}',
+  /** FIX-CONFID-IOS (C-152) : ligne de Plus › À propos et diagnostic (iPhone). */
+  backupExclusionFailed: 'Les données de Spartiate n’ont pas pu être exclues de la sauvegarde iCloud de l’iPhone : elles peuvent y être copiées.',
   export: 'Exporter',
   exportDone: 'Logs exportés',
   exportError: 'L’export n’a pas abouti.',

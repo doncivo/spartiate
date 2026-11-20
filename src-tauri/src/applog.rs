@@ -38,6 +38,18 @@ pub const MAX_READ_ENTRIES: usize = 2000;
 pub const MAX_PENDING: usize = 100;
 /// Entrées d'un même couple (`scope`, `code`) par minute.
 pub const RATE_PER_MINUTE: u32 = 10;
+/// FIX-CONFID-IOS (C-140) : entrées par minute, tous couples confondus (hors résumés) ; le surplus est résumé par `log` / `rate-capped`.
+pub const GLOBAL_PER_MINUTE: u32 = 60;
+/// FIX-CONFID-IOS (C-140) : couples suivis au plus par la table de débit (un couple de plus n'est soumis qu'au plafond global).
+pub const MAX_RATE_KEYS: usize = 256;
+/// FIX-CONFID-IOS (C-140) : scopes écrits par Rust seul ; une entrée de la WebView sous l'un d'eux est inscrite sous `invalid`.
+pub const RUST_ONLY_SCOPES: &[&str] = &[
+    "log",
+    "sync-rust",
+    "backup-recovery",
+    "sql-refused",
+    "backup-exclusion",
+];
 /// `detail` plus long : masqué en entier.
 pub const MAX_DETAIL_CHARS: usize = 300;
 /// Lecture bornée d'un fichier (un fichier gonflé à la main n'est pas lu en entier).
@@ -261,36 +273,235 @@ pub fn sanitize_detail(raw: &str) -> String {
     if cleaned.chars().count() > MAX_DETAIL_CHARS {
         return MASK.to_owned();
     }
-    let mut out = String::with_capacity(cleaned.len());
-    let mut mask_next = false;
-    let mut word = String::new();
-    let flush = |word: &mut String, out: &mut String, mask_next: &mut bool| {
-        if word.is_empty() {
-            return;
-        }
-        if *mask_next {
-            out.push_str(MASK);
-            *mask_next = false;
-        } else if word.eq_ignore_ascii_case("bearer") {
-            out.push_str(MASK);
-            *mask_next = true;
-        } else if is_sensitive_token(word) {
-            out.push_str(MASK);
+    let words: Vec<&str> = cleaned.split(' ').collect();
+    let neighbour = |index: usize, forward: bool| -> Option<&str> {
+        if forward {
+            words[index + 1..].iter().find(|w| !w.is_empty()).copied()
         } else {
-            out.push_str(word);
+            words[..index].iter().rev().find(|w| !w.is_empty()).copied()
         }
-        word.clear();
     };
-    for c in cleaned.chars() {
-        if c == ' ' {
-            flush(&mut word, &mut out, &mut mask_next);
-            out.push(' ');
+    let mut out: Vec<&str> = Vec::with_capacity(words.len());
+    let mut mask_next = false;
+    for (index, word) in words.iter().enumerate() {
+        if word.is_empty() {
+            out.push(word);
+        } else if mask_next {
+            out.push(MASK);
+            mask_next = false;
+        } else if word.eq_ignore_ascii_case("bearer") {
+            out.push(MASK);
+            mask_next = true;
+        } else if is_sensitive_token(word)
+            || has_body_number(word, neighbour(index, false), neighbour(index, true))
+        {
+            out.push(MASK);
         } else {
-            word.push(c);
+            out.push(word);
         }
     }
-    flush(&mut word, &mut out, &mut mask_next);
-    out
+    out.join(" ")
+}
+
+/// FIX-CONFID-IOS (C-140, C-151, § 22) : listes partagées avec TypeScript (`sanitize.ts`) et lues par les deux tests dans
+/// `tests/fixtures/logs/sanitize-vectors.json`. Comparaisons en minuscules.
+pub const BODY_UNITS: &[&str] = &["kg", "%", "bpm", "ms", "kcal", "h", "min", "cm"];
+pub const BODY_WORDS: &[&str] = &[
+    "poids",
+    "fc",
+    "hrv",
+    "vfc",
+    "rmssd",
+    "sommeil",
+    "masse",
+    "graisse",
+    "taille",
+    "tour",
+    "imc",
+    "calories",
+    "kcal",
+    "weight",
+    "sleep",
+    "hr",
+    "bpm",
+    "protéines",
+    "glucides",
+    "lipides",
+];
+/// Clés dont la valeur numérique reste lisible (compteurs, versions des journaux de l'app), et suffixes permis.
+pub const ALLOWED_LOG_KEYS: &[&str] = &[
+    "version",
+    "schema_version",
+    "rules_version",
+    "sv",
+    "count",
+    "n",
+    "rows",
+    "files",
+    "segments",
+    "segment",
+    "tables",
+    "from",
+    "to",
+    "type_index",
+    "epoch",
+    "seq",
+    "localseq",
+    "ops",
+    "entries",
+    "acks",
+    "appended",
+    "created",
+    "deleted",
+    "updated",
+    "unchanged",
+    "skipped",
+    "skipped_old",
+    "skipped_no_energy",
+    "skipped_journal",
+    "skipped_deleted",
+    "resumed",
+    "rejected",
+    "read",
+    "kept",
+    "imported",
+    "added",
+    "absent",
+    "unreadable",
+    "uncovered",
+    "unexplained",
+    "tombstones",
+    "superseded",
+    "ignored",
+    "failed",
+    "duplicates",
+    "planned",
+    "settings",
+    "codes",
+    "step",
+    "stage",
+    "attempt",
+    "attempts",
+    "status",
+    "http",
+    "written",
+    "removed",
+    "nights_known",
+    "days",
+    "size",
+    "previous",
+    "complete",
+    "id",
+    "code",
+];
+pub const ALLOWED_LOG_KEY_SUFFIXES: &[&str] = &["count", "version", "known"];
+
+fn is_word_char(c: char) -> bool {
+    c.is_alphanumeric() || c == '%'
+}
+
+/// Mot voisin comparé aux listes : ponctuation retirée en tête et en fin (lettres, chiffres et `%` gardés), en minuscules.
+fn bare(word: Option<&str>) -> String {
+    word.map(|w| w.trim_matches(|c: char| !is_word_char(c)).to_lowercase())
+        .unwrap_or_default()
+}
+
+fn is_allowed_key(key: &str) -> bool {
+    let lower = key.to_lowercase();
+    !lower.is_empty()
+        && (ALLOWED_LOG_KEYS.contains(&lower.as_str())
+            || ALLOWED_LOG_KEY_SUFFIXES
+                .iter()
+                .any(|suffix| lower.ends_with(suffix)))
+}
+
+/// Valeur corporelle probable dans un mot : mêmes règles que `hasBodyNumber` de TypeScript (voir la fixture). Pour chaque nombre (chiffres,
+/// éventuellement suivis de parties `.` ou `,` + chiffres) : version de 3 parties ou plus séparées par des points gardée ; valeur d'une clé
+/// (`"clé":`, `clé=`, `clé:`) gardée si la clé est permise, masquée si c'est un extrait JSON ou un mot corporel ; sinon masquée si décimale,
+/// suivie d'une unité (attachée, ou au mot suivant quand le nombre finit le mot), ou en tête de mot après un mot corporel ou une unité.
+fn has_body_number(word: &str, previous: Option<&str>, next: Option<&str>) -> bool {
+    let chars: Vec<char> = word.chars().collect();
+    let digit = |i: usize| chars.get(i).is_some_and(char::is_ascii_digit);
+    let mut i = 0;
+    while i < chars.len() {
+        if !digit(i) {
+            i += 1;
+            continue;
+        }
+        let start = i;
+        let mut parts = 1;
+        let mut commas = false;
+        while digit(i) {
+            i += 1;
+        }
+        while matches!(chars.get(i), Some('.' | ',')) && digit(i + 1) {
+            commas |= chars[i] == ',';
+            parts += 1;
+            i += 1;
+            while digit(i) {
+                i += 1;
+            }
+        }
+        let end = i;
+        if parts >= 3 && !commas {
+            continue;
+        }
+        let before = start.checked_sub(1).map(|b| chars[b]);
+        let mut keyed = false;
+        if before == Some(':') && start >= 2 && chars[start - 2] == '"' {
+            let close = start - 2;
+            let key: String = match chars[..close].iter().rposition(|c| *c == '"') {
+                Some(open) => chars[open + 1..close].iter().collect(),
+                None => String::new(),
+            };
+            if is_allowed_key(&key) {
+                continue;
+            }
+            return true;
+        }
+        if matches!(before, Some('=' | ':')) {
+            let mut k = start - 1;
+            while k > 0 && (chars[k - 1].is_ascii_alphanumeric() || chars[k - 1] == '_') {
+                k -= 1;
+            }
+            let key: String = chars[k..start - 1].iter().collect();
+            if is_allowed_key(&key) {
+                continue;
+            }
+            if BODY_WORDS.contains(&key.to_lowercase().as_str()) {
+                return true;
+            }
+            keyed = !key.is_empty();
+        }
+        if parts >= 2 {
+            return true;
+        }
+        let mut u = end;
+        while chars
+            .get(u)
+            .is_some_and(|c| c.is_ascii_alphabetic() || *c == '%')
+        {
+            u += 1;
+        }
+        let suffix: String = chars[end..u].iter().collect::<String>().to_lowercase();
+        if !suffix.is_empty() && BODY_UNITS.contains(&suffix.as_str()) {
+            return true;
+        }
+        let ends_word = chars[end..]
+            .iter()
+            .all(|c| !c.is_alphanumeric() && *c != '%');
+        if suffix.is_empty() && ends_word && BODY_UNITS.contains(&bare(next).as_str()) {
+            return true;
+        }
+        let starts_word = !keyed && chars[..start].iter().all(|c| !c.is_alphanumeric());
+        if starts_word {
+            let prev = bare(previous);
+            if BODY_WORDS.contains(&prev.as_str()) || BODY_UNITS.contains(&prev.as_str()) {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 /// Entrée normalisée : formes strictes (`invalid` sinon), heure de Rust si `at` n'est pas un instant ISO, détail assaini, `n` ≥ 2 seulement.
@@ -493,17 +704,52 @@ pub fn append_lines(dir: &Path, lines: &[String]) -> Result<usize, LogError> {
     for line in lines {
         let size = plain_file_len(&current)?.unwrap_or(0);
         let needed = line.len() as u64 + 1;
+        let mut restart = false;
         if size > 0 && size + needed > MAX_FILE_BYTES {
             plain_file_len(&previous)?;
-            fs::rename(&current, &previous).map_err(|e| fail(io_code(&e)))?;
+            restart = !rotate(&current, &previous);
         }
-        let mut file = open_no_follow(&current, OpenOptions::new().append(true).create(true))?;
-        let mut bytes = line.clone().into_bytes();
+        let mut options = OpenOptions::new();
+        if restart {
+            // FIX-CONFID-IOS (C-140) : rotation impossible (`.1` verrouillé) : le fichier courant est vidé plutôt que de bloquer toute
+            // écriture ; sa première ligne le dit (`log` / `rotation-failed`). Le journal reste borné à 2 × 256 Kio.
+            options.write(true).truncate(true);
+        } else {
+            options.append(true).create(true);
+        }
+        let mut file = open_no_follow(&current, &mut options)?;
+        let mut bytes = Vec::new();
+        if restart {
+            bytes.extend(line_of(&rotation_failed_entry()).into_bytes());
+            bytes.push(b'\n');
+        }
+        bytes.extend(line.as_bytes());
         bytes.push(b'\n');
         file.write_all(&bytes).map_err(|e| fail(io_code(&e)))?;
         written += 1;
     }
     Ok(written)
+}
+
+/// Rotation : `spartiate.log` devient `.1`. Un renommage refusé (`.1` ouvert sans partage de suppression sous Windows) est retenté une
+/// fois après suppression de l'ancien `.1` ; `false` si la rotation reste impossible.
+fn rotate(current: &Path, previous: &Path) -> bool {
+    if fs::rename(current, previous).is_ok() {
+        return true;
+    }
+    let _ = fs::remove_file(previous);
+    fs::rename(current, previous).is_ok()
+}
+
+/// Première entrée d'un fichier courant vidé faute de rotation.
+fn rotation_failed_entry() -> LogEntry {
+    LogEntry {
+        at: iso_of(now_secs()),
+        scope: "log".to_owned(),
+        code: "rotation-failed".to_owned(),
+        detail: String::new(),
+        n: None,
+    }
 }
 
 /// Lit un fichier du journal (borné à 1 Mio), UTF-8 avec remplacement ; absent : vide.
@@ -574,17 +820,34 @@ struct Rate {
     suppressed: u32,
 }
 
-/// Compteurs par couple (`scope`, `code`) et par minute.
+/// Compteurs par couple (`scope`, `code`) et par minute (256 couples au plus), et plafond global de la minute.
 #[derive(Debug, Default)]
 pub struct RateTable {
     rates: BTreeMap<(String, String), Rate>,
+    /// Minute du plafond global, entrées admises et entrées refusées par lui.
+    minute: u64,
+    total: u32,
+    capped: u32,
 }
 
 impl RateTable {
     pub const fn new() -> Self {
         Self {
             rates: BTreeMap::new(),
+            minute: 0,
+            total: 0,
+            capped: 0,
         }
+    }
+
+    /// Couples suivis (tests : la table reste bornée).
+    pub fn len(&self) -> usize {
+        self.rates.len()
+    }
+
+    /// La table est-elle vide ?
+    pub fn is_empty(&self) -> bool {
+        self.rates.is_empty()
     }
 
     /// Résumés des minutes passées (`log` / `suppressed`, `n`), à écrire avant les nouvelles entrées.
@@ -604,29 +867,52 @@ impl RateTable {
         }
         self.rates
             .retain(|_, rate| rate.minute >= minute || rate.suppressed > 0);
+        if self.minute < minute {
+            if self.capped > 0 {
+                out.push(LogEntry {
+                    at: now_iso.to_owned(),
+                    scope: "log".to_owned(),
+                    code: "rate-capped".to_owned(),
+                    detail: String::new(),
+                    n: Some(self.capped),
+                });
+            }
+            self.minute = minute;
+            self.total = 0;
+            self.capped = 0;
+        }
         out
     }
 
     /// L'entrée peut-elle être écrite cette minute ? Sinon elle est comptée.
     fn admit(&mut self, entry: &LogEntry, minute: u64) -> bool {
-        if entry.scope == "log" && entry.code == "suppressed" {
+        if entry.scope == "log" && matches!(entry.code.as_str(), "suppressed" | "rate-capped") {
             return true;
         }
-        let rate = self
-            .rates
-            .entry((entry.scope.clone(), entry.code.clone()))
-            .or_default();
-        if rate.minute != minute {
-            rate.minute = minute;
-            rate.count = 0;
-        }
-        if rate.count < RATE_PER_MINUTE {
+        let weight = entry.n.unwrap_or(1);
+        let key = (entry.scope.clone(), entry.code.clone());
+        // Table pleine : un couple nouveau n'est pas suivi (seul le plafond global le limite) ; jamais plus de 256 couples.
+        if self.rates.contains_key(&key) || self.rates.len() < MAX_RATE_KEYS {
+            let rate = self.rates.entry(key).or_default();
+            if rate.minute != minute {
+                rate.minute = minute;
+                rate.count = 0;
+            }
+            if rate.count >= RATE_PER_MINUTE {
+                rate.suppressed = rate.suppressed.saturating_add(weight);
+                return false;
+            }
+            if self.total >= GLOBAL_PER_MINUTE {
+                self.capped = self.capped.saturating_add(weight);
+                return false;
+            }
             rate.count += 1;
-            true
-        } else {
-            rate.suppressed += entry.n.unwrap_or(1);
-            false
+        } else if self.total >= GLOBAL_PER_MINUTE {
+            self.capped = self.capped.saturating_add(weight);
+            return false;
         }
+        self.total += 1;
+        true
     }
 }
 
@@ -760,6 +1046,8 @@ pub struct AppendOutcome {
 pub struct ReadOutcome {
     pub entries: Vec<LogEntry>,
     pub write_error: Option<&'static str>,
+    /// FIX-CONFID-IOS (C-152) : échec de l'exclusion de la sauvegarde iCloud au démarrage (iPhone), dit dans Plus › À propos et diagnostic.
+    pub backup_exclusion: Option<&'static str>,
 }
 
 /// Réponse de `log_clear`.
@@ -779,7 +1067,17 @@ pub fn append_in(
         return Err(fail("too-many"));
     }
     let now_iso = iso_of(now);
-    let normalized: Vec<LogEntry> = entries.iter().map(|e| normalize(e, &now_iso)).collect();
+    let normalized: Vec<LogEntry> = entries
+        .iter()
+        .map(|e| {
+            let mut entry = normalize(e, &now_iso);
+            // FIX-CONFID-IOS (C-140) : la WebView n'écrit jamais sous un scope de Rust (résumés, synchro Rust, récupération, exclusion).
+            if RUST_ONLY_SCOPES.contains(&entry.scope.as_str()) {
+                "invalid".clone_into(&mut entry.scope);
+            }
+            entry
+        })
+        .collect();
     let lines = admit_lines(rates, &normalized, now);
     append_lines(dir, &lines)
 }
@@ -844,6 +1142,7 @@ pub async fn log_read(app: tauri::AppHandle, max: usize) -> Result<ReadOutcome, 
         Ok(ReadOutcome {
             entries,
             write_error: state.write_error,
+            backup_exclusion: crate::backup_exclusion::status(),
         })
     })
     .await

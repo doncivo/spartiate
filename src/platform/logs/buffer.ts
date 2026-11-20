@@ -35,8 +35,16 @@ export function createLogJournal(transport: LogTransport | null, env: LogJournal
 
   const setStatus = (next: Partial<LogStatus>): void => {
     const merged = { ...status, ...next };
-    if (merged.writeError === status.writeError && merged.readError === status.readError) return;
+    if (merged.writeError === status.writeError && merged.readError === status.readError && merged.backupExclusion === status.backupExclusion) return;
     status = merged;
+    for (const listener of [...listeners]) listener();
+  };
+
+  /** FIX-CONFID-IOS : échec d'exclusion de la sauvegarde (clé absente quand il n'y en a pas). */
+  const setExclusion = (code: string | null): void => {
+    if ((status.backupExclusion ?? null) === code) return;
+    const { backupExclusion: _previous, ...rest } = status;
+    status = code === null ? rest : { ...rest, backupExclusion: code };
     for (const listener of [...listeners]) listener();
   };
 
@@ -98,6 +106,7 @@ export function createLogJournal(transport: LogTransport | null, env: LogJournal
       try {
         const result = await transport.read(limit);
         setStatus({ readError: null, writeError: result.writeError ?? status.writeError });
+        if (result.backupExclusion !== undefined) setExclusion(result.backupExclusion);
         // Ce qui n'a pas pu être écrit reste lisible : ajouté après le contenu du fichier.
         return [...result.entries, ...pending].slice(-limit);
       } catch (error) {

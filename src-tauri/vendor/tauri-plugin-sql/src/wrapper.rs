@@ -415,7 +415,10 @@ pub async fn open_sqlite_pool(conn_url: &str) -> Result<Pool<Sqlite>, sqlx::Erro
 
     let options = SqliteConnectOptions::from_str(conn_url)?
         .journal_mode(SqliteJournalMode::Wal)
-        .foreign_keys(true);
+        .foreign_keys(true)
+        // Spartiate (FIX-CONFID-IOS, C-089) : contenu supprimé écrasé par des zéros (photo supprimée absente des pages libres). Posé ici,
+        // à l'ouverture, avant l'autorisateur : la WebView ne peut ni le lire ni le changer (pragma hors de la liste blanche de `guard`).
+        .pragma("secure_delete", "ON");
     // Spartiate (SEC-01) : limite d'attachement à 0 et autorisateur sur chaque connexion (voir `guard`), posés après les pragmas ci-dessus.
     let state = std::sync::Arc::new(std::sync::atomic::AtomicU8::new(0));
     let pool =
@@ -524,26 +527,60 @@ mod tests {
         Sqlite::create_database(&url).await.unwrap();
         let db = DbPool::Sqlite(open_sqlite_pool(&url).await.unwrap());
         let run = |sql: &str, values: Vec<JsonValue>| db.execute(sql.to_string(), values);
-        run("CREATE TABLE f (id INTEGER PRIMARY KEY, data TEXT NOT NULL)", vec![]).await.unwrap();
-        run("CREATE TABLE keep (id INTEGER PRIMARY KEY, v TEXT)", vec![]).await.unwrap();
+        run(
+            "CREATE TABLE f (id INTEGER PRIMARY KEY, data TEXT NOT NULL)",
+            vec![],
+        )
+        .await
+        .unwrap();
+        run("CREATE TABLE keep (id INTEGER PRIMARY KEY, v TEXT)", vec![])
+            .await
+            .unwrap();
         let big = "PHOTOSENTINELLEGRANDE".repeat(4000);
         let small = "PHOTOSENTINELLEPETITE".to_string();
-        run("INSERT INTO f (data) VALUES ($1)", vec![JsonValue::String(big)]).await.unwrap();
-        run("INSERT INTO f (data) VALUES ($1)", vec![JsonValue::String(small)]).await.unwrap();
-        run("INSERT INTO keep (v) VALUES ('témoin-gardé')", vec![]).await.unwrap();
-        run("PRAGMA wal_checkpoint(TRUNCATE)", vec![]).await.unwrap();
+        run(
+            "INSERT INTO f (data) VALUES ($1)",
+            vec![JsonValue::String(big)],
+        )
+        .await
+        .unwrap();
+        run(
+            "INSERT INTO f (data) VALUES ($1)",
+            vec![JsonValue::String(small)],
+        )
+        .await
+        .unwrap();
+        run("INSERT INTO keep (v) VALUES ('témoin-gardé')", vec![])
+            .await
+            .unwrap();
+        run("PRAGMA wal_checkpoint(TRUNCATE)", vec![])
+            .await
+            .unwrap();
         let before = std::fs::read(&path).unwrap();
-        let contains = |bytes: &[u8], needle: &str| bytes.windows(needle.len()).any(|w| w == needle.as_bytes());
-        assert!(contains(&before, "PHOTOSENTINELLEGRANDE"), "témoin : la photo est bien écrite dans le fichier");
+        let contains = |bytes: &[u8], needle: &str| {
+            bytes.windows(needle.len()).any(|w| w == needle.as_bytes())
+        };
+        assert!(
+            contains(&before, "PHOTOSENTINELLEGRANDE"),
+            "témoin : la photo est bien écrite dans le fichier"
+        );
         run("DELETE FROM f", vec![]).await.unwrap();
-        run("PRAGMA wal_checkpoint(TRUNCATE)", vec![]).await.unwrap();
+        run("PRAGMA wal_checkpoint(TRUNCATE)", vec![])
+            .await
+            .unwrap();
         db.close().await;
         let mut bytes = std::fs::read(&path).unwrap();
         if let Ok(wal) = std::fs::read(dir.path().join("t.db-wal")) {
             bytes.extend(wal);
         }
-        assert!(!contains(&bytes, "PHOTOSENTINELLEGRANDE"), "photo (pages de débordement) encore lisible après suppression");
-        assert!(!contains(&bytes, "PHOTOSENTINELLEPETITE"), "petite valeur encore lisible après suppression");
+        assert!(
+            !contains(&bytes, "PHOTOSENTINELLEGRANDE"),
+            "photo (pages de débordement) encore lisible après suppression"
+        );
+        assert!(
+            !contains(&bytes, "PHOTOSENTINELLEPETITE"),
+            "petite valeur encore lisible après suppression"
+        );
         assert!(contains(&bytes, "témoin-gardé"));
     }
 }

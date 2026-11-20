@@ -632,7 +632,10 @@ fn fix_confid_c140_scopes_reserved_to_rust_are_refused_to_the_webview() {
     append_in(
         &logs,
         &mut rates,
-        &[entry("backup", "backup-daily", ""), entry("logs", "export", "")],
+        &[
+            entry("backup", "backup-daily", ""),
+            entry("logs", "export", ""),
+        ],
         NOW,
     )
     .unwrap();
@@ -682,4 +685,56 @@ fn fix_confid_c140_a_locked_previous_file_never_blocks_writing() {
     let text = fs::read_to_string(logs.join(CURRENT_FILE)).unwrap();
     assert!(text.contains("\"rotation-failed\""), "{text}");
     assert!(text.contains("\"after-lock\""));
+}
+
+#[test]
+fn fix_confid_c151_body_lists_are_those_of_the_shared_fixture() {
+    let fixture: Value = serde_json::from_str(VECTORS).unwrap();
+    let list = |key: &str| -> Vec<String> {
+        fixture[key]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v.as_str().unwrap().to_owned())
+            .collect()
+    };
+    let owned = |items: &[&str]| -> Vec<String> { items.iter().map(|s| (*s).to_owned()).collect() };
+    assert_eq!(owned(spartiate_lib::applog::BODY_UNITS), list("bodyUnits"));
+    assert_eq!(owned(spartiate_lib::applog::BODY_WORDS), list("bodyWords"));
+    assert_eq!(
+        owned(spartiate_lib::applog::ALLOWED_LOG_KEYS),
+        list("allowedKeys")
+    );
+    assert_eq!(
+        owned(spartiate_lib::applog::ALLOWED_LOG_KEY_SUFFIXES),
+        list("allowedKeySuffixes")
+    );
+    assert_eq!(
+        usize::try_from(spartiate_lib::applog::GLOBAL_PER_MINUTE).unwrap(),
+        GLOBAL_CAP
+    );
+}
+
+#[test]
+fn fix_confid_c140_the_rate_table_never_tracks_more_than_256_pairs() {
+    let dir = tempfile::tempdir().unwrap();
+    let logs = dir.path().join("logs");
+    let mut rates = RateTable::new();
+    for minute in 0..3 {
+        // Rafale de 1 000 couples distincts dans la même minute, en lots de 100.
+        for batch in 0..10 {
+            let entries: Vec<LogEntryIn> = (0..100)
+                .map(|i| entry("sync", &format!("c-{minute}-{batch}-{i}"), ""))
+                .collect();
+            append_in(&logs, &mut rates, &entries, NOW + minute * 60).unwrap();
+            assert!(
+                rates.len() <= spartiate_lib::applog::MAX_RATE_KEYS,
+                "{}",
+                rates.len()
+            );
+        }
+    }
+    // Journal entier toujours borné (2 × 256 Kio).
+    let total = size(&logs.join(CURRENT_FILE)) + size(&logs.join(PREVIOUS_FILE));
+    assert!(total <= 2 * MAX_FILE_BYTES);
 }

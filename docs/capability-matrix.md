@@ -60,6 +60,7 @@ La colonne « Preuve attendue » n’est pas une preuve acquise. Chaque ticket a
 | App Apple Watch (annexe B) | BLOCKED (équipe personnelle) | Restriction documentée ; aucune capacité Watch revendiquée | Aucun ticket |
 | Push distant (annexe B) | BLOCKED (équipe personnelle) | Restriction documentée ; aucune livraison distante revendiquée | Aucun ticket |
 | Activation du verrou local Face ID / Windows Hello (H-17, § 22) | DEFERRED (code conservé, entrée masquée, D-37) | Décision d’Ali Q-6 avant activation puis recette native ; le code ne prouve pas l’utilité | Aucun ticket avant décision d’Ali |
+| Exclusion de la sauvegarde iCloud de l’iPhone (FIX-CONFID-IOS, C-152, C-147 ; D-99 (1) ; H-38) : dossiers de la base (photos comprises), des sauvegardes locales `backups/` et du journal `Documents/Journal` marqués `isExcludedFromBackup` au démarrage par le plugin `ct-files` (`excludeFromBackup`), avant le plugin SQL ; échec dit dans Plus › À propos et diagnostic | UNVERIFIED | Constat d’Ali sur l’iPhone après installation de la version qui contient FIX-CONFID-IOS : Réglages › [nom] › iCloud › Gérer le stockage › Sauvegardes › cet iPhone : Spartiate absent de la liste ou de taille minime (quelques Ko) ; journal toujours visible dans Fichiers › Sur mon iPhone › Spartiate › Journal ; aucune ligne rouge « sauvegarde iCloud » dans Plus › À propos et diagnostic | FIX-CONFID-IOS ; aucun CONFIRMED depuis le code (D-36) ; compilation build-ios à venir |
 
 ## Données, moteurs et services
 
