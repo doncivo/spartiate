@@ -109,6 +109,16 @@ export async function bootstrapDatabase(
       const seed = (globalThis as { __ctSeedSql?: readonly string[] }).__ctSeedSql;
       if (seed) for (const sql of seed) await db.execute(sql, []);
     }
+    // A-008 : échec fermé du pilote (annulation impossible à établir) : état durable visible, seule sortie sûre = redémarrer l'app.
+    const opened = db;
+    opened.onPoisoned?.((poisonError) => {
+      const message = describeError(poisonError);
+      logFailure('db', `connexion invalidée (${errorName(poisonError)})`);
+      useAppStore.getState().setDbStatus('error', {
+        detail: message,
+        failure: { phase: 'start', step: 'connection-poisoned', errorName: errorName(poisonError), message, kind: 'connection-poisoned', ...(options.appVersion === undefined ? {} : { appVersion: options.appVersion }), schemaVersion, appSchemaVersion: list.at(-1)?.version ?? 0 },
+      });
+    });
     setDbStatus('ready');
     return db;
   } catch (error) {

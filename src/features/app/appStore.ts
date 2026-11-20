@@ -22,7 +22,7 @@ export interface DbFailure {
    * I-06 (ADR 0007 avenant I-06 point 7) : nature de l'échec d'ouverture : base plus récente que l'app, migration, sauvegarde avant
    * migration, autre. Absent pour la suite du démarrage et le chien de garde.
    */
-  readonly kind?: 'schema-newer' | 'migration' | 'backup' | 'other';
+  readonly kind?: 'schema-newer' | 'migration' | 'backup' | 'other' | 'connection-poisoned';
   /** Version de l'app (`appVersion.ts`) ; null si illisible. */
   readonly appVersion?: string | null;
   /** Dernière migration appliquée à la base au moment de l'échec ; null si `schema_migrations` n'a pas été lue. */
@@ -105,7 +105,8 @@ export const useAppStore = create<AppState>()((set) => ({
   recurrenceFailed: false,
   timeZone: null,
   setTimeZone: (timeZone) => set({ timeZone }),
-  setDbStatus: (dbStatus, options) => set({ dbStatus, dbErrorDetail: options?.detail ?? null, dbBackupFailed: options?.backupFailed ?? false, dbFailure: options?.failure ?? null }),
+  // A-008 : « connexion invalidée » est durable (seul un redémarrage de l'app la lève) : ni « ready » ni un autre échec ne la remplacent.
+  setDbStatus: (dbStatus, options) => set((state) => state.dbFailure?.kind === 'connection-poisoned' ? state : { dbStatus, dbErrorDetail: options?.detail ?? null, dbBackupFailed: options?.backupFailed ?? false, dbFailure: options?.failure ?? null }),
   setDay: (day) => set({ day }),
   setCarryOverFailed: (carryOverFailed) => set({ carryOverFailed }),
   setRecurrenceFailed: (recurrenceFailed) => set({ recurrenceFailed }),

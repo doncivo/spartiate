@@ -42,9 +42,14 @@ export interface SqlDriver extends SqlExecutor {
    */
   transaction<T>(fn: (tx: SqlExecutor) => Promise<T>): Promise<T>;
   close(): Promise<void>;
+  /**
+   * A-008 : abonnement à l'échec fermé du pilote (annulation d'une transaction impossible à établir). Appelé une seule fois, avec l'erreur
+   * `connection-poisoned` ; ensuite toute opération sauf `close()` est refusée. Absent des pilotes de test qui n'ont pas cet état.
+   */
+  onPoisoned?(listener: (error: DbError) => void): void;
 }
 
-export type DbErrorCode = 'constraint' | 'busy' | 'syntax' | 'transaction-wait-timeout' | 'transaction-lost' | 'closed' | 'unknown';
+export type DbErrorCode = 'constraint' | 'busy' | 'syntax' | 'transaction-wait-timeout' | 'transaction-lost' | 'connection-poisoned' | 'closed' | 'unknown';
 
 /** Erreur normalisée renvoyée par tous les drivers (message brut conservé dans `cause`). */
 export class DbError extends Error {

@@ -257,6 +257,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | à faire (lot 0.28.0) |
 | BL-092 | rapport FIX-ABERR (lot 0.28.0) | résumé de fin : séance passée datée par la dernière série et non par `ended_at` ; décharges comptées pour confirmer une aberrante (écart à D-323 (2)) | à faire (lot 0.28.0) |
+| BL-093 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | test sur base migrée : ROLLBACK rejeté puis arrêt, curseur, `sync_field_clock` et `sync_outbox` inchangés ; garde orpheline vue par `assertGuardEmpty` | à faire (lot 0.28.0) |
+| BL-094 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | `bootstrap.ts` ~300 : échec de `assertGuardEmpty` avalé (`.catch(() => 0)`) : garde orpheline durable possible, à mettre en échec fermé | à faire (lot 0.28.0) |
+| BL-095 | relecture code-reviewer de FIX-A008 (lot 0.28.0) | `serializedDriver.ts` ~155 : BEGIN IMMEDIATE exécuté puis rejeté par le transport, transaction ouverte à l’insu du pilote (même classe que A-008) | à faire (lot 0.28.0) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -271,7 +274,7 @@ Source : branche `audit-0.26.0` (PR brouillon #148), `docs/audit-0.26.0/bloquant
 | A-005 | audit Codex 0.26.0 | amélioration — huit avertissements cargo autorisés (tokio, rustix), rsa hors graphe : actualiser | à faire (lot 0.28.0) |
 | A-006 | audit Codex 0.26.0 | mineur — test chronométré de checklist dans `npm run test` | fait (PR #153) |
 | A-007 | audit Codex 0.26.0 | mineur — import Tauri dynamique hors façade dans `theme.ts`, garde ESLint aveugle à la forme dynamique | fait (PR #153) |
-| A-008 | audit Codex 0.26.0 | bloquant — rollback en échec : écriture suivante acquittée puis perdue à la réouverture (`serializedDriver.ts`) | à faire (lot 0.28.0) |
+| A-008 | audit Codex 0.26.0 | bloquant — rollback en échec : écriture suivante acquittée puis perdue à la réouverture (`serializedDriver.ts`) | fait (FIX-A008) |
 | A-009 | audit Codex 0.26.0 | bloquant — instantané : colonne nouvelle d'une table connue perdue par l'appareil ancien (dont `routine_day.weekday`) | à faire (lot 0.28.0) |
 | BL-030 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : réintégration en échec gardée au journal seul ; double panne de persistance à vérifier | à faire (lot 0.28.0) |
 | BL-031 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : erreur de `assertGuardEmpty` transformée en zéro | à faire (lot 0.28.0) |

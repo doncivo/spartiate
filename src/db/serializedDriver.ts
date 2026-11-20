@@ -8,6 +8,7 @@ import {
   type SqlParams,
   type SqlRow,
 } from './driver';
+import { describeError } from './errorText';
 
 /**
  * Connexion brute fournie par une implémentation (plugin Tauri SQL, SQLite Wasm…).
@@ -53,9 +54,28 @@ export function createSerializedDriver(
   let closed = false;
   /** Vrai pendant l'exécution d'une transaction. */
   let inTransaction = false;
+  /**
+   * A-008 : échec fermé. Posé quand l'annulation d'une transaction ne peut pas être établie (ROLLBACK rejeté autrement que par « no transaction
+   * is active »), ou quand la garde de synchro d'une transaction perdue ne peut pas être retirée : SQLite peut garder la transaction ouverte,
+   * toute écriture suivante serait acquittée puis perdue. Plus aucune instruction n'est émise, sauf la fermeture.
+   */
+  let poisoned: DbError | null = null;
+  const poisonListeners: Array<(error: DbError) => void> = [];
+  const poison = (error: DbError): void => {
+    if (poisoned) return;
+    poisoned = error;
+    for (const listener of poisonListeners) {
+      try {
+        listener(error);
+      } catch {
+        // Un abonné défaillant ne rouvre pas la file.
+      }
+    }
+  };
 
-  const enqueue = <T>(task: () => Promise<T>): Promise<T> => {
+  const enqueue = <T>(task: () => Promise<T>, allowPoisoned = false): Promise<T> => {
     if (closed) return Promise.reject(new DbError('closed', 'Base fermée'));
+    if (poisoned && !allowPoisoned) return Promise.reject(poisoned);
     return new Promise<T>((resolve, reject) => {
       let started = false;
       let abandoned = false;
@@ -65,6 +85,11 @@ export function createSerializedDriver(
         if (abandoned) return;
         started = true;
         if (timer !== undefined) clearTimeout(timer);
+        // Appel déjà en file quand la connexion a été empoisonnée : refusé, jamais exécuté.
+        if (poisoned && !allowPoisoned) {
+          reject(poisoned);
+          return;
+        }
         try {
           resolve(await task());
         } catch (error) {
@@ -146,21 +171,61 @@ export function createSerializedDriver(
           return result;
         } catch (error) {
           // Un ROLLBACK qui ne trouve plus de transaction dit la même chose qu'un COMMIT perdu : la connexion a été remplacée.
-          const rollbackLost = await rawExecute('ROLLBACK').then(
-            () => false,
-            (rollbackError: unknown) => /no transaction is active/i.test(rollbackError instanceof Error ? rollbackError.message : String(rollbackError)),
-          );
-          // TRI-22 : chaque instruction a été validée seule, y compris la pose de `sync_guard` ; elle est retirée AVANT de rendre la file, sinon
-          // les écritures des autres appelants passeraient sans entrer dans `sync_outbox`. Échec du retrait : l'erreur d'origine reste rendue.
-          if (lost || rollbackLost) await rawExecute('DELETE FROM sync_guard').catch(() => undefined);
+          // Tout autre rejet : l'annulation n'est pas établie, la transaction peut rester ouverte (A-008) : échec fermé.
+          let rollbackLost = false;
+          let rollbackFailure: unknown;
+          let rollbackFailed = false;
+          try {
+            await rawExecute('ROLLBACK');
+          } catch (rollbackError) {
+            if (/no transaction is active/i.test(describeError(rollbackError))) rollbackLost = true;
+            else {
+              rollbackFailed = true;
+              rollbackFailure = rollbackError;
+            }
+          }
+          if (rollbackFailed) {
+            poison(
+              new DbError(
+                'connection-poisoned',
+                `Connexion invalidée : ROLLBACK impossible, la transaction peut rester ouverte. Erreur d'origine : ${describeError(error)}. Cause du ROLLBACK : ${describeError(rollbackFailure)}`,
+                { cause: rollbackFailure },
+              ),
+            );
+          } else if (lost || rollbackLost) {
+            // TRI-22 : chaque instruction a été validée seule, y compris la pose de `sync_guard` ; elle est retirée AVANT de rendre la file,
+            // sinon les écritures des autres appelants passeraient sans entrer dans `sync_outbox`. Échec du retrait : échec fermé (A-008),
+            // l'erreur d'origine reste rendue à l'appelant.
+            try {
+              await rawExecute('DELETE FROM sync_guard');
+            } catch (guardError) {
+              poison(
+                new DbError(
+                  'connection-poisoned',
+                  `Connexion invalidée : transaction perdue et garde de synchro non retirée. Erreur d'origine : ${describeError(error)}. Cause du retrait : ${describeError(guardError)}`,
+                  { cause: guardError },
+                ),
+              );
+            }
+          }
           throw error;
         } finally {
           active = false;
           inTransaction = false;
         }
       }),
+    onPoisoned: (listener) => {
+      poisonListeners.push(listener);
+      if (poisoned) {
+        try {
+          listener(poisoned);
+        } catch {
+          // Un abonné défaillant ne rouvre pas la file.
+        }
+      }
+    },
     close: () => {
-      const done = enqueue(() => raw.close());
+      const done = enqueue(() => raw.close(), true);
       closed = true;
       return done;
     },
