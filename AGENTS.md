@@ -32,6 +32,11 @@ Lis d'abord `CLAUDE.md` (stack, commandes, couches, bundle de départ : il ne se
 - Données réelles de Spartiate (`%APPDATA%\fr.spartiate.app`, `iCloud Drive/Spartiate`, conteneur iPhone) : conteneur de laboratoire jusqu'à la première utilisation réelle annoncée par Ali dans `docs/decisions.md` (D-38) ; ensuite interdites comme celles de CircleTasks. Fixtures synthétiques uniquement ; smoke, Rust et e2e en CI. Aucun agent ne supprime de conteneur (D-54).
 - Lire un fichier qu'Ali désigne explicitement, par exemple un export de journal iPhone déposé dans iCloud Drive, est permis. Toute autre lecture hors dépôt se demande d'abord.
 
+## Registre des points en attente (D-320, décision d'Ali du 2026-11-20)
+
+- `docs/backlog.md` tient une ligne par point ouvert : identifiant, origine (rapport de lot, audit, demande d'Ali datée), description d'une ligne, statut (à faire, lot prévu, reporté avec motif, fait avec PR).
+- Chaque lot met `docs/backlog.md` à jour avant de se clore (points ajoutés, statuts changés). Un rapport de fin de lot ne liste « ce qui reste » qu'en renvoyant à ce fichier.
+
 ## Tri des défauts
 
 - Un défaut qui perd des données, ou qui affiche un état faux sans le dire, passe avant la fin de l'itération en cours : ouvre le ticket à l'étape courante, consigne le constat dans `docs/journal.md`, informe Ali en une phrase disant ce que lui voit.

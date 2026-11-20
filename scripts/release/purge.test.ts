@@ -171,15 +171,23 @@ describe('lot (g) : i18n français seul', () => {
 
 // Lot (h) archivage D-40 : les documents CircleTasks vont dans docs/archive/circletasks/ (git mv), les liens suivent.
 describe('lot (h) : archivage CircleTasks (D-40)', () => {
-  const moved = ['stories', 'maquettes-refonte', 'backlog.md', 'dettes.md', 'audit-1.0.md', 'audits', 'essais-iphone.md', 'essais-iphone-a9.md', 'reprise-codex.md', 'reprise-historique-2026-10.md'];
+  const moved = ['stories', 'maquettes-refonte', 'dettes.md', 'audit-1.0.md', 'audits', 'essais-iphone.md', 'essais-iphone-a9.md', 'reprise-codex.md', 'reprise-historique-2026-10.md'];
   for (const name of moved) {
     it(`docs/${name} est archivé`, () => {
       expect(present(`docs/${name}`)).toBe(false);
       expect(present(`docs/archive/circletasks/${name}`)).toBe(true);
     });
   }
+  // DOC-PRIV (D-320, décision d'Ali du 20/11/2026) : l'ancien backlog de CircleTasks reste archivé ; `docs/backlog.md` est désormais le
+  // registre de Spartiate, reconnu à son titre et à sa décision, jamais une copie de l'ancien.
+  it('docs/backlog.md : l’ancien est archivé, le nouveau est le registre de Spartiate (D-320)', () => {
+    expect(present('docs/archive/circletasks/backlog.md')).toBe(true);
+    const registry = read('docs/backlog.md');
+    expect(registry.startsWith('# Registre des points en attente')).toBe(true);
+    expect(registry).toContain('décision d\'Ali du 20/11/2026');
+  });
   it('aucun document ou source actif ne pointe vers l’ancien emplacement', () => {
-    const stale = /docs\/(stories|maquettes-refonte|audits|audit-1\.0\.md|backlog\.md|dettes\.md|essais-iphone(-a9)?\.md|reprise-codex\.md|reprise-historique-2026-10\.md)/;
+    const stale = /docs\/(stories|maquettes-refonte|audits|audit-1\.0\.md|dettes\.md|essais-iphone(-a9)?\.md|reprise-codex\.md|reprise-historique-2026-10\.md)/;
     const files = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' }).split('\n').filter((p) => p && !p.startsWith('docs/archive/') && !p.startsWith('docs/prd/') && !p.endsWith('purge.test.ts') && !/\.(png|ico|icns|jpg|woff2?|wasm|traineddata|gz|zip|svg|lock)$/i.test(p));
     const offenders = files.filter((p) => present(p) && stale.test(read(p).replace(/docs\/archive\/circletasks\/\S*/g, '')));
     expect(offenders).toEqual([]);

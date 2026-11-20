@@ -58,23 +58,23 @@ Si la source n'est pas encore publiée : télécharge `Spartiate.ipa` (artefact 
 
 1. **Notes** : dans SideStore, ouvre la source Spartiate, puis la fiche de l'app : « Nouveautés » liste les changements.
 2. **Un geste** : VPN actif, Wi-Fi, touche « Mettre à jour ». Ne supprime jamais l'app pour la réinstaller : ses données locales seraient perdues.
-3. **Conservé** : tâches, réglages, Face ID, dossier iCloud Drive, clé de synchronisation et rappels (replanifiés seuls au premier lancement).
-4. **Vérifier en 30 secondes** : Réglages > « À propos » affiche le nouveau numéro de version.
+3. **Conservé** : séances, routines, nutrition, récupération, réglages, dossier iCloud Drive, clé de synchronisation et rappels de compléments (replanifiés seuls au premier lancement).
+4. **Vérifier en 30 secondes** : Plus › « À propos et diagnostic » affiche le nouveau numéro de version.
 5. **Écran d'échec au démarrage** : tes données sont intactes. Touche « Copier le détail » et envoie-le, ou « Restaurer la sauvegarde d'avant la mise à jour ». Ne supprime pas l'app.
 6. **Pas de retour arrière** : n'installe pas une version plus ancienne. Si l'app dit qu'elle est « plus ancienne que vos données », installe la dernière version : rien n'a été modifié.
-7. **PC et iPhone** : si l'un affiche « Mettez à jour l'app », mets l'autre à jour (PC : Réglages > « Rechercher une mise à jour »).
+7. **PC et iPhone** : si l'un affiche « Mettez à jour l'app », mets l'autre à jour (PC : Plus › « À propos et diagnostic » › « Rechercher une mise à jour »).
 
 ## 8. Renouveler tous les 7 jours
 
 - Ouvre SideStore, VPN actif, en Wi-Fi, et touche « Tout actualiser » (Mes apps). Le faire tous les 5 ou 6 jours est plus sûr.
 - SideStore peut le faire seul en arrière-plan ; une automatisation Raccourcis qui ouvre SideStore chaque jour aide.
-- Spartiate vous prévient 24 h avant l'expiration ; actualisez-la alors dans SideStore. À partir du paquet A (1.0.1), la date d'expiration lue par l'app est affichée en tête de Réglages ; en 1.0.0, elle reste dans « À propos ».
+- Spartiate te prévient 24 h avant l'expiration ; actualise-la alors dans SideStore. La date d'expiration lue par l'app est affichée dans Plus › « À propos et diagnostic ».
 
 ## Pour publier une version (une fois, côté GitHub)
 
 Une seule fois : dans le dépôt Spartiate sur GitHub, Settings > Environments > `releases` (New environment s'il n'existe pas), ajoute le secret `RELEASES_TOKEN` (jeton limité au dépôt spartiate-releases, droit « Contents : écriture »). Aucune approbation manuelle n'est demandée (décision du 2026-10-07). Recommandation facultative : dans « Deployment branches and tags », limite aux tags `ios-v*` et `v*`.
 
-Secrets de dépôt pour Google Agenda (noms seulement, valeurs dans GitHub) : `CT_GOOGLE_CLIENT_ID` et `CT_GOOGLE_CLIENT_SECRET` (client « Application de bureau », build PC), `CT_GOOGLE_IOS_CLIENT_ID` (client « iOS », build iPhone). Seul un tag `ios-vX.Y.Z` publie (X.Y.Z = version de l'app) ; un lancement du workflow « Build iOS » sur une branche produit seulement l'IPA en artefact, même avec « publish » coché.
+Seul un tag `ios-vX.Y.Z` publie (X.Y.Z = version de l'app) ; un lancement du workflow « Build iOS » sur une branche produit seulement l'IPA en artefact, même avec « publish » coché.
 
 ## Si ça se passe mal
 
@@ -85,4 +85,4 @@ Secrets de dépôt pour Google Agenda (noms seulement, valeurs dans GitHub) : `C
 | Le renouvellement échoue | Active LocalDevVPN/StosVPN, passe en Wi-Fi, ferme et rouvre SideStore. Vérifie le fichier d'appairage. |
 | Spartiate ne s'ouvre plus (expirée) | Renouvelle-la dans SideStore. Ne la supprime pas : tu perdrais les données locales. |
 | SideStore lui-même ne s'ouvre plus | Réinstalle-le avec iloader depuis le PC (étape 3). Les apps déjà là restent à renouveler ensuite. |
-| Plus de place (3 apps max) | Supprime une autre app installée hors App Store, ou patiente 7 jours. |
+| Plus de place (3 apps max) | Ne supprime aucune app : une app installée hors App Store peut garder des données que tu ne retrouverais pas. Une place se libère seulement quand une app installée hors App Store expire (7 jours) sans être renouvelée. |

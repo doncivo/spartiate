@@ -203,7 +203,7 @@ describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décis
   const plan = rec('plan', '2026-11-16', 2350, at('2026-11-15T10:00:00.000Z'));
   const checkIn = rec('check', '2026-11-09', 3050, at('2026-11-15T10:05:00.000Z'));
 
-  it('scénario 1a : check-in de la semaine du 09/11 décidé après l’import de la cible du 16/11 : [retiré] le 15/11, [retiré] dès le 16/11', () => {
+  it('scénario 1a : check-in de la semaine du 09/11 décidé après l’import de la cible du 16/11 : 3 050 le 15/11, 2 350 dès le 16/11', () => {
     expect(effectiveTarget([plan, checkIn], '2026-11-15' as LocalDate)?.id).toBe('check');
     expect(effectiveTarget([plan, checkIn], '2026-11-16' as LocalDate)?.id).toBe('plan');
     expect(effectiveTarget([checkIn, plan], '2026-11-19' as LocalDate)?.id).toBe('plan');
@@ -255,7 +255,7 @@ describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décis
   });
 
   it('revue : cible du jour différente de la semaine analysée : le plan de repos est rapporté à la cible analysée par le même écart', () => {
-    const restPlan = { rest: { kcal: 2100, proteinG: 150, fatG: 70, carbG: 162 }, trainingDays: [1, 2, 4, 5, 6] as const };
+    const restPlan = { rest: { kcal: 2000, proteinG: 150, fatG: 70, carbG: 137 }, trainingDays: [1, 2, 4, 5, 6] as const };
     const analysed = { ...rec('w', '2026-11-09', 3050, at('2026-11-09T10:00:00.000Z')), restPlan: null };
     const planned = { ...rec('p', '2026-11-16', 2350, at('2026-11-14T10:00:00.000Z')), restPlan };
     const out = checkInRestPlan([analysed, planned], '2026-11-15' as LocalDate, '2026-11-16' as LocalDate);

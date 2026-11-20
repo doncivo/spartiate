@@ -183,22 +183,22 @@ describe('buildSleepNights', () => {
 });
 
 describe('FIX-0172 point 7 : tous les stades Apple Watch comptent comme endormi (D-132)', () => {
-  it('nuit typique d’Apple Watch (valeurs inventées, libellés français) : 448 min dormies, soit [retiré]', () => {
+  it('nuit typique d’Apple Watch (valeurs inventées, libellés français) : 452 min dormies', () => {
     const parsed = parseShortcutSleep(fixture('sommeil-apple-watch.csv'), TODAY, TZ);
     expect(parsed.rejectedTotal).toBe(0);
     const { nights, ignoredGroups } = buildSleepNights(parsed.segments, TZ);
     expect(ignoredGroups).toBe(0);
     expect(nights).toHaveLength(1);
-    expect(nights[0]).toMatchObject({ day: '2026-11-08', asleepMinutes: 448, bedAt: '2026-11-07T22:52:00.000Z', wakeAt: '2026-11-08T06:32:00.000Z' });
+    expect(nights[0]).toMatchObject({ day: '2026-11-08', asleepMinutes: 452, bedAt: '2026-11-07T22:52:00.000Z', wakeAt: '2026-11-08T06:36:00.000Z' });
   });
 
-  it('même nuit avec les libellés anglais (Core, Deep, REM, Asleep (Unspecified), Awake, In Bed) : 448 min', () => {
+  it('même nuit avec les libellés anglais (Core, Deep, REM, Asleep (Unspecified), Awake, In Bed) : 452 min', () => {
     const en = fixture('sommeil-apple-watch.csv')
       .replace(/;Au lit/g, ';In Bed').replace(/;Principal/g, ';Core').replace(/;Profond/g, ';Deep').replace(/;Paradoxal/g, ';REM')
       .replace(/;Endormi \(non précisé\)/g, ';Asleep (Unspecified)').replace(/;Éveillé/g, ';Awake');
     const parsed = parseShortcutSleep(en, TODAY, TZ);
     expect(parsed.rejectedTotal).toBe(0);
-    expect(buildSleepNights(parsed.segments, TZ).nights[0]?.asleepMinutes).toBe(448);
+    expect(buildSleepNights(parsed.segments, TZ).nights[0]?.asleepMinutes).toBe(452);
   });
 
   it.each([

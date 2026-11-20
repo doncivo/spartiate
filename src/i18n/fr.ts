@@ -375,7 +375,7 @@ export const fr = {
     /** I-02 (ADR 0013 §3.3) : moins de 24 h avant l'expiration de la signature (texte précis composé par I-02 dans `message`). */
     signingSoon: 'Spartiate expire bientôt : actualise-la dans SideStore',
     /** I-02 : signature expirée. */
-    signingExpired: 'La signature est expirée : réinstalle l’app',
+    signingExpired: 'La signature est expirée : actualise Spartiate dans SideStore',
     signingViewLabel: 'Voir l’expiration de la signature dans Réglages',
   },
   undo: {

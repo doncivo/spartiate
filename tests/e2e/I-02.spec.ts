@@ -95,10 +95,10 @@ test.describe('I-02 — alerte avant expiration (iPhone, profil et planificateur
     await expect(page.getByText('Moins de 24 h restantes : actualise Spartiate dans SideStore')).toBeVisible();
   });
 
-  test('signature expirée : bandeau « La signature est expirée : réinstalle l’app »', async ({ page }) => {
+  test('signature expirée : bandeau « La signature est expirée : actualise Spartiate dans SideStore »', async ({ page }) => {
     await signing(page, (hooks) => hooks.source.expireAt('2026-10-08T06:00:00Z'));
     await resume(page);
-    await expect(page.locator('.ct-status-banner')).toContainText('La signature est expirée : réinstalle l’app');
+    await expect(page.locator('.ct-status-banner')).toContainText('La signature est expirée : actualise Spartiate dans SideStore');
   });
 
   test('date inconnue : dite dans À propos (critère 7)', async ({ page }) => {
