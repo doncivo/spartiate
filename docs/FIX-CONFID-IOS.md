@@ -125,3 +125,17 @@ Aucun statut ne change avant ces constats (D-36).
 ## Budget
 
 Budget M (150 k) dépassé par l'agent du module (≈ 273 k tokens), sous l'arrêt au double (D-324) : consigné, travail poursuivi.
+
+## Passe code-reviewer — revue 1 (à froid) : à corriger
+
+1. (Important, preuve rouge) le vert `807e5cef` ajoute des tests sans rouge préalable : `src-tauri/tests/desktop/backup_exclusion.rs` (critères 2, 3), deux tests de `src-tauri/tests/desktop/applog.rs` (critère 9 : table de 256 couples, listes de la fixture), `src/features/settings/logs/logsRow.test.tsx` ~92 (critère 5). À faire : les rejouer contre le code de `7d400b72` dans un worktree jetable et consigner l'échec, sinon le dire comme écart.
+2. (Important, masquage) passent encore en clair, TS et Rust : tableau JSON sous une clé non permise (`{"restingHr":[52]}`), clé composée contenant un mot corporel (`heart_rate=142`, `body_mass=82`, `poidsKg=82`), `=` entouré d'espaces (`hrv = 48`), espace fine U+2009 et U+2007 (`82 kg`). À faire : commit rouge (vecteurs ajoutés à `tests/fixtures/logs/sanitize-vectors.json`, lus par les deux langages), puis vert.
+3. (Suggestion, D-330) `fr.bodyProgress.ts` ~100, ~105 : « jamais ailleurs » est faux pour les sauvegardes iCloud prises avant cette version et si l'exclusion échoue (H-38) : retirer la promesse absolue.
+4. (Suggestion, D-331) tout décimal est masqué (`v0.28`, `took 120 ms`) : choix voulu, à écrire dans D-331.
+5. (Suggestion) résumé `log` / `rate-capped` perdu si l'app se ferme avant la minute suivante (comme `suppressed`, déjà avant) : à consigner.
+6. (Suggestion) écart au code amont du plugin SQL vendored (`secure_delete`) : une ligne dans l'avenant SEC-01 de l'ADR 0002.
+Conformes : Swift et Rust iOS plausibles (appel avant le plugin SQL, délai de 5 s, pas de clé plist ni d'entitlement), scopes réservés, débit borné, rotation dite, BodyProgress.test.tsx corrigé dans le rouge, couches et textes.
+
+## Point d'étape (arrêt au double du budget, D-324)
+
+Le ticket a atteint le double de son budget M (≈ 273 k pour l'agent du module, plus les relectures) : arrêt (D-324). Branche poussée, PR #163 ouverte, **non fusionnée** (revue 1 à corriger). À la reprise : traiter les points 1 et 2 (rouge puis vert), 3, 4 et 6 ; relire la compilation build-ios de branche (run 44765785227) et la CI ; revue 2 ; fusion. Suivant ensuite : FIX-EXPORT.
