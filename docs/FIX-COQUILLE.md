@@ -43,3 +43,14 @@ product-owner (cette fiche), agent du module, qa-test, code-reviewer : consigné
 ## Constats d'Ali à faire
 
 Aucun (confirmations visibles à l'usage ; relance de l'app après erreur d'affichage non reproductible sans défaut).
+
+## Passe code-reviewer (à froid, agent distinct) : à corriger, puis corrigé
+
+Six points, corrigés (tests rouges 7c672a90 pour 1 à 3, correctifs c58fe9c6, compensation dans le commit suivant) :
+
+1. `RootErrorBoundary` ne propose plus « Relancer l'app » pendant une migration ni sur pilote empoisonné (contrôle au rendu et à l'appui : `connection-poisoned` ou étape `isDatabaseWorkStep` ouverte) ; consigne `app.crashMigration` (ou `app.dbPoisoned`). Test rouge puis vert.
+2. `DbOpenWatchdog` : délai des étapes de base (120 s) pour `schema`/`backup`/`migration`/`afterApply`, et texte vrai `app.dbSlow` (« patiente ») au lieu de « touche Réessayer » quand le bouton est retiré. Test rouge puis vert.
+3. `SetRow` : le focus après Entrée va à la première série à faire située APRÈS la ligne (`compareDocumentPosition`), pas à la première du document. Test rouge puis vert.
+4. C-116 : le journal reçoit le code fixe « chargement impossible », plus l'`Error` brute.
+5. Une seule classe de frontière, `FallbackBoundary` (`fallback` en prop), pour la racine et « Démarrage bloqué ».
+6. Compensation du bundle de départ (C-132) : 163 clés mortes retirées de `fr.ts` (`tasks.*`, `detail.*` sauf `detail.stamp*`, `undo.*` mortes, `shortcuts.*` mortes, etc., vérifiées par recherche du chemin complet et des préfixes calculés, `tsc` propre) et `fr.importCsv.ts` réduit à `undoLabel` et `undoLabelOne`. Mesure normalisée (`measureStart.ts`, build de production) : origin/main c1613768 = 196 698 o ; branche après compensation = 194 349 o (-2 349 o). Avant compensation, sur l'ancienne base 43020e9a : 196 689 o (main) contre 197 040 o (branche).
