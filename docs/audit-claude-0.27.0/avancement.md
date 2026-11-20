@@ -15,8 +15,8 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 |---|---|---|
 | 4 Moteur d'entraînement | L | terminée le 20/11 : 45/45 fichiers, C-001 à C-030 (1 bloquant), 11 rouges, 20 vecteurs verts |
 | 5 Nutrition | M | terminée le 20/11 : 39/39 fichiers (+ off.rs, notifications compléments), C-031 à C-048, 6 rouges, 8 vecteurs verts, aucun bloquant |
-| 6 Récupération et Santé | M | en cours |
-| 7a Aujourd'hui et Entraînement | L | à faire |
+| 6 Récupération et Santé | M | terminée le 20/11 : 23/23 fichiers (+ healthkit.rs), C-049 à C-062, 7 rouges, 7 vecteurs verts, aucun bloquant |
+| 7a Aujourd'hui et Entraînement | L | en cours |
 | 7b Nutrition et Progrès | L | à faire |
 | 7c Plus, onboarding, coquilles | L | à faire |
 | 8a Rust hors sync | L | à faire |
@@ -31,3 +31,4 @@ Worktree : `C:\Dev\spartiate\.codex-tmp\wt-audit-claude`, branche `audit-claude-
 - 20/11 : worktree, branche, squelette, générateur de couverture (892 fichiers de production dans le périmètre).
 - 20/11 : partie 4 terminée. Bloquant C-001 (assisté inversé) poussé dans bloquants.md. Points « à vérifier » relayés en 7a : C-018, C-020, C-024.
 - 20/11 : partie 5 terminée, aucun bloquant. Outil preuves/lu.mjs pour consigner les lectures.
+- 20/11 : partie 6 terminée, aucun bloquant (C-049 journée rouge manquée en début d'apprentissage : important).

@@ -112,3 +112,39 @@ Hors constat : sel, sodium, repères de qualité et micronutriments (§ 15.7) ne
 - C-046 mineur — `src-tauri/src/off.rs:422` : virgule remplacée par un point, « 1,234 » (milliers) → 1,234.
 - C-047 amélioration — `src/platform/photoImage/picker.ts:41` : aucun plafond de taille avant `createImageBitmap` (mémoire iPhone) ; `offLookup.ts:81` : fiche périmée perdue si OFF répond « not-found ».
 - C-048 mineur et à vérifier — compléments : « Pris » silencieux quand l'heure a changé ou le complément est supprimé (`supplementActions.ts:111-116`) ; file d'actions illisible ou tronquée à 200 clés → une prise décochée peut être recochée (contraire à D-252, fenêtre étroite) ; priorité entre plans selon l'ordre des passages et non D-212 (`supplementNotifications.ts:97`, à vérifier) ; heures calmes non appliquées aux compléments (à trancher) ; registre illisible → `pending()` vide, rappels coucher et matin retirés par le `replace` des compléments (`tauriNotifications.ts:461`, à vérifier).
+
+## Partie 6 — récupération et dossier Santé
+
+Preuves : `preuves/partie6-recuperation.test.ts`, sortie `preuves/resultats/partie6-recuperation.log` (7 rouges = constats ; 7 vecteurs verts : baseline 14 nuits moyenne 50 σ √(350/13), Recovery 67 et 74, besoin de sommeil 582, nuit du 25/10 à cheval sur le changement d'heure 540 min, fichier sommeil à stades 520 min endormi / 565 au lit, récupération des quadriceps 25 % à 24 h, HRV à virgule avec BOM/CRLF/doublon/sans fuseau, FC repos, pesées au changement d'heure, livres → 81,65 kg, masse grasse 0,269 → 26,9 %).
+Vérifié sans défaut (lecture) : bornes 0-100 et abstention jamais 0, journée rouge ≤ 33, union des intervalles de sommeil, nuit rattachée au réveil, siestes écartées, dette bornée [0, 180], `health_files_read` (liste blanche fermée de 14 noms, lien ou dossier refusé, ≤ 2 Mio, aucun chemin renvoyé), journaux sans valeur corporelle.
+
+### C-049 — important — baseline : l'exclusion des aberrantes (> 2,5 σ) ne peut rien exclure sur 7 ou 8 nuits
+- `src/domain/recovery/baseline.ts:29` : exclusion en une passe avec moyenne et σ de l'échantillon complet ; aucune valeur ne peut dépasser (n − 1)/√n σ, soit 2,27 σ pour 7 nuits et 2,47 σ pour 8. HRV [48, 50, 52, 50, 48, 52, 200] → rien d'exclu, moyenne 71,4, σ 56,7. Nuit suivante à HRV 30, FC repos dans sa moyenne : z HRV **−0,73** au lieu de ≤ −2, score ≈ 41 au lieu de ≈ 25 : **la journée rouge (≤ 33) n'est pas proposée** et les charges ne sont pas modulées.
+- Preuve : tests rouges C-049 (exclusion, puis z HRV). Conforme à la lettre du § 16.3, sans effet en début d'apprentissage. Correction : médiane et MAD, ou σ calculé sans la valeur testée.
+
+### C-050 — important — proposition d'heure de coucher avancée de 3 h par une nuit non valide
+- `src/domain/recovery/bedtimeProposal.ts:25` : la dette retient toute nuit à `asleepMinutes` non nul, sans le seuil de 180 min de D-130 (que `debtNights` et le résumé du jour appliquent). 13 nuits de 450 min et une de 120 min → besoin **630 min, coucher 20:30** au lieu de 450 min, 23:30. Le rappel de coucher suit cette heure.
+- Preuve : test rouge C-050. Correction : réutiliser `debtNights(...).valid` ; écrire si la nuit du jour est dans la fenêtre (D-130 dit « aujourd'hui exclu »).
+
+### C-051 — mineur — Exertion : une séance à date illisible fait planter le résumé du jour
+- `src/domain/recovery/exertion.ts:15`, `:34` : `new Date(NaN).toISOString()` lève `RangeError` (le cardio est protégé ligne 43, pas la musculation) ; `summarizeRecoveryDay` plante pour tous les jours.
+- Preuve : test rouge C-051. Correction : ignorer la séance si `Date.parse` est NaN. Source d'une telle valeur non vérifiée.
+
+### C-052 — important — `pas.csv` : totaux partiels qui écrasent les totaux complets
+- `src/domain/recovery/shortcutFiles.ts:78-79` (`MAX_LINES = 10_000`, premières lignes gardées) avec le guide (« Plus ancien en premier ») : au-delà de 10 000 lignes, les jours les plus récents disparaissent en silence (`truncated` seulement), et le jour coupé reçoit un total partiel. Même effet sur le premier jour d'une fenêtre « 30 derniers jours » commencée à l'heure de l'export : `upsertTotals` (`recoverySampleRepository.ts:59-62`, via `recoveryImport/service.ts:172-175`) remplace 8 000 pas par 1 200. `pas.csv` reste UNVERIFIED (H-25).
+- Preuve : test rouge C-052 (10 000 lignes du 01/11 puis une du 02/11 → 02/11 absent) ; écrasement par lecture (`upsertTotals` remplace toute valeur différente). Correction : garder la fin du fichier, ne jamais réécrire le premier jour, ou n'accepter qu'un total plus grand.
+
+### C-053 — mineur — fuseau invalide : exception au lieu d'un rejet
+- `shortcutFiles.ts:89` avec `timeZone.ts` (`utcToLocal` lève `RangeError`) ; `parseBodyFile` est appelé hors `try` (`healthBodyImport/service.ts:324`) : tout l'import corps s'interrompt.
+- Preuve : test rouge C-053. Correction : rejet `bad_timezone` ou fuseau de repli UTC signalé.
+
+### C-054 à C-062 — mineurs, améliorations et points à vérifier (lecture)
+- C-054 mineur — `shortcutWeights.ts:69` : 3e colonne vide (`…;81.4;`) rejetée par l'import au sélecteur, acceptée par le lecteur du dossier (`bodyShortcutFiles.ts:106`). Test rouge C-054.
+- C-055 mineur — `bodyShortcutFiles.ts:152` (`>=`) : deux pesées au même instant, valeurs différentes → la dernière ligne gagne, résultat dépendant de l'ordre du fichier.
+- C-056 mineur, à vérifier — fichier remplacé tronqué : `…;48` (au lieu de `48.5`) accepté en HRV 48 (`bookmark.rs:362-377` ne refuse qu'un fichier qui grandit).
+- C-057 amélioration, à vérifier (H-25) — `shortcutFiles.ts:55`, `:99` : virgule lue comme décimale ; un séparateur de milliers anglais (`1,234;count`) donnerait 1 pas sans rejet.
+- C-058 à trancher — `recoveryImport/service.ts:221-224` : jour calculé dans le fuseau actuel, y compris au recalcul ; après un voyage, une mesure ancienne peut glisser d'un jour (conforme à REV-01 constat 9).
+- C-059 mineur — `recoveryScore.ts:39-42` : la nuit du jour n'est pas soumise au seuil de 180 min (un épisode de 90 min avec HRV produit un score, que `unusualValues` écarte par ailleurs).
+- C-060 mineur — `daySummary.ts:58` : baseline complète à σ = 0, ou HRV absente, classée niveau B (« sans baseline complète », § 16.1) ; libellé seulement.
+- C-061 amélioration, à trancher — `baseline.ts:41-45` : 14 dernières nuits valides sans limite de calendrier ; après deux mois sans Watch, baseline ancienne en qualité « good ».
+- C-062 à vérifier — `muscleRecovery` fige le pourcentage à l'instant du calcul (ligne de 07:00 lue telle quelle à 18:00) ; règle « cardio importé −10/25/40 % » du § 16.3 non implémentée (D-88, D-220) sans ligne dans la matrice ; `recoveryNotificationPlan.ts:74` : rappel à 02:30 le 29/03 (heure inexistante), conversion du service non relue.

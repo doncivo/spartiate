@@ -87,3 +87,27 @@ src/domain/supplementNotificationActions.ts	5	2026-11-20	relecteur compléments
 src/domain/notificationInstant.ts	5	2026-11-20	relecteur compléments	
 src/features/notifications/supplementNotifications.ts	5	2026-11-20	relecteur compléments	
 src/features/notifications/supplementActions.ts	5	2026-11-20	relecteur compléments	
+src/domain/recovery/baseline.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/recoveryScore.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/sleepNeed.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/nights.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/exertion.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/factors.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/muscleRecovery.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/daySummary.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/unusualValues.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/config.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/types.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/bedtimeProposal.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/notificationPrefs.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/index.ts	6	2026-11-20	relecteur récupération	
+src/domain/recoveryNotificationPlan.ts	6	2026-11-20	relecteur récupération	
+src/domain/recovery/shortcutFiles.ts	6	2026-11-20	relecteur dossier Santé	
+src/domain/health/bodyShortcutFiles.ts	6	2026-11-20	relecteur dossier Santé	
+src/domain/health/shortcutWeights.ts	6	2026-11-20	relecteur dossier Santé	
+src/platform/healthkit/index.ts	6	2026-11-20	relecteur dossier Santé	
+src/platform/healthkit/tauriHealthKit.ts	6	2026-11-20	relecteur dossier Santé	
+src/platform/healthkit/types.ts	6	2026-11-20	relecteur dossier Santé	
+src/platform/healthkit/unavailable.ts	6	2026-11-20	relecteur dossier Santé	
+src/platform/healthkit/validation.ts	6	2026-11-20	relecteur dossier Santé	
+src-tauri/src/healthkit.rs	8a	2026-11-20	relecteur dossier Santé	lu pour la partie 6

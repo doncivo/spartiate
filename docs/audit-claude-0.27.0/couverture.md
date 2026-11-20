@@ -2,7 +2,7 @@
 
 Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/lectures.tsv` : ne pas éditer à la main.
 
-- Fichiers de production et d'outillage du périmètre : **892**, lus : **88** (9.9 %).
+- Fichiers de production et d'outillage du périmètre : **892**, lus : **112** (12.6 %).
 - Hors relecture motivée (vendored, généré, binaire) : 179. Tests et supports (partie 11, hors décompte) : 597.
 - Dossiers de Codex exclus (src/db, src/sync, src/domain/sync, src-tauri/src/sync) : 320.
 
@@ -247,7 +247,7 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src-tauri/src/export.rs` | 8a | à lire |  |
 | `src-tauri/src/export_common.rs` | 8a | à lire |  |
 | `src-tauri/src/export_ios.rs` | 8a | à lire |  |
-| `src-tauri/src/healthkit.rs` | 8a | à lire |  |
+| `src-tauri/src/healthkit.rs` | 8a | lu 2026-11-20 (relecteur dossier Santé) | lu pour la partie 6 |
 | `src-tauri/src/import.rs` | 8a | à lire |  |
 | `src-tauri/src/ios_setup.rs` | 8a | à lire |  |
 | `src-tauri/src/lib.rs` | 8a | à lire |  |
@@ -383,8 +383,8 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/exportImport/zip.ts` | 7c | à lire |  |
 | `src/domain/focusSession.ts` | 7c | à lire |  |
 | `src/domain/goalRules.ts` | 7c | à lire |  |
-| `src/domain/health/bodyShortcutFiles.ts` | 6 | à lire |  |
-| `src/domain/health/shortcutWeights.ts` | 6 | à lire |  |
+| `src/domain/health/bodyShortcutFiles.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/domain/health/shortcutWeights.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
 | `src/domain/historyExport.ts` | 7c | à lire |  |
 | `src/domain/hlc.ts` | 7c | à lire |  |
 | `src/domain/id.ts` | 7c | à lire |  |
@@ -446,22 +446,22 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/domain/projectRules.ts` | 7c | à lire |  |
 | `src/domain/quietHours.ts` | 7c | à lire |  |
 | `src/domain/recap.ts` | 7c | à lire |  |
-| `src/domain/recovery/baseline.ts` | 6 | à lire |  |
-| `src/domain/recovery/bedtimeProposal.ts` | 6 | à lire |  |
-| `src/domain/recovery/config.ts` | 6 | à lire |  |
-| `src/domain/recovery/daySummary.ts` | 6 | à lire |  |
-| `src/domain/recovery/exertion.ts` | 6 | à lire |  |
-| `src/domain/recovery/factors.ts` | 6 | à lire |  |
-| `src/domain/recovery/index.ts` | 6 | à lire |  |
-| `src/domain/recovery/muscleRecovery.ts` | 6 | à lire |  |
-| `src/domain/recovery/nights.ts` | 6 | à lire |  |
-| `src/domain/recovery/notificationPrefs.ts` | 6 | à lire |  |
-| `src/domain/recovery/recoveryScore.ts` | 6 | à lire |  |
-| `src/domain/recovery/shortcutFiles.ts` | 6 | à lire |  |
-| `src/domain/recovery/sleepNeed.ts` | 6 | à lire |  |
-| `src/domain/recovery/types.ts` | 6 | à lire |  |
-| `src/domain/recovery/unusualValues.ts` | 6 | à lire |  |
-| `src/domain/recoveryNotificationPlan.ts` | 6 | à lire |  |
+| `src/domain/recovery/baseline.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/bedtimeProposal.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/config.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/daySummary.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/exertion.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/factors.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/index.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/muscleRecovery.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/nights.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/notificationPrefs.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/recoveryScore.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/shortcutFiles.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/domain/recovery/sleepNeed.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/types.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recovery/unusualValues.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
+| `src/domain/recoveryNotificationPlan.ts` | 6 | lu 2026-11-20 (relecteur récupération) |  |
 | `src/domain/recurrenceEdit.ts` | 7c | à lire |  |
 | `src/domain/recurrenceNext.ts` | 7c | à lire |  |
 | `src/domain/recurrenceRules.ts` | 7c | à lire |  |
@@ -970,11 +970,11 @@ Généré par `preuves/couverture.mjs` depuis `git ls-tree v0.27.0` et `preuves/
 | `src/platform/haptics/index.ts` | 8b | à lire |  |
 | `src/platform/haptics/tauriHaptics.ts` | 8b | à lire |  |
 | `src/platform/haptics/types.ts` | 8b | à lire |  |
-| `src/platform/healthkit/index.ts` | 6 | à lire |  |
-| `src/platform/healthkit/tauriHealthKit.ts` | 6 | à lire |  |
-| `src/platform/healthkit/types.ts` | 6 | à lire |  |
-| `src/platform/healthkit/unavailable.ts` | 6 | à lire |  |
-| `src/platform/healthkit/validation.ts` | 6 | à lire |  |
+| `src/platform/healthkit/index.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/platform/healthkit/tauriHealthKit.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/platform/healthkit/types.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/platform/healthkit/unavailable.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
+| `src/platform/healthkit/validation.ts` | 6 | lu 2026-11-20 (relecteur dossier Santé) |  |
 | `src/platform/index.ts` | 8b | à lire |  |
 | `src/platform/liveActivity/index.ts` | 8b | à lire |  |
 | `src/platform/liveActivity/tauriLiveActivity.ts` | 8b | à lire |  |
