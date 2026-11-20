@@ -32,16 +32,20 @@ function scan(paths: readonly string[], patterns: readonly RegExp[], allow: (lin
 export const PERSONAL_VALUE_FORMS: readonly RegExp[] = [
   /valeurs? réelles? d['’]Ali/i,
   /\b(nuits|pesées?|mesures?|mensurations|sommeil|moyennes?|HRV|FC repos)\s+(réel(le)?s?\s+)?d['’]Ali\b/i,
-  /\b(ta|ton|tes)\s+(moyenne|poids|sommeil|nuits?|HRV|FC|cible|besoin|masse|tour de taille)\b[^.\n|]{0,40}\d/i,
   /moyenne (Apple )?Santé[^.\n|]{0,24}\d/i,
   /constat[^.\n|]{0,60}:\s*\d{1,2} h \d{2}\b/i,
   /constat d['’]Ali[^|\n]{0,160}\b\d[\d  ]{2,}\s?kcal\b/i,
   /cible (importée|du jour)[^|\n.]{0,40}\b\d[\d  ]{2,}\s?kcal\b/i,
 ];
+/**
+ * Forme au tutoiement (« ta moyenne … 7 h 12 ») : refusée dans les DOCUMENTS seulement. Dans le code et les tests, c'est le texte de l'app
+ * (« ton poids de corps (80 kg) ») rendu avec une valeur synthétique ; le catalogue de textes, lui, n'a que des paramètres (FIX-ABERR).
+ */
+export const DOC_ONLY_FORMS: readonly RegExp[] = [/\b(ta|ton|tes)\s+(moyenne|poids|sommeil|nuits?|HRV|FC|cible|besoin|masse|tour de taille)\b[^.\n|]{0,40}\d/i];
 
 describe('aucune valeur réelle d’Ali dans les fichiers suivis (C-165, D-318)', () => {
   it('les formes sont reconnues (témoins synthétiques)', () => {
-    const probe = (s: string): boolean => PERSONAL_VALUE_FORMS.some((re) => re.test(s));
+    const probe = (s: string): boolean => [...PERSONAL_VALUE_FORMS, ...DOC_ONLY_FORMS].some((re) => re.test(s));
     expect(probe('avec des nuits proches de ta moyenne habituelle (6 h 01)')).toBe(true);
     expect(probe('valeur réelle d’Ali : 1')).toBe(true);
     expect(probe('sommeil cohérent avec Santé (constat du 01/01 : 5 h 55)')).toBe(true);
@@ -51,7 +55,9 @@ describe('aucune valeur réelle d’Ali dans les fichiers suivis (C-165, D-318)'
   });
   it('aucun fichier suivi ne porte ces formes', () => {
     // Une règle qui interdit la forme (« aucune valeur réelle d’Ali ») n’est pas une valeur.
-    expect(scan(files, PERSONAL_VALUE_FORMS, (line) => /\b(aucune? (donnée|valeur)s?|refuse[rz]?|retir(e|é|ée|és|ées|er|ez)?|interdite?s?)\b/i.test(line))).toEqual([]);
+    const rule = (line: string): boolean => /\b(aucune? (donnée|valeur)s?|refuse[rz]?|retir(e|é|ée|és|ées|er|ez)?|interdite?s?)\b/i.test(line);
+    expect(scan(files, PERSONAL_VALUE_FORMS, rule)).toEqual([]);
+    expect(scan(files.filter((f) => f.endsWith('.md')), DOC_ONLY_FORMS, rule)).toEqual([]);
   });
 });
 
