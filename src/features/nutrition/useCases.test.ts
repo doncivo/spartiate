@@ -245,7 +245,7 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
   const FUTURE = '2026-11-16' as LocalDate;
   const IN_FORCE = { kcal: 3050, proteinG: 170, fatG: 80, carbG: 440 };
   const FUTURE_TARGET = { kcal: 2350, proteinG: 170, fatG: 75, carbG: 340 };
-  const PLAN = { rest: { kcal: 2977, proteinG: 170, fatG: 80, carbG: 390 }, trainingDays: [1, 2, 4, 5, 6] as never };
+  const PLAN = { rest: { kcal: 2850, proteinG: 170, fatG: 80, carbG: 390 }, trainingDays: [1, 2, 4, 5, 6] as never };
   const at = async (repo: Awaited<ReturnType<typeof db.data.repos.nutritionTargets>>, date: LocalDate) => {
     const found = await repo.effective(date);
     if (found === null) throw new Error('aucune cible en vigueur');
@@ -258,7 +258,7 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     return repo;
   };
 
-  it('enregistrer la cible de repos : le 16/11 la cible en vigueur reste [retiré] kcal (valeurs, source et date inchangées), le 15/11 elle porte le plan', async () => {
+  it('enregistrer la cible de repos : le 16/11 la cible en vigueur reste 2 350 kcal (valeurs, source et date inchangées), le 15/11 elle porte le plan', async () => {
     const repo = await seed();
     const inForce = await at(repo, NOW);
     const result = await saveRestPlan(db.data, { today: NOW, current: inForce, restPlan: PLAN });
@@ -268,7 +268,7 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(future.source).toBe('auto');
     expect(future.weekStart).toBe(FUTURE);
     expect(future.restPlan?.trainingDays).toEqual(PLAN.trainingDays);
-    expect(future.restPlan?.rest.kcal).toBe(2250);
+    expect(future.restPlan?.rest.kcal).toBe(2150);
     const today = await at(repo, NOW);
     expect(today.target).toEqual(IN_FORCE);
     expect(today.restPlan).toEqual(PLAN);
@@ -306,7 +306,7 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(second.target).toEqual(later);
     expect(second.source).toBe('manual');
     expect(second.weekStart).toBe('2026-11-23');
-    expect(first.restPlan?.rest.kcal).toBe(2250);
+    expect(first.restPlan?.rest.kcal).toBe(2150);
     expect(second.restPlan?.rest.kcal).toBe(2500);
   });
 
@@ -326,10 +326,10 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
   it('FIX-0244 cible future dont le plan est hérité (même écart et mêmes jours que celui d’aujourd’hui) : reçoit le nouveau plan', async () => {
     const repo = await seed(true);
     await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: PLAN });
-    const newPlan = { rest: { kcal: 2877, proteinG: 170, fatG: 80, carbG: 415 }, trainingDays: [1, 3] as never };
+    const newPlan = { rest: { kcal: 2750, proteinG: 170, fatG: 80, carbG: 415 }, trainingDays: [1, 3] as never };
     await saveRestPlan(db.data, { today: NOW, current: await at(repo, NOW), restPlan: newPlan });
     const future = await at(repo, FUTURE);
-    expect(future.restPlan?.rest.kcal).toBe(2150);
+    expect(future.restPlan?.rest.kcal).toBe(2050);
     expect(future.restPlan?.trainingDays).toEqual([1, 3]);
   });
 
@@ -345,7 +345,7 @@ describe('FIX-0244 (D-291) : la cible de repos ne passe jamais devant une cible 
     expect(future.restPlan).toEqual(ownPlan);
   });
 
-  it('FIX-0244 revue 1 : écriture atomique, la copie de la cible du 16/11 échoue : rien n’est écrit, la cible du 16/11 reste [retiré]', async () => {
+  it('FIX-0244 revue 1 : écriture atomique, la copie de la cible du 16/11 échoue : rien n’est écrit, la cible du 16/11 reste 2 350', async () => {
     const repo = await seed(true);
     const before = (await repo.list()).length;
     await db.driver.execute("CREATE TRIGGER fix0244_fail BEFORE INSERT ON nutrition_target WHEN NEW.week_start = '2026-11-16' AND NEW.rest_kcal IS NOT NULL BEGIN SELECT RAISE(ABORT, 'injecté'); END");

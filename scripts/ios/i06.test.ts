@@ -230,8 +230,8 @@ describe('critère 18 : guide, étape 7', () => {
   const step = guide.slice(guide.indexOf('## 7. '), guide.indexOf('## 8. '));
   const plain = (text: string): string => text.replace(/[’']/g, "'");
 
-  it('notes, mise à jour en un geste, conservé, vérification par « À propos », écran d’échec, pas de retour arrière, PC et iPhone', () => {
-    for (const needle of ['Nouveautés', 'Mettre à jour', 'VPN', 'Wi-Fi', 'Conservé', 'clé de synchronisation', 'dossier iCloud Drive', 'rappels', '30 secondes', '« À propos »', 'Copier le détail', 'Pas de retour arrière', 'Mettez à jour l\'app', 'Rechercher une mise à jour']) {
+  it('notes, mise à jour en un geste, conservé, vérification par « À propos et diagnostic », écran d’échec, pas de retour arrière, PC et iPhone', () => {
+    for (const needle of ['Nouveautés', 'Mettre à jour', 'VPN', 'Wi-Fi', 'Conservé', 'clé de synchronisation', 'dossier iCloud Drive', 'rappels', '30 secondes', '« À propos et diagnostic »', 'Copier le détail', 'Pas de retour arrière', 'Mettez à jour l\'app', 'Rechercher une mise à jour']) {
       expect(plain(step), needle).toContain(plain(needle));
     }
     expect(plain(step)).toContain(plain(tUpdateRestore('restore')));

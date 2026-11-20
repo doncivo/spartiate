@@ -235,9 +235,9 @@ describe('sleepNeed (§ 16.3)', () => {
     expect(RECOVERY_CONFIG.sleep.surplusCreditCapMinutes).toBe(60);
   });
 
-  it('7 nuits irrégulières à [retiré] de moyenne : dette nette de 24 min (déficits 164, crédits 140), besoin 7 h 54', () => {
-    const nights = [370, 520, 400, 500, 430, 480, 436];
-    expect(nights.reduce((s, m) => s + m, 0) / nights.length).toBe(448);
+  it('7 nuits irrégulières inventées (452 min de moyenne) : dette nette de 24 min (déficits 164, crédits 140), besoin 7 h 54', () => {
+    const nights = [370, 548, 400, 500, 430, 480, 436];
+    expect(nights.reduce((s, m) => s + m, 0) / nights.length).toBe(452);
     const n = sleepNeed({ exertionPrevDay: 0, previousAsleepMinutes: nights });
     expect(n.debtMinutes).toBe(24);
     expect(n.needMinutes).toBe(474);

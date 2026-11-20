@@ -42,7 +42,7 @@ const inForce = async (db: TestDb, date: string) => (await (await db.data.repos.
 describe('FIX-0271 : cible importée prévue pour le lundi 16/11', () => {
   for (const mode of ['replace', 'merge'] as const) {
     for (const withDecidedAt of [true, false]) {
-      it(`${mode}${withDecidedAt ? '' : ', archive sans date de décision'} : check-in du 15/11 avant l’import, [retiré] le 15/11 puis [retiré] le 19/11`, async () => {
+      it(`${mode}${withDecidedAt ? '' : ', archive sans date de décision'} : check-in du 15/11 avant l’import, 3 050 le 15/11 puis 2 350 le 19/11`, async () => {
         const data = await archiveSv18(withDecidedAt);
         const a = await open(A, '2026-11-15T10:00:00.000Z');
         await checkIn(a);

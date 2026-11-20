@@ -118,7 +118,7 @@ describe('SyncSettingsSection (Y-01)', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir le dossier de synchronisation' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Oublier le dossier de synchronisation' }));
     const dialog = await screen.findByRole('alertdialog', { name: 'Oublier le dossier de synchro ?' });
-    expect(dialog).toHaveTextContent('La désinstallation de l’app n’efface pas la clé');
+    expect(dialog).toHaveTextContent('Pour retirer aussi la clé de synchronisation, choisis « Oublier le dossier et la clé ».');
     expect(document.activeElement).toHaveTextContent('Annuler');
     const kid = (await platform.key.status()).kid;
     fireEvent.click(screen.getByRole('button', { name: 'Oublier le dossier' }));

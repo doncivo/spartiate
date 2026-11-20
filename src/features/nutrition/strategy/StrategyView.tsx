@@ -28,7 +28,7 @@ export function describeDecision(record: NutritionTargetRecord): string {
   return tNutrition(record.accepted ? 'historyAuto' : 'historyAutoRefused');
 }
 
-/** « [retiré] kcal · P · G · L [retirés] » (historique, cible à venir). */
+/** « 2 350 kcal · P 180 · G 240 · L 72 » (historique, cible à venir). */
 const targetValues = (t: Target): string =>
   `${tNutrition('kcalValue', { n: formatInt(t.kcal) })} · ${tNutrition('macroShortP')} ${formatInt(t.proteinG)} · ${tNutrition('macroShortC')} ${formatInt(t.carbG)} · ${tNutrition('macroShortF')} ${formatInt(t.fatG)}`;
 
