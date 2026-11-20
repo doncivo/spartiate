@@ -132,3 +132,23 @@ describe('FIX-ABERR vraisemblance : seulement sans historique, série de travail
     expect(check(300, { exerciseClass: 'lower-compound', ...PDC })).toEqual(check(300, { exerciseClass: 'lower-compound', ...PDC }));
   });
 });
+
+describe('FIX-ABERR vraisemblance : passe qa-test, cas limites', () => {
+  it('assisté, PDC connu : un historique dont toutes les assistances atteignent le PDC ne compte pas (contrôle appliqué)', () => {
+    const absurd: ExerciseSession = { ...session(5, 90, [8, 8, 8]) };
+    expect(check(85, { exerciseClass: 'assisted', ...PDC }, [absurd])).toMatchObject({ capKg: 80 });
+    expect(check(85, { exerciseClass: 'assisted', ...PDC }, [session(5, 30, [8, 8, 8])])).toBeNull();
+  });
+  it('assisté : la part par haltère ne s’applique jamais', () => {
+    expect(check(80, { exerciseClass: 'assisted', ...PDC, perDumbbell: true })).toMatchObject({ perDumbbell: false, capKg: 80 });
+  });
+  it('exercice personnalisé : isolation sur machine d’assistance → assisté ; composé de pattern lunge sans muscle du bas → bas', () => {
+    expect(plausibilityClass({ kind: 'isolation', pattern: 'isolation', muscles: [{ id: 'lats', weight: 1 }], equipment: ['assisted-pull-up-machine'] })).toBe('assisted');
+    expect(plausibilityClass({ kind: 'compound', pattern: 'lunge', muscles: [], equipment: [] })).toBe('lower-compound');
+    expect(plausibilityClass({ kind: 'compound', pattern: 'carry', muscles: [], equipment: [] })).toBe('upper-compound');
+  });
+  it('configuration fournie par l’appelant (révision par Ali) : prise en compte', () => {
+    const plausibility = { ...P, bodyweightMultiple: { ...P.bodyweightMultiple, 'upper-compound': 2 } };
+    expect(check(161, { exerciseClass: 'upper-compound', ...PDC, plausibility })).toMatchObject({ capKg: 160, multiple: 2 });
+  });
+});

@@ -161,3 +161,30 @@ describe('FIX-ABERR vraisemblance : première séance, poids de corps inconnu', 
     expect(await openDone()).toEqual([{ load_kg: 200, reps: 5 }]);
   });
 });
+
+describe('FIX-ABERR vraisemblance : passe qa-test', () => {
+  beforeEach(async () => weigh(80));
+  it('après « Confirmer », la série suivante à la même charge est écrite sans nouvelle question', async () => {
+    openSession();
+    const set = await firstSet(BENCH);
+    enter(set, '201', '5');
+    fireEvent.click(await within(set).findByRole('button', { name: 'Confirmer' }));
+    await within(set).findByText('Validée');
+    const region = screen.getByRole('region', { name: BENCH });
+    const next = within(region).getAllByRole('group', { name: /^Série \d+$/ }).find((g) => within(g).queryByRole('button', { name: 'Valider la série' }) !== null);
+    if (!next) throw new Error('aucune série à faire');
+    enter(next, '201', '5');
+    await within(next).findByText('Validée');
+    expect(within(next).queryByRole('button', { name: 'Corriger' })).toBeNull();
+    expect(await openDone()).toHaveLength(2);
+  });
+  it('« Corriger » puis la même charge : la question revient (rien n’est écrit sans « Confirmer »)', async () => {
+    openSession();
+    const set = await firstSet(BENCH);
+    enter(set, '201', '5');
+    fireEvent.click(await within(set).findByRole('button', { name: 'Corriger' }));
+    enter(set, '201', '5');
+    expect(await within(set).findByRole('button', { name: 'Confirmer' })).toBeInTheDocument();
+    expect(await openDone()).toEqual([]);
+  });
+});

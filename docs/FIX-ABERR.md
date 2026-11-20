@@ -59,6 +59,23 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
 | 18 | Testing Library, base réelle, développé couché sans historique, PDC 80 kg : 201 kg × 5 → « 201 kg : c'est plus de 2,5 fois ton poids de corps… », rien d'écrit ; « Corriger » n'écrit rien, focus sur la charge ; « Confirmer » écrit 201 kg ; 200 kg écrit sans question ; PDC inconnu : 201 kg signalé (200 kg au plus) ; traction assistée à 80 kg d'assistance signalée. | `session/FixAberrPlausible.test.tsx` |
 | 19 | Point 2 figé : 100 kg puis une séance complète à 200 kg (confirmée à la saisie) → référence 100 kg ; une deuxième séance complète à 200 kg → référence 200 kg. | `fixAberr.test.ts` « point 2 » |
 
+### Suite du 20/11 : passe agent du module (choix)
+
+- `plausibilityClass` (`outlierEntry.ts`, pur) : assisté (`assisted-pull-up-machine`, prioritaire), isolation (`kind`), bas si muscle
+  principal (poids le plus fort) du bas du corps ou pattern squat / hinge / lunge (rack pull, good morning, extension lombaire restent bas),
+  sinon haut. Données existantes seulement (aucun champ de contenu ajouté) ; un exercice personnalisé suit les mêmes champs.
+- `entryImplausible` : appliqué seulement sans série de travail retenue dans l'historique clos (le relatif `entryOutlier` a priorité) ;
+  plafond = multiple × PDC, × 0,5 par haltère (un ou deux haltères tenus : la charge saisie est celle d'un haltère, ERGO-02) ; PDC inconnu ou
+  ≤ 0 : plafond absolu (× 0,5 par haltère). Lesté de PDC connu : charge totale (PDC × fraction + lest) ; inconnu : lest. Seuil inclus non
+  signalé, sauf assisté de PDC connu (assistance ≥ PDC signalée, absurde). Une question par charge : rien si une charge égale ou plus forte
+  est déjà validée dans la séance.
+- `PLAUSIBILITY_CONFIG` (`config.ts`) : constantes nommées, une par type, hors `ProgressionConfig` ; aucune prescription ne change,
+  `ENGINE_VERSION` reste 3 (D-284).
+- `outlierCheck.ts` : lit le PDC à chaque contrôle (`bodyweightNow`, échec = inconnu) ; `OutlierAsk` devient une union (`relative` /
+  `plausible`) ; métrique `bodyweight-reps` désormais contrôlée (défaut trouvé : `pull-up-assisted` et `pull-up` ont cette métrique,
+  le contrôle de la première passe ne s'appliquait donc jamais à la traction assistée du catalogue). `SetRow` : `outlierText`, cinq textes
+  `sessionPlausibleAsk*` dans `fr.training.ts` (catalogue de la séance active, hors départ).
+
 ## Passe agent du module (training, binôme domain-logic) : choix
 
 - `entryOutlier` (`src/domain/training/outlierEntry.ts`, pur) : référence = 1RM courant / (1 + reps/30), à défaut la plus grande charge de
@@ -91,6 +108,18 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
   verts ; couverture `src/domain/training` 96,7 % instructions, 91,4 % branches, 98,6 % lignes ; `tsc --noEmit` et `eslint` sur les fichiers
   touchés : propres. Pas de test:bundle ni d'e2e en local (brief) : `outlierCheck` est importé à la demande depuis la séance active.
 
+### Suite du 20/11 : passe qa-test
+
+- Cas limites ajoutés (vert) : historique d'assisté dont toutes les assistances atteignent le PDC (ne compte pas, contrôle appliqué) ; part par
+  haltère jamais appliquée à un assisté ; exercice personnalisé (isolation sur machine d'assistance → assisté, pattern lunge sans muscle →
+  bas, carry → haut) ; configuration révisée fournie par l'appelant ; UI : après « Confirmer », même charge sans nouvelle question ;
+  « Corriger » puis même charge : la question revient.
+- Retouches de tests dans le commit vert (pas de règle changée) : libellé « Charge par haltère (kg) » accepté pour le curl aux haltères
+  (ERGO-02), typage du catalogue dans `plausibility.test.ts`.
+- Vérifications : `src/domain/training`, `src/features/training/session`, Ergo02Load, `src/i18n` : 95 fichiers, 1 015 tests verts (avant
+  les cas qa-test), puis `plausibility.test.ts` + `FixAberrPlausible.test.tsx` : 33 verts ; couverture `outlierEntry.ts` 97,2 %
+  instructions, 96,7 % branches, 100 % lignes ; `tsc --noEmit` et `eslint` sur les fichiers touchés : propres.
+
 ## Passe code-reviewer
 
 - Relu à froid : commentaire de `personalRecords` déplacé au-dessus de la fonction ; rejet du chargement du bloc de contrôle intercepté dans
@@ -105,19 +134,43 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
 - Le résumé de fin traite les séances de décharge comme ordinaires pour la confirmation des records.
 - Texte « à ce nombre de répétitions » : formulation sans pluriel variable (garde `plural.test.ts`), relecture accessibility-i18n à faire.
 
+- Vraisemblance (20/11) : plafonds proposés, faux positifs prévisibles chez un pratiquant fort à sa toute première séance (presse à cuisses
+  > 280 kg, hip thrust, shrugs ou mollets machine > 96 kg à PDC 80) : une question, « Confirmer » suffit, une fois par charge et par séance.
+- Traction assistée du catalogue (`bodyweightFraction` null) : le contrôle RELATIF reste inactif (D-322 lit la fraction) ; seule la
+  vraisemblance s'applique. À trancher avec FIX-ASSIST si Ali le souhaite.
+- PDC lu à chaque validation de série de travail (une lecture de plus, échec = inconnu).
+
 ## SHA
 
 - Rouge : `e415ffbd` (14 tests rouges, `outlierEntry.test.ts` rouge à l'import). Vert : `c34d2abc`. Passes qa-test et revue : commit suivant.
 
+- Suite du 20/11 : rouge `de2ae9ba` (25 tests rouges : `plausibility.test.ts` rouge à l'import, 6 de `FixAberrPlausible.test.tsx` ; les
+  vecteurs « au plafond, sans question » et le point 2 verts dès le rouge, gardes). Vert : `636085a9`. Passe qa-test et fiche : commit suivant.
+
+## Budget (D-324)
+
+Budget M (150 k) déjà dépassé à la première passe (≈ 210 k) ; suite du 20/11 ≈ 75 k de plus, soit ≈ 285 k cumulés, sous l'arrêt de 300 k
+(D-324, décision d'Ali du 20/11 : consigner et continuer). Pas de point d'étape supplémentaire ; il reste les étapes de reprise ci-dessous.
+
 ## Décision proposée (à inscrire par l'appelant, révisable par Ali)
 
-D-3xx — FIX-ABERR (0.28.0) : charge aberrante (audit Claude 0.27.0, C-005, C-028, C-168 ; § 11.2 point 1, § 11.5 ; remplace le choix B1 de la
+D-323 — FIX-ABERR (0.28.0) : charge aberrante (audit Claude 0.27.0, C-005, C-028, C-168 ; § 11.2 point 1, § 11.5 ; remplace le choix B1 de la
 PR #60). (1) À la validation d'une série de travail, une charge > 150 % (`outlierRatio`) de la charge habituelle (1RM courant ramené aux
 répétitions, sinon plus grande charge de travail) n'est écrite qu'après « Confirmer » ; « Corriger » n'écrit rien. Sans historique : bornes
 absolues seules. (2) Aucun indicateur persistant (schéma 20 inchangé) : une aberrante n'est confirmée que par une séance ultérieure
 complète (≥ 50 %) hors décharge qui l'atteint à 90 %. (3) Non confirmée, elle n'est ni la référence (dernière séance non aberrante, note
 dite), ni dans le 1RM, ni un record (fiche, résumé). (4) Assisté : poids de corps connu, assistance anormalement basse signalée ; inconnu,
-aucun contrôle relatif. (5) `ENGINE_VERSION` reste 3. Tests : `outlierEntry.test.ts`, `fixAberr.test.ts`, `session/FixAberr.test.tsx`.
+aucun contrôle relatif. (5) `ENGINE_VERSION` reste 3. Tests : `outlierEntry.test.ts`, `fixAberr.test.ts`, `session/FixAberr.test.tsx`. Point (2) validé par Ali le 20/11 (test `fixAberr.test.ts` « point 2 »).
+
+
+D-325 — FIX-ABERR (0.28.0), vraisemblance à la première séance (décision d'Ali du 20/11 ; § 11.5 ; complète D-323). (1) Sans série de
+travail retenue dans l'historique clos d'un exercice, une série de travail au-delà du plafond de son type n'est écrite qu'après « Confirmer »
+(« Corriger » n'écrit rien). (2) Type tiré du catalogue (personnalisé : mêmes champs) : assisté (machine d'assistance) ; isolation (`kind`) ;
+composé du bas (muscle principal du bas du corps ou pattern squat / hinge / lunge) ; composé du haut. (3) Plafonds `PLAUSIBILITY_CONFIG` :
+bas 3,5 × PDC, haut 2,5 × PDC, isolation 1,2 × PDC ; assisté : assistance ≥ 1,0 × PDC signalée ; PDC inconnu : 300 / 200 / 100 kg,
+assistance > 120 kg ; haltères : moitié du plafond, par haltère ; lesté de PDC connu : charge totale. Seuil inclus non signalé (sauf
+assisté). (4) Une question par charge et par séance ; aucun indicateur persistant ; `ENGINE_VERSION` reste 3. Choix prudents, révisables
+par Ali. Tests : `plausibility.test.ts`, `session/FixAberrPlausible.test.tsx`.
 
 ## Point d'étape (arrêt pour dépassement de budget)
 
