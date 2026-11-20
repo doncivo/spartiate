@@ -88,3 +88,5 @@ Verdict : **approuvé**. Aucune écriture hors `sync_outbox` après transaction 
 - Suggestion 3 : l'abonnement reste avant `ready`, mais `ready` ne peut plus écraser l'empoisonnement (store durable).
 - Suggestion 4 : abonné tardif protégé par try/catch (test qa ajouté).
 - Hors périmètre, au registre par le coordinateur : `BEGIN IMMEDIATE` exécuté puis rejeté par le transport.
+
+Revue 2 (orchestrateur) : corrections de la revue 1 relues (rouge `98cc7956`, vert `efadc644` : `setDbStatus` ne remplace jamais un empoisonnement, garde « Réessayer » dans `DbFailureDetails`, abonné tardif protégé) ; point BEGIN IMMEDIATE au registre (BL-095) ; test:bundle vert en local hors pairingBundle (défaut des worktrees) : **approuvé sous réserve de la CI verte**.
