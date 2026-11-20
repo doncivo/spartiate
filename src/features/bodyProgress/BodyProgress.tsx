@@ -21,7 +21,7 @@ import { formatCm, tBodyProgress, type BodyProgressTextKey } from '../../i18n/bo
 import { logFailure } from '../../platform/desktop/log';
 import { pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
-import { Button } from '../../ui';
+import { Button, ConfirmDialog } from '../../ui';
 import { MissingValue } from '../../ui/MissingValue';
 import { useLayout } from '../../ui/useLayout';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -80,6 +80,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   const [photoMessage, setPhotoMessage] = useState<{ readonly alert: boolean; readonly text: string } | null>(null);
   const [adding, setAdding] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
+  // C-094 : suppression d'une mesure confirmée (elle se propage par synchro sur les deux appareils).
+  const [measureToDelete, setMeasureToDelete] = useState<MeasurementRecord | null>(null);
   const [compare, setCompare] = useState<readonly string[]>([]);
   const [reload, setReload] = useState(0);
   const refresh = useCallback(() => setReload((n) => n + 1), []);
@@ -299,6 +301,19 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
             {measureMessage.text}
           </p>
         )}
+        {measureToDelete && (
+          <ConfirmDialog
+            title={tBodyProgress('measureDeleteTitle', { date: formatDayMonthYear(measureToDelete.day) })}
+            description={tBodyProgress('measureDeleteHint')}
+            confirmLabel={tBodyProgress('measureDeleteConfirm')}
+            onCancel={() => setMeasureToDelete(null)}
+            onConfirm={() => {
+              const record = measureToDelete;
+              setMeasureToDelete(null);
+              void removeMeasure(record);
+            }}
+          />
+        )}
         <p className="ct-today__muted">{tBodyProgress('measuresHint')}</p>
         {ofKind.length === 0 ? (
           <p className="ct-today__muted">{tBodyProgress('measuresEmpty')}</p>
@@ -308,7 +323,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
               <li key={m.id} className="ct-bodyprogress__item">
                 <span>{formatDayMonthYear(m.day)}</span>
                 <span className="ct-bodyprogress__value-text">{tBodyProgress('measureLine', { value: formatCm(m.value) })}</span>
-                <button type="button" className="ct-bodyprogress__delete" aria-label={tBodyProgress('measureDelete', { date: formatDayMonthYear(m.day) })} onClick={() => void removeMeasure(m)}>
+                <button type="button" className="ct-bodyprogress__delete" aria-label={tBodyProgress('measureDelete', { date: formatDayMonthYear(m.day) })} onClick={() => setMeasureToDelete(m)}>
                   {tBodyProgress('deleteGlyph')}
                 </button>
               </li>
