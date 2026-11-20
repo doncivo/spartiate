@@ -50,6 +50,16 @@ describe('C-005 / C-028 : confirmation par une deuxième séance COMPLÈTE hors 
     expect(p.estimated1rmKg as number).toBeGreaterThan(200);
     expect(p.reasons).not.toContain('outlier-excluded');
   });
+  it('point 2 (décision d’Ali du 20/11) : une hausse > 150 % confirmée à la saisie ne devient la référence qu’après une deuxième séance complète', () => {
+    // Une seule séance complète à 200 kg (confirmée à la saisie, aucun indicateur persistant) : la référence reste 100 kg.
+    const once = prescribe(input({ history: [...base(), session(2, 200, [8, 8, 8])] }));
+    expect(once.reference?.loadKg).toBe(100);
+    expect(once.reasons).toContain('outlier-excluded');
+    // Deuxième séance complète à 200 kg : 200 kg devient la référence.
+    const twice = prescribe(input({ history: [...base(), session(5, 200, [8, 8, 8]), session(2, 200, [8, 8, 8])] }));
+    expect(twice.reference?.loadKg).toBe(200);
+    expect(twice.reasons).not.toContain('outlier-excluded');
+  });
   it('C-028 une séance partielle (< 50 % des séries faites) à 200 kg ne confirme pas', () => {
     const history = [...base(), session(5, 200, [8, 8, 8]), partial(2, 200)];
     const p = prescribe(input({ history }));

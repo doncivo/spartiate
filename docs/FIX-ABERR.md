@@ -38,6 +38,27 @@ Périmètre : `src/domain/training/{estimate1rm,prescribe,explain,exerciseSheet,
 `src/i18n/fr.training.ts`, `src/i18n/fr.progression.ts`, `src/db/repositories/sql/workoutRepository.ts` (lecture de l'historique du résumé, SELECT seulement).
 Hors périmètre : migrations, synchro, contenu, C-028 « faute à la toute première séance » (voir risques).
 
+## Suite du 20/11 (décisions d'Ali) : passe product-owner, critères 11 à 19
+
+Décisions d'Ali du 20/11 : (1) première séance d'un exercice sans historique : contrôle de vraisemblance en multiple du poids de corps (PDC)
+par type d'exercice, même dialogue « Confirmer / Corriger » ; (2) une hausse > 150 % confirmée ne devient la référence qu'après une deuxième
+séance complète (comportement existant, validé). « Sans historique » : aucune série de travail retenue dans les séances closes de l'exercice
+(le contrôle relatif n'a pas de référence). Plafonds proposés (constantes `PLAUSIBILITY_CONFIG`, `src/domain/training/config.ts`,
+révisables par Ali) : bas du corps 3,5 × PDC, haut du corps 2,5 × PDC, isolation 1,2 × PDC, assisté : assistance < 1,0 × PDC ; PDC
+inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond du type, par haltère (un ou deux haltères tenus).
+
+| # | Critère (Given / When / Then) | Test |
+| --- | --- | --- |
+| 11 | Type : matériel `assisted-pull-up-machine` → assisté (prioritaire) ; `kind` isolation → isolation ; composé dont le muscle principal (poids le plus fort) est du bas du corps, ou de pattern squat / hinge / lunge → bas ; autre composé → haut. Catalogue : squat, soulevé de terre, rack pull → bas ; développé couché, rowing → haut ; curl, mollets → isolation ; traction assistée → assisté. Un exercice personnalisé suit les mêmes champs. | `plausibility.test.ts` « type » |
+| 12 | Given PDC 80 kg et aucun historique, When Ali valide une série de travail, Then question au-delà de 280 kg (bas), 200 kg (haut), 96 kg (isolation) ; au plafond : sans question ; 0,5 kg au-dessus : signalé. | `plausibility.test.ts` « PDC connu » |
+| 13 | Given PDC 80 kg, assisté, Then une assistance de 79,5 kg passe, 80 kg (≥ PDC, absurde) est signalé. | `plausibility.test.ts` « assisté » |
+| 14 | Given PDC inconnu, Then plafonds absolus 300 / 200 / 100 kg (au plafond : rien ; au-dessus : signalé) ; assistance > 120 kg signalée. | `plausibility.test.ts` « PDC inconnu » |
+| 15 | Given des haltères (charge saisie par haltère), Then plafond moitié du type : 140 / 100 / 48 kg par haltère à PDC 80, 150 / 100 / 50 kg sans PDC. | `plausibility.test.ts` « haltères » |
+| 16 | Given un exercice lesté (PDC × fraction), PDC connu, Then la charge totale (PDC × fraction + lest) est comparée ; PDC inconnu : le lest contre le plafond absolu. | `plausibility.test.ts` « lesté » |
+| 17 | Given un historique avec au moins une série de travail retenue, Then pas de contrôle de vraisemblance (le relatif s'applique) ; hors série de travail, charge vide, charge déjà validée dans la séance : rien. | `plausibility.test.ts` « historique » |
+| 18 | Testing Library, base réelle, développé couché sans historique, PDC 80 kg : 201 kg × 5 → « 201 kg : c'est plus de 2,5 fois ton poids de corps… », rien d'écrit ; « Corriger » n'écrit rien, focus sur la charge ; « Confirmer » écrit 201 kg ; 200 kg écrit sans question ; PDC inconnu : 201 kg signalé (200 kg au plus) ; traction assistée à 80 kg d'assistance signalée. | `session/FixAberrPlausible.test.tsx` |
+| 19 | Point 2 figé : 100 kg puis une séance complète à 200 kg (confirmée à la saisie) → référence 100 kg ; une deuxième séance complète à 200 kg → référence 200 kg. | `fixAberr.test.ts` « point 2 » |
+
 ## Passe agent du module (training, binôme domain-logic) : choix
 
 - `entryOutlier` (`src/domain/training/outlierEntry.ts`, pur) : référence = 1RM courant / (1 + reps/30), à défaut la plus grande charge de
