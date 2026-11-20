@@ -1,6 +1,6 @@
 # FIX-A009 — Colonnes nouvelles d'une table connue gardées à la réception d'un instantané (lot 0.28.0)
 
-Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Budget M. Branche `FIX-A009` depuis
+Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Commits : rouge `07a94c57`, vert `6e648f3d`, qa-test (ce commit). Tests locaux : `tests/unit/sync` (176 fichiers, 1 915 tests ; seul échec : hygiène `new Date()` du fichier qa, corrigé et revérifié), `src/sync` et `src/domain/sync` (29 fichiers, 390 tests) verts ; `tsc` et `eslint` propres. Budget M. Branche `FIX-A009` depuis
 `origin/main` (`5f0b68a7`, après HIST-01). Aucune migration (schéma 20 inchangé), format sur disque inchangé. Lot 0.28.0, phase 1.4. Rôle : sync-icloud.
 Origine : audit Codex 0.26.0 (`origin/audit-0.26.0`, `docs/audit-0.26.0/bloquants.md`, A-009 et complément PROG-04) ; preuves
 `preuves/partie3-snapshot-colonnes.test.mjs` et `preuves/partie3-weekday-main.test.mjs` (reprises en Vitest dans `tests/unit/sync/versions/`,
@@ -40,3 +40,56 @@ remplacement d'époque (`replaceFromSnapshot` vide `sync_unknown` puis ne garde 
 
 Périmètre : `src/sync/snapshot.ts` (seul fichier de production), tests `tests/unit/sync/versions/fixA009*.test.ts`, cette fiche.
 Hors périmètre : protocole chiffré, format, fusion par champ, tombstones, reprise, reset, oubli, migrations, réintégration (`compat.ts`).
+
+## Passe sync-icloud (agent du module) : correction
+
+- `src/sync/snapshot.ts` : `keepUnknownColumns` (nouveau) et `keepUnknownTableRows` étendu aux tables connues ; `replaceFromSnapshot` note
+  les lignes gardées ou mises de côté (`retained`) et ne garde que leurs colonnes inconnues. Rien d'autre : `rowToOp`, fusion, horloges,
+  traces, reprise (`join.ts`, `finishResumeTx`), changement d'époque, reset, oubli, format et réintégration inchangés. Aucune migration.
+- Invariants conservés et preuves : HLC par champ (horloge propre du champ gardée, `putUnknown` garde la plus récente : qa « horloge plus
+  ancienne », « deux instantanés ») ; reprise (curseur couvert inchangé, preuves 1 et 2) ; remplacement d'époque (critère 6) ; schéma égal
+  sans effet (qa « même schéma ») ; colonnes techniques jamais gardées (qa « validations ») ; tombstones, reset, oubli : suites existantes vertes.
+- Republication : un lecteur ancien republie ses champs gardés dans ses instantanés (`snap-unknown`, Y-07, inchangé) ; après sa mise à jour, la
+  republication `SCHEMA_REPUBLISH` (ADR 0018) porte la valeur réintégrée (critères 3, 4 et 6 : A et B identiques après trois allers-retours).
+
+## Passe qa-test : cas limites
+
+| Cas | Résultat | Test |
+| --- | --- | --- |
+| Lecteur déjà au même schéma (instantané 18 sur 18) | rien gardé, ligne identique | `fixA009Qa.test.ts` |
+| Horloge plus ancienne que la valeur déjà gardée | la plus récente reste (hlc, valeur, sv) | `fixA009Qa.test.ts` |
+| Deux instantanés successifs (rejeu, puis plus récent) | aucun double ; le plus récent remplace | `fixA009Qa.test.ts` |
+| Colonnes techniques (`hlc`, `device_id`, `updated_at`) et nom invalide dans la ligne | jamais gardés ; `rest_kcal` réintégré, sans conflit | `fixA009Qa.test.ts` |
+| Colonne inconnue d'une ligne supprimée (`deleted_at`), journal et instantané | gardée à l'identique par les deux chemins (valeur, hlc de création, sv 20) ; ligne jamais ressuscitée | `fixA009Qa.test.ts` |
+
+**Défaut antérieur trouvé (hors A-009, non corrigé, arbitrage architect).** Réintégration (`src/domain/sync/compat.ts`, `decideReintegration`) :
+un champ gardé sans horloge propre locale est comparé au repli `'*'` de la ligne locale. Si la ligne a été modifiée après l'écriture du champ
+(autre champ, suppression), `'*'` est plus récent : la valeur gardée est écartée (`superseded`) et un conflit est inscrit, **par le journal
+comme par l'instantané**. Reproduit : jeudi posé puis jour renommé sur A (20) avant la lecture de B (19) → B en 20 a `weekday` nul
+(`.codex-tmp/lot028/FIX-A009-repro-reintegration-star.test.ts.txt`, à brancher par le ticket de correction) ; cible supprimée sur A → 3 conflits
+et valeurs nulles sur B. Correction pressentie : pour une colonne que le schéma local n'avait pas (`sv` gardé > version de la colonne
+locale), absence d'horloge propre = jamais écrite localement, la valeur gardée s'applique sans conflit ; c'est une règle de réintégration
+(ADR 0011 §7.2, Y-07 D3), donc ADR avant code.
+
+## Avis sur les limites M2 à M4 de l'ADR 0018
+
+Non traitées par ce correctif, et non concernées : M2 (écrivain déduit du plus grand hlc d'une partie gardée), M3 (reprise depuis l'instantané
+gaspillée pendant la republication) et M4 (parties gardées sans `sv` par la 0.24.0) portent sur le sens **ancien écrivain → lecteur à jour**
+(`sync_parked`, `missing-row`). A-009 est le sens inverse (écrivain récent → lecteur ancien, `sync_unknown`). Le correctif ne change ni
+`olderWriter.ts` ni `sync_parked` ; il ferme en revanche le chemin « instantané » que l'ADR 0018 supposait couvert « depuis Y-07 ».
+
+## Décision proposée (à inscrire par l'appelant, pas écrite ici)
+
+D-xxx (FIX-A009, A-009) : à la réception d'un instantané de `sv` supérieur (même majeure), les colonnes qu'une table connue n'a pas encore
+sont gardées dans `sync_unknown` comme celles d'un journal (mêmes validations, horloge propre sinon `'*'`, base inconnue, `sv` de
+l'instantané) ; en remplacement, seulement pour les lignes gardées ou mises de côté. Format, fusion et réintégration inchangés ; aucune migration.
+
+Avenant proposé à l'ADR 0011 § 7.2 : « Un champ inconnu est gardé quel que soit son chemin d'arrivée (journal, instantané en fusion ou en
+remplacement), qu'il appartienne à une table inconnue ou à une table connue du lecteur. »
+
+## Reste
+
+- Défaut de réintégration ci-dessus (architect, puis ticket sync-icloud) : impact PROG-04 critère 8 dès qu'un jour est modifié après son
+  rattachement, avant la lecture par l'appareil resté en 19.
+- Remplacement : une clé de réglage inconnue (`settings`, portée `unknown`) n'est pas gardée par `replaceFromSnapshot` (la fusion la garde par
+  `applyOps`) ; aucun réglage publié dans le catalogue Spartiate à ce jour, sans effet visible.
