@@ -18,7 +18,12 @@ import { EntryEditor } from './EntryEditor';
 
 type DeclarationChoice = 'none' | DayDeclaration;
 
-type Mode = { readonly kind: 'idle' } | { readonly kind: 'search' } | { readonly kind: 'quick' } | { readonly kind: 'edit'; readonly entry: MealEntryRecord };
+/** Un formulaire ouvert garde le jour de son ouverture (C-097) : ni la navigation ni minuit ne le déplacent. */
+type Mode =
+  | { readonly kind: 'idle' }
+  | { readonly kind: 'search'; readonly date: LocalDate }
+  | { readonly kind: 'quick'; readonly date: LocalDate }
+  | { readonly kind: 'edit'; readonly entry: MealEntryRecord; readonly date: LocalDate };
 
 export interface JournalViewProps {
   readonly snapshot: NutritionSnapshot;
@@ -65,13 +70,16 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
   const container = useAppContainer();
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
-  const [date, setDate] = useState(snapshot.today);
+  // Jour choisi par Ali ; `null` = suit « aujourd'hui » (relu à minuit et au retour au premier plan, C-096).
+  const [picked, setPicked] = useState<LocalDate | null>(null);
   // Entrées lues AVEC leur date : changer de jour ne montre jamais les entrées (ni leurs actions) d'un autre jour.
   const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[]; readonly declaration: DayDeclaration | null } | null>(null);
-  const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [version, setVersion] = useState(0);
   // ERGO-01b P2 : ouvert depuis « Ajouter un repas » d'Aujourd'hui, la recherche est déjà ouverte (champ actif).
-  const [mode, setMode] = useState<Mode>(openSearch ? { kind: 'search' } : { kind: 'idle' });
+  const [mode, setMode] = useState<Mode>(openSearch ? { kind: 'search', date: snapshot.today } : { kind: 'idle' });
+  const date = mode.kind === 'idle' ? (picked ?? snapshot.today) : mode.date;
+  const formOpen = mode.kind !== 'idle';
+  const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [declBusy, setDeclBusy] = useState(false);
@@ -96,8 +104,8 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
     };
   }, [data, date, version, snapshot]);
 
-  const afterWrite = useCallback(async (): Promise<void> => {
-    setMode({ kind: 'idle' });
+  const afterWrite = useCallback(async (keepForm = false): Promise<void> => {
+    if (!keepForm) setMode({ kind: 'idle' });
     setError(null);
     setVersion((v) => v + 1);
     await onChanged();
@@ -137,7 +145,8 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
     if (entry === null) return;
     try {
       await (await data.repos.mealEntries()).softDelete(entry.id);
-      await afterWrite();
+      // C-098 : une écriture étrangère ne ferme pas le formulaire en cours ; supprimer l'entrée en correction le ferme.
+      await afterWrite(!(mode.kind === 'edit' && mode.entry.id === entry.id) && mode.kind !== 'idle');
     } catch {
       setError(tNutrition('writeError'));
     }
@@ -152,15 +161,15 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
   return (
     <div className="ct-nutrition__journal" data-testid="journal">
       <div className="ct-nutrition__daynav" role="group" aria-label={tNutrition('journalDayLabel')}>
-        <Button variant="secondary" ariaLabel={tNutrition('previousDay')} onClick={() => setDate(addDays(date, -1))}>
+        <Button variant="secondary" ariaLabel={tNutrition('previousDay')} disabled={formOpen} onClick={() => setPicked(addDays(date, -1))}>
           ‹
         </Button>
         <p className="ct-nutrition__day">{formatDayLong(date)}</p>
-        <Button variant="secondary" ariaLabel={tNutrition('nextDay')} disabled={isToday} onClick={() => setDate(addDays(date, 1))}>
+        <Button variant="secondary" ariaLabel={tNutrition('nextDay')} disabled={isToday || formOpen} onClick={() => setPicked(addDays(date, 1))}>
           ›
         </Button>
         {isToday ? null : (
-          <Button variant="secondary" onClick={() => setDate(snapshot.today)}>
+          <Button variant="secondary" disabled={formOpen} onClick={() => setPicked(null)}>
             {tNutrition('backToToday')}
           </Button>
         )}
@@ -226,16 +235,16 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
       ) : null}
 
       {mode.kind === 'search' ? (
-        <FoodSearchPanel date={date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        <FoodSearchPanel date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'quick' ? (
-        <QuickAddForm date={date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        <QuickAddForm date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'edit' ? (
         <EntryEditor entry={mode.entry} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : (
         <div className="ct-nutrition__add">
           <div className="ct-nutrition__actions">
-            <Button onClick={() => setMode({ kind: 'search' })}>{tNutrition('addSearch')}</Button>
-            <Button variant="secondary" onClick={() => setMode({ kind: 'quick' })}>
+            <Button onClick={() => setMode({ kind: 'search', date })}>{tNutrition('addSearch')}</Button>
+            <Button variant="secondary" onClick={() => setMode({ kind: 'quick', date })}>
               {tNutrition('addQuick')}
             </Button>
           </div>
@@ -258,7 +267,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
               </div>
               <p className="ct-nutrition__entry-kcal ct-nutrition__num">{entry.kcal === null ? tNutrition('unknown') : tNutrition('kcalValue', { n: formatInt(entry.kcal) })}</p>
               <div className="ct-nutrition__entry-actions">
-                <Button variant="secondary" ariaLabel={tNutrition('editEntry', { name: entry.foodName })} onClick={() => setMode({ kind: 'edit', entry })}>
+                <Button variant="secondary" ariaLabel={tNutrition('editEntry', { name: entry.foodName })} onClick={() => setMode({ kind: 'edit', entry, date })}>
                   {tNutrition('edit')}
                 </Button>
                 <Button variant="secondary" ariaLabel={tNutrition('deleteEntry', { name: entry.foodName })} onClick={() => setToDelete(entry)}>

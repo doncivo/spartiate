@@ -144,7 +144,7 @@ describe('I4-03 : Recherche locale (critère 2) : récents, Perso, Ciqual ; gram
     expect(within(hit).getByText('Perso')).toBeInTheDocument();
     fireEvent.click(hit);
     fireEvent.click(await screen.findByRole('button', { name: 'pot · 150 g' }));
-    expect(screen.getByLabelText('Quantité (g)')).toHaveValue(150);
+    expect(screen.getByLabelText('Quantité (g)')).toHaveValue('150');
     expect(screen.getByText('90 kcal')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Quantité (g)'), { target: { value: '200' } });
     expect(screen.getByText('120 kcal')).toBeInTheDocument();
@@ -457,7 +457,7 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     const toggle = await within(r).findByRole('switch', { name: 'Cible des jours de repos' });
     expect(toggle).not.toBeChecked();
     fireEvent.click(toggle);
-    expect(within(r).getByLabelText('Écart les jours de repos (kcal en moins)')).toHaveValue(200);
+    expect(within(r).getByLabelText('Écart les jours de repos (kcal en moins)')).toHaveValue('200');
     const days = within(r).getByRole('group', { name: 'Jours d’entraînement' });
     expect(within(days).getAllByRole('checkbox').map((c) => c.getAttribute('aria-checked') === 'true')).toEqual([true, true, false, true, true, true, false]);
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));

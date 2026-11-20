@@ -96,3 +96,41 @@ describe('C-098 : supprimer une autre entrée', () => {
     expect(screen.getByLabelText(tNutrition('kcalLabel'))).toHaveValue('123');
   });
 });
+
+describe('qa-test : cas limites', () => {
+  it('Quick Add : 100 kcal et 5 000 g de protéines refusés avec un message dédié, rien d’écrit', async () => {
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: tNutrition('addQuick') }));
+    type(tNutrition('kcalLabel'), '100');
+    type(tNutrition('proteinLabel'), '5000');
+    fireEvent.click(screen.getByRole('button', { name: tNutrition('add') }));
+    expect(await screen.findByText(tNutrition('macrosInconsistent'))).toBeInTheDocument();
+    expect((await listDay(TODAY)).length).toBe(0);
+  });
+
+  it('supprimer l’entrée en cours de correction ferme la correction', async () => {
+    await (await db.data.repos.mealEntries()).create(quickAddDraft({ date: TODAY, time: '08:00' as LocalTime, name: 'Petit-déjeuner', kcal: 400, proteinG: 20, fatG: 10, carbG: 50 }));
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: tNutrition('editEntry', { name: 'Petit-déjeuner' }) }));
+    expect(await screen.findByLabelText(tNutrition('kcalLabel'))).toBeInTheDocument();
+    fireEvent.click(within(r).getByRole('button', { name: tNutrition('deleteEntry', { name: 'Petit-déjeuner' }) }));
+    fireEvent.click(await screen.findByRole('button', { name: tNutrition('delete') }));
+    await waitFor(() => expect(screen.queryByLabelText(tNutrition('kcalLabel'))).toBeNull());
+  });
+
+  it('formulaire ouvert avant minuit : l’entrée reste rattachée au jour de l’ouverture', async () => {
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('button', { name: tNutrition('addQuick') }));
+    db.clock.advance(24 * 3_600_000);
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    type(tNutrition('kcalLabel'), '210');
+    fireEvent.click(screen.getByRole('button', { name: tNutrition('add') }));
+    await waitFor(async () => expect((await listDay(TODAY)).length).toBe(1));
+    expect(await within(r).findByText(formatDayLong(TOMORROW))).toBeInTheDocument();
+  });
+});

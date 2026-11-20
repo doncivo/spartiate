@@ -57,12 +57,12 @@ describe('C-034 : Quick Add borné sur les macros', () => {
     expect(validateMealEntry(quick(5000, 1000, null, null))).toEqual([]);
     expect(validateMealEntry(quick(5000, 1001, null, null))).toContain('value-invalid');
   });
-  it('4P + 4G + 9L ≤ 1,15 × kcal + 20 : 600 kcal avec 30/20/70 (4×30+4×70+9×20 = 580) accepté', () => {
+  it('4P + 4G + 9L ≤ 1,25 × kcal + 20 : 600 kcal avec 30/20/70 (4×30+4×70+9×20 = 580) accepté', () => {
     expect(validateMealEntry(quick(600, 30, 20, 70))).toEqual([]);
   });
-  it('limite : 100 kcal → 135 kcal permises ; 33 g de protéines (132) passent, 34 g (136) non', () => {
-    expect(validateMealEntry(quick(100, 33, null, null))).toEqual([]);
-    expect(validateMealEntry(quick(100, 34, null, null))).toContain('macros-exceed-energy');
+  it('limite : 100 kcal → 145 kcal permises ; 36 g de protéines (144) passent, 37 g (148) non', () => {
+    expect(validateMealEntry(quick(100, 36, null, null))).toEqual([]);
+    expect(validateMealEntry(quick(100, 37, null, null))).toContain('macros-exceed-energy');
   });
   it('macros inconnues : jamais refusées pour cohérence', () => {
     expect(validateMealEntry(quick(100, null, null, null))).toEqual([]);

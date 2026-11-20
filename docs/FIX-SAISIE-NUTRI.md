@@ -10,7 +10,7 @@ Dans : `src/domain/nutrition` (`journal.ts`, `offProduct.ts`, `mealEntry.ts`, `t
 
 1. C-032 : `rescaleEntry` ne ramène plus les totaux au dixième à chaque correction (arrondi à 10^-6 seulement) ; l'affichage reste au dixième / à l'entier.
 2. C-033 : si kcal × 4,184 s'écarte du kJ de plus de 15 %, la fiche prend kJ / 4,184 et le dit (`energyFromKj`, une ligne sur la fiche). Un seul des deux : inchangé.
-3. C-034 : Quick Add : chaque macro ≤ 1 000 g, et 4P + 4G + 9L ≤ 1,15 × kcal + 20 ; refus nommé (message dédié), à la création comme à la correction.
+3. C-034 : Quick Add : chaque macro ≤ 1 000 g, et 4P + 4G + 9L ≤ 1,25 × kcal + 20 ; refus nommé (message dédié), à la création comme à la correction.
 4. C-036 : la dépense mesurée est lissée (EMA 7 j) sur l'historique des 21 derniers jours recalculé à chaque lecture (`estimateTdeeSmoothed`) ; rien n'est persisté ; un pas nul remplace la valeur par la mesure.
 5. C-095 : champs numériques de la nutrition en `type="text"` `inputMode="decimal"` (virgule conservée par le moteur).
 6. C-096 : le jour « aujourd'hui » est relu au retour au premier plan et à minuit (`useCurrentDay`), le journal qui suivait aujourd'hui le suit.
@@ -31,3 +31,28 @@ Dans : `src/domain/nutrition` (`journal.ts`, `offProduct.ts`, `mealEntry.ts`, `t
 ## Passes
 
 product-owner (cette fiche), agent du module, qa-test : consignés plus bas. code-reviewer : à faire par l'appelant.
+
+## Passes consignées
+
+- product-owner : fiche ci-dessus, avant les tests. Rouge `2d545dde` : 12 échecs de domaine et 4 d'écran, tous pour la bonne cause (C-098 : le champ Calories a disparu après la suppression).
+- Agent du module : `journal.ts` (aller-retour exact), `offProduct.ts` (`energyFromKj`), `mealEntry.ts` (`QUICK_ADD_MACRO_MAX_G`, marge d'énergie, motif `macros-exceed-energy`), `tdee.ts` (`previousSmoothedFor`, `estimateTdeeSmoothed`, pas nul remplace), `useCases.ts` ; écrans : `shared.tsx` (champs texte), `JournalView.tsx` (jour figé, écriture étrangère), nouveau `useCurrentDay.ts` (Journal, carte « nutrition restante »), `offLookup.ts` et `FoodSearchPanel.tsx` (signal kJ), `QuickAddForm.tsx` et `EntryEditor.tsx` (message dédié), `fr.nutrition.ts` (2 clés). Tests existants mis à jour parce que la spécification a changé : `toHaveValue` numérique → texte (4 fichiers), pas nul de `smoothTdee`, OFF kcal/kJ cohérents.
+- qa-test : marge d'énergie portée de 1,15 à 1,25 (+ 20 kcal) après échec de données de test réalistes (20/10/50 g pour 300 kcal = 370 kcal annoncés, fibres et polyols) ; ajoutés : refus 100 kcal / 5 000 g à l'écran, suppression de l'entrée en correction, formulaire ouvert à travers minuit. Hors périmètre : vecteurs `tests/fixtures/nutrition` 8 semaines inchangés (verts, ils passent `previousSmoothed` explicitement). `src/sync` et `src/domain/sync` non touchés ; aucune migration, aucune dépendance.
+- code-reviewer : à faire par l'appelant.
+
+## Décisions proposées
+
+- **D-341** : une correction de grammes d'une entrée ne perd plus de précision (valeurs au millionième, affichage arrondi) : l'aller-retour 100 g → 1 g → 100 g rend la valeur d'origine (C-032).
+- **D-342** : Open Food Facts : si kcal × 4,184 s'écarte du kJ annoncé de plus de 15 %, la fiche prend kJ / 4,184 et le dit sur la fiche récupérée (« estimation ») ; un seul des deux champs : inchangé (C-033).
+- **D-343** : Quick Add (création et correction) : chaque macro ≤ 1 000 g et 4P + 4G + 9L ≤ 1,25 × kcal + 20, sinon refus avec un message dédié (C-034).
+- **D-344** : saisie : champs numériques de la nutrition en texte `inputMode="decimal"` (C-095) ; le jour d'« aujourd'hui » est relu au retour au premier plan, au focus et à minuit (`useCurrentDay`) (C-096) ; un formulaire ouvert garde son jour et la navigation de jour est désactivée (C-097) ; une écriture étrangère (suppression d'une autre entrée) ne ferme pas le formulaire (C-098).
+- **D-357** : dépense mesurée (§ 15.1) lissée par l'EMA de demi-vie 7 j rejouée sur les 21 derniers jours à chaque lecture (`estimateTdeeSmoothed`), sans valeur persistée (rien à synchroniser) ; un pas nul remplace la valeur par la mesure (C-036).
+
+## Constats d'Ali à faire
+
+- Vérifier sur iPhone (WebKit) : « 12,5 » dans Quick Add, clavier décimal ; PC ouvert de part et d'autre de minuit.
+- Valider les bornes de D-342 (15 %) et D-343 (1 000 g, marge 25 % + 20 kcal) ; la dépense affichée peut changer (lissée) par rapport à 0.27.
+- C-095 n'a pas d'e2e `iphone-webkit` (non ajouté ici : CI seulement, à demander à qa-test).
+
+## Écarts au brief
+
+- Persistance de la valeur lissée remplacée par un recalcul de l'historique (D-357) : pas de nouveau réglage, cohérent entre appareils. Le critère « vecteurs 8 semaines » n'est pas modifié.

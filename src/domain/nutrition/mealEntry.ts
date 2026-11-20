@@ -13,6 +13,9 @@ export type EntryMethod = (typeof ENTRY_METHODS)[number];
 
 /** Plafond d'une ligne Quick Add, en kcal. */
 export const QUICK_ADD_KCAL_MAX = 10_000;
+/** Plafond d'une macro en Quick Add (g) et marge de cohérence 4P + 4G + 9L ≤ kcal × 1,25 + 20 (D-343). */
+export const QUICK_ADD_MACRO_MAX_G = 1_000;
+export const QUICK_ADD_ENERGY_MARGIN = { ratio: 1.25, kcal: 20 } as const;
 
 export interface MealEntryDraft {
   readonly date: LocalDate;
@@ -48,6 +51,7 @@ export type MealEntryIssue =
   | 'value-invalid'
   | 'kcal-required'
   | 'energy-inconsistent'
+  | 'macros-exceed-energy'
   | 'macros-exceed-grams'
   | 'confidence-invalid'
   | 'confidence-required';
@@ -101,6 +105,11 @@ export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
     if (draft.grams !== null) add('grams-invalid');
     if (!known(draft.kcal)) add('kcal-required');
     else if (draft.kcal > QUICK_ADD_KCAL_MAX) add('value-invalid');
+    for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('value-invalid');
+    if (known(draft.kcal) && (known(draft.proteinG) || known(draft.fatG) || known(draft.carbG))) {
+      const fromMacros = 4 * (draft.proteinG ?? 0) + 9 * (draft.fatG ?? 0) + 4 * (draft.carbG ?? 0);
+      if (fromMacros > draft.kcal * QUICK_ADD_ENERGY_MARGIN.ratio + QUICK_ADD_ENERGY_MARGIN.kcal) add('macros-exceed-energy');
+    }
   } else if (draft.grams === null) add('grams-required');
   else if (!Number.isFinite(draft.grams) || draft.grams <= 0 || draft.grams > FOOD_GRAMS_MAX) add('grams-invalid');
 

@@ -28,6 +28,7 @@ export interface NumberFieldProps {
   readonly label: string;
   readonly value: string;
   readonly onChange: (value: string) => void;
+  /** Conservé pour les appelants ; le champ est un texte (C-095), le pas n'a plus d'effet. */
   readonly step?: string;
   readonly invalid?: boolean;
   readonly autoFocus?: boolean;
@@ -35,16 +36,14 @@ export interface NumberFieldProps {
   readonly onFocus?: () => void;
 }
 
-export function NumberField({ label, value, onChange, step = 'any', invalid = false, autoFocus = false, describedBy, onFocus }: NumberFieldProps) {
+export function NumberField({ label, value, onChange, invalid = false, autoFocus = false, describedBy, onFocus }: NumberFieldProps) {
   return (
     <label className="ct-nutrition__field">
       <span className="ct-nutrition__field-label">{label}</span>
       <input
         className="ct-nutrition__input"
-        type="number"
+        type="text"
         inputMode="decimal"
-        min="0"
-        step={step}
         value={value}
         autoFocus={autoFocus}
         aria-invalid={invalid || undefined}

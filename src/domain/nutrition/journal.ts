@@ -12,6 +12,8 @@ import type { DayTotals, Target, TrendPoint, WeighIn } from './types';
 import { trendAt } from './weightTrend';
 
 const tenth = (x: number): number => Math.round(x * 10) / 10;
+/** Arrondi de précaution (10^-6) : une correction de grammes ne perd pas de précision (C-032) ; l'affichage arrondit. */
+const micro = (x: number): number => Math.round(x * 1e6) / 1e6;
 
 export interface Remaining {
   readonly kcal: number | null;
@@ -101,13 +103,13 @@ export interface RescaledEntry {
 }
 
 /**
- * Correction des grammes d'une entrée : les totaux suivent la proportion (au dixième) ; une valeur inconnue reste `null`. `null` si les
+ * Correction des grammes d'une entrée : les totaux suivent la proportion (sans arrondi au dixième : aller-retour 100 g → 1 g → 100 g exact, C-032) ; une valeur inconnue reste `null`. `null` si les
  * grammes demandés sont invalides ou si la masse d'origine est inconnue (Quick Add : les valeurs se corrigent directement).
  */
 export function rescaleEntry(entry: Pick<MealEntryDraft, 'grams' | 'kcal' | 'proteinG' | 'fatG' | 'carbG'>, grams: number): RescaledEntry | null {
   if (entry.grams === null || !(entry.grams > 0)) return null;
   if (!Number.isFinite(grams) || grams <= 0 || grams > FOOD_GRAMS_MAX) return null;
   const ratio = grams / entry.grams;
-  const scale = (v: number | null): number | null => (v === null ? null : tenth(v * ratio));
+  const scale = (v: number | null): number | null => (v === null ? null : micro(v * ratio));
   return { grams, kcal: scale(entry.kcal), proteinG: scale(entry.proteinG), fatG: scale(entry.fatG), carbG: scale(entry.carbG) };
 }

@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
-import { QUICK_ADD_KCAL_MAX, rescaleEntry } from '../../../domain/nutrition';
+import { QUICK_ADD_KCAL_MAX, QUICK_ADD_MACRO_MAX_G, rescaleEntry, validateMealEntry } from '../../../domain/nutrition';
 import type { LocalTime } from '../../../domain/types';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatInt, orDash, tNutrition } from '../../../i18n/nutritionText';
@@ -53,6 +53,8 @@ export function EntryEditor({ entry, onSaved, onClose }: EntryEditorProps) {
       const f = parseNumber(fat);
       const c = parseNumber(carb);
       if (p === undefined || f === undefined || c === undefined) return setError(tNutrition('valueInvalid'));
+      const issues = validateMealEntry({ ...entry, kcal: energy, proteinG: p, fatG: f, carbG: c });
+      if (issues.includes('macros-exceed-energy') || [p, f, c].some((v) => typeof v === 'number' && v > QUICK_ADD_MACRO_MAX_G)) return setError(tNutrition('macrosInconsistent'));
       const trimmed = name.trim();
       patch = { foodName: trimmed === '' ? entry.foodName : trimmed.slice(0, 200), kcal: energy, proteinG: p, fatG: f, carbG: c, time: time as LocalTime };
     }

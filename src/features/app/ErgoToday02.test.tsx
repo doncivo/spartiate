@@ -107,7 +107,7 @@ describe('ERGO-02 : Aujourd’hui sur PC, colonne droite', () => {
 
   it('macros du jour (protéines, glucides, lipides : pris sur cible), semaine (jour de la séance marqué) et derniers records', async () => {
     await saveManualTarget(db.data, { weekStart: '2026-11-08' as LocalDate, target: { kcal: 2400, proteinG: 170, fatG: 75, carbG: 261 }, lowFloorConfirmed: false });
-    await (await db.data.repos.mealEntries()).create(quickAddDraft({ date: '2026-11-10' as LocalDate, time: '08:00' as LocalTime, name: 'Petit-déjeuner', kcal: 500, proteinG: 96, fatG: 48, carbG: 150 }));
+    await (await db.data.repos.mealEntries()).create(quickAddDraft({ date: '2026-11-10' as LocalDate, time: '08:00' as LocalTime, name: 'Petit-déjeuner', kcal: 1416, proteinG: 96, fatG: 48, carbG: 150 }));
     await db.data.transaction(async (repos) => (await repos.trainingRoutines()).create(ROUTINE));
     await closeWith(80);
     db.clock.advance(60_000);
