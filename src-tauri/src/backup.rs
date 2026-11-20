@@ -117,11 +117,11 @@ impl BackupError {
 static BUSY_DATABASES: std::sync::Mutex<Vec<PathBuf>> = std::sync::Mutex::new(Vec::new());
 
 /// Garde d'exclusion mutuelle : rendue à la sortie de l'opération, même en cas d'erreur.
-struct OperationGuard(PathBuf);
+pub(crate) struct OperationGuard(PathBuf);
 
 impl OperationGuard {
     /// Prise sans attente : une seconde opération sur la même base est refusée (`busy`).
-    fn acquire(db_path: &Path) -> Result<Self, BackupError> {
+    pub(crate) fn acquire(db_path: &Path) -> Result<Self, BackupError> {
         let mut busy = BUSY_DATABASES
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -1712,7 +1712,13 @@ pub fn recover_interrupted_restore(
                     .map_err(|e| fail("recovery-failed", e))?;
             }
         }
-        let _ = prune_family(backups_dir, Family::PreRestore, KEEP_PRE_RESTORE_BACKUPS);
+        // C-137 : l'archive qu'on vient de créer n'est jamais purgée (horodatage de la modification du fichier, pas celui d'aujourd'hui).
+        let _ = prune_family_except(
+            backups_dir,
+            Family::PreRestore,
+            KEEP_PRE_RESTORE_BACKUPS,
+            Some(&target),
+        );
         return Ok(Recovery::Archived);
     }
     if put_back {
@@ -1737,6 +1743,15 @@ pub fn recover_interrupted_restore(
         return Ok(Recovery::PutBack);
     }
     Ok(Recovery::Nothing)
+}
+
+/// Déplace `from` vers `to` sans jamais remplacer `to` : lien dur (échec `AlreadyExists` si la cible existe, sans fenêtre entre un test et
+/// le renommage), puis retrait de l'ancien nom. Si le retrait échoue, le déplacement est quand même fait (deux noms, un seul fichier) :
+/// l'échec est rendu seulement si le lien n'a pas pu être créé.
+fn place_without_replacing(from: &Path, to: &Path) -> io::Result<()> {
+    fs::hard_link(from, to)?;
+    let _ = fs::remove_file(from);
+    Ok(())
 }
 
 /// Échange la base par le fichier préparé. Tout ce qui est déplacé est remis en place si une étape échoue : l'ancienne base (et son
@@ -1767,14 +1782,9 @@ fn swap_database(
             }
         }
         hook(RestoreStep::OldMoved)?;
-        // C-138 : jamais de remplacement d'une cible existante.
-        if present(db_path) {
-            return Err(io::Error::new(
-                io::ErrorKind::AlreadyExists,
-                "la base existe déjà : elle n'est pas remplacée",
-            ));
-        }
-        fs::rename(staged, db_path)
+        // C-138 : placement SANS remplacement (sous Windows `rename` remplace la cible) : lien dur, qui échoue si la cible existe, puis
+        // suppression du nom préparé.
+        place_without_replacing(staged, db_path)
     })();
     let Err(error) = result else {
         let _ = hook(RestoreStep::Swapped);
@@ -1786,7 +1796,7 @@ fn swap_database(
     let mut rollback_failed = false;
     for (from, old) in moved.iter().rev() {
         // Le retour arrière ne remplace pas non plus un fichier présent : l'ancien reste en `.restore-old` (récupéré au démarrage).
-        if present(from) || fs::rename(old, from).is_err() {
+        if place_without_replacing(old, from).is_err() {
             rollback_failed = true;
         }
     }
