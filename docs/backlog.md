@@ -62,7 +62,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 |---|---|---|---|
 | C-001 | audit Claude 0.27.0 | bloquant — exercice assisté hors décharge : cran et réductions inversés (plus d'assistance proposée comme une hausse) | fait (FIX-ASSIST, PR à venir) |
 | C-002 | audit Claude 0.27.0 | important — échauffement d'un exercice assisté plus dur que les séries de travail | fait (FIX-ASSIST, PR à venir) |
-| C-003 | audit Claude 0.27.0 | important — « Mettre à jour la routine » double les séries d'un exercice présent sur deux lignes du jour | à faire (lot 0.28.0) |
+| C-003 | audit Claude 0.27.0 | important — « Mettre à jour la routine » double les séries d'un exercice présent sur deux lignes du jour | fait (FIX-PROGRAMME) |
 | C-004 | audit Claude 0.27.0 | important — recalibrage « Facile » de deux crans en confiance provisoire (< 0,4 : au plus un cran) | à faire (lot 0.28.0) |
 | C-005 | audit Claude 0.27.0 | bloquant — charge aberrante (faute de frappe) enregistrée sans alerte, puis prescrite à toute la séance suivante | fait (FIX-ABERR) |
 | C-006 | audit Claude 0.27.0 | mineur — décharge « arrondie vers le bas » qui ajoute une répétition (snapToEquipment au lieu de snapDown) | à faire (lot 0.28.0) |
@@ -122,9 +122,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-060 | audit Claude 0.27.0 | mineur — baseline à σ = 0 ou HRV absente classée niveau B (libellé seulement) | à faire (lot 0.28.0) |
 | C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | à faire (lot 0.28.0) |
 | C-062 | audit Claude 0.27.0 | à vérifier — récupération musculaire figée au calcul ; cardio importé non retiré (§ 16.3) ; rappel à heure inexistante | à faire (lot 0.28.0) |
-| C-063 | audit Claude 0.27.0 | important — séance du jour proposée de nouveau après avoir été faite | à faire (lot 0.28.0) |
-| C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | à faire (lot 0.28.0) |
-| C-065 | audit Claude 0.27.0 | important — échanger deux jours de la semaine dans l'éditeur de routine échoue | à faire (lot 0.28.0) |
+| C-063 | audit Claude 0.27.0 | important — séance du jour proposée de nouveau après avoir été faite | fait (FIX-PROGRAMME) |
+| C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | fait (FIX-PROGRAMME) |
+| C-065 | audit Claude 0.27.0 | important — échanger deux jours de la semaine dans l'éditeur de routine échoue | fait (FIX-PROGRAMME) |
 | C-066 | audit Claude 0.27.0 | important — profils de matériel : « 12,16 » lu comme un seul poids | à faire (lot 0.28.0) |
 | C-067 | audit Claude 0.27.0 | important — suivi GPS en cours perdu (mémoire seule) et « Abandonner » sans confirmation | à faire (lot 0.28.0) |
 | C-068 | audit Claude 0.27.0 | important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier | à faire (lot 0.28.0) |
@@ -176,7 +176,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | à faire (lot 0.28.0) |
 | C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | à faire (lot 0.28.0) |
 | C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | à faire (lot 0.28.0) |
-| C-117 | audit Claude 0.27.0 | important — « Revoir mes réglages » écrase la durée de cycle choisie depuis (D-315) | à faire (lot 0.28.0) |
+| C-117 | audit Claude 0.27.0 | important — « Revoir mes réglages » écrase la durée de cycle choisie depuis (D-315) | fait (FIX-PROGRAMME) |
 | C-118 | audit Claude 0.27.0 | important — oublier le dossier et la clé sans dire que les données iCloud deviendront illisibles | à faire (lot 0.28.0) |
 | C-119 | audit Claude 0.27.0 | important, à vérifier — « À propos et licences » absent de Plus (§ 18.2) | à faire (lot 0.28.0) |
 | C-120 | audit Claude 0.27.0 | mineur — toast « Annuler » mal annoncé, masqué par un message suivant sur iPhone | à faire (lot 0.28.0) |

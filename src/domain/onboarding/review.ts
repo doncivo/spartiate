@@ -26,6 +26,8 @@ export interface CurrentSettings {
   readonly equipmentProfileId: string | null;
   /** Cible de nutrition enregistrée (Stratégie), qui peut avoir été changée depuis par le check-in. */
   readonly nutritionGoal: Goal | null;
+  /** FIX-PROGRAMME (C-117) : dernière durée de cycle réglée (`training.cycleWeeks`), si elle est l'une des durées de l'assistant (4, 5, 6). */
+  readonly cycleWeeks?: OnboardingDraft['mesoWeeks'] | null;
 }
 
 export const NO_CURRENT: CurrentSettings = { sex: null, birthYear: null, heightCm: null, goal: null, experience: null, weightKg: null, activity: null, equipmentProfileId: null, nutritionGoal: null };
@@ -67,7 +69,19 @@ export function reviewStart(answers: OnboardingDraft | null, current: CurrentSet
     experience: current.experience,
     equipmentProfileId: current.equipmentProfileId,
     goal,
+    // FIX-PROGRAMME (C-117) : la durée part du réglage courant (D-315) ; 7 semaines ou « illimité » : réponse gardée, jamais réécrite sans changement.
+    mesoWeeks: current.cycleWeeks ?? base.mesoWeeks,
   };
+}
+
+/** FIX-PROGRAMME (C-117) : durée du cycle à écrire à la fin de l'assistant : toujours au premier passage, en revue seulement si elle a changé. */
+export function cycleWeeksToWrite(draft: OnboardingDraft, baseline: OnboardingDraft | null): OnboardingDraft['mesoWeeks'] | null {
+  return baseline === null || draft.mesoWeeks !== baseline.mesoWeeks ? draft.mesoWeeks : null;
+}
+
+/** FIX-PROGRAMME (C-117) : lecture du réglage `training.cycleWeeks` pour la revue ; autre valeur (7, « illimité », absente) : `null`. */
+export function reviewCycleWeeks(raw: unknown): OnboardingDraft['mesoWeeks'] | null {
+  return raw === 4 || raw === 5 || raw === 6 ? raw : null;
 }
 
 export type ChangeField = 'sex' | 'birthYear' | 'heightCm' | 'weightKg' | 'activity' | 'goal' | 'experience' | 'equipmentProfileId' | 'nutritionGoal';
