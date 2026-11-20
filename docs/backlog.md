@@ -260,7 +260,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-093 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | test sur base migrée : ROLLBACK rejeté puis arrêt, curseur, `sync_field_clock` et `sync_outbox` inchangés ; garde orpheline vue par `assertGuardEmpty` | à faire (lot 0.28.0) |
 | BL-094 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | `bootstrap.ts` ~300 : échec de `assertGuardEmpty` avalé (`.catch(() => 0)`) : garde orpheline durable possible, à mettre en échec fermé | à faire (lot 0.28.0) |
 | BL-095 | relecture code-reviewer de FIX-A008 (lot 0.28.0) | `serializedDriver.ts` ~155 : BEGIN IMMEDIATE exécuté puis rejeté par le transport, transaction ouverte à l’insu du pilote (même classe que A-008) | à faire (lot 0.28.0) |
-| FIX-A009b | relecture sync-icloud de FIX-A009 (lot 0.28.0) | bloquant (perte) — réintégration : champ gardé comparé à l'horloge `'*'` de la ligne ; jour renommé avant lecture → jour de la semaine perdu | à faire (lot 0.28.0, phase 1) |
+| FIX-A009b | relecture sync-icloud de FIX-A009 (lot 0.28.0) | bloquant (perte) — réintégration : champ gardé comparé à l'horloge `'*'` de la ligne ; jour renommé avant lecture → jour de la semaine perdu | fait (FIX-A009b) |
+| BL-097 | rapport FIX-A009b (lot 0.28.0) | limite : colonne connue écrite nulle avec la ligne face à une valeur gardée plus ancienne non nulle (divergence possible, non atteignable aujourd'hui) ; correction complète = migration de `sync_unknown` ; déclencheur : tout ticket qui élargit une contrainte d’une colonne publiée (data-model, architect) | reporté : non atteignable avec le catalogue actuel (avenant 39) |
+| BL-098 | relecture architecte de FIX-A009b (lot 0.28.0) | garde « colonne publiée ajoutée nulle » sur base vide : ajouter une ligne avant chaque migration pour attraper un remplissage par UPDATE | à faire (lot 0.28.0) |
+| BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | à faire (lot 0.28.0) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0
