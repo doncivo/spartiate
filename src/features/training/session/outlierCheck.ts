@@ -1,3 +1,4 @@
+import { isAssistedEquipment } from '../../../domain/training/assisted';
 import { DEFAULT_PROGRESSION_CONFIG } from '../../../domain/training/config';
 import { entryImplausible, entryOutlier, plausibilityClass, type EntryImplausible, type EntryOutlier } from '../../../domain/training/outlierEntry';
 import type { SetEntry, SetKind, WorkoutSet } from '../../../domain/training/session';
@@ -24,7 +25,7 @@ const LOADED_METRICS: ReadonlySet<string> = new Set(['load-reps', 'bodyweight-re
  */
 export async function checkOutlier(access: DataAccess, exercise: Exercise | undefined, set: WorkoutSet, entry: SetEntry, kind: SetKind, sessionSets: readonly WorkoutSet[], perDumbbell = false): Promise<OutlierAsk | null> {
   if (kind !== 'work' || (exercise !== undefined && !LOADED_METRICS.has(exercise.metric))) return null;
-  const assisted = exercise?.equipment.includes('assisted-pull-up-machine') === true;
+  const assisted = isAssistedEquipment(exercise?.equipment);
   // Charges déjà validées dans la séance pour cet exercice (une question par charge).
   const done = sessionSets.filter((s) => s.exerciseId === set.exerciseId && s.id !== set.id && s.done && s.setKind === 'work' && s.loadKg !== null).map((s) => s.loadKg as number);
   // Relatif : la plus lourde (la plus faible assistance pour un assisté) ; vraisemblance : la plus forte saisie (assistance comprise).

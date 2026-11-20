@@ -240,7 +240,7 @@ describe('validation de l’historique', () => {
     const old = session(10, 100, [5, 5, 5]);
     const outlier = session(3, 200, [5, 5, 5]);
     const p = prescribe(input({ history: [old, outlier], target: target(3, 5) }));
-    expect(p.reasons).toContain('outlier-excluded');
+    expect(p.reasons).toEqual(['outlier-excluded', 'history-reference', 'top-reached']);
     expect(p.reference?.loadKg).toBe(100);
     expect(p.loadKg).toBe(102.5);
     expect(p.estimated1rmKg ?? 0).toBeLessThan(150);

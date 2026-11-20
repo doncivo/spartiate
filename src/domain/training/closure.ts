@@ -1,5 +1,5 @@
 import type { IsoDateTime } from '../types';
-import { CATALOG_ASSISTED_IDS } from './assisted';
+import { CATALOG_ASSISTED_IDS, CATALOG_BODYWEIGHT_LOAD_IDS } from './assisted';
 import { DEFAULT_PROGRESSION_CONFIG } from './config';
 import { analyzeHistory, isUnconfirmedOutlier } from './estimate1rm';
 import type { ExerciseSession, RoutineDay } from './types';
@@ -110,12 +110,15 @@ function sessionsOf(exerciseId: string, mine: readonly WorkoutSet[], past: reado
  * Records de `sets` (une séance) contre `history` (séries des séances closes ANTÉRIEURES, tous exercices confondus ; seules les séries de
  * travail validées avec charge comptent). Un record est strictement supérieur à la meilleure valeur antérieure.
  */
-export function personalRecords(sets: readonly WorkoutSet[], history: readonly WorkoutSet[], assisted: ReadonlySet<string> = NONE): PersonalRecord[] {
+export function personalRecords(sets: readonly WorkoutSet[], history: readonly WorkoutSet[], assisted: ReadonlySet<string> = NONE, bodyweighted: ReadonlySet<string> = NONE): PersonalRecord[] {
   const counted = (s: WorkoutSet): boolean => countsWith(s, assisted);
   const records: PersonalRecord[] = [];
   const exercises = [...new Set(sets.filter(counted).map((s) => s.exerciseId))];
   for (const exerciseId of exercises) {
-    const outlier = isUnconfirmedOutlier(analyzeHistory(sessionsOf(exerciseId, sets, history), DEFAULT_PROGRESSION_CONFIG));
+    // FIX-ABERR revue 1 : exercice lesté (catalogue ou `bodyweighted` de l'appelant), aucun repérage sur le lest seul (la saisie, elle, compare
+    // la charge totale) : un vrai progrès de lest n'est jamais écarté sans signal.
+    const weighted = CATALOG_BODYWEIGHT_LOAD_IDS.has(exerciseId) || bodyweighted.has(exerciseId);
+    const outlier = isUnconfirmedOutlier(analyzeHistory(sessionsOf(exerciseId, sets, history), DEFAULT_PROGRESSION_CONFIG, null, { outliers: !weighted }));
     const eligible = (s: WorkoutSet): boolean => counted(s) && !outlier(s.workoutId, s.position);
     const mine = sets.filter((s) => eligible(s) && s.exerciseId === exerciseId);
     const past = history.filter((s) => eligible(s) && s.exerciseId === exerciseId);
@@ -133,7 +136,7 @@ export function personalRecords(sets: readonly WorkoutSet[], history: readonly W
   return records;
 }
 
-export function summarizeWorkout(workout: WorkoutWithSets, history: readonly WorkoutSet[] = [], assisted: ReadonlySet<string> = NONE): WorkoutSummary {
+export function summarizeWorkout(workout: WorkoutWithSets, history: readonly WorkoutSet[] = [], assisted: ReadonlySet<string> = NONE, bodyweighted: ReadonlySet<string> = NONE): WorkoutSummary {
   const live = workout.sets.filter((s) => s.deletedAt === null);
   return {
     durationSec: workoutDurationSec(workout),
@@ -141,7 +144,7 @@ export function summarizeWorkout(workout: WorkoutWithSets, history: readonly Wor
     validatedWorkSets: live.filter((s) => s.done && s.setKind !== 'warmup').length,
     plannedSets: live.length,
     tonnageKg: tonnageKg(live, assisted),
-    records: personalRecords(live, history, assisted),
+    records: personalRecords(live, history, assisted, bodyweighted),
   };
 }
 

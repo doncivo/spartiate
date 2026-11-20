@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { NOW, input, session, set } from '../../../tests/fixtures/training/progression';
 import { setRow, workoutRow } from '../../../tests/fixtures/training/workout';
-import * as assistedModule from './assisted';
+import { CATALOG_BODYWEIGHT_LOAD_IDS } from './assisted';
 import { personalRecords } from './closure';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, ENGINE_VERSION } from './config';
 import { analyzeHistory } from './estimate1rm';
@@ -14,8 +14,6 @@ import { prescribe } from './prescribe';
 import type { WorkoutSet } from './session';
 import type { ExerciseSession } from './types';
 import type { IsoDateTime } from '../types';
-
-const CATALOG_BODYWEIGHT_LOAD_IDS = (assistedModule as { CATALOG_BODYWEIGHT_LOAD_IDS?: ReadonlySet<string> }).CATALOG_BODYWEIGHT_LOAD_IDS;
 
 const base = (): ExerciseSession[] => [session(14, 100, [8, 8, 8]), session(11, 100, [8, 8, 8]), session(8, 100, [8, 8, 8])];
 const partial = (days: number, load: number): ExerciseSession => ({
@@ -157,6 +155,6 @@ describe('FIX-ABERR revue 1 : exercice lesté, le repérage des aberrantes ne se
   it('identifiants lestés du catalogue = exercices du catalogue avec une fraction de poids de corps', () => {
     const raw = JSON.parse(readFileSync(new URL('../../../content/exercises/exercises.json', import.meta.url), 'utf8')) as { exercises?: { id: string; bodyweightFraction: number | null }[] } | { id: string; bodyweightFraction: number | null }[];
     const list = Array.isArray(raw) ? raw : (raw.exercises ?? []);
-    expect([...(CATALOG_BODYWEIGHT_LOAD_IDS ?? [])].sort()).toEqual(list.filter((e) => (e.bodyweightFraction ?? 0) > 0).map((e) => e.id).sort());
+    expect([...CATALOG_BODYWEIGHT_LOAD_IDS].sort()).toEqual(list.filter((e) => (e.bodyweightFraction ?? 0) > 0).map((e) => e.id).sort());
   });
 });

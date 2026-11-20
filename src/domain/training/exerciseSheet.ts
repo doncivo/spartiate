@@ -57,11 +57,11 @@ const workSets = (session: ExerciseSession): HistorySet[] => session.sets.filter
 /**
  * Record de la fiche : charge la plus lourde d'une série de travail validée, puis le plus de répétitions à cette charge ; à égalité, la séance
  * la plus ancienne l'a établi. Charge nulle ou absente : jamais un record. Null : aucune série retenue. FIX-ABERR (C-005) : une série aberrante
- * non confirmée (`analyzeHistory`) n'est jamais le record.
+ * non confirmée (`analyzeHistory`) n'est jamais le record ; `outliers: false` (exercice lesté, revue 1) : aucun repérage sur le lest seul.
  */
-export function sheetRecord(history: readonly ExerciseSession[]): SheetRecord | null {
+export function sheetRecord(history: readonly ExerciseSession[], options: { readonly outliers?: boolean } = {}): SheetRecord | null {
   let record: SheetRecord | null = null;
-  const outlier = isUnconfirmedOutlier(analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG));
+  const outlier = isUnconfirmedOutlier(analyzeHistory(history, DEFAULT_PROGRESSION_CONFIG, null, { outliers: options.outliers !== false }));
   for (const session of [...history].sort(byRecent)) {
     for (const set of workSets(session)) {
       if (outlier(session.workoutId, set.position)) continue;
@@ -112,5 +112,5 @@ export function sheetStats(history: readonly ExerciseSession[], exercise: SheetE
     const last = values.at(-1);
     if (values.length >= 2 && first !== undefined && last !== undefined) trend = { values, deltaKg: last - first };
   }
-  return { oneRm, record: isAssistedEquipment(exercise.equipment) ? null : sheetRecord(history), trend, sessions };
+  return { oneRm, record: isAssistedEquipment(exercise.equipment) ? null : sheetRecord(history, { outliers: !(exercise.bodyweightFraction ?? 0) }), trend, sessions };
 }
