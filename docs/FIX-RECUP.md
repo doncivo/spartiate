@@ -48,18 +48,28 @@ pas d'un seul jour tronqué (partiel) ; HRV tronqué : la première ligne écart
 dépôts et synchro de la récupération, `RedDay`, `RecoverySplitProposed` (553 tests). Preuve de l'audit rejouée sur le vert : C-049, C-050, C-052 et
 les vecteurs verts ; C-051, C-053, C-054 restent rouges (hors périmètre). `tsc` et eslint (fichiers touchés, tests compris) propres.
 
-## Passe code-reviewer (à froid) : approuvé
+## Relecture de fin de l'agent du module (auto-relecture, ne vaut pas passe code-reviewer)
 
 Relu : aucune constante changée (`config.ts` intact), logique dans `src/domain/recovery`, service limité au chemin `pas`, pas de `!`, aucun texte
-d'interface. Coût de l'exclusion O(n²) avec n ≤ 14 : négligeable. Point signalé : les résumés `recovery_day` déjà publiés des jours passés gardent
-l'ancien calcul tant qu'ils ne sont pas recalculés (le jour courant l'est à chaque import) ; `SLEEP_RULES_VERSION` non relevé (D-345).
+d'interface. Coût de l'exclusion O(n²) avec n ≤ 14 : négligeable. Les résumés `recovery_day` déjà publiés des jours passés gardent l'ancien calcul tant
+qu'ils ne sont pas recalculés ; `SLEEP_RULES_VERSION` non relevé (D-345).
 
-## Décisions proposées
+## Passe code-reviewer (à froid, agent distinct) : approuvé
+
+Contrôles : eslint vide, 314 tests ciblés verts, aucun test existant modifié, couches respectées, rouge `75d2cbd1` avant vert `86b7cd99` (échec du rouge
+établi par lecture). Aberrantes conformes au § 16.3 ; `recovery_day` n'est calculé que par l'iPhone (aucun écart entre appareils) ; dette du coucher sur
+les nuits du résumé de demain ; lecture par la fin sans régression (CRLF, BOM, sans en-tête inchangés). Suggestions : (1) `poids.csv` décrit « plus récent
+en premier » dans docs/guide-raccourcis-sante.md : au-delà de 10 000 lignes, les pesées les plus anciennes seraient gardées (écrit dans D-348) ; (2)
+`writeSteps` écrit en deux fois (`upsertTotals` puis `insertMany`) : tout ou rien par fichier perdu si la seconde échoue (registre BL-102) ; (3) sur un
+fichier de 2 jours, la veille reste figée à son total partiel (écrit dans D-348) ; (4) proposer à Ali `SLEEP_RULES_VERSION` 4 (recalcul des 30 jours),
+écrit dans D-345.
+
+## Décisions : D-345, D-346, D-347, D-348 (docs/decisions.md)
 
 - **D-345** : (C-049, complète § 16.3, seuil 2,5 σ inchangé) une valeur de baseline est exclue si elle s'écarte de plus de 2,5 σ de la moyenne
   des AUTRES valeurs de la fenêtre, σ calculé sans elle ; σ des autres nul ou moins de 2 autres : gardée. Une passe ; deux aberrantes proches peuvent
   se masquer (limite acceptée, testée). Les résumés des jours passés ne sont pas recalculés d'office (`SLEEP_RULES_VERSION` inchangé, test figé qui
-  l'attend à 3) ; à trancher par Ali si l'historique de 30 jours doit être recalculé. Choix prudent, révisable par Ali.
+  l'attend à 3) ; à trancher par Ali si l'historique de 30 jours doit être recalculé. Choix prudent, révisable par Ali. Proposé à Ali (revue) : relever `SLEEP_RULES_VERSION` à 4 pour recalculer les 30 derniers jours avec la nouvelle règle (test figé à mettre à jour) ; non fait ici.
 - **D-346** : (C-049) le minimum de 7 nuits du § 16.3 porte sur les nuits valides de la fenêtre, avant exclusion des aberrantes : une aberrante
   écartée ne remet pas la Recovery en apprentissage. Choix prudent, révisable par Ali.
 - **D-347** : (C-050, complète D-130) la dette de la proposition de coucher (§ 16.7) ne compte que les nuits valides (≥ 180 min) des 7 jours
@@ -67,7 +77,7 @@ l'ancien calcul tant qu'ils ne sont pas recalculés (le jour courant l'est à ch
 - **D-348** : (C-052, H-25 toujours UNVERIFIED) un fichier Raccourcis de plus de 10 000 lignes est lu par ses 10 000 dernières lignes (guide
   « Plus ancien en premier ») ; le jour le plus ancien d'un `pas.csv` de plusieurs jours, ou tronqué, est un total possiblement partiel : inséré
   s'il manque, jamais réécrit. Coût : si ce jour a été importé partiel une première fois, il n'est jamais complété. Choix prudent, révisable par Ali.
-
+ Coûts (revue) : un fichier de 2 jours laisse la veille figée à son total partiel ; un `poids.csv` exporté « plus récent en premier » (docs/guide-raccourcis-sante.md, partie A) garderait au-delà de 10 000 lignes les pesées les plus anciennes, irréaliste sur 30 jours.
 ## Constats d'Ali à faire
 
 Aucun avant la première utilisation réelle (D-38). À valider : D-345 à D-348 ; recalcul de l'historique (D-345).
