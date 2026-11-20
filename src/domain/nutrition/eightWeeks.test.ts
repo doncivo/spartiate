@@ -12,7 +12,7 @@ import {
 } from '../../../tests/fixtures/nutrition/eightWeeks';
 import { proposeCheckIn, type CheckInResult, type Goal } from './checkIn';
 import { aggregateDays } from './dayTotals';
-import { estimateTdee, type TdeeEstimate } from './tdee';
+import { estimateTdeeSmoothed, type TdeeEstimate } from './tdee';
 import type { Target } from './types';
 import { computeTrend, trendAt } from './weightTrend';
 import type { ActivityLevel } from './config';
@@ -35,20 +35,18 @@ interface Run {
 function replay(scenario: Scenario, run: Run): WeekReview[] {
   const reviews: WeekReview[] = [];
   let current = run.start;
-  let previous: { date: ReturnType<typeof date>; value: number } | null = null;
   for (let weekEnd = 13; weekEnd < 56; weekEnd += 7) {
     const endDate = date(weekEnd);
     const days = aggregateDays(START, endDate, scenario.entries, {});
     const weighIns = scenario.weighIns.filter((w) => w.date <= endDate);
-    const tdee = estimateTdee({
+    // TESTS-FIGES (C-036, C-168) : chemin de l'app (estimateTdeeSmoothed, valeur lissée reconstituée de l'historique), plus une valeur précédente passée à la main.
+    const tdee = estimateTdeeSmoothed({
       endDate,
       days,
       weighIns,
       profile: run.profile,
       activity: run.activity,
-      previousSmoothed: previous,
     });
-    if (tdee.measuredSmoothed !== null) previous = { date: endDate, value: tdee.measuredSmoothed };
     const result = proposeCheckIn({
       style: 'guided',
       weekEnd: endDate,
@@ -106,6 +104,12 @@ describe('I4-01 : 8 semaines : couverture complète', () => {
     expect(last?.tdee.basis).toBe('measured');
     expect(last?.tdee.value).toBeGreaterThan(2400);
     expect(last?.tdee.value).toBeLessThan(2400 + 0.07 * 7700 + 1);
+  });
+
+  it('TESTS-FIGES (C-036) : une fois la mesure disponible, la dépense lissée suit la brute sans la copier (lissage rejoué comme dans l’app)', () => {
+    const measured = reviews.filter((r) => r.tdee.measuredRaw !== null && r.tdee.measuredSmoothed !== null);
+    expect(measured.length).toBeGreaterThan(1);
+    expect(measured.some((r) => r.tdee.measuredSmoothed !== r.tdee.measuredRaw)).toBe(true);
   });
 
   it('la première semaine repose sur la formule déclarée, sans mesure', () => {
