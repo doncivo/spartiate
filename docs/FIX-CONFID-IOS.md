@@ -100,7 +100,7 @@ contrôles documentaires et `privacy.test.ts`, `sqlPragmaScan.test.ts` verts ; `
   SHA court commençant par des lettres corporelles (`fc12…`) est masqué.
 - Verdict : approuvé sous réserve de la CI verte et de la compilation build-ios.
 
-## Décisions proposées (à inscrire par l'appelant, pas écrites ici)
+## Décisions : D-329 à D-332 (docs/decisions.md)
 
 - **D-329** (révisable par Ali) : exclusion de la sauvegarde iCloud de l'iPhone pour la base (photos comprises), `backups/` et
   `Documents/Journal`, posée à chaque démarrage par `ct-files` (`excludeFromBackup`) avant le plugin SQL, jamais bloquante ; le journal
@@ -121,3 +121,7 @@ contrôles documentaires et `privacy.test.ts`, `sqlPragmaScan.test.ts` verts ; `
 2. Fichiers › Sur mon iPhone › Spartiate › Journal : le journal est toujours là et s'exporte.
 3. Plus › À propos et diagnostic : aucune ligne rouge « … exclues de la sauvegarde iCloud … ».
 Aucun statut ne change avant ces constats (D-36).
+
+## Budget
+
+Budget M (150 k) dépassé par l'agent du module (≈ 273 k tokens), sous l'arrêt au double (D-324) : consigné, travail poursuivi.
