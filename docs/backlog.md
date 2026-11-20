@@ -108,10 +108,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-046 | audit Claude 0.27.0 | mineur — `off.rs` : virgule de milliers lue comme décimale | à faire (lot 0.28.0) |
 | C-047 | audit Claude 0.27.0 | amélioration — photo sans plafond de taille avant décodage ; fiche OFF périmée perdue sur « not-found » | à faire (lot 0.28.0) |
 | C-048 | audit Claude 0.27.0 | mineur, à vérifier — « Pris » silencieux si l'heure a changé ; file d'actions tronquée qui recoche une prise | à faire (lot 0.28.0) |
-| C-049 | audit Claude 0.27.0 | important — baseline : exclusion des aberrantes (> 2,5 σ) inopérante sur 7 ou 8 nuits | à faire (lot 0.28.0) |
-| C-050 | audit Claude 0.27.0 | important — heure de coucher proposée avancée de 3 h par une nuit non valide | à faire (lot 0.28.0) |
+| C-049 | audit Claude 0.27.0 | important — baseline : exclusion des aberrantes (> 2,5 σ) inopérante sur 7 ou 8 nuits | fait (FIX-RECUP) |
+| C-050 | audit Claude 0.27.0 | important — heure de coucher proposée avancée de 3 h par une nuit non valide | fait (FIX-RECUP) |
 | C-051 | audit Claude 0.27.0 | mineur — Exertion : une séance à date illisible fait planter le résumé du jour | à faire (lot 0.28.0) |
-| C-052 | audit Claude 0.27.0 | important — `pas.csv` : totaux partiels qui écrasent les totaux complets | à faire (lot 0.28.0) |
+| C-052 | audit Claude 0.27.0 | important — `pas.csv` : totaux partiels qui écrasent les totaux complets | fait (FIX-RECUP) |
 | C-053 | audit Claude 0.27.0 | mineur — fuseau invalide : exception au lieu d'un rejet | à faire (lot 0.28.0) |
 | C-054 | audit Claude 0.27.0 | mineur — pesée à 3e colonne vide rejetée au sélecteur, acceptée par le lecteur du dossier | à faire (lot 0.28.0) |
 | C-055 | audit Claude 0.27.0 | mineur — deux pesées au même instant : la dernière ligne du fichier gagne | à faire (lot 0.28.0) |
@@ -266,6 +266,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | à faire (lot 0.28.0) |
 | BL-100 | revue FIX-EXPORT | mineur — test C-108 : comparer la liste `WIPED` de `ResetDataScreen.tsx` (et non les clés du catalogue) à `RESET_TABLES`, mots clés de tables plus précis, commentaire du cas « horizon local illisible » | reporté (S) |
 | BL-101 | revue FIX-PLANCHER | mineur — moyenne des cibles par jour du tableau de bord (`compareKcal`, features) à exposer depuis `weeklyBalance` de `src/domain/nutrition/journal.ts` ; test d’écran de la case « Accepter » du check-in | reporté (S) |
+| BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0

@@ -40,7 +40,8 @@ export function recoveryScore(input: RecoveryScoreInput): RecoveryScoreResult {
   if (tonight === undefined || tonight.hrvMs === null) return abstain('measure_missing_hrv');
   if (tonight.restingHr === null) return abstain('measure_missing_rhr');
   if (input.sleepRatio === null || !(input.sleepRatio > 0)) return abstain('measure_missing_sleep');
-  if (hrv.stats.used < cfg.minNights || rhr.stats.used < cfg.minNights) return abstain('baseline_incomplete');
+  // FIX-RECUP (C-049, D-346) : le minimum de `minNights` porte sur les nuits VALIDES ; une aberrante écartée ne remet pas la baseline en apprentissage.
+  if (hrv.validNights < cfg.minNights || rhr.validNights < cfg.minNights) return abstain('baseline_incomplete');
   const { mean: muH, sd: sdH } = hrv.stats;
   const { mean: muR, sd: sdR } = rhr.stats;
   if (muH === null || muR === null || sdH === null || sdR === null || sdH === 0 || sdR === 0) return abstain('zero_variance');

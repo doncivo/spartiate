@@ -19,7 +19,7 @@ import {
 import { localToUtcMs, utcToLocal } from '../../../domain/timeZone';
 import type { LocalDate } from '../../../domain/types';
 import type { RecoveryRepository } from '../../../db/repositories/recoveryRepository';
-import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType } from '../../../db/repositories/recoverySampleRepository';
+import type { RecoverySampleInput, RecoverySampleRepository, RecoverySampleType, UpsertTotalsResult } from '../../../db/repositories/recoverySampleRepository';
 import { SHORTCUT_FILE_NAMES, ShortcutFolderError, type ShortcutFileName, type ShortcutFileRead, type ShortcutFilesReader, type ShortcutSanteListError } from '../../../platform/shortcutFiles';
 
 /**
@@ -156,6 +156,21 @@ const DAY_MS = 86_400_000;
 interface Parsed {
   readonly report: ShortcutParseReport;
   readonly inputs: readonly RecoverySampleInput[];
+  /** `pas` : instant du jour partiel (C-052), sinon absent. */
+  readonly partialStart?: string | null;
+}
+
+/**
+ * FIX-RECUP (C-052, D-348) : totaux de pas. Le jour partiel (`partialStart`) passe par `insertMany` (inséré s'il manque, un total connu n'est jamais
+ * réécrit) ; les autres jours par `upsertTotals` (le total du jour grandit pendant la journée).
+ */
+async function writeSteps(samples: RecoverySampleRepository, inputs: readonly RecoverySampleInput[], partialStart: string | null, at: string): Promise<UpsertTotalsResult> {
+  const partial = inputs.filter((s) => s.startAt === partialStart);
+  const rest = inputs.filter((s) => s.startAt !== partialStart);
+  const upserted = await samples.upsertTotals(rest, at);
+  if (partial.length === 0) return upserted;
+  const inserted = await samples.insertMany(partial, at);
+  return { added: upserted.added + inserted.added, duplicates: upserted.duplicates + inserted.duplicates, updated: upserted.updated };
 }
 
 function parseFile(type: RecoverySampleType, text: string, today: string, tz: string): Parsed {
@@ -172,7 +187,8 @@ function parseFile(type: RecoverySampleType, text: string, today: string, tz: st
   if (type === 'pas') {
     // Un total par jour local, daté à midi UTC de ce jour (clé d'unicité du dépôt : un total plus récent remplace le précédent, `upsertTotals`).
     const r = parseShortcutSteps(text, today, tz);
-    return { report: r, inputs: r.days.map((d) => point(`${d.day}T12:00:00.000Z`, d.steps)) };
+    // FIX-RECUP (C-052) : le jour le plus ancien (total peut-être partiel) est inséré s'il manque, jamais réécrit (`writeSteps`).
+    return { report: r, inputs: r.days.map((d) => point(`${d.day}T12:00:00.000Z`, d.steps)), partialStart: r.partialDay === null ? null : `${r.partialDay}T12:00:00.000Z` };
   }
   const r = parseShortcutSleep(text, today, tz);
   return { report: r, inputs: r.segments.map((s) => ({ type, startAt: s.start, endAt: s.end, value: null, stage: s.stage, source })) };
@@ -188,8 +204,8 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
 
   async function importFile(samples: RecoverySampleRepository, type: RecoverySampleType, text: string, today: string, at: string, index: number): Promise<FileOutcome> {
     try {
-      const { report, inputs } = parseFile(type, text, today, deps.timeZone);
-      const inserted = type === 'pas' ? await samples.upsertTotals(inputs, at) : { ...(await samples.insertMany(inputs, at)), updated: 0 };
+      const { report, inputs, partialStart } = parseFile(type, text, today, deps.timeZone);
+      const inserted = type === 'pas' ? await writeSteps(samples, inputs, partialStart ?? null, at) : { ...(await samples.insertMany(inputs, at)), updated: 0 };
       const duplicates = inserted.duplicates + report.duplicates;
       const newest = inputs.reduce<string | null>((max, s) => (max === null || s.endAt > max ? s.endAt : max), null);
       await samples.recordImport({ type, importedAt: at, newestSampleAt: newest, added: inserted.added + inserted.updated, duplicates, rejected: report.rejectedTotal });
