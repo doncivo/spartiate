@@ -85,4 +85,4 @@ Seul un tag `ios-vX.Y.Z` publie (X.Y.Z = version de l'app) ; un lancement du wor
 | Le renouvellement échoue | Active LocalDevVPN/StosVPN, passe en Wi-Fi, ferme et rouvre SideStore. Vérifie le fichier d'appairage. |
 | Spartiate ne s'ouvre plus (expirée) | Renouvelle-la dans SideStore. Ne la supprime pas : tu perdrais les données locales. |
 | SideStore lui-même ne s'ouvre plus | Réinstalle-le avec iloader depuis le PC (étape 3). Les apps déjà là restent à renouveler ensuite. |
-| Plus de place (3 apps max) | Ne supprime aucune app : une app installée hors App Store peut garder des données que tu ne retrouverais pas. Attends qu'une place se libère sans rien supprimer. |
+| Plus de place (3 apps max) | Ne supprime aucune app : une app installée hors App Store peut garder des données que tu ne retrouverais pas. Une place se libère seulement quand une app installée hors App Store expire (7 jours) sans être renouvelée. |

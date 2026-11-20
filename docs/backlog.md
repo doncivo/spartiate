@@ -22,10 +22,10 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | M2 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Écrivain d'une ligne gardée déduit du plus grand hlc : message faux possible (older-device / received-unapplied) | à faire (lot 0.28.0) |
 | M3 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Reprise depuis l'instantané gaspillée quand l'écrivain est vu à jour avant sa republication | à faire (lot 0.28.0) |
 | M4 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Parties gardées par la 0.24.0 sans `sv` : comptées en received-unapplied, jamais en older-device | à faire (lot 0.28.0) |
-| H-36 | rapport de lot 0.22.2 (docs/FIX-0221.md) | « Pris » depuis la notification, app en arrière-plan puis app tuée : à constater par Ali (voir C-183) | à faire (lot 0.28.0) |
+| H-36 | rapport de lot 0.22.2 (docs/FIX-0221.md) | « Pris » depuis la notification, app en arrière-plan puis app tuée : constaté par Ali le 13/11 (D-318 (9)) | fait (DOC-PRIV, PR #156) |
 | H-34 | rapport de lot 0.20 (docs/I6-05.md) | Rappels de compléments : retrait de la notification quand la prise est cochée sur l'autre appareil, non constaté | à faire (lot 0.28.0) |
 | H-35 | rapport de lot 0.21.0 (docs/I6-06.md) | GPS au premier plan : distance après passage en arrière-plan, à constater (UNVERIFIED) | à faire (lot 0.28.0) |
-| H-33 | rapport de lot 0.17 (docs/capability-matrix.md) | « Repartir de zéro » reçu par l'autre appareil par iCloud Drive : à constater (UNVERIFIED) | à faire (lot 0.28.0) |
+| H-33 | rapport de lot 0.17 (docs/capability-matrix.md) | « Repartir de zéro » reçu par l’autre appareil par iCloud Drive : constaté par Ali le 19/11 (D-318 (8)) | fait (DOC-PRIV, PR #156) |
 | H-32 | rapport de lot 0.17.1 (docs/FIX-0171.md) | privacy-shield de Progrès › Corps : aperçu du sélecteur d'apps opaque, à constater (UNVERIFIED) | à faire (lot 0.28.0) |
 | H-9 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Médias d'exercices sous licence compatible : ligne de la matrice encore UNVERIFIED malgré D-71 | à faire (lot 0.28.0) |
 | H-8 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Relire les 14 correspondances d'images (variantes proches) et le contenu de la bibliothèque | à faire (lot 0.28.0) |
@@ -169,7 +169,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-107 | audit Claude 0.27.0 | important — export simple : l'aide annonce profil, pesées et thème, l'archive contient toutes les données corporelles | à faire (lot 0.28.0) |
 | C-108 | audit Claude 0.27.0 | important — « Repartir de zéro » : la liste effacée omet compléments, prises, cardio et tracés GPS | à faire (lot 0.28.0) |
 | C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | à faire (lot 0.28.0) |
-| C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | à faire (lot 0.28.0) |
+| C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | fait (DOC-PRIV, PR #156) |
 | C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | à faire (lot 0.28.0) |
 | C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | à faire (lot 0.28.0) |
 | C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | à faire (lot 0.28.0) |
@@ -224,7 +224,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-162 | audit Claude 0.27.0 | mineur — façades : message brut en console ; import en échec gardé à vie (plus de fin de repos notifiée) | à faire (lot 0.28.0) |
 | C-163 | audit Claude 0.27.0 | mineur — OS « other » si l'agent utilisateur est inconnu : synchro et sauvegardes masquées sans erreur | à faire (lot 0.28.0) |
 | C-164 | audit Claude 0.27.0 | amélioration — setters de faux exportés sans garde DEV ; `plugins/README.md` incomplet | à faire (lot 0.28.0) |
-| C-165 | audit Claude 0.27.0 | bloquant — valeur de sommeil réelle d'Ali publiée dans le dépôt public (docs et fixture de sommeil) | à faire (lot 0.28.0) |
+| C-165 | audit Claude 0.27.0 | bloquant — donnée de sommeil publiée dans le dépôt public (docs et fixture de sommeil) | fait (DOC-PRIV, PR #156 ; historique : HIST-01) |
 | C-166 | audit Claude 0.27.0 | important — actions GitHub non figées par SHA dans build-ios.yml et build-windows.yml | à faire (lot 0.28.0) |
 | C-167 | audit Claude 0.27.0 | mineur — budgets de performance de Spartiate peu gardés par des tests (perf sur code hérité) | à faire (lot 0.28.0) |
 | C-168 | audit Claude 0.27.0 | important — tests qui figent des défauts établis par l'audit (C-005, C-007, C-009…) | à faire (lot 0.28.0) |
@@ -240,8 +240,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | à faire (lot 0.28.0) |
 | C-179 | audit Claude 0.27.0 | amélioration — baisse du nombre de tests non bloquante ; `publish` ne revérifie pas la signature | à faire (lot 0.28.0) |
 | C-180 | audit Claude 0.27.0 | mineur — licences : images dites « non modifiées » ; réponses FitnessVolt sans empreinte ; droit à vérifier | à faire (lot 0.28.0) |
-| C-181 | audit Claude 0.27.0 | important — guides d'installation : consignes dangereuses (supprimer une app, effacer le dossier de données) | à faire (lot 0.28.0) |
-| C-182 | audit Claude 0.27.0 | important — guides d'installation écrits pour CircleTasks | à faire (lot 0.28.0) |
+| C-181 | audit Claude 0.27.0 | important — guides d'installation : consignes dangereuses (supprimer une app, effacer le dossier de données) | fait (DOC-PRIV, PR #156) |
+| C-182 | audit Claude 0.27.0 | important — guides d'installation écrits pour CircleTasks | fait (DOC-PRIV, PR #156) |
 | C-183 | audit Claude 0.27.0 | important — matrice : CONFIRMED incomplets ou contredits (H-34, H-36), capacités sans ligne | à faire (lot 0.28.0) |
 | C-184 | audit Claude 0.27.0 | mineur — matrice : H-7 et H-5 sans version ou appareil ; en-têtes et renvois périmés | à faire (lot 0.28.0) |
 | C-185 | audit Claude 0.27.0 | mineur — docs/reprise.md : « en publication » périmé, étape 2 manquante, branches et audit non mentionnés | à faire (lot 0.28.0) |
@@ -401,7 +401,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 23.1 g | PRD § 23.1 | partiel — perf : démarrage et graphiques non mesurés, seul le bundle l'est (C-167) | à faire (lot 0.28.0) |
 | § 23.1 h | PRD § 23.1 | partiel — recette iPhone signée par itération (C-183) | à faire (lot 0.28.0) |
 | § 23.2 a | PRD § 23.2 | partiel — `tests.yml` à chaque push, « suite verte » (C-173, C-174) | à faire (lot 0.28.0) |
-| § 23.2 b | PRD § 23.2 | partiel — fixtures entièrement synthétiques : une fixture bâtie sur une valeur réelle (C-165) | à faire (lot 0.28.0) |
+| § 23.2 b | PRD § 23.2 | partiel — fixtures entièrement synthétiques : une fixture bâtie sur une donnée d’usage (C-165) | fait (DOC-PRIV, PR #156) |
 | § 23.3 | PRD § 23.3 | partiel — matrice de non-régression : verrouillage et visuel manuels (H-5) | à faire (lot 0.28.0) |
 
 ## 5. Lot 0.29.0 (prévu)
