@@ -1,8 +1,10 @@
 // FIX-ABERR (lot 0.28.0) : charge aberrante (§ 11.2 point 1, § 11.5). Preuves de l'audit Claude 0.27.0, describe « C-005 » de
 // preuves/partie4-moteur.test.ts et preuves/partie7a-ecrans.test.ts, copiées ici (jamais branchées depuis docs/). Données synthétiques (D-292).
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { NOW, input, session, set } from '../../../tests/fixtures/training/progression';
 import { setRow, workoutRow } from '../../../tests/fixtures/training/workout';
+import * as assistedModule from './assisted';
 import { personalRecords } from './closure';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, ENGINE_VERSION } from './config';
 import { analyzeHistory } from './estimate1rm';
@@ -12,6 +14,8 @@ import { prescribe } from './prescribe';
 import type { WorkoutSet } from './session';
 import type { ExerciseSession } from './types';
 import type { IsoDateTime } from '../types';
+
+const CATALOG_BODYWEIGHT_LOAD_IDS = (assistedModule as { CATALOG_BODYWEIGHT_LOAD_IDS?: ReadonlySet<string> }).CATALOG_BODYWEIGHT_LOAD_IDS;
 
 const base = (): ExerciseSession[] => [session(14, 100, [8, 8, 8]), session(11, 100, [8, 8, 8]), session(8, 100, [8, 8, 8])];
 const partial = (days: number, load: number): ExerciseSession => ({
@@ -123,5 +127,36 @@ describe('FIX-ABERR passe qa-test : cas limites du moteur', () => {
     expect(p.reference?.loadKg).toBe(100);
     expect(p.loadKg as number).toBeLessThan(150);
     expect(analyzeHistory([...base(), mixed], CFG).unconfirmed).toEqual([{ workoutId: mixed.workoutId, position: 0 }]);
+  });
+});
+
+describe('FIX-ABERR revue 1 : exercice lesté, le repérage des aberrantes ne se fait pas sur le lest seul', () => {
+  // Tractions lestées 5 kg puis 10 kg × 8 : aucune question à la saisie (charge totale), donc 10 kg est un vrai record (résumé et fiche).
+  const LESTE = 'pull-up-weighted';
+  const at = (day: number): IsoDateTime => `2026-10-${String(day).padStart(2, '0')}T18:00:00.000Z` as IsoDateTime;
+  let n = 0;
+  const sets = (workoutId: string, day: number, load: number, exerciseId = LESTE): WorkoutSet[] =>
+    [0, 1, 2].map((position) => setRow(0, { id: `l-${String(++n)}`, workoutId, exerciseId, exerciseName: exerciseId, position, done: true, reps: 8, loadKg: load, doneAt: at(day) }));
+  it('résumé de fin (catalogue, tractions lestées) : 10 kg après 5 kg est un record de charge', () => {
+    const history = [...sets('past-10', 10, 5), ...sets('past-14', 14, 5)];
+    expect(personalRecords(sets(workoutRow().id, 28, 10), history).map((r) => [r.kind, r.value])).toContainEqual(['load', 10]);
+  });
+  it('résumé de fin (exercice personnalisé lesté, fourni par l’appelant) : 10 kg après 5 kg est un record', () => {
+    const custom = 'custom-weighted-dip';
+    const history = [...sets('past-10', 10, 5, custom), ...sets('past-14', 14, 5, custom)];
+    expect(personalRecords(sets(workoutRow().id, 28, 10, custom), history, new Set(), new Set([custom])).map((r) => [r.kind, r.value])).toContainEqual(['load', 10]);
+  });
+  it('fiche d’un exercice lesté : 10 kg après 5 kg est le record', () => {
+    const history = [session(14, 5, [8, 8, 8]), session(10, 5, [8, 8, 8]), session(2, 10, [8, 8, 8])];
+    expect(sheetStats(history, { metric: 'load-reps', bodyweightFraction: 1 }, NOW).record?.loadKg).toBe(10);
+  });
+  it('exercice à charge externe : inchangé, 10 kg après 5 kg reste une aberrante non confirmée', () => {
+    const history = [session(14, 5, [8, 8, 8]), session(10, 5, [8, 8, 8]), session(2, 10, [8, 8, 8])];
+    expect(sheetStats(history, { metric: 'load-reps', bodyweightFraction: null }, NOW).record?.loadKg).toBe(5);
+  });
+  it('identifiants lestés du catalogue = exercices du catalogue avec une fraction de poids de corps', () => {
+    const raw = JSON.parse(readFileSync(new URL('../../../content/exercises/exercises.json', import.meta.url), 'utf8')) as { exercises?: { id: string; bodyweightFraction: number | null }[] } | { id: string; bodyweightFraction: number | null }[];
+    const list = Array.isArray(raw) ? raw : (raw.exercises ?? []);
+    expect([...(CATALOG_BODYWEIGHT_LOAD_IDS ?? [])].sort()).toEqual(list.filter((e) => (e.bodyweightFraction ?? 0) > 0).map((e) => e.id).sort());
   });
 });
