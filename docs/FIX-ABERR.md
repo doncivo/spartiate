@@ -97,3 +97,8 @@ absolues seules. (2) Aucun indicateur persistant (schéma 20 inchangé) : une ab
 complète (≥ 50 %) hors décharge qui l'atteint à 90 %. (3) Non confirmée, elle n'est ni la référence (dernière séance non aberrante, note
 dite), ni dans le 1RM, ni un record (fiche, résumé). (4) Assisté : poids de corps connu, assistance anormalement basse signalée ; inconnu,
 aucun contrôle relatif. (5) `ENGINE_VERSION` reste 3. Tests : `outlierEntry.test.ts`, `fixAberr.test.ts`, `session/FixAberr.test.tsx`.
+
+## Point d'étape (arrêt pour dépassement de budget)
+
+Budget M (150 k) dépassé par l'agent du module (≈ 210 k tokens) : arrêt et point d'étape (docs/LOT-0.28.0.md, cadre). Branche poussée sans PR.
+À la reprise : (1) intégrer origin/main (FIX-ASSIST #157, D-322) et résoudre les conflits attendus dans `prescribe.ts`, `closure.ts`, `exerciseSheet.ts` ; (2) inscrire la décision proposée ci-dessus (D-323) ; (3) relecture data-model de `historyFor` (`workoutRepository.ts`, toutes les séries non supprimées lues) et relecture sync-icloud (repository touché, D-26) ; (4) passe code-reviewer à froid sur le diff fusionné ; (5) test:bundle, push, PR, CI verte, fusion ; puis FIX-A008 (brief prêt hors dépôt : `C:\Dev\spartiate\.codex-tmp\lot028\brief-FIX-A008.md`).
