@@ -42,7 +42,8 @@ describe('check-in à deux cibles (C-031)', () => {
     expect(p?.restTarget?.kcal).toBeGreaterThanOrEqual(1200);
     expect(p?.clampedBy).toContain('floor');
     expect(p?.belowStandardFloor).toBe(false);
-    const issues = validateTargetRecord({ weekStart: '2026-11-16' as never, target: p!.target, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: { rest: p!.restTarget!, trainingDays: [1, 2, 4, 5, 6] } });
+    if (p === null || p === undefined || p.restTarget === null || p.restTarget === undefined) throw new Error('proposition attendue');
+    const issues = validateTargetRecord({ weekStart: '2026-11-16' as never, target: p.target, source: 'auto', accepted: true, engineVersion: 1, lowFloorConfirmed: false, restPlan: { rest: p.restTarget, trainingDays: [1, 2, 4, 5, 6] } });
     expect(issues).toEqual([]);
   });
   it('plancher confirmé : la cible de repos sous 1 200 lève belowStandardFloor', () => {

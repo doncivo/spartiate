@@ -43,3 +43,7 @@ product-owner (cette fiche), agent du module, qa-test, code-reviewer : consigné
 
 - Vérifier à l'écran sur iPhone : case de confirmation en Stratégie avec un repos sous 1 200, après « Retirer la cible de repos » d'une cible confirmée, et au check-in ; le graphique des 7 jours avec un trait de cible par jour.
 - Valider le choix prudent « relever au plancher » plutôt que « demander la case » pour la proposition automatique du check-in (D-338).
+
+## Passe code-reviewer (à froid) : à corriger, puis corrigé
+
+Fond approuvé (une seule fonction de domaine, aucune voie de refus muet, reprise de confirmation sans descente, `dayTargetFor` au tableau de bord ; rouge `1e430952` rejoué : 9 échecs justes). À corriger : 6 erreurs eslint (assertions `!` dans `floor.test.ts`, textes en dur dans `Plancher.test.tsx`) : corrigées (garde explicite, `tNutrition('saveTarget')`) ; la mention « eslint propres » de la passe du module était fausse. Suggestions reportées au registre (BL-101) : moyenne des cibles par jour à exposer depuis `src/domain/nutrition/journal.ts` ; test d'écran de la case « Accepter » du check-in. Constat d'Ali (D-338) : une cible reprise comme confirmée sous 1 200 laisse le moteur proposer jusqu'à 800, mais « Accepter » demande toujours la case.

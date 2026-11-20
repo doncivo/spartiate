@@ -12,6 +12,7 @@ import { dashboardModel } from './dashboard/model';
 import { RestTargetForm } from './strategy/RestTargetForm';
 import { TargetForm } from './strategy/TargetForm';
 import type { NutritionSnapshot } from './useCases';
+import { tNutrition } from '../../i18n/nutritionText';
 
 /** FIX-PLANCHER (C-086, C-087, C-088) : valeurs synthétiques. */
 afterEach(cleanup);
@@ -21,20 +22,20 @@ const type = (label: RegExp | string, value: string) => fireEvent.change(screen.
 describe('C-086 : TargetForm avec une cible de repos', () => {
   it('1 300 avec un repos à −200 (1 100) : la case de confirmation est affichée et transmise', async () => {
     const onSave = vi.fn().mockResolvedValue('saved');
-    render(<TargetForm title="t" initial={T(1300)} submitLabel="Enregistrer" onSave={onSave} {...({ restGapKcal: -200 } as object)} />);
+    render(<TargetForm title={tNutrition('saveTarget')} initial={T(1300)} submitLabel={tNutrition('saveTarget')} onSave={onSave} {...({ restGapKcal: -200 } as object)} />);
     const box = screen.getByRole('checkbox', { name: /sous 1 200 kcal/i });
     fireEvent.click(box);
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    fireEvent.click(screen.getByRole('button', { name: tNutrition('saveTarget') }));
     await waitFor(() => expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ kcal: 1300 }), true));
   });
   it('sans cible de repos, 1 300 : pas de case', () => {
-    render(<TargetForm title="t" initial={T(1300)} submitLabel="Enregistrer" onSave={vi.fn()} />);
+    render(<TargetForm title={tNutrition('saveTarget')} initial={T(1300)} submitLabel={tNutrition('saveTarget')} onSave={vi.fn()} />);
     expect(screen.queryByRole('checkbox')).toBeNull();
   });
   it('repos sous 800 : message « sous 800 kcal », pas « échec »', async () => {
     const onSave = vi.fn().mockResolvedValue('rejected');
-    render(<TargetForm title="t" initial={T(900)} submitLabel="Enregistrer" onSave={onSave} {...({ restGapKcal: -200 } as object)} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    render(<TargetForm title={tNutrition('saveTarget')} initial={T(900)} submitLabel={tNutrition('saveTarget')} onSave={onSave} {...({ restGapKcal: -200 } as object)} />);
+    fireEvent.click(screen.getByRole('button', { name: tNutrition('saveTarget') }));
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', expect.stringMatching(/800/));
   });
 });
