@@ -1,6 +1,6 @@
 # FIX-ABERR — Charge aberrante signalée avant enregistrement, référence plafonnée (lot 0.28.0)
 
-Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Budget M. Branche `FIX-ABERR` depuis `origin/main` (`68af109d`). Aucune migration (schéma 20 inchangé). Lot 0.28.0, phase 1.2.
+Statut : **code et tests faits sur la branche, non poussés (revue de l'appelant et CI à suivre).** Budget M. Branche `FIX-ABERR` depuis `origin/main` (`9dbab331`, après HIST-01). Aucune migration (schéma 20 inchangé). Lot 0.28.0, phase 1.2.
 Origine : audit Claude 0.27.0 (`origin/audit-claude-0.27.0`, `docs/audit-claude-0.27.0/constats.md`) : C-005 (bloquant), C-028, C-168 (partie
 C-005) ; preuves `preuves/partie7a-ecrans.test.ts` et `preuves/partie4-moteur.test.ts`, describe « C-005 » (copiées dans `src/`, jamais
 branchées depuis docs/). Chapitres PRD : 11 (§ 11.2 point 1, § 11.3, § 11.4, § 11.5 « aberrantes signalées avant enregistrement »), 13 (séance
@@ -125,6 +125,36 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
 - Relu à froid : commentaire de `personalRecords` déplacé au-dessus de la fonction ; rejet du chargement du bloc de contrôle intercepté dans
   `SetRow` (la saisie n'est jamais bloquée). Aucun autre écart.
 
+### Revue 1 (relecture à froid de l'appelant, 20/11) : constats et corrections
+
+1. Régression : `personalRecords` (`closure.ts`) et `sheetRecord` (`exerciseSheet.ts`) appelaient `analyzeHistory` sans poids de corps :
+   pour un lesté, repérage sur le lest seul (lest 5 puis 10 kg × 8 : aucune question à la saisie, mais 10 kg écarté des records, sans
+   signal). Corrigé au plus prudent : exercice lesté (catalogue `CATALOG_BODYWEIGHT_LOAD_IDS`, gardé aligné par un test ; personnalisé par
+   `bodyweight_fraction` > 0, lu dans la même requête que le matériel, `traitsFor`) : aucun repérage d'aberrante pour les records (le poids
+   de corps n'est pas lu par le résumé ni par la fiche). Tests `fixAberr.test.ts` « revue 1 », `workoutClosure.test.ts` « revue 1 ».
+2. Garde DOC-PRIV : l'assouplissement `20ef6ac5` est annulé (forme au tutoiement à nouveau refusée sur tous les fichiers) ;
+   `FixAberrPlausible.test.tsx` interpole le poids de corps synthétique (`BODY_KG`, `BODY`), aucun chiffre littéral après « ton poids de corps ».
+3. SHA de la fiche : ceux de l'ancien historique (avant HIST-01) remplacés par les ancêtres réels de HEAD.
+4. Suggestions faites : `outlierCheck.ts` lit `isAssistedEquipment` ; `prescribe.test.ts` « charge aberrante » revient à `toEqual` sur la liste
+   exacte des raisons (`outlier-excluded`, `history-reference`, `top-reached`). Non faite (plus qu'un petit changement, reste) : dater une
+   séance passée du résumé par `ended_at` et exclure les décharges de la confirmation (D-323 (2)) demande que `historyFor` renvoie
+   `ended_at` et l'indicateur de décharge avec chaque série (type de retour du repository changé, relecture data-model).
+
+### Relecture data-model de `historyFor` (revue 1)
+
+Toutes les séries non supprimées des séances closes antérieures, pour les exercices de la séance : jointure `workout`, filtre
+`s.exercise_id IN (…)` servi par l'index `idx_workout_set_exercise`, lots de 400 identifiants ; coût modéré (lu à la clôture et au résumé
+seulement), accepté ; `traitsFor` ajoute la colonne `bodyweight_fraction` à la lecture existante de `exercise`. Aucun schéma, aucune migration.
+
+### Relecture accessibility-i18n (passe distincte) : `sessionPlausibleAsk*`, `sessionOutlierAsk*`
+
+Tutoiement constant (« ton poids de corps », « Confirme », « corrige ») ; aucune heure ; nombres au format français (`formatNumber` :
+« 2,5 », « 0,6 », « 48,5 kg », « 2 × 48,5 kg ») ; « fois » invariable, aucun pluriel variable (garde `plural.test.ts`) ; question en
+`role="alert"`, sens porté par le texte et les boutons « Confirmer » / « Corriger » (composant `Button` du système), jamais par la couleur
+seule ; textes dans `fr.training.ts` (catalogue de la séance active, hors départ). Remarque non bloquante : « {percent} % » utilise une espace
+ordinaire (coupure de ligne possible avant « % ») ; une espace insécable fine serait plus juste, à traiter avec la charte typographique.
+Résultat : conforme.
+
 ## Risques et restes
 
 - C-028 seconde partie non traitée : une faute à la TOUTE première séance n'a pas de référence (ni à la saisie ni au moteur) et pèse sur le
@@ -139,13 +169,18 @@ inconnu : 300 / 200 / 100 kg, assistance 120 kg ; haltères : moitié du plafond
 - Traction assistée du catalogue (`bodyweightFraction` null) : le contrôle RELATIF reste inactif (D-322 lit la fraction) ; seule la
   vraisemblance s'applique. À trancher avec FIX-ASSIST si Ali le souhaite.
 - PDC lu à chaque validation de série de travail (une lecture de plus, échec = inconnu).
+- Lesté : aucune aberrante repérée pour les records (résumé, fiche) ; une faute de frappe de lest confirmée à la saisie peut devenir un record.
+- Résumé de fin : séance passée datée par sa dernière série validée, décharges comptées ordinaires (revue 1, point 4, reste).
 
 ## SHA
 
-- Rouge : `e415ffbd` (14 tests rouges, `outlierEntry.test.ts` rouge à l'import). Vert : `c34d2abc`. Passes qa-test et revue : commit suivant.
+- Rouge : `f560ac6c` (14 tests rouges, `outlierEntry.test.ts` rouge à l'import). Vert : `c3c35244`. Passes qa-test et revue : `a88a4d53` ;
+  point d'étape : `915a3a80` ; intégrations de main : `0d850d48` (FIX-ASSIST #157), `5b6db1cf` (HIST-01).
 
 - Suite du 20/11 : rouge `de2ae9ba` (25 tests rouges : `plausibility.test.ts` rouge à l'import, 6 de `FixAberrPlausible.test.tsx` ; les
-  vecteurs « au plafond, sans question » et le point 2 verts dès le rouge, gardes). Vert : `636085a9`. Passe qa-test et fiche : commit suivant.
+  vecteurs « au plafond, sans question » et le point 2 verts dès le rouge, gardes). Vert : `636085a9`. Passe qa-test et fiche : `74d4927e`. Décisions D-323 et D-325 inscrites par l'appelant : `18836475`.
+- Revue 1 : rouge `fc1032d5` (5 tests rouges : lesté au résumé, à la fiche, au résumé par le repository, alignement du catalogue) ;
+  garde DOC-PRIV rétablie (annule `20ef6ac5`) : `6ba4fe2d` ; vert : `d41a2b43` ; fiche et vérifications (73 fichiers, 832 tests verts : `src/domain/training`, `src/features/training/session`, `workoutClosure`, `privacy` ; `tsc` et `eslint` propres) : commit suivant.
 
 ## Budget (D-324)
 
