@@ -29,7 +29,7 @@ Les avertissements historiques ci-dessous expliquent le risque des anciens dési
 
 La même case existe quand on désinstalle Spartiate depuis « Paramètres › Applications ». Elle est décochée par défaut.
 
-**Depuis la première version publiée après REL-TECH-02 (voir CHANGELOG, section « Non publié » puis son numéro), la case « Supprimer les données de l'application » est sans effet : elle reste affichée, mais les données sont toujours conservées**, que l'on désinstalle depuis Windows, avec `uninstall.exe` ou par « Désinstaller avant d'installer » (crochet NSIS, `src-tauri/windows/hooks.nsh`, décision 9 de l'audit 1.0). Le test de fumée Windows le vérifie à chaque suite sur un vrai installeur.
+**Dans toutes les versions de Spartiate (crochet REL-TECH-02, repris de l'ancien projet avant la première version), la case « Supprimer les données de l'application » est sans effet : elle reste affichée, mais les données sont toujours conservées**, que l'on désinstalle depuis Windows, avec `uninstall.exe` ou par « Désinstaller avant d'installer » (crochet NSIS, `src-tauri/windows/hooks.nsh`, décision 9 de l'audit 1.0). Le test de fumée Windows le vérifie à chaque suite sur un vrai installeur.
 
 **Attention : avant cette version, cocher cette case supprime vos données.** Ce cas reste possible tant qu'une version antérieure est installée : si tu installes la première version avec crochet par-dessus une ancienne en choisissant « Désinstaller avant d'installer », c'est le désinstalleur de l'ANCIENNE version qui s'exécute et sa case reste active. Dans ce cas, choisir « Ne pas désinstaller » ou laisser l'app se mettre à jour elle-même.
 

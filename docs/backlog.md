@@ -269,6 +269,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | reporté (S) |
 | BL-103 | revue FIX-SAISIE-NUTRI | mineur — test du minuteur de minuit de `useCurrentDay` en fausses horloges et test de démontage sans fuite ; motif `macro-too-large` dans `validateMealEntry` au lieu du test recopié dans QuickAddForm et EntryEditor | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
+| BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | à faire (S) |
 
 ## 3. Audit Codex 0.26.0
 

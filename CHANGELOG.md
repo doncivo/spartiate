@@ -8,12 +8,12 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 
 - **Cible nutritionnelle** : une cible prévue pour une date future n'est plus jamais masquée par une décision prise avant cette date. Ça vaut pour un check-in d'une semaine passée, une décision venue de l'autre appareil, ou l'onboarding fait juste avant un import. Une cible importée compte comme une décision prise le jour de l'import. Une décision prise à sa date ou après passe toujours devant. La confirmation « Elle passera devant la cible prévue… » disparaît, puisque ce n'est plus vrai. En Fusionner, une cible prévue plus tard est désormais importée.
 - **Stratégie** : la cible en vigueur dit pourquoi elle s'applique (« En vigueur depuis le 16 novembre · décidée le 14 novembre »). Aujourd'hui et Stratégie affichent la même cible.
-- **Check-in** : « Accepter » le jour du check-in garde la cible de repos que tu as enregistrée le matin même.
+- **Check-in** : « Accepter » au check-in du lundi garde la cible de repos que tu as enregistrée le matin même.
 - **Séance du jour** : chaque jour de routine peut porter un jour de la semaine (Entraînement › routine › jour › « Jour de la semaine »). Une fois les jours rattachés, Aujourd'hui propose la séance du jour (« Jeudi — Poussée » le jeudi). Un jour sans séance affiche « Repos », avec la prochaine séance ; une séance manquée est sautée, pas décalée ; « Autre séance… » reste possible. Sans jour rattaché, rien ne change. À l'import d'une archive, un jour nommé « Lundi — … », « Mardi — … » est rattaché tout seul. Les jours d'entraînement proposés pour la cible des jours de repos suivent ces jours.
 - **Cycle** : la durée proposée au lancement reprend ton dernier réglage (onboarding, cycle précédent ou archive), au lieu de 5 semaines. En semaine 1, sans séance close, changer la durée propose de l'appliquer tout de suite au cycle en cours.
 - **Corrections** : les rappels de compléments ne se replanifient plus après la fermeture de l'écran. Les voiles et les ombres utilisent les couleurs du thème (aucun changement visible).
 
-Après la mise à jour : dans Entraînement › ta routine, rattache chaque jour à son jour de la semaine (l'import ne l'a pas fait pour la routine déjà présente), puis vérifie la cible du jour dans Nutrition › Stratégie.
+Après la mise à jour : dans Entraînement › ta routine, rattache chaque jour à son jour de la semaine (la mise à jour ne rattache pas les jours d'une routine déjà présente ; un import le fait), puis vérifie la cible du jour dans Nutrition › Stratégie.
 
 ## 0.26.0
 
