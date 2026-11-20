@@ -7,7 +7,8 @@
     "FIX-CONFID-IOS (C-151, C-140, § 22 : aucune donnée corporelle) : un mot devient aussi [masqué] s'il contient un nombre décimal (deux parties séparées par . ou ,, ou des parties séparées par une virgule), un nombre suivi d'une unité de bodyUnits (attachée : 142bpm, 7h30, 18 % ; ou au mot suivant : 82,4 kg), un nombre en tête de mot qui suit un mot de bodyWords ou une unité (FC 142, sommeil 7 h 30), la valeur d'une clé de bodyWords (poids=82, FC:142), ou toute valeur numérique d'un extrait JSON (\"clé\":nombre) dont la clé n'est pas dans allowedKeys.",
     "Restent lisibles : versions de trois parties ou plus séparées par des points (0.27.0), entiers seuls (codes HTTP, compteurs, heures 14:05), UUID, et les valeurs des clés de allowedKeys (comparaison en minuscules ; aussi toute clé qui finit par count, version ou known) en JSON comme en clé=valeur (rules_version=3, nights_known=7, \"files\":12). Un compteur nouveau dans un extrait JSON du journal s'ajoute à allowedKeys (TS et Rust lisent ces listes dans leurs tests).",
     "Mots voisins : comparés après retrait des signes de ponctuation en tête et en fin (lettres, chiffres et % gardés), en minuscules.",
-    "qa-test FIX-CONFID-IOS : un mot corporel collé devant le nombre (FC142, hrv48 ; au début du mot ou après un signe, jamais au milieu d'un mot comme 8fc3), une espace insécable (U+00A0, U+202F) entre le nombre et son unité ou son mot corporel, et une valeur JSON séparée de sa clé par une espace ({\"restingHr\": 52}) sont masqués aussi."
+    "qa-test FIX-CONFID-IOS : un mot corporel collé devant le nombre (FC142, hrv48 ; au début du mot ou après un signe, jamais au milieu d'un mot comme 8fc3), une espace insécable (U+00A0, U+202F) entre le nombre et son unité ou son mot corporel, et une valeur JSON séparée de sa clé par une espace ({\"restingHr\": 52}) sont masqués aussi.",
+    "Revue 1 FIX-CONFID-IOS : valeur numérique d'une clé (clé=nombre, clé:nombre, clé = nombre, clé: nombre ; clé commençant par une lettre) masquée dès que la clé n'est pas dans allowedKeys (clés composées heart_rate, poidsKg comprises) ; tableau JSON sous une clé non permise ({\"restingHr\":[52]}) masqué ; espaces fines U+2009 et U+2007 traitées comme les insécables. Tout nombre décimal est masqué, versions à deux parties et durées comprises (v0.28, 1.5 s) : choix voulu (D-331)."
   ],
   "vectors": [
     {
@@ -317,6 +318,58 @@
     {
       "input": "poids 82,4 kg et FC 142 bpm",
       "expected": "poids [masqué] kg et FC [masqué] bpm"
+    },
+    {
+      "input": "{\"restingHr\":[52]}",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "{\"count\":[2]}",
+      "expected": "{\"count\":[2]}"
+    },
+    {
+      "input": "heart_rate=142",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "body_mass=82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "poidsKg=82",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "hrv = 48",
+      "expected": "hrv = [masqué]"
+    },
+    {
+      "input": "count = 3",
+      "expected": "count = 3"
+    },
+    {
+      "input": "hrv =48",
+      "expected": "hrv [masqué]"
+    },
+    {
+      "input": "resting: 52",
+      "expected": "resting: [masqué]"
+    },
+    {
+      "input": "files: 12",
+      "expected": "files: 12"
+    },
+    {
+      "input": "82\u2009kg",
+      "expected": "[masqué]"
+    },
+    {
+      "input": "repos 82\u2007kg",
+      "expected": "repos [masqué]"
+    },
+    {
+      "input": "version v0.28 chargée",
+      "expected": "version [masqué] chargée"
     }
   ],
   "codeVectors": [
