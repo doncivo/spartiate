@@ -2,7 +2,7 @@
 //!
 //! La WebView n'a ni le plugin fs ni le plugin dialog : elle appelle `import_open_file`, qui ouvre la boîte (modale de la fenêtre
 //! principale, filtre « archive Spartiate » `.zip`), vérifie le chemin choisi (lettre de lecteur seulement, comme l'export), ouvre le
-//! fichier, contrôle sur le descripteur ouvert qu'il s'agit d'un fichier ordinaire de 2 Mo au plus, le lit avec un plafond (un fichier
+//! fichier, contrôle sur le descripteur ouvert qu'il s'agit d'un fichier ordinaire de 24 Mio au plus (une archive d'export), le lit avec un plafond (un fichier
 //! qui grossit pendant la lecture est refusé aussi) et renvoie son nom et ses octets (base64). Aucun chemin ne vient de la WebView.
 //! La validation de l'archive (zip, manifeste, hash, valeurs) est faite côté TypeScript, avant toute écriture.
 
@@ -17,8 +17,9 @@ use tauri_plugin_dialog::DialogExt;
 
 use crate::export::is_local_disk_path;
 
-/// Taille maximale d'un fichier d'import (2 Mo), la même que `DEFAULT_PICK_MAX_BYTES` côté TypeScript.
-pub const MAX_IMPORT_BYTES: usize = 2 * 1024 * 1024;
+/// Taille maximale d'un fichier d'import (24 Mio, FIX-EXPORT C-136), la même que `DEFAULT_PICK_ARCHIVE_MAX_BYTES` et `IMPORT_ZIP_LIMITS.maxBytes` côté
+/// TypeScript (test par lecture du source) ; un fichier texte (CSV) reste limité à 2 Mo par la façade TypeScript.
+pub const MAX_IMPORT_BYTES: usize = 24 * 1024 * 1024;
 /// Extensions proposées par la boîte et acceptées.
 pub const IMPORT_EXTENSIONS: [&str; 1] = ["zip"];
 

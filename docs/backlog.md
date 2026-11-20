@@ -166,9 +166,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-104 | audit Claude 0.27.0 | mineur — check-in : colonne « Actuel » déroutante ; historique sans « décidée le » ; préférences sans retour | à faire (lot 0.28.0) |
 | C-105 | audit Claude 0.27.0 | mineur — « Taille » ambigu (tour ou hauteur) ; silhouette de Corps sans rôle ni clavier, zones trop petites | à faire (lot 0.28.0) |
 | C-106 | audit Claude 0.27.0 | amélioration — anglicismes (Dashboard, loggé, Cache OFF) ; deux réglages « Objectif » ; catalogues hérités au départ | à faire (lot 0.28.0) |
-| C-107 | audit Claude 0.27.0 | important — export simple : l'aide annonce profil, pesées et thème, l'archive contient toutes les données corporelles | à faire (lot 0.28.0) |
-| C-108 | audit Claude 0.27.0 | important — « Repartir de zéro » : la liste effacée omet compléments, prises, cardio et tracés GPS | à faire (lot 0.28.0) |
-| C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | à faire (lot 0.28.0) |
+| C-107 | audit Claude 0.27.0 | important — export simple : l'aide annonce profil, pesées et thème, l'archive contient toutes les données corporelles | fait (FIX-EXPORT) |
+| C-108 | audit Claude 0.27.0 | important — « Repartir de zéro » : la liste effacée omet compléments, prises, cardio et tracés GPS | fait (FIX-EXPORT) |
+| C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | fait (FIX-EXPORT, D-334, horizon dans le manifeste) |
 | C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | fait (DOC-PRIV, PR #156) |
 | C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | à faire (lot 0.28.0) |
 | C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | à faire (lot 0.28.0) |
@@ -195,7 +195,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-133 | audit Claude 0.27.0 | amélioration — code mort hérité (csvImport, taskRules, planNotifications…) sans import de production | à faire (lot 0.28.0) |
 | C-134 | audit Claude 0.27.0 | à vérifier (D-36) — « code absent des captures d'écran » sans ligne UNVERIFIED ; couleurs d'appairage mal justifiées | à faire (lot 0.28.0) |
 | C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à faire (lot 0.28.0) |
-| C-136 | audit Claude 0.27.0 | important — export importable seulement sous 2 Mo | à faire (lot 0.28.0) |
+| C-136 | audit Claude 0.27.0 | important — export importable seulement sous 2 Mo | fait (FIX-EXPORT) ; mesure d’une base synthétique de 12 mois à faire |
 | C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | à faire (lot 0.28.0) |
 | C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | à faire (lot 0.28.0) |
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (lot 0.28.0) |
@@ -264,6 +264,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-097 | rapport FIX-A009b (lot 0.28.0) | limite : colonne connue écrite nulle avec la ligne face à une valeur gardée plus ancienne non nulle (divergence possible, non atteignable aujourd'hui) ; correction complète = migration de `sync_unknown` ; déclencheur : tout ticket qui élargit une contrainte d’une colonne publiée (data-model, architect) | reporté : non atteignable avec le catalogue actuel (avenant 39) |
 | BL-098 | relecture architecte de FIX-A009b (lot 0.28.0) | garde « colonne publiée ajoutée nulle » sur base vide : ajouter une ligne avant chaque migration pour attraper un remplissage par UPDATE | à faire (lot 0.28.0) |
 | BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | à faire (lot 0.28.0) |
+| BL-100 | revue FIX-EXPORT | mineur — test C-108 : comparer la liste `WIPED` de `ResetDataScreen.tsx` (et non les clés du catalogue) à `RESET_TABLES`, mots clés de tables plus précis, commentaire du cas « horizon local illisible » | reporté (S) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 
 ## 3. Audit Codex 0.26.0
