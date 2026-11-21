@@ -201,3 +201,41 @@ export function monthCalendar(input: { readonly today: LocalDate; readonly days:
   }
   return { month: firstDay.slice(0, 7), cells };
 }
+
+// --- Adhérence (PROGRES-d, I2 § 8) -----------------------------------------------------------------------------------------------------
+
+export interface Adherence {
+  /** Pourcentage entier des séances prévues faites. */
+  readonly percent: number;
+  readonly done: number;
+  readonly planned: number;
+  /** Semaines comptées (sur `adherenceWeeks`). */
+  readonly weeks: number;
+}
+
+/**
+ * Adhérence (I2) : part des séances prévues faites sur les `adherenceWeeks` dernières semaines COMPLÈTES (la semaine en cours exclue). Prévues
+ * = objectif du programme suivi ; faites = séances closes de la semaine plafonnées à l'objectif (une séance en plus ne compense pas une autre
+ * semaine). Semaine antérieure au début du programme ou contenant un jour de pause : non comptée. Sans programme, ou aucune semaine
+ * comptée : `null`.
+ */
+export function adherence(input: ConstancyInput): Adherence | null {
+  const config = input.config ?? DEFAULT_PROGRESS_CONFIG;
+  const first = input.firstWeekday ?? DEFAULT_FIRST_WEEKDAY;
+  const target = input.target;
+  if (target === null || target.perWeek <= 0) return null;
+  const counts = countByWeek(input.days, first);
+  const since = weekStartOf(target.since, first);
+  const current = weekStartOf(input.today, first);
+  let done = 0;
+  let planned = 0;
+  let weeks = 0;
+  for (let i = 1; i <= config.adherenceWeeks; i += 1) {
+    const week = addWeeks(current, -i);
+    if (week < since || weekHasPause(week, input.pauses)) continue;
+    weeks += 1;
+    planned += target.perWeek;
+    done += Math.min(counts.get(week) ?? 0, target.perWeek);
+  }
+  return weeks === 0 ? null : { percent: Math.round((done / planned) * 100), done, planned, weeks };
+}

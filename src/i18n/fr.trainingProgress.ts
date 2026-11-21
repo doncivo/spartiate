@@ -26,4 +26,10 @@ export const trainingProgressFr = {
   calendarDayNone: '{date} : aucune séance',
   calendarDayPaused: '{date} : en pause',
   calendarToday: '(aujourd’hui)',
+  adherenceTitle: 'Adhérence',
+  adherenceValue: '{percent} % des séances prévues',
+  adherenceDetail: 'Faites : {done} · prévues : {planned} · semaines comptées : {weeks} sur 4',
+  adherenceRule: 'Les 4 dernières semaines complètes : séances prévues par le programme suivi, une séance en plus ne compense pas une autre semaine ; les semaines de pause ou d’avant le programme ne comptent pas.',
+  adherenceNone: 'Aucun programme suivi : l’adhérence se calcule sur les séances prévues d’un programme.',
+  adherenceWait: 'Aucune semaine complète à compter pour l’instant (programme commencé cette semaine ou en pause) : l’adhérence se calculera après une semaine complète.',
 } as const;

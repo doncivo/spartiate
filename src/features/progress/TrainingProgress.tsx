@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { DEFAULT_PROGRESS_CONFIG } from '../../domain/training/config';
-import { constancy, monthCalendar, trailingWeeks, weeklyMuscleVolume, type Constancy, type MonthCalendar, type WeeklyVolume } from '../../domain/training/progressStats';
+import { adherence, constancy, monthCalendar, trailingWeeks, weeklyMuscleVolume, type Adherence, type Constancy, type MonthCalendar, type WeeklyVolume } from '../../domain/training/progressStats';
 import { weekdayOrder, type FirstWeekday } from '../../domain/week';
 import type { MuscleWeight } from '../../domain/training/types';
 import type { IsoDateTime, LocalDate } from '../../domain/types';
@@ -30,6 +30,7 @@ interface Loaded {
   readonly muscleName: (id: string) => string;
   readonly constancy: ConstancyData;
   readonly streak: Constancy;
+  readonly adherence: Adherence | null;
   readonly calendar: MonthCalendar;
   readonly firstWeekday: FirstWeekday;
 }
@@ -59,6 +60,7 @@ async function load(access: ReturnType<typeof useAppContainer>['data'], today: L
     muscleName: (id) => names.get(id) ?? id,
     constancy: constancyData,
     streak: constancy({ ...constancyData, today, firstWeekday: first }),
+    adherence: adherence({ ...constancyData, today, firstWeekday: first }),
     calendar: monthCalendar({ today, days: constancyData.days, pauses: constancyData.pauses, firstWeekday: first }),
     firstWeekday: first,
   };
@@ -127,6 +129,27 @@ function ConstancyCard({ constancy: data, streak, calendar, firstWeekday }: Load
           ),
         )}
       </ul>
+    </section>
+  );
+}
+
+function AdherenceCard({ adherence: a, constancy: data }: Pick<Loaded, 'adherence' | 'constancy'>) {
+  return (
+    <section className="ct-today__card ct-tprogress ct-flat" aria-labelledby="ct-tprogress-adherence">
+      <h2 id="ct-tprogress-adherence" className="ct-today__eyebrow ct-section-title">
+        {tTrainingProgress('adherenceTitle')}
+      </h2>
+      {a !== null ? (
+        <>
+          <p className="ct-tprogress__hero">
+            <span className="ct-tprogress__hero-value">{tTrainingProgress('adherenceValue', { percent: a.percent })}</span>
+          </p>
+          <p className="ct-today__text">{tTrainingProgress('adherenceDetail', { done: a.done, planned: a.planned, weeks: a.weeks })}</p>
+          <p className="ct-today__muted ct-tprogress__lead">{tTrainingProgress('adherenceRule')}</p>
+        </>
+      ) : (
+        <p className="ct-today__text">{tTrainingProgress(data.target === null ? 'adherenceNone' : 'adherenceWait')}</p>
+      )}
     </section>
   );
 }
@@ -213,6 +236,7 @@ export function TrainingProgress() {
   return (
     <>
       <ConstancyCard {...state} />
+      <AdherenceCard adherence={state.adherence} constancy={state.constancy} />
       <Volume volume={state.volume} muscleName={state.muscleName} />
     </>
   );
