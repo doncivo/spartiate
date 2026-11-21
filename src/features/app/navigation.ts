@@ -36,7 +36,7 @@ export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin'
 export type Route =
   | { readonly tab: 'today' }
   | { readonly tab: 'training'; readonly screen?: TrainingScreenId }
-  | { readonly tab: 'nutrition'; readonly screen?: NutritionScreenId; /** ERGO-01b P2 : Journal ouvert recherche active (« Ajouter un repas »). */ readonly search?: boolean }
+  | { readonly tab: 'nutrition'; readonly screen?: NutritionScreenId; /** ERGO-01b P2 : Journal ouvert recherche active (« Ajouter un repas »). */ readonly search?: boolean; /** REPAS-029a : Journal ouvert sur les repas rapides. */ readonly meals?: boolean }
   | { readonly tab: 'progress' }
   | { readonly tab: 'more'; readonly screen: 'home' | 'general' | 'desktop' | 'about' | 'appearance' | 'body' | 'health' | 'exportimport' | 'reset' | 'sync' | 'logs' };
 

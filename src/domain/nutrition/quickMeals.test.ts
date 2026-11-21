@@ -50,7 +50,7 @@ describe('mealLines et copie (C-2, C-5)', () => {
     expect(scaleLine(free, 50)).toBeNull();
   });
   it('linesToDrafts : date posée, heures gardées ou imposées, méthode et confiance conservées', () => {
-    const lines = mealLines([entry({}), entry({ time: T('09:00'), foodId: null, foodName: 'Plat', source: 'estimate', grams: null, method: 'photo', confidence: 0.6, kcal: 400 })]);
+    const lines = mealLines([entry({}), entry({ time: T('09:00'), foodId: null, foodName: 'Plat', source: 'estimate', grams: 200, method: 'photo', confidence: 0.6 })]);
     const kept = linesToDrafts(lines, D('2026-11-21'), null);
     expect(kept?.map((d) => d.time)).toEqual(['08:00', '09:00']);
     expect(kept?.every((d) => d.date === '2026-11-21')).toBe(true);

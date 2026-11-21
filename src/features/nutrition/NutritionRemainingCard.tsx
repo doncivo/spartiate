@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type DayType, type Remaining, type Target } from '../../domain/nutrition';
+import { tQuick } from '../../i18n/nutritionQuickText';
 import { tNutrition } from '../../i18n/nutritionText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -67,6 +68,9 @@ export function NutritionRemainingCard() {
       {/* ERGO-01b P2 (D-238) : un écran de moins, le Journal s'ouvre recherche active. Contour : le rouge d'Aujourd'hui reste à la séance. */}
       <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', search: true })}>
         {tNutrition('cardAddMeal')}
+      </Button>
+      <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', meals: true })}>
+        {tQuick('cardButton')}
       </Button>
       {target === null ? (
         <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'strategy' })}>
