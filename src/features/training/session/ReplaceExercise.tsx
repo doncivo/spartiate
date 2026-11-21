@@ -45,6 +45,8 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
   const [restored, setRestored] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const live = useRef(true);
+  /** Dernier exercice choisi : une lecture d'historique plus ancienne n'écrase jamais l'estimation du choix courant. */
+  const latest = useRef<string | null>(null);
   const routineId = useId();
   const title = tSession('replaceTitle', { name: block.exerciseName });
   const exerciseOf = (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
@@ -72,6 +74,7 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
       return;
     }
     setChosen(exercise);
+    latest.current = exercise.id;
     setEstimate({ kind: 'reading' });
     let next: Estimate;
     try {
@@ -85,7 +88,7 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
       // Historique illisible : aucune estimation (jamais une charge devinée sur une lecture ratée).
       next = { kind: 'none' };
     }
-    if (live.current) setEstimate(next);
+    if (live.current && latest.current === exercise.id) setEstimate(next);
   }
 
   async function confirm(): Promise<void> {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import type { SessionUnit } from '../../../domain/training/sessionOrder';
 import { tSession } from '../../../i18n/trainingSessionText';
 
@@ -20,12 +20,17 @@ export interface SessionStripProps {
 
 export function SessionStrip({ units, nameOf, currentKey, busy, onMove, onShow }: SessionStripProps) {
   const drag = useRef<{ readonly key: string; readonly pointerId: number } | null>(null);
-  const [focusKey, setFocusKey] = useState<string | null>(null);
+  /** Vignette à refocaliser quand l'ordre aura changé (déplacement écrit puis séance relue) ; effacée aussitôt après. */
+  const pending = useRef<{ readonly key: string; readonly order: string } | null>(null);
   const buttons = useRef(new Map<string, HTMLButtonElement>());
+  const order = units.map((u) => u.key).join('|');
 
   useEffect(() => {
-    if (focusKey !== null) buttons.current.get(focusKey)?.focus();
-  }, [focusKey, units]);
+    const wanted = pending.current;
+    if (wanted === null || wanted.order === order) return;
+    pending.current = null;
+    buttons.current.get(wanted.key)?.focus();
+  }, [order]);
 
   if (units.length < 2) return null;
 
@@ -34,7 +39,7 @@ export function SessionStrip({ units, nameOf, currentKey, busy, onMove, onShow }
     event.preventDefault();
     const to = index + (event.key === 'ArrowLeft' ? -1 : 1);
     if (busy || to < 0 || to >= units.length) return;
-    setFocusKey(key);
+    pending.current = { key, order };
     onMove(key, to);
   };
   const onDown = (event: PointerEvent<HTMLButtonElement>, key: string): void => {
@@ -49,7 +54,7 @@ export function SessionStrip({ units, nameOf, currentKey, busy, onMove, onShow }
     const over = document.elementFromPoint?.(event.clientX, event.clientY)?.closest<HTMLElement>('[data-unit-index]');
     const to = over ? Number(over.dataset.unitIndex) : index;
     if (Number.isInteger(to) && to !== index) {
-      setFocusKey(started.key);
+      pending.current = { key: started.key, order };
       onMove(started.key, to);
     } else onShow(unit);
   };
