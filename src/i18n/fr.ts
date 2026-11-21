@@ -93,6 +93,8 @@ export const fr = {
   },
   nav: {
     primaryLabel: 'Navigation principale',
+    collapse: 'Replier la barre latérale',
+    expand: 'Déployer la barre latérale',
     deviceCard: {
       label: 'État de cet appareil',
       device: 'PC · Bureau',

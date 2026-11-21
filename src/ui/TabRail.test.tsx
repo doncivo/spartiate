@@ -108,3 +108,13 @@ describe('TabRail : repli de la barre latérale PC', () => {
     expect(screen.getAllByRole('button').at(-1)).toHaveTextContent('Plus');
   });
 });
+
+describe('TabRail : iPhone', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('aucun bouton de repli sous 1 024 px', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} />);
+    expect(screen.queryByRole('button', { name: t('nav.collapse') })).toBeNull();
+  });
+});
