@@ -1,0 +1,134 @@
+/* SUIVIS-029 : carte « Suivis du jour » et Progrès › Suivis. Jetons de tokens.css seulement, aucune couleur en dur ; cibles ≥ 44 px. */
+.ct-tracking {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.ct-tracking__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-tracking__title {
+  margin: 0;
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+.ct-tracking__value {
+  margin: 0;
+  color: var(--ct-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tracking__bar {
+  height: 8px;
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-border);
+  overflow: hidden;
+}
+
+.ct-tracking__bar-fill {
+  height: 100%;
+  background: var(--ct-color-bronze);
+}
+
+.ct-tracking__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-tracking__item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ct-space-2);
+}
+
+.ct-tracking__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ct-space-3);
+}
+
+.ct-tracking__field {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.ct-tracking__input {
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+}
+
+.ct-tracking__issue {
+  margin: 0;
+  color: var(--ct-color-danger);
+}
+
+.ct-tracking__scale {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-1);
+}
+
+.ct-tracking__score {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.ct-tracking__score[aria-pressed='true'] {
+  background: var(--ct-color-bronze);
+  border-color: var(--ct-color-bronze);
+  color: var(--ct-color-accent-on);
+  font-weight: var(--ct-font-weight-semibold);
+}
+
+.ct-tracking__score:focus-visible {
+  outline: 2px solid var(--ct-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ct-tracking__chart {
+  width: 100%;
+  height: 48px;
+}
+
+.ct-tracking__line {
+  fill: none;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.ct-tracking__dot {
+  fill: var(--ct-color-bronze);
+}

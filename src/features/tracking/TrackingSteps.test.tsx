@@ -8,7 +8,8 @@ import { DEVICE, mountWith, NOW, seedSteps } from './testKit';
 
 /** SUIVIS-029a : objectif de pas sur Aujourd'hui et moyenne hebdomadaire dans Progrès › Suivis. */
 let db: TestDb;
-const fr = (n: number): string => n.toLocaleString('fr-FR');
+/** Le texte du DOM est normalisé par Testing Library (espaces fines insécables → espace), pas la chaîne attendue : même normalisation ici. */
+const fr = (n: number): string => n.toLocaleString('fr-FR').replace(/\s/g, ' ');
 
 beforeEach(async () => {
   db = await openBaseDb(DEVICE, NOW);

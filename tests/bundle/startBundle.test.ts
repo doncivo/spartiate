@@ -462,7 +462,7 @@ describe('bundle de départ (index.html)', () => {
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
     expect(start.has(chunk.file)).toBe(false);
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
-    for (const [name, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/src/domain/tracking|src/features/tracking|fr.tracking|trackingText/.test(name), name).toBe(false);
+    for (const [name, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/src\/domain\/tracking|src\/features\/tracking|fr\.tracking|trackingText/.test(name), name).toBe(false);
   });
 
   // I6-06 : cardio (écran, carte de Progrès, catalogue fr.cardio, dépôt) : blocs à la demande, hors du départ.
