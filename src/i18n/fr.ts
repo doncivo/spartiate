@@ -93,6 +93,7 @@ export const fr = {
   },
   nav: {
     primaryLabel: 'Navigation principale',
+    sidebar: 'Barre latérale',
     deviceCard: {
       label: 'État de cet appareil',
       device: 'PC · Bureau',
@@ -110,23 +111,7 @@ export const fr = {
   // Synchronisation : section `status` (lot Y2 ; `restore` est à part, `fr.syncRestore.ts`, chargé à la demande) ; `folder` et `key` viennent du lot Y1 ;
   // lot Y3 : `conflicts` et `field` (Y-04), `version` (Y-07), `pairing` (Y-06) ; lot Y4 : `forget` (Y-10), `reset` (Y-11) ; chacune dans son fichier.
   sync: { ...syncEngineFr, folder: syncFolderFr, key: syncKeyFr, conflicts: syncConflictsFr, field: syncFieldFr, version: syncVersionFr, pairing: syncPairingFr, forget: syncForgetFr, reset: syncResetFr },
-  tasks: {
-    newTask: 'Nouvelle tâche',
-    save: 'Enregistrer',
-    complete: 'Terminer : {title}',
-    reopen: 'Rouvrir : {title}',
-    postpone: 'Reporter',
-    deleteConfirmTitle: 'Supprimer « {title} » ?',
-    deleteConfirm: 'Supprimer',
-    seriesScopeOccurrence: 'Cette occurrence',
-    seriesEditTitle: 'Modifier « {title} » ?',
-  },
   reminders: {
-    more: 'Plus…',
-    editTitle: 'Rappels',
-    saveError: 'Impossible d’enregistrer les rappels.',
-    sectionTitle: 'RAPPELS',
-    recaps: 'Récapitulatifs',
     status: remindersStatusFr,
   },
   notifications: notificationsFr,
@@ -173,7 +158,6 @@ export const fr = {
     checkFailed: 'Vérification des mises à jour impossible. Nouvelle tentative automatique.',
   },
   detail: {
-    createdModified: 'Créée {created} · modifiée {modified}',
     stampToday: 'aujourd’hui à {time}',
     stampYesterday: 'hier à {time}',
     stampOn: 'le {date} à {time}',
@@ -195,8 +179,6 @@ export const fr = {
     offline: 'Hors ligne',
     syncing: 'Synchro en cours',
     waitingIcloud: 'En attente d’iCloud',
-    calendarDisconnected: 'Agenda {name} déconnecté',
-    reconnect: 'Reconnecter',
     /** A-09 critère 9 g : autres problèmes de synchro en attente (détail dans Réglages). */
     syncTroubleMore: '{message} (+{n})',
     /** A-09 critère 9 c : ouvre Réglages › Synchronisation (ou la fenêtre de choix après restauration). */
@@ -219,7 +201,6 @@ export const fr = {
     complete: '« {title} » terminée',
     reopen: '« {title} » rouverte',
     postpone: 'Tâche reportée',
-    postponeTomorrow: '« {title} » reportée à demain',
     move: 'Tâche déplacée',
     someday: '« {title} » mise dans « Un jour »',
     duplicate: '« {title} » dupliquée',
@@ -239,7 +220,6 @@ export const fr = {
     scheduleDate: '« {title} » planifiée au {date}',
     manySchedule: '{count} tâches planifiées',
     manyDuplicate: '{count} tâches dupliquées',
-    moveDate: '« {title} » déplacée au {date}',
     stale: 'Action impossible à annuler : la tâche a changé',
     failed: 'Impossible d’annuler cette action.',
   },

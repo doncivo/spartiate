@@ -137,6 +137,8 @@ export interface SettingsValues {
   'training.redDay': unknown;
   /** SESS-01b : exercices écartés (« Retirer, ne plus proposer »), valeur BRUTE lue par `parseExcludedExercises` ({ v: 1, ids }) ; locale, jamais synchronisée (décision proposée). */
   'training.excludedExercises': unknown;
+  /** BLESSURES : gênes déclarées et check-ins (valeur BRUTE lue par `parseInjuries`, { v: 1, items }) ; donnée de santé : locale, jamais synchronisée ni exportée. */
+  'training.injuries': unknown;
   /** SESS-01d : fatigue déclarée au démarrage de la séance ouverte (valeur BRUTE lue par `parseDeclaredFatigue`, { v: 1, workoutId, level }) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
   'training.declaredFatigue': unknown;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
@@ -213,6 +215,7 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.cycleSession': { scope: 'local', defaultValue: null },
   'training.redDay': { scope: 'local', defaultValue: null },
   'training.excludedExercises': { scope: 'local', defaultValue: null },
+  'training.injuries': { scope: 'local', defaultValue: null },
   'training.declaredFatigue': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },

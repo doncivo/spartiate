@@ -5,6 +5,7 @@ import { tonnageKg, workoutDurationSec, type Workout } from '../../../domain/tra
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { formatClock, formatDay, formatVolume, tTraining } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
+import { ContextMenuZone } from '../../../ui/ContextMenu';
 import { useNavigationStore } from '../../app/navigation';
 import { useSyncedData } from '../../sync/remoteChanges';
 import type { TrainingData } from '../trainingState';
@@ -111,19 +112,27 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
         <ul className="ct-training__rows" aria-labelledby="ct-history-title">
           {load.items.map((item) => (
             <li key={item.workout.id}>
-              <button type="button" className="ct-training__row" onClick={() => setSelected(item.workout.id)}>
-                <span className="ct-training__row-name">{item.workout.name === '' ? tTraining('sessionFree') : item.workout.name}</span>
-                <span className="ct-training__row-meta ct-session__num">
-                  {[
-                    formatDay(item.workout.endedAt ?? item.workout.startedAt),
-                    item.durationSec === null ? null : formatClock(item.durationSec * 1000),
-                    tPlural(tTraining, item.sets, 'historySetsOne', 'historySets'),
-                    tTraining('historyVolume', { n: formatVolume(item.volumeKg) }),
-                  ]
-                    .filter((part): part is string => part !== null)
-                    .join(' · ')}
-                </span>
-              </button>
+              <ContextMenuZone
+                items={[{ id: 'open', label: tTraining('openItem'), onSelect: () => setSelected(item.workout.id) }]}
+                menuLabel={tTraining('rowActions', { name: item.workout.name === '' ? tTraining('sessionFree') : item.workout.name })}
+                onActivate={() => setSelected(item.workout.id)}
+              >
+                {(bind) => (
+                  <button type="button" className="ct-training__row" onClick={() => setSelected(item.workout.id)} {...bind}>
+                    <span className="ct-training__row-name">{item.workout.name === '' ? tTraining('sessionFree') : item.workout.name}</span>
+                    <span className="ct-training__row-meta ct-session__num">
+                      {[
+                        formatDay(item.workout.endedAt ?? item.workout.startedAt),
+                        item.durationSec === null ? null : formatClock(item.durationSec * 1000),
+                        tPlural(tTraining, item.sets, 'historySetsOne', 'historySets'),
+                        tTraining('historyVolume', { n: formatVolume(item.volumeKg) }),
+                      ]
+                        .filter((part): part is string => part !== null)
+                        .join(' · ')}
+                    </span>
+                  </button>
+                )}
+              </ContextMenuZone>
             </li>
           ))}
         </ul>

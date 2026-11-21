@@ -84,21 +84,39 @@ describe('bordure des champs et interrupteur (C-112)', () => {
   });
 });
 
-describe('Dynamic Type sur iPhone (C-113, préparation en rem)', () => {
-  it('mise à l’échelle iOS (-apple-system-body) reportée en 0.28.1 : absente de tokens.css (+6 % sans constat visuel)', () => {
-    expect(tokens).not.toContain('-apple-system-body');
+
+describe('Dynamic Type sur iPhone (COQUILLE-PC-c, D-372, C-113, H-19a)', () => {
+  /** Bloc `@supports (font: -apple-system-body)` de tokens.css (WebKit seulement : WebView2 sur PC ne reconnaît pas cette valeur). */
+  const supports = /@supports \(font: -apple-system-body\)\s*\{([\s\S]*?)\n\}/.exec(tokens)?.[1] ?? '';
+
+  it('iOS : html prend la taille du texte système (font: -apple-system-body) dans un @supports, jamais en dehors', () => {
+    expect(supports).toMatch(/html\s*\{[^}]*font:\s*-apple-system-body/);
+    // La seule occurrence hors du bloc est la condition @supports elle-même.
+    expect(tokens.replace(supports, '').match(/-apple-system-body/g)).toHaveLength(1);
   });
 
-  it('PC : html garde font-size: 100 % (aucun effet hors iOS)', () => {
+  it('PC : html garde font-size: 100 % hors du bloc @supports', () => {
     expect(tokens).toMatch(/\nhtml\s*\{[^}]*font-size:\s*100%/);
   });
 
-  it('libellé d’onglet mobile et marque PC en rem ; bouton à 48 px fixes tant que Dynamic Type est reporté (D-372, revue A11Y)', () => {
+  it('libellé d’onglet mobile et marque PC en rem ; le bouton grandit avec le texte sans passer sous 48 px', () => {
     const rail = read('ui/TabRail.css');
     expect(rail).toMatch(/\.ct-tab-rail\[data-layout='mobile'\] \.ct-tab-rail__label\s*\{[^}]*font-size:[^;]*rem/);
     expect(rail).toMatch(/\.ct-tab-rail__mark\s*\{[^}]*font-size:\s*[\d.]+rem/);
-    const button = read('ui/Button.css');
-    // Revue A11Y : la hauteur en rem laissait des surcharges d'écran (min-height: 44px) réduire le bouton de 48 à 44 px ; reportée avec D-372.
-    expect(button).toMatch(/\.ct-button\s*\{[^}]*\n\s*height:\s*48px/);
+    const button = /\.ct-button\s*\{([^}]*)\}/.exec(read('ui/Button.css'))?.[1] ?? '';
+    expect(button).not.toMatch(/\n\s*height:\s*48px/);
+    expect(button).toMatch(/min-height:\s*max\(48px,\s*3rem\)/);
+  });
+
+  it('cibles tactiles : le jeton reste 44 px, et la barre d’onglets iPhone se dimensionne par min-height', () => {
+    expect(tokens).toMatch(/--ct-hit-target-min:\s*44px/);
+    expect(read('ui/TabRail.css')).toMatch(/\.ct-tab-rail\[data-layout='mobile'\] \.ct-tab-rail__tab\s*\{[^}]*min-height:\s*var\(--ct-tab-bar-height\)/);
+  });
+
+  it('440 px au réglage « Très grand » : la colonne centrale peut rétrécir (min-width: 0) et le texte long passe à la ligne', () => {
+    const shell = read('ui/AppShell.css');
+    expect(shell).toMatch(/\.ct-app-shell__column\s*\{[^}]*min-width:\s*0/);
+    expect(shell).toMatch(/\.ct-app-shell__main\s*\{[^}]*min-width:\s*0/);
+    expect(tokens).toMatch(/\nbody\s*\{[^}]*overflow-wrap:\s*(anywhere|break-word)/);
   });
 });

@@ -10,8 +10,8 @@ import type { LocalDateTime } from '../../domain/types';
 export const NOTIFICATION_LIMIT = 64;
 
 /** `supplement` : rappels de compléments (I6-05, D-212). `bedtime` et `morning` : récupération (I5-02 point 2.3). `snooze` : répétition « +15 min » de N-03 (place réservée par l'avenant N1, non branchée au lot N1 tant que N-03 est en attente). */
-export type NotificationKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning' | 'supplement';
-export const NOTIFICATION_KINDS: readonly NotificationKind[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning', 'supplement'];
+export type NotificationKind = 'task' | 'routine' | 'event' | 'recap' | 'snooze' | 'bedtime' | 'morning' | 'supplement' | 'injury';
+export const NOTIFICATION_KINDS: readonly NotificationKind[] = ['task', 'routine', 'event', 'recap', 'snooze', 'bedtime', 'morning', 'supplement', 'injury'];
 /** Actions proposées par la notification (N-03) ; absente pour un récapitulatif et la fin de Focus. */
 export type NotificationCategory = 'task' | 'routine' | 'event' | 'supplement';
 /**

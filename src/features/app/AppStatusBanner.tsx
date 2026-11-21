@@ -39,14 +39,6 @@ function useCurrentBanner() {
           {...(source.onAction ? { actionLabel: t('status.syncTroubleView'), actionAriaLabel: t('status.signingViewLabel'), onAction: source.onAction } : {})}
         />
       );
-    case 'calendarDisconnected':
-      return (
-        <StatusBanner
-          tone="warn"
-          message={t('status.calendarDisconnected', { name: source.detail ?? '' })}
-          {...(source.onAction ? { actionLabel: t('status.reconnect'), onAction: source.onAction } : {})}
-        />
-      );
     case 'syncTrouble': {
       // Critères 9 c et 9 g : texte de la ligne de Réglages (composé par la synchro), « (+N) » s'il y a d'autres états, « Voir ».
       const text = source.message ?? t('sync.status.errorGeneric');

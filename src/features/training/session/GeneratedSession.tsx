@@ -23,6 +23,7 @@ import { formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { loadCurrentCycle, localDayOf, type CurrentCycle } from '../cycle/currentCycle';
+import { injuryAvoidance, parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
 import { groupLabel, PATTERN_KEY } from '../labels';
 import type { TrainingData } from '../trainingState';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor, startGeneratedSession, type GenerationSettings } from './generationInput';
@@ -108,13 +109,28 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access]);
+  /** BLESSURES-a : gênes déclarées (réglage local) ; leurs patterns et muscles sont évités en plus des choix de l'écran. Illisible : aucune. */
+  const [injuries, setInjuries] = useState<InjuriesValue>({ v: 1, items: [] });
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.injuries').then(
+      (raw) => {
+        if (alive) setInjuries(parseInjuries(raw));
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access]);
+  const avoided = useMemo(() => injuryAvoidance(injuries, data.exercises), [injuries, data.exercises]);
   const followed = cycle !== undefined && cycle !== null && cycle !== 'error' && entry !== undefined && cycle.record.routineId === entry.routine.id ? cycle : null;
   const cycleInput = followed !== null && followed.state.phase === 'active' ? { week: generationWeekOf(followed.state), mesocycleIndex: followed.state.mesocycleIndex } : null;
 
   const session = useMemo(
-    () => (entry ? generateSession(buildGenerationInput({ ...data, excluded }, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, settings, now, cycleInput)) : null),
+    () => (entry ? generateSession(buildGenerationInput({ ...data, excluded: [...new Set([...excluded, ...avoided.exerciseIds])] }, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, { ...settings, painfulPatterns: [...new Set([...settings.painfulPatterns, ...avoided.patterns])] }, now, cycleInput)) : null),
     // La semaine ne change que si le cycle change (lu une fois à l'ouverture).
-    [entry, data, settings, now, cycle, excluded], // eslint-disable-line react-hooks/exhaustive-deps
+    [entry, data, settings, now, cycle, excluded, avoided], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const cycleLine = ((): string | null => {
     if (cycle === 'error') return tGeneration('cycleError');

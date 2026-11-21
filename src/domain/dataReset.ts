@@ -141,6 +141,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'training.redDay': 'wiped',
   'training.declaredFatigue': 'wiped',
   'training.excludedExercises': 'kept', // SESS-01b : préférence d'Ali sur cet appareil, comme le repos par défaut.
+  'training.injuries': 'wiped', // BLESSURES : donnée de santé de cet appareil.
   'nutrition.prefs': 'wiped',
   'nutrition.favorites': 'wiped',
   'recovery.notificationPrefs': 'kept',

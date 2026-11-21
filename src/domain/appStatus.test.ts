@@ -13,13 +13,13 @@ describe('pickAppStatus (A-09 critère 5)', () => {
   it('priorité : agenda déconnecté > en attente d’iCloud > synchro en cours > hors ligne', () => {
     expect(pickAppStatus({ offline: {}, syncing: {} })).toBe('syncing');
     expect(pickAppStatus({ offline: {}, syncing: {}, waitingIcloud: {} })).toBe('waitingIcloud');
-    expect(pickAppStatus({ offline: {}, syncing: {}, waitingIcloud: {}, calendarDisconnected: { detail: 'Google' } })).toBe('calendarDisconnected');
+    expect(pickAppStatus({ offline: {}, syncing: {}, waitingIcloud: {}, signingExpiry: { detail: 'soon' } })).toBe('signingExpiry');
   });
 });
 
 describe('état syncTrouble (A-09 critère 9 a, D1)', () => {
   it('ordre fixe : agenda > problème de synchro > mise à jour > iCloud > synchro en cours > hors ligne', () => {
-    expect(APP_STATUS_PRIORITY).toEqual(['signingExpiry', 'calendarDisconnected', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline']);
+    expect(APP_STATUS_PRIORITY).toEqual(['signingExpiry', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline']);
   });
 
   it('chaque paire d’états : le plus prioritaire gagne, quel que soit l’ordre de pose', () => {
@@ -36,7 +36,7 @@ describe('état syncTrouble (A-09 critère 9 a, D1)', () => {
   it('« Hors ligne » ne masque jamais un problème de synchro, un agenda déconnecté le précède', () => {
     expect(pickAppStatus({ offline: {}, syncTrouble: { detail: 'error' } })).toBe('syncTrouble');
     expect(pickAppStatus({ offline: {}, syncing: {}, waitingIcloud: {}, updateRequired: {}, syncTrouble: { detail: 'key-mismatch' } })).toBe('syncTrouble');
-    expect(pickAppStatus({ syncTrouble: { detail: 'error' }, calendarDisconnected: { detail: 'Perso' } })).toBe('calendarDisconnected');
+    expect(pickAppStatus({ syncTrouble: { detail: 'error' }, signingExpiry: { detail: 'soon' } })).toBe('signingExpiry');
   });
 
   it('tous les états sont ordonnés une seule fois', () => {

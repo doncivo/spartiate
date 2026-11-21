@@ -1,0 +1,36 @@
+/**
+ * Textes de « Profil › Blessures » et de la carte de check-in (BLESSURES), à part du catalogue principal (bundle de départ) : chargés avec les
+ * blocs à la demande. Ton prudent : jamais de promesse de prévention ni de conseil médical.
+ */
+export const injuriesFr = {
+  title: 'BLESSURES',
+  notice: 'Spartiate évite ces mouvements dans ses propositions ; il ne remplace pas un avis médical. Ces informations restent sur cet appareil.',
+  empty: 'Aucune gêne déclarée.',
+  muscle: 'Muscle ou zone gênée',
+  muscleNone: 'Aucun',
+  painLabel: 'Mouvements douloureux (facultatif)',
+  painToggle: 'Douleur : {pattern}',
+  startedOn: 'Depuis le',
+  note: 'Note courte (facultatif)',
+  save: 'Déclarer la gêne',
+  saved: 'Gêne enregistrée.',
+  errorTarget: 'Choisis un muscle ou au moins un mouvement douloureux.',
+  errorDate: 'La date de début ne peut pas être dans le futur.',
+  errorDateRequired: 'Indique la date de début.',
+  errorMuscles: 'La liste des muscles est indisponible : tu peux tout de même déclarer des mouvements douloureux.',
+  errorNote: 'La note est trop longue (140 caractères au plus).',
+  errorSave: 'Enregistrement impossible : réessaie.',
+  activeTitle: 'Gênes actives',
+  pastTitle: 'Gênes passées',
+  markHealed: 'Marquer guérie',
+  since: 'depuis le {date}',
+  healedOn: 'guérie le {date}',
+  checkinTitle: 'Où en est ta gêne ?',
+  checkinLead: 'Un point rapide, sans conséquence si tu ne réponds pas.',
+  answerBetter: 'Mieux',
+  answerSame: 'Pareil',
+  answerWorse: 'Pire',
+  answerHealed: 'Guérie',
+  worseAdvice: 'Merci de l’avoir dit. Spartiate continue d’éviter ces mouvements ; si la gêne persiste ou s’aggrave, parles-en à un professionnel de santé.',
+  checkinSaveError: 'Réponse non enregistrée : réessaie.',
+} as const;

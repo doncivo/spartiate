@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { t, type PlainMessageKey } from '../i18n';
 import { TabIcon } from './TabIcon';
 import { useLayout } from './useLayout';
@@ -43,6 +43,8 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
   const layout = useLayout();
   const pc = layout === 'pc';
   const allItems = [...items, settingsItem];
+  const [collapsed, setCollapsed] = useState(false);
+  const folded = pc && collapsed;
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -87,13 +89,22 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
   };
 
   return (
-    <nav aria-label={t('nav.primaryLabel')} data-layout={layout} className={['ct-tab-rail', className].filter(Boolean).join(' ')}>
+    <nav aria-label={t('nav.primaryLabel')} data-layout={layout} data-collapsed={folded ? 'true' : undefined} className={['ct-tab-rail', className].filter(Boolean).join(' ')}>
       {pc ? (
         <div className="ct-tab-rail__brand">
           <span className="ct-tab-rail__mark" aria-hidden="true">
             {'Λ'}
           </span>
           <span className="ct-tab-rail__name">{t('app.name')}</span>
+          <button
+            type="button"
+            className="ct-tab-rail__toggle"
+            aria-expanded={!collapsed}
+            aria-label={t('nav.sidebar')}
+            onClick={() => setCollapsed((now) => !now)}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
         </div>
       ) : null}
       <div className="ct-tab-rail__list">{allItems.map((item, index) => renderTab(item, index))}</div>

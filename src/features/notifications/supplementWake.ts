@@ -43,7 +43,8 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
     env.replan ??
     (() =>
       import('./index').then(
-        (m) => m.supplementNotificationsFor(container).replan(),
+        // BLESSURES-b : le rappel de check-in des gênes se replanifie aux mêmes moments (même file de passages).
+        (m) => Promise.all([m.supplementNotificationsFor(container).replan(), m.injuryNotificationsFor(container).replan()]),
         () => undefined,
       ));
   const run = (): void => void replan().catch(() => undefined);

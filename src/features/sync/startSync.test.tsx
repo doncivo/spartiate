@@ -360,17 +360,17 @@ describe('un seul bandeau, le plus urgent (critère 9 g) ; sobriété (9 h)', ()
     expect(banner()?.textContent).toBe('L’horloge de iPhone est en avance : vérifie sa date et son heure (+2)Voir');
   });
 
-  it('« Hors ligne » ne masque jamais un échec ; un agenda déconnecté passe devant', async () => {
+  it('« Hors ligne » ne masque jamais un échec ; l’expiration de la signature passe devant', async () => {
     renderBanner();
     await start().refreshed();
     act(() => useAppStatusStore.getState().setStatus('offline', {}));
     set({ phase: 'error', errorCode: 'io' });
     expect(useAppStatusStore.getState().sources.syncTrouble).toBeDefined();
     expect(banner()?.textContent).not.toContain('Hors ligne');
-    act(() => useAppStatusStore.getState().setStatus('calendarDisconnected', { detail: 'Perso' }));
-    expect(banner()?.textContent).toContain('Agenda Perso déconnecté');
+    act(() => useAppStatusStore.getState().setStatus('signingExpiry', { detail: 'soon' }));
+    expect(banner()?.textContent).toContain('Spartiate expire bientôt');
     act(() => {
-      useAppStatusStore.getState().setStatus('calendarDisconnected', null);
+      useAppStatusStore.getState().setStatus('signingExpiry', null);
       useAppStatusStore.getState().setStatus('offline', null);
     });
   });

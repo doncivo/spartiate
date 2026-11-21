@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
 import { dueIntakes, NO_SUPPLEMENT_ACTION_TROUBLE, parseSupplementActionTrouble, troubleAfterManualTake, type DueIntake, type SupplementActionTrouble } from '../../../domain/nutrition/supplements';
 import { formatSupplementDose, tSupplements } from '../../../i18n/supplementsText';
@@ -10,6 +10,9 @@ import { logFailure } from '../../../platform/desktop/log';
 import { useSyncedData } from '../../sync/remoteChanges';
 import { replanSupplementReminders } from './replan';
 import './Supplements.css';
+
+/** BLESSURES-b : carte de check-in des gênes, chargée avec ce bloc d'Aujourd'hui (aucun point d'entrée de plus dans le départ) ; rien tant qu'elle n'est pas due. */
+const InjuryCheckinCard = lazy(() => import('../../settings/injuries/InjuryCheckinCard').then((m) => ({ default: m.InjuryCheckinCard })));
 
 const TROUBLE_KEY = 'notifications.actionTrouble';
 
@@ -28,7 +31,7 @@ export function progressText(items: readonly DueIntake[]): string {
  * Carte « Compléments » d'Aujourd'hui (I6-05, critère 2, D-214) : les prises dues du jour, cochées ou décochées en un tap (cible ≥ 44 px). Aucune
  * prise due (aucun complément, en pause, jour non prévu) ou lecture impossible : rien n'est affiché. Bloc chargé à la demande avec ses textes.
  */
-export function SupplementsTodayCard() {
+function SupplementsCard() {
   const container = useAppContainer();
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
@@ -155,5 +158,17 @@ export function SupplementsTodayCard() {
         {tSupplements('manage')}
       </Button>
     </section>
+  );
+}
+
+/** Bloc « Compléments » d'Aujourd'hui, suivi de la carte de check-in des gênes (BLESSURES-b). */
+export function SupplementsTodayCard() {
+  return (
+    <>
+      <SupplementsCard />
+      <Suspense fallback={null}>
+        <InjuryCheckinCard />
+      </Suspense>
+    </>
   );
 }

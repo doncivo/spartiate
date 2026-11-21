@@ -14,7 +14,7 @@ const CTRL_Z = { key: 'z', code: 'KeyZ', ctrlKey: true, altKey: false, shiftKey:
 const command = (title: string, undo: UndoableCommand['undo'] = async () => 'undone'): UndoableCommand => ({
   kind: 'postpone',
   count: 1,
-  labelKey: 'undo.postponeTomorrow',
+  labelKey: 'undo.duplicate',
   labelParams: { title },
   undo,
 });
@@ -43,7 +43,7 @@ describe('UndoToast global (T-13)', () => {
   it('affiche le message de l’action 5 s avec « Annuler », puis disparaît (critère 1)', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
     push(command('Courses'));
-    expect(screen.getByRole('status')).toHaveTextContent('« Courses » reportée à demain');
+    expect(screen.getByRole('status')).toHaveTextContent('« Courses » dupliquée');
     act(() => void vi.advanceTimersByTime(UNDO_TOAST_MS - 1));
     expect(screen.getByRole('status')).toBeInTheDocument();
     act(() => void vi.advanceTimersByTime(1));
