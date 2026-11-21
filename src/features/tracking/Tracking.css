@@ -105,10 +105,12 @@
   cursor: pointer;
 }
 
+/* CI (contraste) : texte clair sur bronze sous 4,5:1 ; la note choisie est dite par la bordure bronze épaisse, le gras et le fond de ligne choisie. */
 .ct-tracking__score[aria-pressed='true'] {
-  background: var(--ct-color-bronze);
+  background: var(--ct-color-row-selected);
   border-color: var(--ct-color-bronze);
-  color: var(--ct-color-accent-on);
+  border-width: 2px;
+  color: var(--ct-color-text);
   font-weight: var(--ct-font-weight-semibold);
 }
 
