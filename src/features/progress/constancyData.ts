@@ -25,7 +25,9 @@ export const CONSTANCY_TABLES = ['workout', 'mesocycle', 'routine', 'routine_day
 
 /** Cycle suivi : le cycle actif non supprimé le plus récent (`MesocycleRepository.current`). */
 export async function readConstancy(access: DataAccess): Promise<ConstancyData> {
-  const [starts, cycle] = await Promise.all([(await access.repos.workouts()).closedStarts(), (await access.repos.mesocycles()).current()]);
+  // Repositories obtenus d'abord : une lecture lancée avant d'attendre le second repository restait sans gestionnaire si la base se fermait.
+  const [workouts, mesocycles] = await Promise.all([access.repos.workouts(), access.repos.mesocycles()]);
+  const [starts, cycle] = await Promise.all([workouts.closedStarts(), mesocycles.current()]);
   const days = starts.map((iso) => localDayOf(Date.parse(iso)));
   if (cycle === null) return { days, target: null, pauses: [] };
   const routine = await (await access.repos.trainingRoutines()).get(cycle.routineId);
