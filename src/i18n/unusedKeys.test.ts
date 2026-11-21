@@ -45,6 +45,8 @@ const WHITELIST: readonly string[] = [
   'fr.recovery.ts:explain_*', // RecoveryToday : tRecovery(`explain_${k}`), un par code d'explication du score
   'fr.tracking.ts:stepsReason_*', // TrackingTodayCard / TrackingProgress : tTracking(`stepsReason_${reason}`), une par StepsTodayReason
   'fr.tracking.ts:issue_*', // TrackingProgress : tTracking(`issue_${issue}`), une par GoalTextIssue
+  'fr.visbody.ts:field_*', // VisbodySection : tVisbody(`field_${kind}`), un libellé par genre VISBODY
+  'fr.visbody.ts:unit_*', // VisbodySection : tVisbody(`unit_${f.unit}`), une par VisbodyUnit
   'fr.tracking.ts:rating_*', // MorningRatings / RatingsCurves : tTracking(`rating_${kind}`) et `rating_${kind}_scale`, une par RatingKind
 ];
 

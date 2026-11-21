@@ -32,7 +32,7 @@ describe('Bilans VISBODY', () => {
     expect(await within(region).findByText(tVisbody('saved'))).toBeInTheDocument();
     expect((await m.find('2026-11-20' as LocalDate, 'visbody_weight_kg'))?.value).toBe(78.4);
     expect((await m.find('2026-11-20' as LocalDate, 'visbody_bmr_dakcal'))?.value).toBe(165.3);
-    expect(await (await db.data.repos.bodyWeights()).list()).toEqual([]);
+    expect(await (await db.data.repos.bodyWeights()).listRecent(10)).toEqual([]);
     expect(await within(region).findByText(tVisbody('delta', { delta: '−0,6', unit: tVisbody('unit_kg'), date: '02/11/2026' }))).toBeInTheDocument();
     expect(within(region).getByText(tVisbody('first'))).toBeInTheDocument();
   });

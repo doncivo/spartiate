@@ -47,7 +47,7 @@ describe('export / import des notes et des bilans VISBODY', () => {
     expect((await t.find('2026-11-20' as LocalDate, 'visbody_bmr_dakcal'))?.value).toBe(165.3);
     expect((await t.find('2026-11-20' as LocalDate, 'visbody_lean_trunk_kg'))?.value).toBe(25.1);
     // Le poids VISBODY n'entre jamais dans les pesées (choix prudent, décision proposée).
-    expect(await (await target.data.repos.bodyWeights()).list()).toEqual([]);
+    expect(await (await target.data.repos.bodyWeights()).listRecent(10)).toEqual([]);
   });
 
   it('archive d’une version précédente (mensurations seules) : s’importe sans rien perdre', async () => {
