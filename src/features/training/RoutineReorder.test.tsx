@@ -275,7 +275,7 @@ describe('PROG-03 : poignée ≥ 44 px, visible au focus, tokens seulement', () 
     expect(rule).toMatch(/min-width: 44px/);
     expect(rule).toMatch(/min-height: 44px/);
     expect(rule).toMatch(/cursor: grab/);
-    expect(block('.ct-training__drag-handle:focus-visible')).toMatch(/outline: 2px solid var\(--ct-color-select-ring\)/);
+    expect(block('.ct-training__drag-handle:focus-visible')).toMatch(/outline: 2px solid var\(--ct-color-focus-ring\)/);
     expect(css).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgba?\(/);
   });
 });

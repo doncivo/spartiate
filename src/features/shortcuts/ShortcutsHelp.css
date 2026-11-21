@@ -47,7 +47,7 @@
 .ct-shortcuts__filter {
   font: inherit;
   padding: 8px 12px;
-  border: 1px solid var(--ct-color-border-strong);
+  border: 1px solid var(--ct-color-control-border);
   border-radius: var(--ct-radius-md);
   background: var(--ct-color-surface);
   color: var(--ct-color-text);

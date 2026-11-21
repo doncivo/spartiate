@@ -84,6 +84,10 @@
   --ct-color-surface-input: #ece8df;
   --ct-color-border: #d8d2c6;
   --ct-color-border-strong: #bdb5a5;
+  /* A11Y (C-111, C-112) : bordure des champs et boutons secondaires (≥ 3:1 sur bg, surface, surface-raised et surface-input) ; border-strong reste décoratif. */
+  --ct-color-control-border: #857e70;
+  /* Anneau de focus : bleu, distinct du rouge d'accent des boutons primaires, ≥ 3:1 sur toutes les surfaces du thème. */
+  --ct-color-focus-ring: #2a4f9c;
   --ct-color-text: #15171c;
   --ct-color-text-secondary: #5e584f;
   --ct-color-nav-bg: #15171c;
@@ -100,7 +104,7 @@
   /* Interrupteur (Reglages.html .sw en clair ; sombre : lavande comme --ct-edit-track, à valider sur la capture Reglages-Sombre). */
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #bdb5a5;
+  --ct-color-switch-off: #8a8273; /* A11Y 0.28.0 : 3,80:1 sur la surface et sous le pouce blanc (WCAG 1.4.11) ; maquette #bdb5a5 à 2,04:1 */
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
@@ -193,6 +197,10 @@
     --ct-color-surface-input: #1d2027;
     --ct-color-border: #2a2e37;
     --ct-color-border-strong: #3a404c;
+    /* A11Y (C-111, C-112) : bordure des champs et boutons secondaires (≥ 3:1 sur bg, surface, surface-raised et surface-input) ; border-strong reste décoratif. */
+    --ct-color-control-border: #6a707c;
+    /* Anneau de focus : bleu, distinct du rouge d'accent des boutons primaires, ≥ 3:1 sur toutes les surfaces du thème. */
+    --ct-color-focus-ring: #8db8ec;
     --ct-color-text: #ede7dc;
     --ct-color-text-secondary: #a39c90;
     --ct-color-nav-bg: #15171c;
@@ -259,6 +267,10 @@
   --ct-color-surface-input: #1d2027;
   --ct-color-border: #2a2e37;
   --ct-color-border-strong: #3a404c;
+  /* A11Y (C-111, C-112) : bordure des champs et boutons secondaires (≥ 3:1 sur bg, surface, surface-raised et surface-input) ; border-strong reste décoratif. */
+  --ct-color-control-border: #6a707c;
+  /* Anneau de focus : bleu, distinct du rouge d'accent des boutons primaires, ≥ 3:1 sur toutes les surfaces du thème. */
+  --ct-color-focus-ring: #8db8ec;
   --ct-color-text: #ede7dc;
   --ct-color-text-secondary: #a39c90;
   --ct-color-nav-bg: #15171c;
@@ -320,6 +332,10 @@
   --ct-color-surface-input: #ece8df;
   --ct-color-border: #d8d2c6;
   --ct-color-border-strong: #bdb5a5;
+  /* A11Y (C-111, C-112) : bordure des champs et boutons secondaires (≥ 3:1 sur bg, surface, surface-raised et surface-input) ; border-strong reste décoratif. */
+  --ct-color-control-border: #857e70;
+  /* Anneau de focus : bleu, distinct du rouge d'accent des boutons primaires, ≥ 3:1 sur toutes les surfaces du thème. */
+  --ct-color-focus-ring: #2a4f9c;
   --ct-color-text: #15171c;
   --ct-color-text-secondary: #5e584f;
   --ct-color-nav-bg: #15171c;
@@ -332,7 +348,7 @@
   --ct-color-accent-on: #ede7dc;
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #bdb5a5;
+  --ct-color-switch-off: #8a8273; /* A11Y 0.28.0 : 3,80:1 sur la surface et sous le pouce blanc (WCAG 1.4.11) ; maquette #bdb5a5 à 2,04:1 */
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;

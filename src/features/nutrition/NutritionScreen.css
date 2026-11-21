@@ -201,7 +201,7 @@
 }
 
 .ct-nutrition__hit:focus-visible {
-  outline: 2px solid var(--ct-color-bronze);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -537,6 +537,6 @@ html.ct-scanning-food body > *:not(.ct-nutrition-scan) {
 }
 
 .ct-strategy__row:focus-visible {
-  outline: 2px solid var(--ct-color-bronze);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
