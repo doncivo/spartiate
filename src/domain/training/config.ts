@@ -199,6 +199,24 @@ export interface WarmupStep {
  */
 export const WARMUP_STEPS: readonly WarmupStep[] = Object.freeze([Object.freeze({ ratio: 0.4, reps: 8 }), Object.freeze({ ratio: 0.6, reps: 5 }), Object.freeze({ ratio: 0.8, reps: 2 })]);
 
+/** Matériel porteur de charge vu par la conversion d'un remplacement (SESS-01a) : barre, haltères, machine (charges guidées ou poulie). */
+export type ReplacementImplement = 'barbell' | 'dumbbell' | 'machine';
+
+/**
+ * SESS-01a (§ 13.2 « Remplacer » ; règle proposée en décision, révisable par Ali) : facteur appliqué à la charge TOTALE de l'exercice remplacé
+ * (deux haltères comptés) pour estimer la charge totale de départ du nouvel exercice quand il n'a aucun historique. Facteurs prudents (sous les
+ * équivalences usuelles), résultat toujours arrondi au cran INFÉRIEUR du matériel. Même matériel (autre exercice) : aucune estimation (aucune
+ * règle au PRD). Hors moteur de prescription : `ENGINE_VERSION` inchangé.
+ */
+export const REPLACEMENT_LOAD_FACTORS: Readonly<Partial<Record<`${ReplacementImplement}>${ReplacementImplement}`, number>>> = Object.freeze({
+  'barbell>dumbbell': 0.75,
+  'dumbbell>barbell': 1,
+  'barbell>machine': 0.6,
+  'machine>barbell': 0.6,
+  'dumbbell>machine': 0.6,
+  'machine>dumbbell': 0.6,
+});
+
 /** Ordre stable des choix facultatifs : fatigue (charge, puis répétitions), puis stagnation (variante, plage, mini-deload). */
 export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload'];
 

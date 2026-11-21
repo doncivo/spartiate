@@ -451,3 +451,31 @@
   border: 1px solid var(--ct-color-bronze);
   border-radius: var(--ct-radius-pill);
 }
+
+/* SESS-01a : feuille « Remplacer l'exercice ». */
+.ct-session__replace-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--ct-space-2);
+}
+.ct-session__replace-confirm {
+  display: grid;
+  gap: var(--ct-space-2);
+  padding-top: var(--ct-space-3);
+}
+.ct-session__check {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+}
+.ct-session__check input {
+  width: 24px;
+  height: 24px;
+}
+.ct-session__check .ct-session__hint {
+  flex-basis: 100%;
+}

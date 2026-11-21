@@ -2,6 +2,7 @@ import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import {
   SETS_MAX,
+  LOAD_MAX_KG,
   ABANDONED_WORKOUT_KEEP_MS,
   WORKOUT_SETS_MAX,
   SET_KINDS,
@@ -478,6 +479,45 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       for (const row of rows) await markSetDeleted(row.id);
       await renumber(workoutId);
       await dissolveBroken(workoutId);
+      return loadOrThrow(workoutId);
+    },
+
+    async replaceExercise(workoutId, fromExerciseId, input) {
+      await requireOpen(workoutId);
+      const rows = await rawSets(workoutId);
+      const own = rows.filter((s) => s.exercise_id === fromExerciseId);
+      if (own.length === 0) throw new RepositoryError('not-found', 'workout_set', fromExerciseId);
+      const name = input.exerciseName.trim();
+      const load = input.targetLoadKg;
+      if (
+        input.exerciseId.trim() === '' ||
+        input.exerciseId.length > 128 ||
+        name === '' ||
+        name.length > 120 ||
+        (load !== null && !(Number.isFinite(load) && load >= 0 && load <= LOAD_MAX_KG)) ||
+        (input.setKind !== undefined && input.setKind !== 'work' && input.setKind !== 'timed')
+      ) {
+        invalid('workout_set', workoutId);
+      }
+      if (input.exerciseId === fromExerciseId || rows.some((s) => s.exercise_id === input.exerciseId)) throw new RepositoryError('conflict', 'workout_set', input.exerciseId);
+      const pending = own.filter((s) => s.done === 0);
+      if (!pending.some((s) => s.set_kind !== 'warmup')) invalid('workout_set', fromExerciseId);
+      for (const row of pending) {
+        if (row.set_kind === 'warmup') {
+          await markSetDeleted(row.id);
+          continue;
+        }
+        const kind = input.setKind ?? row.set_kind;
+        const stamp = stamper.next();
+        // Ressenti effacé seulement s'il est posé (colonne de la 0006) : la ligne s'écrit sinon comme avant.
+        const clearDifficulty = row.difficulty !== undefined && row.difficulty !== null;
+        await db.execute(
+          `UPDATE workout_set SET exercise_id = ?, exercise_name = ?, set_kind = ?, target_load_kg = ?, reps = NULL, load_kg = NULL, duration_sec = NULL, rir = NULL${clearDifficulty ? ', difficulty = NULL' : ''},
+             updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`,
+          [input.exerciseId, name, kind, load, stamp.at, stamp.deviceId, stamp.hlc, row.id],
+        );
+      }
+      await renumber(workoutId);
       return loadOrThrow(workoutId);
     },
 

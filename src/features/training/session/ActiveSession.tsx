@@ -26,6 +26,7 @@ import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/
 import { logFailure } from '../../../platform/desktop/log';
 import type { Haptics } from '../../../platform/haptics';
 import { formatClock, formatRest, tTraining } from '../../../i18n/trainingText';
+import { tSession } from '../../../i18n/trainingSessionText';
 import { Button, ConfirmDialog } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
@@ -52,6 +53,8 @@ const ExerciseProgression = lazy(() => import('./ExerciseProgression').then((m) 
 /** I6-03 : circuits (en-tête d'un groupe, formulaire « Grouper en circuit »), bloc à la demande avec son catalogue de textes. */
 const CircuitHeader = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitHeader })));
 const CircuitForm = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitForm })));
+/** SESS-01a : feuille « Remplacer l'exercice », bloc à la demande (règle de conversion et catalogue chargés avec elle). */
+const ReplaceExercise = lazy(() => import('./ReplaceExercise').then((m) => ({ default: m.ReplaceExercise })));
 const RedDayBanner = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RedDayBanner })));
 const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
@@ -84,6 +87,10 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [grouping, setGrouping] = useState(false);
+  /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
+  const [replacing, setReplacing] = useState<string | null>(null);
+  /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage. */
+  const [excluded] = useState<ReadonlySet<string>>(() => new Set());
   const [confirm, setConfirm] = useState<
     { readonly kind: 'abandon' } | { readonly kind: 'finish'; readonly pending: number } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null
   >(null);
@@ -344,6 +351,26 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const currentSetId = resumeState(workout, now)?.nextSetId ?? null;
   const currentBlock = blocks.findIndex((b) => b.sets.some((s) => s.id === currentSetId));
 
+  const replacingBlock = replacing === null ? undefined : blocks.find((b) => b.exerciseId === replacing);
+  if (replacingBlock !== undefined) {
+    return (
+      <Suspense fallback={null}>
+        <ReplaceExercise
+          data={data}
+          access={access}
+          workout={workout}
+          block={replacingBlock}
+          excluded={excluded}
+          onCancel={() => setReplacing(null)}
+          onDone={() => {
+            setReplacing(null);
+            void reload().catch(() => setError(tTraining('sessionWriteError')));
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   if (picking) {
     const onKey = (event: KeyboardEvent<HTMLElement>): void => {
       if (event.key === 'Escape') {
@@ -481,6 +508,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <Button variant="secondary" disabled={busy} onClick={() => void write((repo) => repo.addSet(workout.id, block.exerciseId, { setKind: block.sets.at(-1)?.setKind === 'timed' ? 'timed' : 'work' }))}>
                 {tTraining('sessionAddSet')}
               </Button>
+              {block.sets.some((s) => !s.done && s.setKind !== 'warmup') && (
+                <Button variant="secondary" disabled={busy} onClick={() => setReplacing(block.exerciseId)}>
+                  {tSession('replace')}
+                </Button>
+              )}
               <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exercise', block })}>
                 {tTraining('sessionRemoveExercise')}
               </Button>

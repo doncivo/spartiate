@@ -59,7 +59,7 @@ async function startAndValidateOneBench(): Promise<void> {
   const block = await screen.findByRole('region', { name: BENCH });
   const [first] = within(block).getAllByRole('group', { name: /^Série/ });
   if (!first) throw new Error('aucune série');
-  fireEvent.change(within(first).getByLabelText(/^Charge/), { target: { value: '80' } });
+  fireEvent.change(within(first).getByLabelText(tTraining('sessionLoad')), { target: { value: '80' } });
   fireEvent.change(within(first).getByLabelText(tTraining('sessionReps')), { target: { value: '8' } });
   fireEvent.click(within(first).getByRole('button', { name: tTraining('sessionValidate') }));
   await within(first).findByText(tTraining('sessionDone'));
@@ -109,6 +109,7 @@ describe('SESS-01a — remplacer l’exercice en séance', () => {
     openSession();
     await startAndValidateOneBench();
     const sheet = await chooseDumbbells();
+    await within(sheet).findByText(/2 × 30 kg/);
     fireEvent.click(within(sheet).getByRole('button', { name: tSession('replaceConfirm') }));
     await screen.findByRole('region', { name: BENCH_DB });
     expect(await rows(`SELECT exercise_id FROM routine_exercise WHERE id = '${u(3)}'`)).toEqual([{ exercise_id: 'bench-press-barbell' }]);
