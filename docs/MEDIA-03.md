@@ -70,3 +70,9 @@ angles se corrigent dans `specs.mjs` puis `node scripts/content/build-pictograms
 
 95 pictogrammes sur 95 exercices sans photo livrés (0 restant). Reporté : relecture d'Ali des poses (H-8), pictogramme pour les exercices
 personnalisés (hors périmètre), éventuelle planche complète des 95.
+
+## Preuves et relecture à froid (code-reviewer, agent distinct)
+
+SHA : 03a rouge 7b38db4e / vert e4ea5ea7 ; 03b rouge 32e98586 / vert af23de5a ; 03c rouges 08ab8016, 93fc8160 / vert 750af209. Bundle de départ : 193 878 octets normalisés au début et à la fin (pictogrammes hors du départ, glob non eager chargé par ExerciseMedia à la demande).
+
+Verdict initial : à corriger (important : validateur en liste noire contournable alors que le SVG est inséré tel quel). Corrigé (rouge 97c16b2e, vert 9ab64d10) : liste blanche d'éléments et d'attributs, guillemets doubles, ni entité ni `data:` (D-440) ; le dessin est rattaché à son exercice (plus d'image de l'exercice précédent un instant), un échec de chargement n'affiche rien sans rejet non géré. Consigné : le bloc de média se charge en séance même pour un exercice sans média (sans effet visible). Numéros : D-437 à D-441, BL-132.
