@@ -32,6 +32,15 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
   const target = model.todayTarget;
   const today = snapshot.days.find((d) => d.date === snapshot.today);
   const remainingToday = today ? remainingForDay(target, today) : null;
+  // NUTRI-b (§ 15.1) : jours estimés dits en texte, avec l'incertitude ; jamais une mesure.
+  const imputed = model.imputedKcal.days;
+  const imputedMean = imputed.length === 0 ? 0 : Math.round(imputed.reduce((sum, i) => sum + i.kcal, 0) / imputed.length);
+  const imputedLine =
+    imputed.length > 0 ? (
+      <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('imputedKcalLine', { n: imputed.length, kcal: formatInt(imputedMean), spread: formatInt(imputed[0]?.spread ?? 0) })}</p>
+    ) : model.imputedKcal.reason !== null && model.bars.some((b) => b.state !== 'complete') ? (
+      <p className="ct-nutrition__muted">{tNutrition('imputedKcalNone')}</p>
+    ) : null;
   const measuredTerms = (tdee.basis === 'blend' || tdee.basis === 'measured') && tdee.measuredRaw !== null && tdee.meanKcal !== null && tdee.deltaKg !== null;
 
   return (
@@ -65,9 +74,10 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
           </>
         )}
         <p className="ct-nutrition__num">{tNutrition('coverageLine', { days: daysText(model.balance.completeDays), weighIns: weighInsText(model.balance.weighInDays) })}</p>
-        <BarsChart bars={model.bars} />
-        <p className="ct-nutrition__muted">{tNutrition('barsLegend')}</p>
+        <BarsChart bars={model.bars} imputed={model.imputedKcal.days} />
+        <p className="ct-nutrition__muted">{tNutrition('barsLegend')} {imputed.length > 0 ? tNutrition('barsLegendImputed') : ''}</p>
         <p className="ct-nutrition__muted">{tNutrition('balanceExcluded')}</p>
+        {imputedLine}
       </section>
 
       <section className="ct-nutrition__card" aria-labelledby="ct-nutrition-trend">
@@ -91,6 +101,9 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
             )}
             <TrendChart points={model.trendPoints} endDate={snapshot.today} />
             {model.lastWeighIn ? <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('trendLast', { kg: formatTenth(model.lastWeighIn.kg), date: formatDayShort(model.lastWeighIn.date) })}</p> : null}
+            {model.imputedWeightToday === null || model.learning ? null : (
+              <p className="ct-nutrition__muted ct-nutrition__num">{tNutrition('imputedWeightLine', { kg: formatTenth(model.imputedWeightToday.kg), spread: formatTenth(model.imputedWeightToday.spread) })}</p>
+            )}
             {model.trendPoints.some((p) => p.outlier) ? <p className="ct-nutrition__muted">{tNutrition('trendOutlier')}</p> : null}
           </>
         )}

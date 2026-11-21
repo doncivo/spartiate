@@ -95,7 +95,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | fait (FIX-SAISIE-NUTRI) |
 | C-034 | audit Claude 0.27.0 | important — Quick Add sans borne ni contrôle de cohérence des macros | fait (FIX-SAISIE-NUTRI) |
 | C-035 | audit Claude 0.27.0 | mineur — rappel de complément perdu le jour du passage à l'heure d'été | à faire (lot 0.28.0) |
-| C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | fait (FIX-SAISIE-NUTRI, D-357) |
+| C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | fait (D-357 ; preuve NUTRI-a, 0.28.1, D-397) |
 | C-037 | audit Claude 0.27.0 | mineur — cible de repos : glucides ramenés à 0 sans recalcul des kcal ; floor contre round | à faire (lot 0.28.0) |
 | C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | à faire (lot 0.28.0) |
 | C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | à faire (lot 0.28.0) |
@@ -253,7 +253,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | fait en partie (PROGRES, 0.28.1, D-389 à D-394 ; restent records en séance § 17.1 a, BL-114 à BL-116) |
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
 | C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (lot 0.28.0) |
-| C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | à faire (lot 0.28.0) |
+| C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | fait en partie (NUTRI, 0.28.1 : imputation et assiette, D-395, D-396 ; reste de C-194 à faire) |
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | à faire (lot 0.28.0) |
 | BL-092 | rapport FIX-ABERR (lot 0.28.0) | résumé de fin : séance passée datée par la dernière série et non par `ended_at` ; décharges comptées pour confirmer une aberrante (écart à D-323 (2)) | à faire (lot 0.28.0) |
@@ -282,6 +282,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | à trancher par Ali |
 | BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | à trancher par Ali |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.28.x) |
+| BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -366,12 +367,12 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 14.3 a | PRD § 14.3 | partiel — inventaire complet du matériel (C-066, C-081) | à faire (lot 0.28.0) |
 | § 14.3 b | PRD § 14.3 | partiel — matériel forcé ou interdit (C-029) | à faire (lot 0.28.0) |
 | § 14.3 c | PRD § 14.3 | partiel — machines : 1RM par profil (D-86, constat 5) | à faire (lot 0.28.0) |
-| § 15.1 a | PRD § 15.1 | absent — lissage EMA de 7 jours de la dépense (C-036) | à faire (lot 0.28.0) |
-| § 15.1 b | PRD § 15.1 | absent — imputation des jours non saisis affichée avec incertitude (C-194) | à faire (lot 0.28.0) |
+| § 15.1 a | PRD § 15.1 | absent — lissage EMA de 7 jours de la dépense (C-036) | fait (D-357, D-397) |
+| § 15.1 b | PRD § 15.1 | absent — imputation des jours non saisis affichée avec incertitude (C-194) | fait (NUTRI-b, D-395) |
 | § 15.2 a | PRD § 15.2 | partiel — check-in accepter / refuser / personnaliser (C-031, C-086) | à faire (lot 0.28.0) |
 | § 15.2 b | PRD § 15.2 | partiel — bornes 1 200 / 800, perte 1 %, alerte 25 % (C-031, C-087) | à faire (lot 0.28.0) |
 | § 15.3 a | PRD § 15.3 | partiel — recherche : récents, favoris, provenances ; « go-tos » absents (C-092, C-100) | à faire (lot 0.28.0) |
-| § 15.3 b | PRD § 15.3 | absent — assiette (C-194) | à faire (lot 0.28.0) |
+| § 15.3 b | PRD § 15.3 | absent — assiette (C-194) | fait en partie (NUTRI-c, D-396 ; BL-117) |
 | § 15.5 | PRD § 15.5 | partiel — tableau de bord (C-088) | à faire (lot 0.28.0) |
 | § 16.1 C | PRD § 16.1 | partiel — niveau C : zone cible jamais affichée (C-191) | à faire (lot 0.28.0) |
 | § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | à faire (lot 0.28.0) |

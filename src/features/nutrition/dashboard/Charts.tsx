@@ -1,4 +1,4 @@
-import type { TrendPoint } from '../../../domain/nutrition';
+import type { ImputedKcalDay, TrendPoint } from '../../../domain/nutrition';
 import type { LocalDate } from '../../../domain/types';
 import { formatDayShort, formatInt, tNutrition } from '../../../i18n/nutritionText';
 import type { DayBar } from './model';
@@ -16,9 +16,10 @@ const PAD = 12;
 
 const stateText = (state: DayBar['state']): string => tNutrition(state === 'complete' ? 'barComplete' : state === 'partial' ? 'barPartial' : 'barUnknown');
 
-export function BarsChart({ bars }: { readonly bars: readonly DayBar[] }) {
+export function BarsChart({ bars, imputed = [] }: { readonly bars: readonly DayBar[]; readonly imputed?: readonly ImputedKcalDay[] }) {
+  const estimate = new Map(imputed.map((i) => [i.date, i]));
   const values = bars.map((b) => b.kcal ?? 0);
-  const max = Math.max(1, ...bars.map((b) => b.targetKcal ?? 0), ...values) * 1.1;
+  const max = Math.max(1, ...bars.map((b) => b.targetKcal ?? 0), ...values, ...imputed.map((i) => i.kcal + i.spread)) * 1.1;
   const slot = (W - 2 * PAD) / Math.max(1, bars.length);
   const y = (kcal: number): number => H - PAD - (kcal / max) * (H - 2 * PAD);
   return (
@@ -32,15 +33,20 @@ export function BarsChart({ bars }: { readonly bars: readonly DayBar[] }) {
         {bars.map((bar, i) => {
           const x = PAD + i * slot + slot * 0.15;
           const width = slot * 0.7;
+          const guess = bar.state === 'complete' ? undefined : estimate.get(bar.date);
+          // NUTRI-b : jour estimé = contour en tirets (jamais plein), en plus du texte ; le logué éventuel reste dessiné dessous.
+          if (guess !== undefined && (bar.kcal === null || bar.state === 'unknown')) return <rect key={bar.date} className="ct-nutrition__bar ct-nutrition__bar--imputed" x={x} y={y(guess.kcal)} width={width} height={H - PAD - y(guess.kcal)} />;
           if (bar.kcal === null || bar.state === 'unknown') return <rect key={bar.date} className="ct-nutrition__bar ct-nutrition__bar--unknown" x={x} y={H - PAD - 3} width={width} height={3} />;
           // Jour partiel : contour pointillé en plus du remplissage clair (le motif porte la différence, pas l'opacité seule).
           return <rect key={bar.date} className={`ct-nutrition__bar ct-nutrition__bar--${bar.state}`} x={x} y={y(bar.kcal)} width={width} height={H - PAD - y(bar.kcal)} {...(bar.state === 'partial' ? { strokeDasharray: '3 2' } : {})} />;
         })}
       </svg>
       <ul className="ct-visually-hidden">
-        {bars.map((bar) => (
-          <li key={bar.date}>{tNutrition('barItem', { day: formatDayShort(bar.date), state: stateText(bar.state), value: bar.kcal === null ? '' : ` · ${formatInt(bar.kcal)} kcal` })}</li>
-        ))}
+        {bars.map((bar) => {
+          const guess = bar.state === 'complete' ? undefined : estimate.get(bar.date);
+          if (guess !== undefined && bar.kcal === null) return <li key={bar.date}>{tNutrition('barItemImputed', { day: formatDayShort(bar.date), kcal: formatInt(guess.kcal), spread: formatInt(guess.spread) })}</li>;
+          return <li key={bar.date}>{tNutrition('barItem', { day: formatDayShort(bar.date), state: stateText(bar.state), value: bar.kcal === null ? '' : ` · ${formatInt(bar.kcal)} kcal` })}</li>;
+        })}
       </ul>
     </>
   );

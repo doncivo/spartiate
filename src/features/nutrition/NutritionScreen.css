@@ -378,6 +378,13 @@
   stroke-width: 1.5;
 }
 
+.ct-nutrition__bar--imputed {
+  fill: none;
+  stroke: var(--ct-color-bronze);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 2;
+}
+
 .ct-nutrition__bar--unknown {
   fill: var(--ct-color-border-strong);
 }
