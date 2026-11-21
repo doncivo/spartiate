@@ -12,6 +12,7 @@ import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TrainingScreen } from '../TrainingScreen';
 import { TodaySessionCard } from './TodaySessionCard';
+import { tSession } from '../../../i18n/trainingSessionText';
 
 /**
  * I1-02 (interface), tests DOM sur base SQLite réelle (wasm) et contenu embarqué réel : démarrage vide / routine / copie, validation qui écrit
@@ -209,7 +210,7 @@ describe('saisie et validation (critère 2)', () => {
     const set = await firstOpenSet('Développé couché à la barre');
     const select = within(set).getByLabelText('Type de série') as HTMLSelectElement;
     expect(select.value).toBe('work');
-    expect([...select.options].map((o) => o.textContent)).toEqual(['Normale', 'Échauffement', 'Dégressive', 'Partielle']);
+    expect([...select.options].map((o) => o.textContent)).toEqual(['Normale', 'Échec', 'Échauffement', 'Dégressive', 'Partielle']);
     expect(within(set).queryByText('Travail')).toBeNull();
     expect(within(set).getByText(/Normale : comptée dans le volume et les records/)).toBeInTheDocument();
     fireEvent.change(select, { target: { value: 'drop' } });
@@ -332,7 +333,7 @@ describe('minuteur de repos (critère 4)', () => {
     await validateNext('Développé couché à la barre', '60', '8');
     expect(await restTimer()).toHaveTextContent('2:30');
     expect(await one('SELECT rest_timer_end_at FROM workout')).toEqual({ rest_timer_end_at: '2026-11-09T17:02:30.000Z' });
-    expect(f.calls.starts).toEqual([{ endDateMs: Date.parse('2026-11-09T17:02:30.000Z'), label: 'Repos', finishedLabel: 'Terminé' }]);
+    expect(f.calls.starts).toEqual([{ endDateMs: Date.parse('2026-11-09T17:02:30.000Z'), label: tSession('restLiveNextNoLoad', { rest: 'Repos', name: 'Développé couché à la barre' }), finishedLabel: 'Terminé' }]);
     expect(f.scheduled).toEqual([Date.parse('2026-11-09T17:02:30.000Z')]);
   });
 

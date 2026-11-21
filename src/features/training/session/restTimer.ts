@@ -39,7 +39,8 @@ export type RestResume =
   | (RestReport & { readonly phase: 'running'; readonly remainingMs: number });
 
 export interface RestTimerController {
-  start(seconds: number): Promise<RestReport>;
+  /** SESS-01f : `label` (exercice suivant et charge) remplace le libellé par défaut de la Live Activity ; gardé aux « +30 s » et à la reprise. */
+  start(seconds: number, label?: string): Promise<RestReport>;
   /** « +30 s » par défaut. */
   extend(seconds?: number): Promise<RestReport>;
   /** « Passer ». */
@@ -50,9 +51,14 @@ export interface RestTimerController {
   stop(): Promise<void>;
 }
 
+/** Longueur maximale du libellé accepté par le plugin live-activity. */
+const LIVE_LABEL_MAX = 80;
+
 export function createRestTimer(deps: RestTimerDeps): RestTimerController {
   const { clock, store, liveActivity, notifier, os, texts } = deps;
   const ios = os === 'ios';
+  /** SESS-01f : libellé de la Live Activity du repos en cours (80 caractères au plus, contrat du plugin). */
+  let label = texts.label;
 
   async function notify(endMs: number, onlyIfMissing: boolean): Promise<RestNotificationOutcome> {
     if (!ios) return 'unavailable';
@@ -68,7 +74,7 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
     if (!ios) return { live: 'unsupported' };
     const availability = await liveActivity.isAvailable();
     if (!availability.available) return { live: 'unavailable', liveReason: availability.reason, liveError: availability.error };
-    const started = await liveActivity.start({ endDateMs: endMs, label: texts.label, finishedLabel: texts.finishedLabel });
+    const started = await liveActivity.start({ endDateMs: endMs, label, finishedLabel: texts.finishedLabel });
     return started.started ? { live: 'started' } : { live: 'failed', liveReason: started.reason, liveError: started.error };
   }
 
@@ -90,7 +96,8 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
   }
 
   return {
-    async start(seconds) {
+    async start(seconds, next) {
+      label = (next ?? texts.label).slice(0, LIVE_LABEL_MAX);
       const rest = await (await store()).startRest({ seconds });
       return publish(rest, false);
     },

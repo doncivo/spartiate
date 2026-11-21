@@ -1,5 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import { parseExcludedExercises } from '../../../domain/training/exclusions';
 import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
 import {
@@ -93,13 +94,27 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access, now]);
+  /** SESS-01b : exercices écartés (réglage local) ; illisible : aucun. */
+  const [excluded, setExcluded] = useState<readonly string[]>([]);
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.excludedExercises').then(
+      (raw) => {
+        if (alive) setExcluded(parseExcludedExercises(raw));
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access]);
   const followed = cycle !== undefined && cycle !== null && cycle !== 'error' && entry !== undefined && cycle.record.routineId === entry.routine.id ? cycle : null;
   const cycleInput = followed !== null && followed.state.phase === 'active' ? { week: generationWeekOf(followed.state), mesocycleIndex: followed.state.mesocycleIndex } : null;
 
   const session = useMemo(
-    () => (entry ? generateSession(buildGenerationInput(data, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, settings, now, cycleInput)) : null),
+    () => (entry ? generateSession(buildGenerationInput({ ...data, excluded }, { days: entry.days, startedAt: entry.routine.createdAt }, entry.index, settings, now, cycleInput)) : null),
     // La semaine ne change que si le cycle change (lu une fois à l'ouverture).
-    [entry, data, settings, now, cycle], // eslint-disable-line react-hooks/exhaustive-deps
+    [entry, data, settings, now, cycle, excluded], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const cycleLine = ((): string | null => {
     if (cycle === 'error') return tGeneration('cycleError');
@@ -325,6 +340,8 @@ function omittedText(o: OmittedExercise, nameOf: (id: string) => string): string
       return tGeneration('omittedUnknown', { name: o.exerciseName });
     case 'pain':
       return suggestion === null ? tGeneration('omittedPain', { name: o.exerciseName }) : tGeneration('omittedPainSuggestion', { name: o.exerciseName, suggestion });
+    case 'excluded':
+      return suggestion === null ? tGeneration('omittedExcluded', { name: o.exerciseName }) : tGeneration('omittedExcludedSuggestion', { name: o.exerciseName, suggestion });
     case 'equipment':
       return suggestion === null ? tGeneration('omittedEquipment', { name: o.exerciseName }) : tGeneration('omittedEquipmentSuggestion', { name: o.exerciseName, suggestion });
   }
@@ -365,7 +382,7 @@ function Proposal({ session, entryDays, sourceName, nameOf }: ProposalProps) {
                 {e.rir !== null ? ` · ${tGeneration('rir', { rir: e.rir })}` : ''}
               </p>
               {e.origin === 'substitution' && (
-                <p className="ct-generated__note">{tGeneration(e.substitutionReason === 'pain' ? 'originSubstitutionPain' : 'originSubstitutionEquipment', { name: sourceName(e.sourceExerciseId) })}</p>
+                <p className="ct-generated__note">{tGeneration(e.substitutionReason === 'pain' ? 'originSubstitutionPain' : e.substitutionReason === 'excluded' ? 'originSubstitutionExcluded' : 'originSubstitutionEquipment', { name: sourceName(e.sourceExerciseId) })}</p>
               )}
               {e.origin === 'rotation' && <p className="ct-generated__note">{tGeneration('originRotation', { name: sourceName(e.sourceExerciseId) })}</p>}
               {e.setsRemoved > 0 && <p className="ct-generated__note">{tPlural(tGeneration, e.setsRemoved, 'setsRemovedOne', 'setsRemovedMany')}</p>}

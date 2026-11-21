@@ -395,7 +395,9 @@ export type ReasonCode =
   | 'assistance-min'
   | 'snap-extra-rep'
   | 'gain-capped'
-  | 'unsupported-metric';
+  | 'unsupported-metric'
+  // SESS-01d : « Fatigué » déclaré au démarrage, la hausse prévue est remplacée par la charge de référence (`holdForDeclaredFatigue`).
+  | 'declared-fatigue';
 
 /** Raison principale : une phrase par proposition (texte en PR 2/2, `src/i18n`). */
 export type PrescriptionHeadline =

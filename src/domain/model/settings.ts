@@ -135,6 +135,10 @@ export interface SettingsValues {
   'training.cycleSession': unknown;
   /** I5-02 point 2.2 : choix d'Ali devant la journée rouge de la séance en cours (valeur BRUTE lue par `parseRedDayChoice`, src/features/training/session/redDayState.ts) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
   'training.redDay': unknown;
+  /** SESS-01b : exercices écartés (« Retirer, ne plus proposer »), valeur BRUTE lue par `parseExcludedExercises` ({ v: 1, ids }) ; locale, jamais synchronisée (décision proposée). */
+  'training.excludedExercises': unknown;
+  /** SESS-01d : fatigue déclarée au démarrage de la séance ouverte (valeur BRUTE lue par `parseDeclaredFatigue`, { v: 1, workoutId, level }) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
+  'training.declaredFatigue': unknown;
   /** I4-03 : préférences de nutrition (style du check-in, objectif, activité déclarée, jour). Valeur BRUTE lue par `parseNutritionPrefs` ; locale, jamais synchronisée. */
   'nutrition.prefs': unknown;
   /** I4-06 : favoris de la recherche d'aliments, valeur BRUTE lue par `parseFavorites` ({ v: 1, items }) ; locale, jamais synchronisée (D-79). FIX-0181 (D-171) : lue une seule fois pour la reprise dans la table publiée `food_favorite`, puis remise à null. */
@@ -208,6 +212,8 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'training.routineUpdateAsk': { scope: 'local', defaultValue: null },
   'training.cycleSession': { scope: 'local', defaultValue: null },
   'training.redDay': { scope: 'local', defaultValue: null },
+  'training.excludedExercises': { scope: 'local', defaultValue: null },
+  'training.declaredFatigue': { scope: 'local', defaultValue: null },
   'nutrition.prefs': { scope: 'local', defaultValue: null },
   'nutrition.favorites': { scope: 'local', defaultValue: null },
   'recovery.notificationPrefs': { scope: 'local', defaultValue: null },

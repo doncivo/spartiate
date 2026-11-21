@@ -304,7 +304,7 @@ export const trainingFr = {
   sessionWarmupSet: 'Série d’échauffement',
   sessionWarmupMark: 'É',
   sessionSetKind: 'Type de série',
-  sessionKindHelp: 'Normale : comptée dans le volume et les records. Échauffement : ni volume ni records. Dégressive, Partielle : comptées comme séries, hors volume et records.',
+  sessionKindHelp: 'Normale : comptée dans le volume et les records. Échec : normale menée à l’échec (RIR 0). Échauffement : ni volume ni records. Dégressive, Partielle : comptées comme séries, hors volume et records.',
   kindWork: 'Normale',
   kindWarmup: 'Échauffement',
   kindDrop: 'Dégressive',
