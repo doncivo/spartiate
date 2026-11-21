@@ -15,6 +15,7 @@ import { createMemorySyncPlatform, type MemorySyncFolder, type MemorySyncPlatfor
 import type { RemoteChanges, SyncStatus } from '../../src/platform/sync/types';
 import { createMemorySyncLogger, createSyncService, type SyncEngineService } from '../../src/sync';
 import { createSimFolder, propagate, type PropagateOptions } from './syncCloudSim';
+import { SIM_ENTRY_SELECT, SIM_ENTRY_TABLE, createSimEntries } from './syncEntries';
 
 /**
  * Appareil simulé (ADR 0011, section 12) : sa base SQLite Wasm (migrations de l'app), son horloge contrôlée, son `HlcClock`, son coffre
@@ -24,8 +25,23 @@ import { createSimFolder, propagate, type PropagateOptions } from './syncCloudSi
 
 export const PRO = '00000000-0000-4000-8000-000000000001' as SpaceId;
 export const SCHEMA_VERSION = legacyMigrationList.at(-1)?.version ?? 1;
+/** CLEAN-03 : `sv` d'un appareil au schéma Spartiate courant (`i0` : dernière migration de `src/db/migrations`). */
+export const I0_SCHEMA_VERSION = i0Migrations.at(-1)?.version ?? 1;
+
+/**
+ * CLEAN-03 (D-201) : schéma par défaut des appareils d'UN fichier de test (`legacy` tant que le fichier n'est pas migré). Un fichier migré
+ * appelle `useSimSchema('i0')` au chargement : `createSimDevice` (kits compris) et `warmSimDevices` prennent alors la migration réelle et le
+ * catalogue de production. Vitest isole chaque fichier (module rechargé) : le choix ne fuit pas d'un fichier à l'autre.
+ */
+let fileSchema: SimSchema = 'legacy';
+export function useSimSchema(schema: SimSchema): void {
+  fileSchema = schema;
+}
+export const simSchema = (): SimSchema => fileSchema;
 
 export interface SimDevice {
+  /** CLEAN-03 : schéma courant de l'appareil (change par `upgradeSchema`). */
+  readonly schema: SimSchema;
   /** Identifiant d'appareil ; change seulement par `restartAs` (Y-10, « Associer de nouveau »). */
   id: DeviceId;
   readonly name: string;
@@ -125,7 +141,7 @@ export const V19_CATALOGUE = createCatalogue({ tables: beforeProg04(SYNC_CATALOG
 const SCHEMA_CATALOGUES = { v19: V19_CATALOGUE, v18: V18_CATALOGUE, v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE, v14: V14_CATALOGUE, v15: V15_CATALOGUE, v16: V16_CATALOGUE, v17: V17_CATALOGUE } as const;
 const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : schema === 'v14' ? i0Migrations.slice(0, 14) : schema === 'v15' ? i0Migrations.slice(0, 15) : schema === 'v16' ? i0Migrations.slice(0, 16) : schema === 'v17' ? i0Migrations.slice(0, 17) : schema === 'v18' ? i0Migrations.slice(0, 18) : schema === 'v19' ? i0Migrations.slice(0, 19) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
-function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array> {
+function migratedDatabaseImage(schema: SimSchema = fileSchema): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);
   migratedImages[schema] ??= (async () => {
     const template = await openSqliteWasmDriver();
@@ -144,12 +160,12 @@ function migratedDatabaseImage(schema: SimSchema = 'legacy'): Promise<Uint8Array
  * machine est chargée) : à payer dans un `beforeAll`, hors du budget du premier test du fichier.
  */
 export async function warmSimDevices(): Promise<void> {
-  await migratedDatabaseImage();
+  await migratedDatabaseImage(fileSchema);
 }
 
 /** I-06 : `appVersion` (numéro publié, `0.4.0` par défaut) et `devicePlatform` (`windows` par défaut) de l'appareil simulé. */
 export async function createSimDevice(id: string, options: { readonly name?: string; readonly start?: string; readonly clock?: ManualClock; readonly appVersion?: string; readonly devicePlatform?: 'windows' | 'ios'; readonly schema?: SimSchema } = {}): Promise<SimDevice> {
-  let schema = options.schema ?? 'legacy';
+  let schema = options.schema ?? fileSchema;
   const catalogueOf = (target: SimSchema) => (target === 'i0' ? SYNC_CATALOGUE : target === 'legacy' ? LEGACY_SYNC_CATALOGUE : SCHEMA_CATALOGUES[target]);
   const driver = await openSqliteWasmDriver({}, await migratedDatabaseImage(schema));
   const clock = options.clock ?? createManualClock(options.start ?? '2026-10-05T08:00:00.000Z');
@@ -173,7 +189,11 @@ export async function createSimDevice(id: string, options: { readonly name?: str
     return service;
   };
   const platform = makePlatform();
+  const entries = createSimEntries(driver, () => schema, () => createWriteStamper(clock, hlc).next());
   const device: SimDevice = {
+    get schema() {
+      return schema;
+    },
     id: deviceId,
     name: options.name ?? id.slice(0, 4),
     devicePlatform: options.devicePlatform ?? 'windows',
@@ -204,6 +224,7 @@ export async function createSimDevice(id: string, options: { readonly name?: str
     async createTask(title, extra = {}) {
       counter += 1;
       const taskId = (extra.id ?? `${String(counter).padStart(8, '0')}-0000-4000-8000-${String(deviceId).slice(24)}`) as TaskId;
+      if (schema !== 'legacy') return entries.create(taskId, title, extra);
       return data.repos.tasks.create({
         id: taskId,
         spaceId: PRO,
@@ -230,11 +251,13 @@ export async function createSimDevice(id: string, options: { readonly name?: str
         ...extra,
       });
     },
-    updateTask: (taskId, patch) => data.repos.tasks.update(taskId, patch),
+    updateTask: (taskId, patch) => (schema === 'legacy' ? data.repos.tasks.update(taskId, patch) : entries.update(taskId, patch)),
     async deleteTask(taskId) {
+      if (schema !== 'legacy') return entries.remove(taskId);
       await data.repos.tasks.softDelete([taskId]);
     },
     async task(taskId) {
+      if (schema !== 'legacy') return entries.get(taskId);
       return (await data.repos.tasks.getById(taskId, { includeDeleted: true })) ?? null;
     },
     close: () => driver.close(),
@@ -279,7 +302,14 @@ export function syncFolders(devices: readonly SimDevice[], options: PropagateOpt
   for (const from of devices) for (const to of devices) if (from !== to) propagate(from.folder, to.folder, from.id, options);
 }
 
-/** Valeurs des tâches (titre, note, état, suppression) d'un appareil, triées : comparaison de convergence. */
+/** Valeurs des tâches (titre, note, état, suppression) d'un appareil, triées : comparaison de convergence (schéma Spartiate : entrées simulées). */
 export async function taskSnapshot(device: SimDevice): Promise<unknown[]> {
+  if (device.schema !== 'legacy') return device.driver.select(`SELECT ${SIM_ENTRY_SELECT}, deleted_at IS NOT NULL AS deleted FROM ${SIM_ENTRY_TABLE} ORDER BY id`);
   return device.driver.select('SELECT id, title, note, status, date, deleted_at IS NOT NULL AS deleted FROM task ORDER BY id');
+}
+
+/** CLEAN-03 : titres vivants triés (tâches du banc legacy, entrées simulées sinon). */
+export async function liveTitles(device: SimDevice): Promise<string[]> {
+  const sql = device.schema === 'legacy' ? 'SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title' : `SELECT food_name AS title FROM ${SIM_ENTRY_TABLE} WHERE deleted_at IS NULL ORDER BY food_name`;
+  return (await device.driver.select<{ title: string }>(sql)).map((r) => r.title);
 }

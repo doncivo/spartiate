@@ -1,6 +1,6 @@
 import { expect } from 'vitest';
 import type { RestoreMarker } from '../../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, liveTitles, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
 
 /**
  * Outils des simulations de Y-11 (ADR 0011 §14.3) : appareils complets (base SQLite Wasm, vrai service, plateforme mémoire dans le rôle de
@@ -62,7 +62,7 @@ export async function reassociate(owner: SimDevice, joiner: SimDevice, everyone:
   await joiner.platform.key.import({ recoveryKey: recovery });
 }
 
-export const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+export const titles = (d: SimDevice): Promise<string[]> => liveTitles(d);
 
 export const meta = async (d: SimDevice, key: string): Promise<unknown> => {
   const raw = await d.data.repos.sync.getMeta(key);
