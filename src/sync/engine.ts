@@ -186,6 +186,8 @@ export async function runCycle(baseDeps: SyncDeps, hooks: CycleHooks, options: C
 
 async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleOptions, seen: CycleSeen): Promise<CycleResult> {
   const { platform, data, deviceId: self, logger } = deps;
+  /** Avertissement levé pour ce cycle (liste propre au cycle, dédoublonnée au compte rendu). */
+  const warn = (code: SyncStatusWarning): number => (seen.warnings ??= []).push(code);
   /** Lignes reçues, comptées par source (8 premiers caractères de l'appareil) puis par table avant d'être transmises à l'interface. */
   const track =
     (source: string) =>
@@ -495,7 +497,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     // « Démarrer la synchro depuis cet appareil » (`sync_meta.startHere`) lève l'attente.
     if (epoch === null && folderE === null && keyStatus.imported === true && live.size === 0 && (await readJson<boolean>(repos, META.startHere)) !== true) {
       logger.log('epoch-open-deferred', { reason: 'imported-key' });
-      seen.warnings = [...(seen.warnings ?? []), 'awaiting-other-devices'];
+      warn('awaiting-other-devices');
       return { ...EMPTY, outcome: 'done', folderLabel, folderKind, worked, devices: await deviceStatuses(repos, self, accepted, deps.sv, logger), keyMismatch };
     }
     if (epoch === null && folderE === null) {
@@ -605,8 +607,8 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
       await (await ownDeletionModule()).observeOwnDeletions(deps, ownScan, scan.incomplete);
     }
     const deferPublish = async (refused: boolean): Promise<void> => {
-      const warnings = (seen.warnings = [...(seen.warnings ?? []), 'publish-blocked']);
-      (await firstModule()).deferred(logger, refused, first, facts, warnings);
+      warn('publish-blocked');
+      (await firstModule()).deferred(logger, refused, first, facts, seen.warnings ?? []);
     };
     const ruleAllows =
       canPublish({
@@ -984,7 +986,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
       if (retried.size > 0) hooks.onRemoteChanges(retried);
       if (parkedStats.released.length > 0) await (await import('./epochSwitch')).releaseCarried(deps, parkedStats.released);
       // Y-FIX-04 (§28) : lignes reportées mises de côté (parent remplacé, lien obligatoire) : visible, interdit « À jour », tant qu'elles attendent.
-      if (parkedStats.carryHeld > 0) seen.warnings = [...(seen.warnings ?? []), 'carry-held'];
+      if (parkedStats.carryHeld > 0) warn('carry-held');
       // Y-IOS-02 (point de contrôle 0.2.3, étape 4) : tout est lu jusqu'aux têtes et des opérations attendent encore une ligne qui manque :
       // un enregistrement a été sauté (curseur posé trop loin). Une reprise depuis l'instantané (fusion, rien n'est effacé) replace les
       // curseurs aux positions couvertes et relit les journaux ; une seule demande par époque, ensuite l'avertissement reste visible.
@@ -994,9 +996,9 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
       // reprise depuis l'instantané ne les compléterait pas, elle n'est demandée que pour les autres lignes manquantes.
       const rowsParked = await repos.sync.parkedCount(['missing-row']);
       const older = rowsParked > 0 ? await (await olderModule()).olderParked(deps) : 0;
-      if (allRead && older > 0) seen.warnings = [...(seen.warnings ?? []), 'older-device'];
+      if (allRead && older > 0) warn('older-device');
       const missingRow = rowsParked > older;
-      if (allRead && (missingRow || (await repos.sync.parkedCount(['missing-parent'])) > 0)) seen.warnings = [...(seen.warnings ?? []), 'received-unapplied'];
+      if (allRead && (missingRow || (await repos.sync.parkedCount(['missing-parent'])) > 0)) warn('received-unapplied');
       if (allRead && missingRow) {
         const tried = await readJson<{ epoch: EpochId }>(repos, META.parkedResume);
         if (tried?.epoch !== currentEpoch && !resumed) {
@@ -1013,9 +1015,9 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     // Persiste tant que l'utilisateur ne l'a pas acquitté (« Lancer une reprise complète » : `orphanTraceAck`, effacé avec la trace au cycle qui reprend).
     // La garde ne sert que jusqu'à la fin de la reprise qui suit l'abandon : ensuite les traces mémorisées sont vidées.
     if (resumed && allRead && (await repos.sync.getMeta(META.orphanTraces)) !== null) await writeJson(repos, META.orphanTraces, null);
-    if ((await repos.sync.getMeta(META.orphanTraceHit)) !== null) seen.warnings = [...(seen.warnings ?? []), 'received-unapplied'];
+    if ((await repos.sync.getMeta(META.orphanTraceHit)) !== null) warn('received-unapplied');
     // TRI-24 : des opérations reçues ont été refusées par la base locale et écartées : visible jusqu'à la reprise complète (jamais muet).
-    if ((await repos.sync.getMeta(META.applyRejected)) !== null && !(seen.warnings ?? []).includes('received-unapplied')) seen.warnings = [...(seen.warnings ?? []), 'received-unapplied'];
+    if ((await repos.sync.getMeta(META.applyRejected)) !== null && !(seen.warnings ?? []).includes('received-unapplied')) warn('received-unapplied');
     // Y-TECH-05 : compte rendu du changement d'époque non acquitté qui lève le bandeau (lignes rétablies, recréées, rattachées à « Sans projet »),
     // ou échec d'enregistrement du compte rendu : visible jusqu'à « J'ai vu » (remplace la dérivation de Y-FIX-04 depuis la notice).
     // Contre-revue 5 : le chargement du bloc peut lui-même échouer : journalisé, avertissement levé, jamais un cycle en échec.
@@ -1026,7 +1028,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
         return true;
       },
     );
-    if (carryRaised) seen.warnings = [...(seen.warnings ?? []), 'carry-report'];
+    if (carryRaised) warn('carry-report');
 
     // RESET-01 : remise à zéro reçue pendant la lecture (journal, instantané, changement d'époque) : effacement AVANT la publication, rien
     // d'antérieur ne repart de cet appareil.
@@ -1057,7 +1059,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     }
 
     // TRI-06 : (après la publication, pour le même cycle) des modifications locales trop grosses n'ont jamais été publiées : visible jusqu'à la reprise complète (jamais muet).
-    if ((await repos.sync.getMeta(META.publishDropped)) !== null) seen.warnings = [...(seen.warnings ?? []), 'publish-dropped'];
+    if ((await repos.sync.getMeta(META.publishDropped)) !== null) warn('publish-dropped');
 
     seen.stage = 'state';
 
