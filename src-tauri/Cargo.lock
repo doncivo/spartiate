@@ -4320,6 +4320,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-apple-intelligence",
  "tauri-plugin-autostart",
  "tauri-plugin-barcode-scanner",
  "tauri-plugin-biometric",
@@ -4899,6 +4900,15 @@ dependencies = [
  "serde_json",
  "tauri-utils",
  "walkdir",
+]
+
+[[package]]
+name = "tauri-plugin-apple-intelligence"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]

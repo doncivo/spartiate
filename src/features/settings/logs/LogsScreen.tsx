@@ -14,6 +14,7 @@ import { saveFile } from '../../app/saveFile';
 import { buildLogExport } from './logExport';
 import { readSyncReport, type SyncReport, type SyncReportUnavailable } from './syncReport';
 import { useLogJournal, useLogStatus } from './useLogJournal';
+import { AppleIntelligenceTestRow } from '../AppleIntelligenceTestRow';
 import { TimerTestRow } from '../TimerTestRow';
 import '../SettingsScreen.css';
 import './LogsScreen.css';
@@ -205,13 +206,14 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
             ))}
           </ol>
         )}
-        {/* ERGO-01b P5 (D-238) : outil de test déplacé de Plus › À propos vers les Logs (diagnostic), monté à la demande. */}
+        {/* ERGO-01b P5 (D-238) : outil de test déplacé de Plus › À propos vers les Logs (diagnostic), monté à la demande ; IOS-029b : essai Apple Intelligence. */}
         <Button variant="secondary" expanded={tools} onClick={() => setTools((open) => !open)}>
           {tLogs('toolsOpen')}
         </Button>
         {tools ? (
           <div className="ct-settings__card ct-flat">
             <TimerTestRow />
+            <AppleIntelligenceTestRow />
           </div>
         ) : null}
       </div>

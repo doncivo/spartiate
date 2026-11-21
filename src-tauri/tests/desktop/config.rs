@@ -655,7 +655,8 @@ fn apple_intelligence_probe_is_registered_in_the_minimal_ios_capability() {
         cargo_sections_of("tauri-plugin-apple-intelligence"),
         [(
             IOS_SECTION.to_owned(),
-            "tauri-plugin-apple-intelligence = { path = \"plugins/apple-intelligence\" }".to_owned()
+            "tauri-plugin-apple-intelligence = { path = \"plugins/apple-intelligence\" }"
+                .to_owned()
         )]
     );
 }
