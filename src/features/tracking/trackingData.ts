@@ -1,5 +1,5 @@
 import { addDays } from '../../domain/localDate';
-import { parseTrackingGoals, serializeTrackingGoals, type StepsDay, type TrackingGoals } from '../../domain/tracking';
+import { hrMaxOf, parseTrackingGoals, serializeTrackingGoals, type HrMax, type StepsDay, type TrackingGoals, type Zone2Session } from '../../domain/tracking';
 import type { LocalDate } from '../../domain/types';
 import type { AppContainer } from '../app/container';
 
@@ -38,3 +38,21 @@ export async function readStepsDays(container: AppContainer, today: LocalDate, d
 }
 
 export const isPhone = (container: AppContainer): boolean => container.platform.os === 'ios';
+
+export interface Zone2Read {
+  readonly hrMax: HrMax | null;
+  /** Séances cardio vivantes (les plus récentes, 200 au plus) ; null : lecture impossible. */
+  readonly sessions: readonly Zone2Session[] | null;
+}
+
+/** FC max (saisie, sinon année de naissance du profil) et séances cardio pour la zone 2. */
+export async function readZone2(container: AppContainer, goals: TrackingGoals, today: LocalDate): Promise<Zone2Read> {
+  const birthYear = await (async () => (await (await container.data.repos.profile()).get())?.birthYear ?? null)().catch(() => null);
+  const hrMax = hrMaxOf({ entered: goals.hrMax, birthYear, currentYear: Number(today.slice(0, 4)) });
+  try {
+    const rows = await (await container.data.repos.cardio()).list();
+    return { hrMax, sessions: rows.map((r) => ({ startedAt: r.startedAt, durationSec: r.durationSec, avgHr: r.avgHr })) };
+  } catch {
+    return { hrMax, sessions: null };
+  }
+}

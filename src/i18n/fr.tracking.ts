@@ -31,4 +31,16 @@ export const trackingFr = {
   stepsWeeksTitle: 'Pas par semaine',
   weekOf: 'Semaine du {date}',
   stepsWeekLine: 'moyenne {avg} pas · {n} j connus · {g} j à l’objectif',
+
+  zone2Title: 'Cardio en zone 2',
+  zone2HrMaxAge: 'FC max : {hr} bpm (220 − âge, {age} ans)',
+  zone2HrMaxEntered: 'FC max : {hr} bpm (saisie)',
+  zone2Range: 'Zone 2 : {low} à {high} bpm (60 à 70 % de la FC max)',
+  zone2Rule: 'Une séance cardio dont la FC moyenne est dans la zone compte pour toute sa durée.',
+  zone2WeekLine: '{min} min sur {goal} min',
+  zone2Reached: 'objectif atteint',
+  zone2WithoutHr: 'Séances sans FC moyenne, non comptées : {n}',
+  zone2NoHrMax: 'Renseigne ton année de naissance (Plus → Profil) ou ta FC max dans les objectifs pour calculer la zone 2.',
+  zone2ReadFailed: 'Lecture des séances cardio impossible.',
+  zone2Disclaimer: 'Repère d’entraînement, pas un avis médical.',
 } as const;

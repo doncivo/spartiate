@@ -1,11 +1,12 @@
 import { useEffect, useId, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { parseGoalText, stepsWeeks, TRACKING_DEFAULTS, TRACKING_GOAL_BOUNDS, type GoalField, type GoalTextIssue, type StepsWeek, type TrackingGoals } from '../../domain/tracking';
+import { parseGoalText, stepsWeeks, TRACKING_DEFAULTS, TRACKING_GOAL_BOUNDS, zone2Range, zone2Weeks, type GoalField, type GoalTextIssue, type StepsWeek, type TrackingGoals } from '../../domain/tracking';
+import { detectTimeZone } from '../../platform/timeZone';
 import { formatDayMonthYear } from '../../i18n/format';
 import { formatCount, tTracking } from '../../i18n/trackingText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
-import { isPhone, loadGoals, readStepsDays, saveGoals, type StepsRead } from './trackingData';
+import { isPhone, loadGoals, readStepsDays, readZone2, saveGoals, type StepsRead, type Zone2Read } from './trackingData';
 import './Tracking.css';
 
 /**
@@ -142,7 +143,50 @@ function StepsWeeks({ phone, read, goal, today }: { readonly phone: boolean; rea
   );
 }
 
-type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean };
+function Zone2({ read, goal, today }: { readonly read: Zone2Read; readonly goal: number; readonly today: string }) {
+  const id = useId();
+  const { hrMax, sessions } = read;
+  const range = hrMax === null ? null : zone2Range(hrMax.value);
+  const weeks = range === null || sessions === null ? [] : zone2Weeks(sessions, range, today, detectTimeZone() ?? 'Europe/Paris', WEEKS);
+  return (
+    <section className="ct-tracking__block" aria-labelledby={`${id}-zone2`}>
+      <h3 id={`${id}-zone2`} className="ct-tracking__title">
+        {tTracking('zone2Title')}
+      </h3>
+      {hrMax === null || range === null ? (
+        <>
+          <p className="ct-tracking__value">{tTracking('missing')}</p>
+          <p className="ct-today__muted">{tTracking('zone2NoHrMax')}</p>
+        </>
+      ) : (
+        <>
+          <p className="ct-tracking__value">{hrMax.source === 'entered' ? tTracking('zone2HrMaxEntered', { hr: hrMax.value }) : tTracking('zone2HrMaxAge', { hr: hrMax.value, age: hrMax.age ?? '' })}</p>
+          <p className="ct-tracking__value">{tTracking('zone2Range', { low: range.low, high: range.high })}</p>
+          <p className="ct-today__muted">{tTracking('zone2Rule')}</p>
+          {sessions === null ? (
+            <p className="ct-today__muted">{tTracking('zone2ReadFailed')}</p>
+          ) : (
+            <ul className="ct-tracking__list">
+              {weeks.map((w) => (
+                <li key={w.weekStart} className="ct-tracking__item">
+                  <span>{tTracking('weekOf', { date: formatDayMonthYear(w.weekStart) })}</span>
+                  <span className="ct-tracking__value">
+                    {tTracking('zone2WeekLine', { min: w.minutes, goal })}
+                    {w.minutes >= goal ? ` · ${tTracking('zone2Reached')}` : ''}
+                  </span>
+                  {w.sessionsWithoutHr > 0 ? <span className="ct-today__muted">{tTracking('zone2WithoutHr', { n: w.sessionsWithoutHr })}</span> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+      <p className="ct-today__muted">{tTracking('zone2Disclaimer')}</p>
+    </section>
+  );
+}
+
+type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean; readonly zone2: Zone2Read };
 
 export function TrackingProgress() {
   const container = useAppContainer();
@@ -156,7 +200,8 @@ export function TrackingProgress() {
       const goals = await loadGoals(container).catch(() => TRACKING_DEFAULTS);
       const phone = isPhone(container);
       const steps: StepsRead = phone ? await readStepsDays(container, today, WEEKS * 7) : { days: [], everRead: false };
-      return { goals, steps, phone };
+      const zone2 = await readZone2(container, goals, today);
+      return { goals, steps, phone, zone2 };
     })().then((r) => {
       if (live) setLoad({ status: 'ready', ...r });
     });
@@ -179,6 +224,7 @@ export function TrackingProgress() {
         <>
           <GoalsForm goals={load.goals} onSaved={() => setEpoch((n) => n + 1)} />
           <StepsWeeks phone={load.phone} read={load.steps} goal={load.goals.stepsDaily} today={today} />
+          <Zone2 read={load.zone2} goal={load.goals.zone2WeeklyMin} today={today} />
         </>
       )}
     </section>
