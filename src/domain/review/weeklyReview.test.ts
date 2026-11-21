@@ -245,6 +245,12 @@ describe('BILAN-029 : donnée absente = « pas assez de données », jamais 0 (C
     expect(byTheme(old.sentences, 'weight').kind).toBe('insufficient');
   });
 
+  it('revue : semaine sans pesée, dernière pesée la veille du lundi : tendance seule, jamais une variation de 0 kg inventée', () => {
+    const eve = weeklyReview({ ...FULL, weighIns: [{ date: d('2026-11-01'), kg: 81 }, { date: d('2026-11-08'), kg: 80 }] }, WEEK);
+    expect(byTheme(eve.sentences, 'weight').kind).toBe('weightTrend');
+    expect(byTheme(eve.sentences, 'weight').sources.some((x) => x.fact === 'weight.rateKg')).toBe(false);
+  });
+
   it('nutrition sans cible : jours et moyenne ; aucun jour complet : insuffisant', () => {
     const noTarget = weeklyReview({ ...FULL, targetKcal: () => null }, WEEK);
     expect(byTheme(noTarget.sentences, 'nutrition')).toMatchObject({ kind: 'nutritionDays' });
