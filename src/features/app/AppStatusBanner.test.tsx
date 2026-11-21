@@ -4,7 +4,7 @@ import { startNetworkStatus, useAppStatusStore } from './appStatus';
 import { AppStatusBanner } from './AppStatusBanner';
 
 const set = useAppStatusStore.getState().setStatus;
-const KINDS = ['offline', 'syncing', 'waitingIcloud', 'calendarDisconnected', 'syncTrouble', 'updateRequired', 'signingExpiry'] as const;
+const KINDS = ['offline', 'syncing', 'waitingIcloud', 'syncTrouble', 'updateRequired', 'signingExpiry'] as const;
 
 describe('bandeau d’état de l’app (A-09)', () => {
   afterEach(() => {
@@ -24,7 +24,6 @@ describe('bandeau d’état de l’app (A-09)', () => {
       ['offline', {}, 'Hors ligne'],
       ['syncing', {}, 'Synchro en cours'],
       ['waitingIcloud', {}, 'En attente d’iCloud'],
-      ['calendarDisconnected', { detail: 'Google Agenda' }, 'Agenda Google Agenda déconnecté'],
     ] as const;
     for (const [kind, source, text] of cases) {
       for (const other of KINDS) set(other, null);
@@ -36,7 +35,7 @@ describe('bandeau d’état de l’app (A-09)', () => {
   it('I-02 (M0) : « signingExpiry » passe devant tous les autres états ; texte générique selon detail, ou message composé', () => {
     render(<AppStatusBanner />);
     act(() => {
-      set('calendarDisconnected', { detail: 'Perso' });
+      set('offline', {});
       set('signingExpiry', { detail: 'soon' });
     });
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire bientôt : actualise-la dans SideStore');
@@ -45,7 +44,7 @@ describe('bandeau d’état de l’app (A-09)', () => {
     act(() => set('signingExpiry', { detail: 'soon', message: 'Spartiate expire dans 5 h' }));
     expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Spartiate expire dans 5 h');
     act(() => set('signingExpiry', null));
-    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Agenda Perso déconnecté');
+    expect(document.querySelector('.ct-status-banner')).toHaveTextContent('Hors ligne');
   });
 
   it('revue point 5 : la région est toujours montée, polie et atomique', () => {
@@ -128,18 +127,10 @@ describe('bandeau d’état de l’app (A-09)', () => {
     });
     expect(document.querySelectorAll('.ct-status-banner:not(.ct-visually-hidden)')).toHaveLength(1);
     expect(document.querySelector('.ct-status-banner:not(.ct-visually-hidden)')).toHaveTextContent('Synchro en cours');
-    act(() => set('calendarDisconnected', { detail: 'Perso', onAction: () => undefined }));
-    expect(document.querySelector('.ct-status-banner:not(.ct-visually-hidden)')).toHaveTextContent('Agenda Perso déconnecté');
-    act(() => set('calendarDisconnected', null));
+    act(() => set('signingExpiry', { detail: 'soon' }));
+    expect(document.querySelector('.ct-status-banner:not(.ct-visually-hidden)')).toHaveTextContent('Spartiate expire bientôt');
+    act(() => set('signingExpiry', null));
     expect(document.querySelector('.ct-status-banner:not(.ct-visually-hidden)')).toHaveTextContent('Synchro en cours');
-  });
-
-  it('l’alerte d’agenda propose « Reconnecter » qui appelle l’action de sa source (critère 6)', () => {
-    const onAction = vi.fn();
-    render(<AppStatusBanner />);
-    act(() => set('calendarDisconnected', { detail: 'Google', onAction }));
-    fireEvent.click(screen.getByRole('button', { name: 'Reconnecter' }));
-    expect(onAction).toHaveBeenCalledTimes(1);
   });
 
   it('réseau : « Hors ligne » quand l’appareil perd le réseau, retiré au retour (critères 3, 4)', () => {
