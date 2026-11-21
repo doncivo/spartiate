@@ -2,6 +2,22 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.28.1
+
+Aucune migration : ta base reste au schéma 20. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.
+
+- **Séance active** : remplacer un exercice (charge de départ estimée et dite, avec sa règle), « Sauter » le renvoie en fin de séance, « Retirer, ne plus proposer », vignettes des exercices, série « Échec », calcul des disques, fatigue déclarée au démarrage (« Fatigué » : aucune hausse ce jour-là), image du résumé à partager, faite sur l'appareil, sans donnée corporelle.
+- **Progression** : les exercices au poids du corps montent en répétitions jusqu'au haut de la plage, puis prennent le plus petit lest disponible ; les exercices chronométrés (gainage…) montent en secondes. Depuis la fiche d'un exercice, « Revenir à la prescription précédente » remet la charge d'avant la dernière hausse, après confirmation, sans rien effacer.
+- **Bibliothèque** : filtres par muscle et par mouvement, combinables avec les autres.
+- **Progrès** : volume par muscle et par semaine sur 8 semaines, série de semaines tenues et calendrier du mois (aussi en carte sur Aujourd'hui), adhérence sur 4 semaines, tendances de récupération sur 30 jours ; la zone cible s'affiche sous le cadran Exertion.
+- **Nutrition** : les jours sans saisie de la semaine sont estimés et toujours dits « estimés », avec leur marge d'incertitude (jamais enregistrés comme des mesures) ; « Assiette » dans la recherche du Journal pour ajouter plusieurs aliments d'un coup.
+- **Blessures** : Profil › Blessures pour déclarer une gêne (muscle, mouvements douloureux) ; Spartiate évite ces mouvements dans ses propositions, sans remplacer un avis médical. Tous les 14 jours, une carte demande où en est la gêne (sur l'iPhone, un rappel neutre à 9 h). Les gênes restent sur l'appareil où tu les saisis.
+- **PC** : clic droit (ou Maj+F10) sur une entrée du journal, une séance de l'historique, une routine ou un exercice ; double-clic pour ouvrir ; barre latérale repliable.
+- **iPhone** : la taille du texte suit le réglage « Taille du texte » d'iOS (le texte de base passe de 16 à 17 px au réglage par défaut).
+- **Synchronisation** : quand une ligne créée par un appareil resté à une version précédente est gardée de côté, Spartiate retient l'appareil qui l'a écrite et nomme le bon appareil à mettre à jour.
+
+Après la mise à jour : déclare une gêne fictive dans Profil › Blessures puis marque-la « guérie » ; règle « Taille du texte » sur « Très grand » sur l'iPhone et vérifie qu'aucun écran ne déborde ; sur le PC, essaie le clic droit dans le journal et le repli de la barre latérale.
+
 ## 0.28.0
 
 Aucune migration : ta base reste au schéma 20. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.

@@ -288,6 +288,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | à trancher par Ali |
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.28.x) |
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.28.x) |
+| BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart proposé, à trancher par Ali |
 
 ## 3. Audit Codex 0.26.0
 
@@ -347,7 +348,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 11.5 a | PRD § 11.5 | absent — aberrantes signalées avant enregistrement (C-005) | à faire (lot 0.28.0) |
 | § 11.5 b | PRD § 11.5 | absent — retour à une prescription antérieure (C-189) | fait (MOTEUR-0281b, D-386) |
 | § 11.6 a | PRD § 11.6 | partiel — fixtures et propriétés : nominal 8 séances, changement de salle absents (C-169) | à faire (lot 0.28.0) |
-| § 11.6 b | PRD § 11.6 | absent — couverture training ≥ 90 % (C-170) | à faire (lot 0.28.0) |
+| § 11.6 b | PRD § 11.6 | absent — couverture training ≥ 90 % (C-170) | fait (TESTS-FIGES, D-363 : seuil 90 % sur src/domain/training dans vitest.config.ts) |
 | § 12.1-1 | PRD § 12.1 | partiel — Recovery Split ≥ 80 % (C-009 : 50 %) | à faire (lot 0.28.0) |
 | § 12.1-4 | PRD § 12.1 | partiel — budget de 45 s, plages 5–10 / 8–15 (C-012, C-013) | à faire (lot 0.28.0) |
 | § 12.3 | PRD § 12.3 | partiel — modes Guidé / Libre / Maison : Variable, Fixe, Statique sans effet (D-73 (1)) | à faire (lot 0.28.0) |
@@ -426,7 +427,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 22 b | PRD § 22 | partiel — journaux sans donnée corporelle (C-140, C-151, C-123) | à faire (lot 0.28.0) |
 | § 22 c | PRD § 22 | partiel — `cargo audit` présent, `npm audit` absent (C-175) | à faire (lot 0.28.0) |
 | § 22 d | PRD § 22 | partiel — mise à jour signée (C-166, C-172, C-179) | à faire (lot 0.28.0) |
-| § 23.1 a | PRD § 23.1 | absent — couverture de 90 % sur training (C-170) | à faire (lot 0.28.0) |
+| § 23.1 a | PRD § 23.1 | absent — couverture de 90 % sur training (C-170) | fait (TESTS-FIGES, D-363) |
 | § 23.1 b | PRD § 23.1 | partiel — vecteurs des § 11 à 16 (C-168, C-169) | à faire (lot 0.28.0) |
 | § 23.1 c | PRD § 23.1 | partiel — parité base Wasm / plugin natif (H-18 UNVERIFIED) | à faire (lot 0.28.0) |
 | § 23.1 d | PRD § 23.1 | partiel — e2e : séance au clavier, journal, export / import (C-193) | à faire (lot 0.28.0) |
