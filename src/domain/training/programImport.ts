@@ -13,8 +13,8 @@ import type { RoutineDaySpec, RoutineSpec } from './types';
 // Résultat de l'analyse
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-export type ImportRejectReason = 'no-scheme' | 'no-name' | 'out-of-range' | 'orphan-rir' | 'json-invalid' | 'json-field';
-export const IMPORT_REJECT_REASONS: readonly ImportRejectReason[] = ['no-scheme', 'no-name', 'out-of-range', 'orphan-rir', 'json-invalid', 'json-field'];
+export type ImportRejectReason = 'no-scheme' | 'no-name' | 'out-of-range' | 'orphan-rir' | 'json-invalid' | 'json-field' | 'too-long';
+export const IMPORT_REJECT_REASONS: readonly ImportRejectReason[] = ['no-scheme', 'no-name', 'out-of-range', 'orphan-rir', 'json-invalid', 'json-field', 'too-long'];
 
 /** `unread` : partie de ligne non lue (`text`) ; `seconds` : répétitions lues en secondes ; `rir-range` : plage de RIR, la valeur haute retenue. */
 export type ImportNoteCode = 'unread' | 'seconds' | 'rir-range';
@@ -60,6 +60,16 @@ export interface ProgramImport {
 }
 
 const NAME_MAX = 120;
+/** Revue : au-delà, une ligne est refusée « trop longue » sans être analysée (les expressions sont quadratiques sur de longues suites d'espaces). */
+const LINE_MAX = 500;
+/** Revue : un bloc JSON très profond fait lever `JSON.stringify` ; le texte montré est alors coupé, jamais une exception. */
+function safeJson(value: unknown): string {
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return '…';
+  }
+}
 /** Longueur d'une ligne rejetée montrée (au-delà, coupée). */
 const SHOWN_MAX = 300;
 
@@ -105,13 +115,13 @@ function parseJson(text: string): ProgramImport {
     const session = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : null;
     const exercisesRaw = session?.['exercises'];
     if (!session || !Array.isArray(exercisesRaw)) {
-      rejected.push({ line: null, text: shown(JSON.stringify(raw) ?? String(raw)), reason: 'json-field' });
+      rejected.push({ line: null, text: shown(safeJson(raw)), reason: 'json-field' });
       continue;
     }
     const sessionName = typeof session['name'] === 'string' && session['name'].trim() !== '' ? session['name'].trim().slice(0, NAME_MAX) : null;
     const exercises: ImportedExercise[] = [];
     for (const rawExercise of exercisesRaw as unknown[]) {
-      const shownText = shown(sessionName === null ? (JSON.stringify(rawExercise) ?? String(rawExercise)) : `${sessionName} : ${JSON.stringify(rawExercise) ?? String(rawExercise)}`);
+      const shownText = shown(sessionName === null ? safeJson(rawExercise) : `${sessionName} : ${safeJson(rawExercise)}`);
       const e = typeof rawExercise === 'object' && rawExercise !== null && !Array.isArray(rawExercise) ? (rawExercise as Record<string, unknown>) : null;
       const exName = e && typeof e['name'] === 'string' ? e['name'].trim() : '';
       const sets = e?.['sets'];
@@ -258,7 +268,7 @@ interface MutableSession {
 
 function parseLines(text: string): ProgramImport {
   const raws = text.split(/\r?\n/);
-  const kinds = raws.map(classify);
+  const kinds = raws.map((raw): LineKind | null => (raw.length > LINE_MAX ? null : classify(raw)));
   const sessions: MutableSession[] = [];
   const rejected: ImportRejectedLine[] = [];
   let name: string | null = null;
@@ -282,7 +292,8 @@ function parseLines(text: string): ProgramImport {
     // Premier titre suivi aussitôt d'un autre titre : nom de la routine.
     const following = nextContent(index);
     const nextKind = following < 0 ? null : kinds[following];
-    if (sessions.length === 0 && name === null && nextKind?.kind === 'title') {
+    // Revue : un mot-clé de séance (« Jour 1 ») reste une séance, même vide (jour de repos) ; seul un autre titre nomme la routine.
+    if (sessions.length === 0 && name === null && nextKind?.kind === 'title' && !TITLE_KEYWORD.test(title)) {
       name = title;
       return;
     }
@@ -301,6 +312,11 @@ function parseLines(text: string): ProgramImport {
 
   for (let i = 0; i < kinds.length; i += 1) {
     const k = kinds[i];
+    if (k === null) {
+      reject(i, 'too-long');
+      cursor.last = null;
+      continue;
+    }
     if (!k || k.kind === 'blank') continue;
     if (k.kind === 'title') {
       openTitle(k.name, i);

@@ -73,6 +73,7 @@ export const programImportFr = {
   'reason_orphan-rir': 'RIR ou repos sans exercice juste au-dessus (ou déjà donné)',
   'reason_json-invalid': 'bloc JSON illisible (accolade, guillemet ou virgule manquant)',
   'reason_json-field': 'champ manquant ou de mauvais type (name, sets, repsMin, repsMax, rir)',
+  'reason_too-long': 'ligne trop longue (plus de 500 caractères), non analysée',
   nothing: 'Aucun exercice reconnu : rien à créer.',
   editText: 'Modifier le texte',
   create: 'Créer la routine',
@@ -83,4 +84,5 @@ export const programImportFr = {
   blockedName: 'Donne un nom à la routine.',
   created: 'Programme importé : routine « {name} » créée.',
   createError: 'La routine n’a pas pu être créée. Rien n’a été enregistré.',
+  analyzeError: 'Le texte n’a pas pu être analysé. Rien n’a été enregistré.',
 } as const;

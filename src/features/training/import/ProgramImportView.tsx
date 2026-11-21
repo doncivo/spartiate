@@ -43,6 +43,9 @@ function schemeText(exercise: ImportedExercise): string {
   return tImport(exercise.notes.some((n) => n.code === 'seconds') ? 'schemeSeconds' : 'scheme', { sets: exercise.sets, reps });
 }
 
+/** Revue : texte collé borné (un programme tient en quelques milliers de caractères). */
+const TEXT_MAX = 50_000;
+
 export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }: ProgramImportViewProps) {
   const [text, setText] = useState('');
   const [parsed, setParsed] = useState<ProgramImport | null>(null);
@@ -52,6 +55,8 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Revue : la routine écrite, la création est fermée pour de bon (une ouverture de l'éditeur en échec ne la rouvre jamais).
+  const [written, setWritten] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const previewHeading = useRef<HTMLHeadingElement>(null);
 
@@ -77,7 +82,14 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
       setMessage(tImport('emptyText'));
       return;
     }
-    const result = parseProgramText(text);
+    let result: ReturnType<typeof parseProgramText>;
+    try {
+      result = parseProgramText(text);
+    } catch {
+      // Revue : jamais un échec silencieux ; l'analyseur ne lève plus, ce repli reste au cas où.
+      setMessage(tImport('analyzeError'));
+      return;
+    }
     const candidates = data.exercises.map((e) => ({ id: e.id, nameFr: e.nameFr, aliasesEn: e.aliasesEn }));
     const initial = new Map<string, Pick>();
     result.sessions.forEach((session, s) =>
@@ -125,7 +137,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
   const blocked = unresolved > 0 ? tPlural(tImport, unresolved, 'blockedOne', 'blockedMany') : active.length === 0 ? tImport('blockedEmpty') : name.trim() === '' ? tImport('blockedName') : null;
 
   const create = async (): Promise<void> => {
-    if (!parsed || blocked !== null) return;
+    if (!parsed || blocked !== null || written) return;
     setBusy(true);
     let created: { readonly id: string; readonly message: string };
     setError(null);
@@ -150,6 +162,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
       };
       await access.transaction(async (repos) => (await repos.trainingRoutines()).create(routine));
       created = { id: routine.id, message: tImport('created', { name: routineName }) };
+      setWritten(true);
     } catch {
       setError(tImport('createError'));
       setBusy(false);
@@ -190,7 +203,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
           <p className="ct-training__muted">{tImport('guideHint')}</p>
           <label className="ct-training__field">
             <span className="ct-training__label">{tImport('textLabel')}</span>
-            <textarea className="ct-training__input ct-import__text" rows={12} value={text} placeholder={tImport('textPlaceholder')} spellCheck={false} onChange={(e) => setText(e.target.value)} />
+            <textarea className="ct-training__input ct-import__text" rows={12} value={text} placeholder={tImport('textPlaceholder')} spellCheck={false} maxLength={TEXT_MAX} onChange={(e) => setText(e.target.value)} />
           </label>
           <PhotoReader
             {...(ocr ? { open: ocr } : {})}
@@ -265,7 +278,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
               {tImport('editText')}
             </Button>
             {exerciseCount > 0 && (
-              <Button onClick={() => void create()} disabled={busy || blocked !== null}>
+              <Button onClick={() => void create()} disabled={busy || written || blocked !== null}>
                 {busy ? tImport('creating') : tImport('create')}
               </Button>
             )}
