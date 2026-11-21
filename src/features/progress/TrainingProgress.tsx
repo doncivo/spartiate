@@ -1,7 +1,20 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { DEFAULT_PROGRESS_CONFIG } from '../../domain/training/config';
-import { adherence, constancy, monthCalendar, trailingWeeks, weeklyMuscleVolume, type Adherence, type Constancy, type MonthCalendar, type WeeklyVolume } from '../../domain/training/progressStats';
+import {
+  adherence,
+  constancy,
+  monthCalendar,
+  prescriptionAdherence,
+  trailingWeeks,
+  volumeRangeStatus,
+  weeklyMuscleVolume,
+  type Adherence,
+  type Constancy,
+  type MonthCalendar,
+  type PrescriptionAdherence,
+  type WeeklyVolume,
+} from '../../domain/training/progressStats';
 import type { MuscleWeight } from '../../domain/training/types';
 import type { IsoDateTime, LocalDate } from '../../domain/types';
 import type { FirstWeekday } from '../../domain/week';
@@ -28,6 +41,8 @@ interface Loaded {
   readonly constancy: ConstancyData;
   readonly streak: Constancy;
   readonly adherence: Adherence | null;
+  /** BL-115 (D-449) : prescriptions respectées, `null` sans série proposée. */
+  readonly prescription: PrescriptionAdherence | null;
   readonly calendar: MonthCalendar;
   readonly firstWeekday: FirstWeekday;
 }
@@ -55,14 +70,17 @@ async function load(access: ReturnType<typeof useAppContainer>['data'], today: L
   const muscles = new Map<string, readonly MuscleWeight[]>();
   for (const x of [...catalog, ...customs]) muscles.set(x.id, x.muscles.map((m) => ({ id: m.id, weight: m.weight })));
   const names = new Map((musclesModule.default as { readonly muscles: readonly { readonly id: string; readonly nameFr: string }[] }).muscles.map((m) => [m.id, m.nameFr]));
+  const closed = workouts.map((w) => ({ day: localDayOf(Date.parse(w.startedAt)), sets: w.sets }));
+  const prescription = prescriptionAdherence({ workouts: closed, today, firstWeekday: first });
   const volume = weeklyMuscleVolume({
-    workouts: workouts.map((w) => ({ day: localDayOf(Date.parse(w.startedAt)), sets: w.sets })),
+    workouts: closed,
     musclesOf: (id) => muscles.get(id) ?? null,
     today,
     firstWeekday: first,
   });
   return {
     volume,
+    prescription,
     muscleName: (id) => names.get(id) ?? id,
     constancy: constancyData,
     streak: constancy({ ...constancyData, today, firstWeekday: first }),
@@ -148,7 +166,26 @@ function ConstancyCard({ constancy: data, streak, calendar, firstWeekday }: Load
   );
 }
 
-function AdherenceCard({ adherence: a, constancy: data }: Pick<Loaded, 'adherence' | 'constancy'>) {
+function PrescriptionLines({ prescription: p }: Pick<Loaded, 'prescription'>) {
+  return (
+    <>
+      <h3 className="ct-today__muted ct-tprogress__lead">{tTrainingProgress('prescriptionTitle')}</h3>
+      {p === null ? (
+        <p className="ct-today__text">{tTrainingProgress('prescriptionNone')}</p>
+      ) : (
+        <>
+          <p className="ct-today__text">{tTrainingProgress('prescriptionSets', { percent: p.setsPercent, done: p.setsDone, proposed: p.setsProposed })}</p>
+          <p className="ct-today__text">
+            {p.loadsPercent === null ? tTrainingProgress('prescriptionNoLoads') : tTrainingProgress('prescriptionLoads', { percent: p.loadsPercent, held: p.loadsHeld, proposed: p.loadsProposed })}
+          </p>
+          <p className="ct-today__muted ct-tprogress__lead">{tTrainingProgress('prescriptionRule')}</p>
+        </>
+      )}
+    </>
+  );
+}
+
+function AdherenceCard({ adherence: a, constancy: data, prescription }: Pick<Loaded, 'adherence' | 'constancy' | 'prescription'>) {
   return (
     <section className="ct-today__card ct-tprogress ct-flat" aria-labelledby="ct-tprogress-adherence">
       <h2 id="ct-tprogress-adherence" className="ct-today__eyebrow ct-section-title">
@@ -165,8 +202,18 @@ function AdherenceCard({ adherence: a, constancy: data }: Pick<Loaded, 'adherenc
       ) : (
         <p className="ct-today__text">{tTrainingProgress(data.target === null ? 'adherenceNone' : 'adherenceWait')}</p>
       )}
+      <PrescriptionLines prescription={prescription} />
     </section>
   );
+}
+
+const RANGE_KEY = { below: 'volumeRangeBelow', within: 'volumeRangeWithin', above: 'volumeRangeAbove' } as const;
+
+/** BL-114 (D-448, D-455) : position de la dernière semaine complète dans la plage cible, dite en toutes lettres (jamais par la couleur seule). */
+function RangeLine({ muscle }: { readonly muscle: WeeklyVolume['muscles'][number] }) {
+  const range = volumeRangeStatus(muscle);
+  if (range === null) return null;
+  return <span className={`ct-tprogress__range ct-tprogress__range--${range.status}`}>{tTrainingProgress(RANGE_KEY[range.status], { n: formatTenth(range.sets) })}</span>;
 }
 
 function Volume({ volume, muscleName }: Pick<Loaded, 'volume' | 'muscleName'>) {
@@ -192,13 +239,14 @@ function Volume({ volume, muscleName }: Pick<Loaded, 'volume' | 'muscleName'>) {
                 </span>
                 <VolumeBars perWeek={m.perWeek} label={tTrainingProgress('volumeChart', { muscle: name, values })} />
                 <span className="ct-tprogress__value">{tTrainingProgress('volumeLine', { n: formatTenth(m.perWeek.at(-1) ?? 0), mean: formatTenth(m.total / weeks), weeks })}</span>
+                <RangeLine muscle={m} />
               </li>
             );
           })}
         </ul>
       )}
       {volume.unknownSets > 0 ? <p className="ct-today__muted">{tPlural(tTrainingProgress, volume.unknownSets, 'volumeUnknownOne', 'volumeUnknown')}</p> : null}
-      <p className="ct-today__muted ct-tprogress__foot">{tTrainingProgress('volumeNoRange')}</p>
+      <p className="ct-today__muted ct-tprogress__foot">{tTrainingProgress('volumeRangeRule', { min: DEFAULT_PROGRESS_CONFIG.volumeRange.min, max: DEFAULT_PROGRESS_CONFIG.volumeRange.max })}</p>
     </section>
   );
 }
@@ -255,7 +303,7 @@ export function TrainingProgress({ firstWeekday = 'monday' }: { readonly firstWe
   return (
     <>
       <ConstancyCard {...state} />
-      <AdherenceCard adherence={state.adherence} constancy={state.constancy} />
+      <AdherenceCard adherence={state.adherence} constancy={state.constancy} prescription={state.prescription} />
       <Volume volume={state.volume} muscleName={state.muscleName} />
     </>
   );

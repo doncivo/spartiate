@@ -52,6 +52,9 @@ describe('Progrès › Adhérence', () => {
     mount();
     const card = await screen.findByRole('region', { name: tTrainingProgress('adherenceTitle') });
     expect(within(card).getByText(tTrainingProgress('adherenceNone'))).toBeInTheDocument();
+    // BL-115 (D-449) : seconde mesure, prescriptions respectées ; sans série proposée, rien n'est mesuré (jamais 0 %).
+    expect(within(card).getByText(tTrainingProgress('prescriptionTitle'))).toBeInTheDocument();
+    expect(within(card).getByText(tTrainingProgress('prescriptionNone'))).toBeInTheDocument();
   });
 
   it('programme de 2 jours depuis le 19/10 : 2 + 1 + 2 + 2 sur 8 prévues → 88 %, règle dite', async () => {

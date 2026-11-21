@@ -39,7 +39,6 @@ const set = (over: Partial<PrescribedSet>): PrescribedSet => ({
   done: true,
   targetRepsMin: 8,
   targetLoadKg: 60,
-  targetDurationSec: null,
   loadKg: 60,
   ...over,
 });
@@ -74,8 +73,8 @@ describe('prescriptionAdherence (BL-115, D-449, D-456)', () => {
     expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, loadsHeld: 1, loadsProposed: 1, loadsPercent: 100, weeks: 4 });
   });
 
-  it('série chronométrée proposée (durée cible) : comptée dans les séries, pas dans les charges', () => {
-    const workouts = [{ day: d('2026-11-12'), sets: [set({ setKind: 'timed', targetRepsMin: null, targetLoadKg: null, targetDurationSec: 45, loadKg: null })] }];
+  it('série chronométrée proposée (durée cible dans targetRepsMin) : comptée dans les séries, pas dans les charges', () => {
+    const workouts = [{ day: d('2026-11-12'), sets: [set({ setKind: 'timed', targetRepsMin: 45, targetLoadKg: null, loadKg: null })] }];
     expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, loadsHeld: 0, loadsProposed: 0, loadsPercent: null, weeks: 4 });
   });
 
