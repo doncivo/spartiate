@@ -190,7 +190,10 @@ function weightSentence(data: ReviewData, end: LocalDate): ReviewSentence {
   const kg = reviewTrendKg(trend, end);
   if (kg === null) return insufficient('weight');
   const trendSource: ReviewSource = { fact: 'weight.trendKg', value: tenth(kg) };
-  const rate = reviewRateKg(trend, end);
+  // Revue : les deux fenêtres de `reviewRateKg` (copie de weeklyRate.ts) se recouvrent la veille de la semaine ; une même pesée aux deux
+  // extrémités donnerait une variation de 0 kg inventée : variation citée seulement si les extrémités sont deux points distincts.
+  const distinct = recentPoint(trend, end)?.date !== recentPoint(trend, addDays(end, -7))?.date;
+  const rate = distinct ? reviewRateKg(trend, end) : null;
   if (rate === null) return { theme: 'weight', kind: 'weightTrend', sources: [trendSource] };
   return { theme: 'weight', kind: 'weightTrendRate', sources: [trendSource, { fact: 'weight.rateKg', value: rate }] };
 }
