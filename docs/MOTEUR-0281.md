@@ -137,7 +137,7 @@ de 0281a).
 | 0281b | 8021faec | 7c3a6eb8 |
 | 0281c | 78c0bfeb | 0df79a86 |
 
-Puis fusion de `origin/main` (SESS-01) et passe qa-test (commit de fusion et commit QA de la branche). Vérifications locales : `tsc`,
+Puis fusion de `origin/main` (SESS-01) : a3e4ea50 ; passe qa-test et bundle : 1cbd835e (1 296 tests verts sur les modules touchés). Vérifications locales : `tsc`,
 eslint sur tous les fichiers touchés, Vitest des modules training, today, i18n et du repository de progression ; e2e et suite complète
 en CI. Bundle de départ : voir la mesure ci-dessous.
 
