@@ -6,6 +6,9 @@
 export const trainingMediaFr = {
   mediaAlt: 'Illustration : {name}',
   mediaUnavailable: 'Illustration indisponible',
+  /** MEDIA-03 (D-413) : pictogramme dessiné pour le projet, mention discrète pour ne pas le confondre avec une photo. */
+  pictogramAlt: 'Pictogramme : {name}, position de départ puis position d’arrivée',
+  pictogramLabel: 'pictogramme',
   attributionEverkinetic: 'Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0',
   /** MEDIA-02 (D-302) : image adaptée (réduite, niveaux de gris), modification signalée comme l'exige CC BY-SA 4.0, 3(a)(1)(B). */
   attributionEverkineticWeb:

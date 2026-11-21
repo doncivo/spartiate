@@ -273,11 +273,9 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
   const hasInstructions = exercise.instructions.setup !== '' || exercise.instructions.execution !== '' || exercise.instructions.mistakes.length > 0;
   const instructions = (
     <>
-      {exercise.media !== null && (
-        <Suspense fallback={null}>
-          <ExerciseMedia key={exercise.id} exercise={exercise} />
-        </Suspense>
-      )}
+      <Suspense fallback={null}>
+        <ExerciseMedia key={exercise.id} exercise={exercise} />
+      </Suspense>
       {hasInstructions ? (
         <section className="ct-sheet__section">
           <SectionTitle level={3}>{tTraining('instructions')}</SectionTitle>
