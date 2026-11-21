@@ -13,12 +13,14 @@ function viewport(width: number): void {
   }));
 }
 
+const MENU_LABEL = 'Actions de la ligne';
+
 function Row(props: { items: readonly ContextMenuItem[]; onActivate?: () => void }) {
   return (
-    <ContextMenuZone items={props.items} menuLabel="Actions de la ligne" {...(props.onActivate ? { onActivate: props.onActivate } : {})}>
+    <ContextMenuZone items={props.items} menuLabel={MENU_LABEL} {...(props.onActivate ? { onActivate: props.onActivate } : {})}>
       {(bind) => (
         <button type="button" data-testid="row" {...bind}>
-          Ligne
+          {MENU_LABEL}
         </button>
       )}
     </ContextMenuZone>

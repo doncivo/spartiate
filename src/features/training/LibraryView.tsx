@@ -23,6 +23,7 @@ import { RepositoryError } from '../../db/repositories/common';
 import { formatNumber, formatRest, parseNumber, tTraining } from '../../i18n/trainingText';
 import type { IsoDateTime } from '../../domain/types';
 import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, useLayout } from '../../ui';
+import { ContextMenuZone } from '../../ui/ContextMenu';
 import { useAppContainer } from '../app/AppContainerContext';
 import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
 import { RevertPrescription } from './library/RevertPrescription';
@@ -137,12 +138,20 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
             const compatible = isExerciseCompatible(exercise, data.active);
             return (
               <li key={exercise.id}>
-                <button type="button" className="ct-training__row" aria-label={exercise.nameFr} aria-describedby={metaId} onClick={() => onSelect(exercise)}>
-                  <span className="ct-training__row-name">{exercise.nameFr}</span>
-                  <span className="ct-training__row-meta" id={metaId}>
-                    {[g === null ? null : groupLabel(g), exercise.origin === 'custom' ? tTraining('custom') : null, compatible ? null : tTraining('compatibleNo')].filter((s) => s !== null).join(' · ')}
-                  </span>
-                </button>
+                <ContextMenuZone
+                  items={[{ id: 'open', label: tTraining('openItem'), onSelect: () => onSelect(exercise) }]}
+                  menuLabel={tTraining('rowActions', { name: exercise.nameFr })}
+                  onActivate={() => onSelect(exercise)}
+                >
+                  {(bind) => (
+                    <button type="button" className="ct-training__row" aria-label={exercise.nameFr} aria-describedby={metaId} onClick={() => onSelect(exercise)} {...bind}>
+                      <span className="ct-training__row-name">{exercise.nameFr}</span>
+                      <span className="ct-training__row-meta" id={metaId}>
+                        {[g === null ? null : groupLabel(g), exercise.origin === 'custom' ? tTraining('custom') : null, compatible ? null : tTraining('compatibleNo')].filter((s) => s !== null).join(' · ')}
+                      </span>
+                    </button>
+                  )}
+                </ContextMenuZone>
               </li>
             );
           })}

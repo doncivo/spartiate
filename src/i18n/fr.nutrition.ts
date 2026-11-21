@@ -87,6 +87,7 @@ export const nutritionFr = {
   targetKcalUnit: 'kcal par jour',
   edit: 'Corriger',
   editEntry: 'Corriger {name}',
+  entryActions: 'Actions de {name}',
   deleteEntry: 'Supprimer {name}',
   deleteTitle: 'Supprimer « {name} » ?',
   deleteDescription: 'L’entrée est retirée du journal de ce jour.',

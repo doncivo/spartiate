@@ -15,6 +15,9 @@ export const trainingFr = {
   cancel: 'Annuler',
   delete: 'Supprimer',
   edit: 'Modifier',
+  /** COQUILLE-PC-a (§ 18.1) : menu contextuel PC d'une ligne de liste. */
+  openItem: 'Ouvrir',
+  rowActions: 'Actions de {name}',
   saveError: 'Enregistrement impossible. Réessaie.',
 
   // Bibliothèque

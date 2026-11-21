@@ -22,6 +22,7 @@ import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { parseNumber, tTraining } from '../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon, useLayout } from '../../ui';
+import { ContextMenuZone } from '../../ui/ContextMenu';
 import { programToRoutine, type StarterProgram } from './content';
 import { ExerciseList } from './LibraryView';
 import type { TrainingData } from './trainingState';
@@ -851,10 +852,18 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
         <ul className="ct-training__rows">
           {(routines ?? []).map((routine) => (
             <li key={routine.id}>
-              <button type="button" className="ct-training__row" onClick={() => void openTree(routine.id, null)}>
-                <span className="ct-training__row-name">{routine.name}</span>
-                <span className="ct-training__row-meta">{routine.mode === 'programme' ? tTraining('modeProgramme') : tTraining('modeLibre')}</span>
-              </button>
+              <ContextMenuZone
+                items={[{ id: 'open', label: tTraining('openItem'), onSelect: () => void openTree(routine.id, null) }]}
+                menuLabel={tTraining('rowActions', { name: routine.name })}
+                onActivate={() => void openTree(routine.id, null)}
+              >
+                {(bind) => (
+                  <button type="button" className="ct-training__row" onClick={() => void openTree(routine.id, null)} {...bind}>
+                    <span className="ct-training__row-name">{routine.name}</span>
+                    <span className="ct-training__row-meta">{routine.mode === 'programme' ? tTraining('modeProgramme') : tTraining('modeLibre')}</span>
+                  </button>
+                )}
+              </ContextMenuZone>
             </li>
           ))}
         </ul>
