@@ -1,5 +1,5 @@
 import { addDays } from '../../../domain/localDate';
-import { dayTargetFor, effectiveTarget, isTrendLearning, tdeeConfidence, trendAt, weeklyBalance, weeklyTrendSlope, type DayState, type TdeeConfidence, type TrendPoint, type WeeklyBalance, type Target as DayTarget } from '../../../domain/nutrition';
+import { dayTargetFor, imputeKcalDays, imputeWeightDays, type ImputedWeightDay, type KcalImputation, effectiveTarget, isTrendLearning, tdeeConfidence, trendAt, weeklyBalance, weeklyTrendSlope, type DayState, type TdeeConfidence, type TrendPoint, type WeeklyBalance, type Target as DayTarget } from '../../../domain/nutrition';
 import type { LocalDate, LocalDate as Day } from '../../../domain/types';
 import type { NutritionSnapshot } from '../useCases';
 
@@ -46,6 +46,10 @@ export interface DashboardModel {
   /** kg / semaine ; `null` si la tendance n'a pas assez de recul. */
   readonly slope: number | null;
   readonly bars: readonly DayBar[];
+  /** NUTRI-b (§ 15.1) : jours non complets de la semaine estimés À L'AFFICHAGE (jamais écrits, jamais dans la dépense) ; vide avec sa raison si la base manque. */
+  readonly imputedKcal: KcalImputation;
+  /** Poids estimé d'aujourd'hui s'il n'y a pas de pesée ; `null` sinon ou sans base. */
+  readonly imputedWeightToday: ImputedWeightDay | null;
   readonly trendPoints: readonly TrendPoint[];
   readonly trendNow: number | null;
   /** Tendance encore « en apprentissage » (moins de 14 pesées, règle commune avec Aujourd'hui) : le chiffre de tendance n'est pas affiché. */
@@ -87,7 +91,11 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
     return completeDates.length === 0 ? null : Math.round(completeDates.reduce((sum, date) => sum + perDay(date).kcal, 0) / completeDates.length);
   };
   const known = weighIns.filter((w) => w.date <= today);
+  const imputedKcal = imputeKcalDays({ days, startDate: weekStart, endDate: reference });
+  const imputedWeightToday = imputeWeightDays({ weighIns: known, startDate: today, endDate: today }).days[0] ?? null;
   return {
+    imputedKcal,
+    imputedWeightToday,
     // PROG-01 (D-272) : avec une cible de repos, chaque jour est comparé à la cible de son type.
     balance: weeklyBalance(days, weighIns, target, reference, targetForDay(snapshot)),
     slope: weeklyTrendSlope(trend, reference),

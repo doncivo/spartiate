@@ -31,6 +31,9 @@ function snapshot(unlogged: readonly number[], loggedFrom = -59): NutritionSnaps
 
 afterEach(cleanup);
 
+/** Le DOM normalise les espaces (fines insécables comprises) : on normalise de même le texte attendu. */
+const norm = (text: string): string => text.replace(/\s+/g, ' ');
+
 describe('NUTRI-b : modèle du dashboard', () => {
   it('deux jours non loggés de la semaine : imputés à 2 400 kcal ± 120, marqués imputés', () => {
     const model = dashboardModel(snapshot([-3, -2]));
@@ -51,11 +54,11 @@ describe('NUTRI-b : modèle du dashboard', () => {
 describe('NUTRI-b : écran', () => {
   it('dit les jours estimés, la valeur et l’incertitude en texte', () => {
     render(<DashboardView snapshot={snapshot([-3, -2])} />);
-    expect(screen.getByText(tNutrition('imputedKcalLine', { n: 2, kcal: formatInt(2400), spread: formatInt(120) }))).toBeTruthy();
+    expect(screen.getByText(norm(tNutrition('imputedKcalLine', { n: 2, kcal: formatInt(2400), spread: formatInt(120) })))).toBeTruthy();
   });
   it('dit le poids estimé du jour sans pesée', () => {
     render(<DashboardView snapshot={snapshot([])} />);
-    expect(screen.getByText(tNutrition('imputedWeightLine', { kg: formatTenth(80), spread: formatTenth(0.3) }))).toBeTruthy();
+    expect(screen.getByText(norm(tNutrition('imputedWeightLine', { kg: formatTenth(80), spread: formatTenth(0.3) })))).toBeTruthy();
   });
   it('la liste textuelle de la barre d’un jour estimé nomme « estimé »', () => {
     render(<DashboardView snapshot={snapshot([-3])} />);
