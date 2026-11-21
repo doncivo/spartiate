@@ -18,6 +18,7 @@ import { Button } from "../../ui";
 import { useAppContainer } from "../app/AppContainerContext";
 import { useSyncedData } from "../sync/remoteChanges";
 import "./RecoveryToday.css";
+import { RecoveryTrendsCard } from "./RecoveryTrends";
 
 /**
  * Progrès › Récupération (I6-01 point B, § 16.7) : écart moyen de Recovery avec et sans chaque facteur, après `FACTOR_MIN_DAYS` jours renseignés et
@@ -54,7 +55,17 @@ const shift = (day: string, delta: number): LocalDate =>
     .slice(0, 10) as LocalDate;
 const fr = (n: number): string => String(n).replace(".", ",");
 
+/** Progrès › Récupération : tendances sur 30 jours (PROGRES-c) puis écart avec / sans facteur (I6-01). */
 export function RecoveryProgress() {
+  return (
+    <>
+      <RecoveryTrendsCard />
+      <FactorsProgress />
+    </>
+  );
+}
+
+function FactorsProgress() {
   const container = useAppContainer();
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);

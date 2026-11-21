@@ -70,4 +70,8 @@ export const recoveryFr = {
   stepsTodayUnknown: 'Pas de total pour aujourd’hui',
   stepsNone: 'Aucun pas importé ces 7 derniers jours.',
   stepsOnPhone: 'Les pas restent sur l’iPhone : ils ne sont pas publiés vers le PC.',
+  targetZone: 'Zone cible : {from} à {to}',
+  zoneHigh: 'Récupération haute (66 ou plus) : effort soutenu possible.',
+  zoneMid: 'Récupération moyenne (34 à 65) : effort modéré.',
+  zoneLow: 'Récupération basse (33 ou moins) : effort léger conseillé.',
 } as const;
