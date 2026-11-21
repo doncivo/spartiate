@@ -107,6 +107,7 @@ de 0281a).
   décision sans séance n'est pas publiable, D-27) ; `history` l'ignore pour les marqueurs de deload et de fatigue, `applyClosedWorkout` ne la
   relit jamais (appelé à la clôture seulement).
 - Verdict : approuvé, sous réserve de la CI (suite complète, e2e, visual).
+- Relecture à froid (code-reviewer, agent distinct) : approuvé, aucun bloquant. Mineur 1 corrigé : `decisionFor` ne filtrait pas la décision de retour (rouge 6d18dce5, vert 86a5709a) ; mineur 2 couvert par le même test (retour présent dans `sync_outbox`, D-27). Suggestion consignée : en `load-reps`, une hausse de répétitions à charge égale n'est pas une « hausse » (D-386, révisable par Ali). Numéros : D-383 à D-388, BL-111 à BL-113.
 
 ## Décisions proposées (numéros à donner par l'appelant)
 
