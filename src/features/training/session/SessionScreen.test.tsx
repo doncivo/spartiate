@@ -12,6 +12,7 @@ import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TrainingScreen } from '../TrainingScreen';
 import { TodaySessionCard } from './TodaySessionCard';
+import { tSession } from '../../../i18n/trainingSessionText';
 
 /**
  * I1-02 (interface), tests DOM sur base SQLite réelle (wasm) et contenu embarqué réel : démarrage vide / routine / copie, validation qui écrit
@@ -332,7 +333,7 @@ describe('minuteur de repos (critère 4)', () => {
     await validateNext('Développé couché à la barre', '60', '8');
     expect(await restTimer()).toHaveTextContent('2:30');
     expect(await one('SELECT rest_timer_end_at FROM workout')).toEqual({ rest_timer_end_at: '2026-11-09T17:02:30.000Z' });
-    expect(f.calls.starts).toEqual([{ endDateMs: Date.parse('2026-11-09T17:02:30.000Z'), label: 'Repos', finishedLabel: 'Terminé' }]);
+    expect(f.calls.starts).toEqual([{ endDateMs: Date.parse('2026-11-09T17:02:30.000Z'), label: tSession('restLiveNextNoLoad', { rest: 'Repos', name: 'Développé couché à la barre' }), finishedLabel: 'Terminé' }]);
     expect(f.scheduled).toEqual([Date.parse('2026-11-09T17:02:30.000Z')]);
   });
 
