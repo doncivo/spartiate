@@ -71,6 +71,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
   const [plate, setPlate] = useState<Plate>([]);
+  const committingPlate = useRef(false);
   const [plateState, setPlateState] = useState<'idle' | 'busy' | 'failed'>('idle');
   const [recipeSearch, setRecipeSearch] = useState<RecipeSearchState | null>(null);
   const [recipeSelection, setRecipeSelection] = useState<Recipe | null>(null);
@@ -320,13 +321,16 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   async function commitPlate(): Promise<void> {
     const drafts = plateEntries(plate, { date, time: defaultTime as LocalTime });
-    if (drafts === null || plateState === 'busy') return;
+    if (drafts === null || committingPlate.current) return;
+    committingPlate.current = true;
     setPlateState('busy');
     try {
       await (await data.repos.mealEntries()).createMany(drafts);
       onSaved();
     } catch {
       setPlateState('failed');
+    } finally {
+      committingPlate.current = false;
     }
   }
 

@@ -24,8 +24,6 @@ export interface ImputedKcalDay {
   readonly spread: number;
   /** Jours complets qui fondent l'estimation. */
   readonly sampleDays: number;
-  /** Énergie déjà loguée ce jour-là (jour partiel), `null` sans entrée. */
-  readonly loggedKcal: number | null;
   readonly basis: 'imputed';
 }
 
@@ -53,10 +51,9 @@ export function imputeKcalDays(input: {
   const spread = Math.round(Math.max(sd, mean * IMPUTED_KCAL_MIN_SPREAD_RATIO));
   const out: ImputedKcalDay[] = [];
   for (let date = input.startDate; date <= input.endDate; date = addDays(date, 1)) {
-    const day = byDate.get(date);
-    if (day?.usableForTdee === true && day.kcal !== null) continue;
-    const logged = day?.kcal ?? null;
-    out.push({ date, kcal: Math.round(logged === null ? mean : Math.max(mean, logged)), spread, sampleDays: sample.length, loggedKcal: logged, basis: 'imputed' });
+    // Un jour qui porte déjà des kcal loguées (complet ou partiel) n'est jamais remplacé par une estimation : un partiel reste partiel.
+    if (byDate.get(date)?.kcal != null) continue;
+    out.push({ date, kcal: Math.round(mean), spread, sampleDays: sample.length, basis: 'imputed' });
   }
   return { days: out, reason: null };
 }

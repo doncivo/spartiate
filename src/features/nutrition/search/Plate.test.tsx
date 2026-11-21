@@ -60,11 +60,18 @@ describe('NUTRI-c : assiette', () => {
   it('double appui sur « Ajouter l’assiette au journal » : une seule écriture', async () => {
     const foods = await db.data.repos.foods();
     await foods.create({ source: 'custom', barcode: null, name: 'Skyr maison', brand: null, per100g: { kcal: 60, proteinG: 11, fatG: 0.2, carbG: 4, fiberG: null }, fetchedAt: null });
-    const repo = await db.data.repos.mealEntries();
-    const real = repo.createMany.bind(repo);
-    const spy = vi.spyOn(repo, 'createMany').mockImplementation(async (drafts) => {
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      return real(drafts);
+    const original = db.data.repos.mealEntries.bind(db.data.repos);
+    let writes = 0;
+    vi.spyOn(db.data.repos, 'mealEntries').mockImplementation(async () => {
+      const repo = await original();
+      return {
+        ...repo,
+        createMany: async (drafts) => {
+          writes += 1;
+          await new Promise((resolve) => setTimeout(resolve, 30));
+          return repo.createMany(drafts);
+        },
+      };
     });
     act(() => useNavigationStore.getState().navigate({ tab: 'nutrition' }));
     render(
@@ -79,6 +86,6 @@ describe('NUTRI-c : assiette', () => {
     fireEvent.click(button);
     fireEvent.click(button);
     await waitFor(async () => expect(await all()).toHaveLength(1));
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(writes).toBe(1);
   });
 });
