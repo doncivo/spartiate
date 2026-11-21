@@ -18,7 +18,7 @@ describe('NUTRI-b : imputation des kcal', () => {
   it('un jour sans entrée reçoit la moyenne des jours complets, ± l’écart type, marqué imputé', () => {
     const r = imputeKcalDays({ days: [...base(), unknown(at(2))], startDate: at(2), endDate: at(2) });
     expect(r.reason).toBeNull();
-    expect(r.days).toEqual([{ date: at(2), kcal: 2200, spread: 200, sampleDays: 5, loggedKcal: null, basis: 'imputed' }]);
+    expect(r.days).toEqual([{ date: at(2), kcal: 2200, spread: 200, sampleDays: 5, basis: 'imputed' }]);
   });
   it('un jour absent de la liste est imputé de la même façon', () => {
     const r = imputeKcalDays({ days: base(), startDate: at(3), endDate: at(1) });
@@ -34,11 +34,9 @@ describe('NUTRI-b : imputation des kcal', () => {
     expect(r.days).toEqual([]);
     expect(r.reason).toBe('too-few-complete-days');
   });
-  it('jour partiel : l’estimation ne descend jamais sous ce qui est déjà logué', () => {
-    const high = imputeKcalDays({ days: [...base(), partial(at(2), 2500)], startDate: at(2), endDate: at(2) });
-    expect(high.days[0]).toMatchObject({ kcal: 2500, loggedKcal: 2500 });
-    const low = imputeKcalDays({ days: [...base(), partial(at(2), 1000)], startDate: at(2), endDate: at(2) });
-    expect(low.days[0]).toMatchObject({ kcal: 2200, loggedKcal: 1000 });
+  it('jour partiel : jamais imputé, il reste partiel (son logué n’est pas remplacé par une estimation)', () => {
+    const r = imputeKcalDays({ days: [...base(), partial(at(2), 2500), partial(at(3), 1000)], startDate: at(3), endDate: at(2) });
+    expect(r.days).toEqual([]);
   });
   it('incertitude : au moins 5 % de la moyenne quand tous les jours sont identiques (jamais « ± 0 »)', () => {
     const same = [10, 9, 8, 7].map((b) => complete(at(b), 2000));

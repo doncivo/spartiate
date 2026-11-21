@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -55,5 +55,30 @@ describe('NUTRI-c : assiette', () => {
     const entries = await all();
     expect(entries.map((e) => e.foodName).sort()).toEqual(['Miel local', 'Skyr maison']);
     expect(entries.every((e) => e.method === 'search')).toBe(true);
+  });
+
+  it('double appui sur « Ajouter l’assiette au journal » : une seule écriture', async () => {
+    const foods = await db.data.repos.foods();
+    await foods.create({ source: 'custom', barcode: null, name: 'Skyr maison', brand: null, per100g: { kcal: 60, proteinG: 11, fatG: 0.2, carbG: 4, fiberG: null }, fetchedAt: null });
+    const repo = await db.data.repos.mealEntries();
+    const real = repo.createMany.bind(repo);
+    const spy = vi.spyOn(repo, 'createMany').mockImplementation(async (drafts) => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      return real(drafts);
+    });
+    act(() => useNavigationStore.getState().navigate({ tab: 'nutrition' }));
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data })}>
+        <NutritionScreen />
+      </AppContainerProvider>,
+    );
+    const r = await screen.findByRole('region', { name: 'Nutrition' });
+    fireEvent.click(await within(r).findByRole('button', { name: 'Rechercher un aliment' }));
+    await pick('Skyr maison', 'skyr', '150');
+    const button = within(await screen.findByRole('region', { name: tNutrition('plateTitle') })).getByRole('button', { name: tNutrition('plateCommit') });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    await waitFor(async () => expect(await all()).toHaveLength(1));
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });
