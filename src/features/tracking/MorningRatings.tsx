@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { RATING_KINDS, RATING_MAX, RATING_MIN, type RatingKind } from '../../domain/tracking/ratings';
+import { RATING_KINDS, RATING_MAX, RATING_MIN, type RatingKind } from '../../domain/bodyProgress/measurements';
 import type { LocalDate } from '../../domain/types';
 import { tTracking } from '../../i18n/trackingText';
 import { useAppContainer } from '../app/AppContainerContext';

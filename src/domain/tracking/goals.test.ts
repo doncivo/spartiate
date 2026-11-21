@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseGoalText, parseTrackingGoals, serializeTrackingGoals, TRACKING_DEFAULTS, TRACKING_GOAL_BOUNDS } from './goals';
 
-/** SUIVIS-029a/b : objectifs de suivi (réglage local `tracking.goals`), valeur brute relue sans jamais casser l'écran. */
+/** SUIVIS-029a/b : objectifs de suivi (réglage local `today.prefs`), valeur brute relue sans jamais casser l'écran. */
 describe('parseTrackingGoals', () => {
   it('valeur absente ou illisible : objectifs par défaut (8 000 pas, 150 min de zone 2, FC max non saisie)', () => {
     expect(TRACKING_DEFAULTS).toEqual({ stepsDaily: 8000, zone2WeeklyMin: 150, hrMax: null });

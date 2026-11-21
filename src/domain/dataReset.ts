@@ -151,7 +151,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'healthBody.lastImport': 'wiped',
   'bodyProgress.hiddenPhotos': 'wiped',
   // SUIVIS-029 : objectifs de suivi (pas, zone 2, FC max saisie) : effacés, comme les objectifs de nutrition.
-  'tracking.goals': 'wiped',
+  'today.prefs': 'wiped',
 };
 
 /** Clés de réglage effacées, dans l'ordre de déclaration. */

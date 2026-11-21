@@ -12,7 +12,7 @@ D-410 (aucun fournisseur d'IA).
 ### a — objectif de pas (SUIVIS-029a)
 
 - A-1 (réglage) — Given Progrès › Suivis, When Ali règle l'objectif quotidien (1 000 à 50 000 pas, entier), Then il est gardé dans le
-  réglage local `tracking.goals` (défaut 8 000) ; une saisie hors bornes ou illisible est refusée avec sa plage, rien n'est écrit.
+  réglage local `today.prefs` (défaut 8 000) ; une saisie hors bornes ou illisible est refusée avec sa plage, rien n'est écrit.
 - A-2 (Aujourd'hui) — Given l'iPhone et un total de pas du jour dans `pas.csv` importé, When Aujourd'hui s'affiche, Then la carte
   « Suivis du jour » dit « 6 500 / 8 000 pas (81 %) » et une barre (doublée du texte, jamais la couleur seule) ; objectif atteint : « objectif
   atteint ». Carte chargée à la demande (bundle de départ non augmenté).
@@ -70,4 +70,4 @@ publiée `measurement` (identifiant naturel `measurement|AAAA-MM-JJ|genre`, fusi
 `note_fatigue`, `note_sleep` (score 1 à 10) et `visbody_*` (unité dans le nom ; métabolisme de base en décakilocalories,
 `visbody_bmr_dakcal`, la colonne `value` étant bornée à moins de 1 000 par le CHECK de la 0012). Catalogue `src/domain/sync/syncTables.ts`
 NON modifié ; `src/sync/**` non touché. Export : unité par genre dans `contenu.json` et le CSV (FIX-0173). Réglages des objectifs : clé
-LOCALE `tracking.goals` (`settings` non publiés, D-55).
+LOCALE `today.prefs` (`settings` non publiés, D-55).

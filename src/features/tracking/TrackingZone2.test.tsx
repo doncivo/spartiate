@@ -35,7 +35,7 @@ describe('Progrès › Suivis : zone 2', () => {
 
   it('FC max saisie : elle prime, la source le dit', async () => {
     await (await db.data.repos.profile()).save({ birthYear: 1990 }, 2026);
-    await db.data.repos.settings.set('tracking.goals', { v: 1, stepsDaily: 8000, zone2WeeklyMin: 90, hrMax: 200 });
+    await db.data.repos.settings.set('today.prefs', { v: 1, stepsDaily: 8000, zone2WeeklyMin: 90, hrMax: 200 });
     await (await db.data.repos.cardio()).add(session('2026-11-17T07:00:00.000Z', 45, 125));
     mountWith(db, <TrackingProgress />);
     const zone = await screen.findByRole('region', { name: tTracking('zone2Title') });

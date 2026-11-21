@@ -1,5 +1,5 @@
 /**
- * SUIVIS-029a/b (lot 0.29.0, PROG-02) : objectifs de suivi, réglage LOCAL `tracking.goals` (les réglages ne sont pas publiés, D-55). Valeur brute
+ * SUIVIS-029a/b (lot 0.29.0, PROG-02) : objectifs de suivi, réglage LOCAL `today.prefs` (les réglages ne sont pas publiés, D-55). Valeur brute
  * relue par `parseTrackingGoals` : un champ illisible ou hors bornes reprend sa valeur par défaut, jamais une erreur d'affichage. Module pur.
  */
 

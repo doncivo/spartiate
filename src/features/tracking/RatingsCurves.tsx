@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { RATING_KINDS, RATING_MAX, RATING_MIN, ratingSeries, type RatingKind, type RatingPoint } from '../../domain/tracking/ratings';
+import { RATING_KINDS, RATING_MAX, RATING_MIN, ratingSeries, type RatingKind, type RatingPoint } from '../../domain/bodyProgress/measurements';
 import { tTracking } from '../../i18n/trackingText';
 import { Sparkline } from './Sparkline';
 

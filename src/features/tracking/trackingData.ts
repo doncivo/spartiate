@@ -1,6 +1,6 @@
 import { addDays } from '../../domain/localDate';
 import { hrMaxOf, parseTrackingGoals, serializeTrackingGoals, type HrMax, type StepsDay, type TrackingGoals, type Zone2Session } from '../../domain/tracking';
-import { RATING_KINDS, type RatingKind, type RatingPoint } from '../../domain/tracking/ratings';
+import { RATING_KINDS, type RatingKind, type RatingPoint } from '../../domain/bodyProgress/measurements';
 import type { LocalDate } from '../../domain/types';
 import type { AppContainer } from '../app/container';
 
@@ -10,11 +10,11 @@ import type { AppContainer } from '../app/container';
  */
 
 export async function loadGoals(container: AppContainer): Promise<TrackingGoals> {
-  return parseTrackingGoals(await container.data.repos.settings.get('tracking.goals'));
+  return parseTrackingGoals(await container.data.repos.settings.get('today.prefs'));
 }
 
 export async function saveGoals(container: AppContainer, goals: TrackingGoals): Promise<void> {
-  await container.data.repos.settings.set('tracking.goals', serializeTrackingGoals(goals));
+  await container.data.repos.settings.set('today.prefs', serializeTrackingGoals(goals));
 }
 
 export interface StepsRead {

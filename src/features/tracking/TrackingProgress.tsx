@@ -6,7 +6,7 @@ import { formatDayMonthYear } from '../../i18n/format';
 import { formatCount, tTracking } from '../../i18n/trackingText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
-import type { RatingKind, RatingPoint } from '../../domain/tracking/ratings';
+import type { RatingKind, RatingPoint } from '../../domain/bodyProgress/measurements';
 import { useSyncedData } from '../sync/remoteChanges';
 import { RatingsCurves } from './RatingsCurves';
 import { isPhone, loadGoals, readRatings, readStepsDays, readZone2, saveGoals, type StepsRead, type Zone2Read } from './trackingData';

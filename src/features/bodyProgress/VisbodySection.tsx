@@ -6,8 +6,7 @@ import { tVisbody, type VisbodyTextKey } from '../../i18n/visbodyText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
-import { Sparkline } from '../tracking/Sparkline';
-import '../tracking/Tracking.css';
+import './Visbody.css';
 
 /**
  * SUIVIS-029d : Progrès › Corps, bilans VISBODY saisis à la main. Chaque champ facultatif (au moins un), bornes du domaine (refus avec la plage) ; même
@@ -29,14 +28,31 @@ const dmy = (date: string): string => {
 const textsOf = (report: VisbodyReport | undefined): Texts =>
   Object.fromEntries(VISBODY_KINDS.flatMap((k) => (report?.values[k] === undefined ? [] : [[k, num(visbodyDisplayValue(k, report.values[k] ?? 0)).replace(/\s/g, '')]])));
 
+/**
+ * Courbe des bilans (valeurs affichées, au moins deux). Copie volontaire et réduite de src/features/tracking/Sparkline.tsx : l'importer créait un bloc
+ * partagé de plus, dont le nom entrait dans la table de préchargement du départ (mesure du bundle).
+ */
+function Curve({ points, label: text }: { readonly points: readonly number[]; readonly label: string }) {
+  const width = 120;
+  const height = 32;
+  const lo = Math.min(...points);
+  const span = Math.max(...points) - lo;
+  const coords = points.map((v, i) => `${String((i * width) / (points.length - 1))},${String(span === 0 ? height / 2 : height - 3 - ((v - lo) * (height - 6)) / span)}`);
+  return (
+    <svg className="ct-visbody__chart" viewBox={`0 0 ${String(width)} ${String(height)}`} preserveAspectRatio="none" role="img" aria-label={text}>
+      <polyline className="ct-visbody__line" points={coords.join(' ')} />
+    </svg>
+  );
+}
+
 function Field({ field, value, issue, onChange, idBase }: { readonly field: VisbodyField; readonly value: string; readonly issue: VisbodyFieldIssue | undefined; readonly onChange: (v: string) => void; readonly idBase: string }) {
   const id = `${idBase}-${field.kind}`;
   return (
-    <div className="ct-tracking__field">
+    <div className="ct-visbody__field">
       <label htmlFor={id}>{label(field.kind)}</label>
       <input
         id={id}
-        className="ct-tracking__input"
+        className="ct-visbody__input"
         inputMode="decimal"
         value={value}
         aria-invalid={issue !== undefined}
@@ -44,7 +60,7 @@ function Field({ field, value, issue, onChange, idBase }: { readonly field: Visb
         onChange={(e) => onChange(e.target.value)}
       />
       {issue === undefined ? null : (
-        <p id={`${id}-issue`} className="ct-tracking__issue">
+        <p id={`${id}-issue`} className="ct-visbody__issue">
           {issue === 'range' ? tVisbody('range', { min: num(field.min), max: num(field.max) }) : tVisbody(field.integer ? 'format' : 'formatDecimal')}
         </p>
       )}
@@ -132,37 +148,37 @@ export function VisbodySection() {
     ));
 
   return (
-    <section className="ct-today__card ct-bodyprogress__card ct-tracking ct-flat" aria-labelledby={`${id}-title`}>
+    <section className="ct-today__card ct-bodyprogress__card ct-visbody ct-flat" aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`} className="ct-today__eyebrow ct-section-title">
         {tVisbody('title')}
       </h2>
       <p className="ct-today__muted">{tVisbody('hint')}</p>
       <form
-        className="ct-tracking__form"
+        className="ct-visbody__form"
         noValidate
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
       >
-        <div className="ct-tracking__field">
+        <div className="ct-visbody__field">
           <label htmlFor={`${id}-date`}>{tVisbody('date')}</label>
-          <input id={`${id}-date`} className="ct-tracking__input" type="date" max={today} value={date} onChange={(e) => {
+          <input id={`${id}-date`} className="ct-visbody__input" type="date" max={today} value={date} onChange={(e) => {
               setDate(e.target.value);
               setDirty(false);
             }} />
         </div>
         {fields(false)}
-        <details className="ct-tracking__block">
+        <details className="ct-visbody__block">
           <summary>{tVisbody('segmentsTitle')}</summary>
-          <div className="ct-tracking__form">{fields(true)}</div>
+          <div className="ct-visbody__form">{fields(true)}</div>
         </details>
         <Button type="submit" variant="secondary">
           {tVisbody('save')}
         </Button>
       </form>
       {formIssue === null ? null : (
-        <p className="ct-tracking__issue" role="alert">
+        <p className="ct-visbody__issue" role="alert">
           {tVisbody(formIssue)}
         </p>
       )}
@@ -171,7 +187,7 @@ export function VisbodySection() {
           {tVisbody('saved')}
         </p>
       ) : status === 'failed' ? (
-        <p className="ct-tracking__issue" role="alert">
+        <p className="ct-visbody__issue" role="alert">
           {tVisbody('saveFailed')}
         </p>
       ) : null}
@@ -180,19 +196,19 @@ export function VisbodySection() {
       ) : load.status === 'ready' && reports.length === 0 ? (
         <p className="ct-today__muted">{tVisbody('none')}</p>
       ) : (
-        <ul className="ct-tracking__list">
+        <ul className="ct-visbody__list">
           {VISBODY_FIELDS.map((f) => {
             const change = visbodyChange(reports, f.kind);
             if (change === null) return null;
             const unit = unitText(f);
             const lastText = tVisbody('last', { value: num(change.last.value), unit, date: dmy(change.last.date) }).replace(/ {2,}/g, ' ');
             return (
-              <li key={f.kind} className="ct-tracking__block">
-                <span className="ct-tracking__value">{`${label(f.kind)} · ${lastText}`}</span>
+              <li key={f.kind} className="ct-visbody__block">
+                <span className="ct-visbody__value">{`${label(f.kind)} · ${lastText}`}</span>
                 <span className="ct-today__muted">
                   {change.delta === null || change.previous === null ? tVisbody('first') : tVisbody('delta', { delta: signed(change.delta), unit, date: dmy(change.previous.date) })}
                 </span>
-                {change.points.length > 1 ? <Sparkline points={change.points} label={tVisbody('curve', { label: label(f.kind), n: change.points.length, value: num(change.last.value), unit })} /> : null}
+                {change.points.length > 1 ? <Curve points={change.points} label={tVisbody('curve', { label: label(f.kind), n: change.points.length, value: num(change.last.value), unit })} /> : null}
               </li>
             );
           })}

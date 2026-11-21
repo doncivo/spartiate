@@ -31,7 +31,7 @@ describe('Aujourd’hui : objectif de pas', () => {
   });
 
   it('objectif réglé et atteint : le dit', async () => {
-    await db.data.repos.settings.set('tracking.goals', { v: 1, stepsDaily: 6000, zone2WeeklyMin: 150, hrMax: null });
+    await db.data.repos.settings.set('today.prefs', { v: 1, stepsDaily: 6000, zone2WeeklyMin: 150, hrMax: null });
     await seedSteps(db, [['2026-11-21', 6500]]);
     mountWith(db, <TrackingTodayCard />);
     expect(await screen.findByText(tTracking('stepsReached'))).toBeInTheDocument();
@@ -76,11 +76,11 @@ describe('Progrès › Suivis : objectif et moyenne hebdomadaire', () => {
     fireEvent.change(input, { target: { value: '500' } });
     fireEvent.click(screen.getByRole('button', { name: tTracking('goalsSave') }));
     expect(await screen.findByText(tTracking('issue_range', { min: fr(1000), max: fr(50000) }))).toBeInTheDocument();
-    expect(await db.data.repos.settings.get('tracking.goals')).toBeNull();
+    expect(await db.data.repos.settings.get('today.prefs')).toBeNull();
     fireEvent.change(input, { target: { value: '10000' } });
     fireEvent.click(screen.getByRole('button', { name: tTracking('goalsSave') }));
     expect(await screen.findByText(tTracking('goalsSaved'))).toBeInTheDocument();
-    expect(await db.data.repos.settings.get('tracking.goals')).toEqual({ v: 1, stepsDaily: 10000, zone2WeeklyMin: 150, hrMax: null });
+    expect(await db.data.repos.settings.get('today.prefs')).toEqual({ v: 1, stepsDaily: 10000, zone2WeeklyMin: 150, hrMax: null });
   });
 
   it('PC : la raison, aucune moyenne inventée', async () => {
