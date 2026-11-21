@@ -13,7 +13,7 @@ Module : outillage du dépôt (tests du bundle, branches, worktrees). Budget S. 
 - Pointe : `8a1ffd6c` (« I4-07 revue : carte d'Aujourd'hui avec la journée déclarée… »), 25 commits absents de main, base commune `580b2196` (I4-06, #86).
 - Tous appartiennent au ticket I4-07, fusionné par squash dans main : `fb3bdfb6` (« I4-07 : recettes et journée complète déclarée (0.9.0, schéma 9) (#87) »).
 - `git diff --stat 8a1ffd6c fb3bdfb6` : 10 fichiers seulement, tous de la PR de version ou de la fiche : CHANGELOG.md, docs/reprise.md, package.json, package-lock.json, Cargo.toml, Cargo.lock, tauri.conf.json, scripts/release/identity.test.ts, tests/bundle/start-modules.json (entrée justifiée de la migration 0009), et `docs/I4-07-donnees.md` renommé en `docs/I4-07.md` (le fichier disait « Fichier à fusionner dans docs/I4-07.md »). **Aucun fichier de code ni de test ne diffère** : tout le contenu de la branche est dans main.
-- Conclusion : la branche distante peut être supprimée. SHA consigné ici pour la retrouver (`git fetch origin 8a1ffd6c` tant que GitHub le garde).
+- Conclusion : branche distante supprimée le 21/11 (`git push origin --delete`, après cette preuve). SHA consigné ici pour la retrouver (`git fetch origin 8a1ffd6c` tant que GitHub le garde).
 
 ## pairingBundle.test depuis un worktree (critère 2)
 
