@@ -11,7 +11,7 @@
  * `signingExpiry` (I-02, ADR 0013 §3.3) : moins de 24 h avant l'expiration de la signature SideStore, ou signature expirée (`detail` =
  * `soon` | `expired`) ; en tête : la fenêtre est courte et l'app cesse ensuite de s'ouvrir.
  */
-export const APP_STATUS_PRIORITY = ['signingExpiry', 'calendarDisconnected', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline'] as const;
+export const APP_STATUS_PRIORITY = ['signingExpiry', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline'] as const;
 
 export type AppStatusKind = (typeof APP_STATUS_PRIORITY)[number];
 

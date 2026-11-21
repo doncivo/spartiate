@@ -530,7 +530,7 @@ describe('bundle de départ (index.html)', () => {
   });
 
   // I6-05 : carte « Compléments » d'Aujourd'hui, section Compléments, service et déclencheurs des rappels : blocs à la demande, avec leurs textes.
-  it.each(['src/features/nutrition/supplements/SupplementsTodayCard.tsx', 'src/features/nutrition/supplements/SupplementsView.tsx', 'src/features/notifications/supplementWake.ts'])('I6-05 : %s est un bloc à la demande, hors du départ', (source) => {
+  it.each(['src/features/nutrition/supplements/SupplementsTodayCard.tsx', 'src/features/nutrition/supplements/SupplementsView.tsx', 'src/features/notifications/supplementWake.ts', 'src/features/settings/injuries/InjuryCheckinCard.tsx', 'src/features/settings/injuries/InjuriesSection.tsx'])('I6-05 / BLESSURES : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
     if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
@@ -538,7 +538,7 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
-  it.each(['Aucun complément. Ajoute le premier.', 'Gérer les compléments', 'Une prise à cocher.', 'Les rappels sont envoyés par l’iPhone.'])('I6-05 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(['Aucun complément. Ajoute le premier.', 'Gérer les compléments', 'Une prise à cocher.', 'Les rappels sont envoyés par l’iPhone.', 'Où en est ta gêne ?', 'Un point de suivi t’attend dans l’app.'])('I6-05 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);

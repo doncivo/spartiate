@@ -153,8 +153,8 @@ describe('bandeau A-09 « Mets à jour l’app » (Y-07 critère 9)', () => {
     expect(banner()).toBeUndefined();
   });
 
-  it('priorité (D1, A-09 D1) : derrière « Agenda déconnecté » et un problème de synchro, devant « En attente d’iCloud », « Synchro en cours » et « Hors ligne » ; texte seul, aucun bouton', () => {
-    expect(APP_STATUS_PRIORITY).toEqual(['signingExpiry', 'calendarDisconnected', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline']);
+  it('priorité (D1, A-09 D1) : derrière l’expiration de la signature et un problème de synchro, devant « En attente d’iCloud », « Synchro en cours » et « Hors ligne » ; texte seul, aucun bouton', () => {
+    expect(APP_STATUS_PRIORITY).toEqual(['signingExpiry', 'syncTrouble', 'updateRequired', 'waitingIcloud', 'syncing', 'offline']);
     render(<AppStatusBanner />);
     const set = useAppStatusStore.getState().setStatus;
     act(() => {
@@ -166,9 +166,9 @@ describe('bandeau A-09 « Mets à jour l’app » (Y-07 critère 9)', () => {
     expect(document.querySelectorAll('.ct-status-banner')).toHaveLength(1);
     expect(document.querySelector('.ct-status-banner')?.textContent).toBe('Mets à jour l’app : un de tes appareils utilise une version plus récente');
     expect(screen.queryByRole('button')).toBeNull();
-    act(() => set('calendarDisconnected', { detail: 'Perso', onAction: () => undefined }));
-    expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Agenda Perso déconnecté');
-    act(() => set('calendarDisconnected', null));
+    act(() => set('signingExpiry', { detail: 'soon' }));
+    expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Spartiate expire bientôt');
+    act(() => set('signingExpiry', null));
     expect(document.querySelector('.ct-status-banner')?.textContent).toContain('Mets à jour l’app');
   });
 

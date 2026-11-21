@@ -2,10 +2,12 @@ import { logFailure } from '../../platform/desktop/log';
 import type { LocalDate } from '../../domain/types';
 import type { AppContainer } from '../app/container';
 import { createRecoveryNotificationService, type RecoveryNotificationService } from './recoveryNotifications';
+import { createInjuryNotificationService, type InjuryNotificationService } from './injuryNotifications';
 import { createSerialQueue, createSupplementNotificationService, type SupplementNotificationService } from './supplementNotifications';
 
 export * from './recoveryNotifications';
 export * from './supplementNotifications';
+export * from './injuryNotifications';
 
 const services = new WeakMap<AppContainer, RecoveryNotificationService>();
 const supplementServices = new WeakMap<AppContainer, SupplementNotificationService>();
@@ -60,5 +62,22 @@ export function supplementNotificationsFor(container: AppContainer): SupplementN
     serial: queueFor(container),
   });
   supplementServices.set(container, service);
+  return service;
+}
+
+const injuryServices = new WeakMap<AppContainer, InjuryNotificationService>();
+
+/** BLESSURES-b : rappel de check-in des gênes du conteneur ; même file que les autres services. Journal : codes seulement. */
+export function injuryNotificationsFor(container: AppContainer): InjuryNotificationService {
+  const existing = injuryServices.get(container);
+  if (existing !== undefined) return existing;
+  const service = createInjuryNotificationService({
+    scheduler: container.notifications,
+    clock: container.notificationClock,
+    settings: container.data.repos.settings,
+    log: (code) => logFailure('notifications', code),
+    serial: queueFor(container),
+  });
+  injuryServices.set(container, service);
   return service;
 }
