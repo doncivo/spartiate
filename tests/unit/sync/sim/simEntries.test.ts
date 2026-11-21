@@ -1,14 +1,14 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { I0_SCHEMA_VERSION, createSimDevice, liveTitles, pair, setupFirst, simSchema, syncFolders, taskSnapshot, useSimSchema, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { I0_SCHEMA_VERSION, createSimDevice, liveTitles, pair, setupFirst, simSchema, syncFolders, taskSnapshot, selectSimSchema, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
 import { SIM_ENTRY_TABLE } from '../../../sim/syncEntries';
 import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import type { TaskId } from '../../../../src/domain/types';
 
 /**
- * CLEAN-03 (D-201) : banc Spartiate du simulateur. Un fichier qui appelle `useSimSchema('i0')` crée des appareils sur la migration réelle et le
+ * CLEAN-03 (D-201) : banc Spartiate du simulateur. Un fichier qui appelle `selectSimSchema('i0')` crée des appareils sur la migration réelle et le
  * catalogue de production ; la forme « tâche » des scénarios hérités écrit la table publiée `meal_entry` (aucune table de l'ancien schéma).
  */
-useSimSchema('i0');
+selectSimSchema('i0');
 beforeAll(() => warmSimDevices(), 60_000);
 
 const A_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';

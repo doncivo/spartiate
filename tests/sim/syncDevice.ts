@@ -30,11 +30,11 @@ export const I0_SCHEMA_VERSION = i0Migrations.at(-1)?.version ?? 1;
 
 /**
  * CLEAN-03 (D-201) : schéma par défaut des appareils d'UN fichier de test (`legacy` tant que le fichier n'est pas migré). Un fichier migré
- * appelle `useSimSchema('i0')` au chargement : `createSimDevice` (kits compris) et `warmSimDevices` prennent alors la migration réelle et le
+ * appelle `selectSimSchema('i0')` au chargement : `createSimDevice` (kits compris) et `warmSimDevices` prennent alors la migration réelle et le
  * catalogue de production. Vitest isole chaque fichier (module rechargé) : le choix ne fuit pas d'un fichier à l'autre.
  */
 let fileSchema: SimSchema = 'legacy';
-export function useSimSchema(schema: SimSchema): void {
+export function selectSimSchema(schema: SimSchema): void {
   fileSchema = schema;
 }
 export const simSchema = (): SimSchema => fileSchema;
