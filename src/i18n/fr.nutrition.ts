@@ -288,7 +288,7 @@ export const nutritionFr = {
   quickMealsOpen: 'Repas rapides',
   cardRecentMeals: 'Repas récents',
   stepsAdjTitle: 'Dépense ajustée aux pas (affichage seul)',
-  stepsAdjLine: '{day} : {steps} pas (ta base : {base}, sur {days} jours) → {sign}{kcal} kcal sur la part formule ({share} %). Dépense du jour : environ {value} kcal.',
+  stepsAdjLine: '{day} : {steps} pas (ta base : moyenne de {base} pas des {days} derniers jours) → {sign}{kcal} kcal sur la part formule ({share} %). Dépense du jour : environ {value} kcal.',
   stepsAdjCapped: 'Écart plafonné à ± 300 kcal.',
   stepsAdjSource: 'Source : pas.csv (import Santé). Le check-in et la dépense mesurée ne l’utilisent pas : les pas ne sont jamais comptés deux fois.',
   stepsAdjNoSteps: 'Pas d’ajustement : aucun pas importé (pas.csv absent, ou import Santé disponible sur iPhone seulement).',
