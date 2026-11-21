@@ -343,7 +343,8 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
         exerciseId,
         DECISIONS_SCANNED,
       ]);
-      return firstReadable(rows, report);
+      // Revue MOTEUR-0281 : la décision de retour, attachée à la séance close pour sa publication, n'est pas la valeur retenue de cette séance.
+      return firstReadable(rows.filter((row) => !isRevertRow(row.prescription)), report);
     },
 
     async applyClosedWorkout(workoutId, report) {
