@@ -4,8 +4,11 @@ import type { StateFileCopy } from '../../../../src/platform/sync/memory';
 import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { RESET_META } from '../../../../src/sync/reset';
 import { propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { A_ID, B_ID, backupOf, C_ID, closeAll, meta, publishedState, reassociate, recoveryOf, restoreBackup as restore, setupRoom, settle, titles, W_ID, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11, passe QA : cas limites croisés (oubliés retenus, restauration « Appliquer partout », annonce interrompue, ancien état rejoué,
@@ -402,7 +405,7 @@ describe('écritures hors ligne republiées avec leur hlc d’origine (critère 
     expect((await a.service.resetSync()).kind).toBe('started');
     b.clock.advance(5_000);
     await b.updateTask(t.id, { note: 'écrite hors ligne par B' });
-    const clockOf = (d: SimDevice) => d.driver.select<{ field: string; hlc: string }>("SELECT field, hlc FROM sync_field_clock WHERE row_id = ? AND field = 'note'", [t.id]);
+    const clockOf = (d: SimDevice) => d.driver.select<{ field: string; hlc: string }>("SELECT field, hlc FROM sync_field_clock WHERE row_id = ? AND field = 'food_id'", [t.id]);
     const original = await clockOf(b);
     expect(original).toHaveLength(1);
     syncFolders(room.devices);
@@ -414,7 +417,7 @@ describe('écritures hors ligne republiées avec leur hlc d’origine (critère 
     await settle(room.devices, 3);
     expect(await clockOf(a)).toEqual(original);
     expect(await clockOf(b)).toEqual(original);
-    expect((await a.driver.select<{ note: string }>('SELECT note FROM task WHERE id = ?', [t.id]))[0]?.note).toBe('écrite hors ligne par B');
+    expect((await a.driver.select<{ note: string }>('SELECT COALESCE(food_id, \'\') AS note FROM meal_entry WHERE id = ?', [t.id]))[0]?.note).toBe('écrite hors ligne par B');
   });
 });
 

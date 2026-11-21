@@ -1,8 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { DeviceId } from '../../../src/domain/types';
 import { mirrorDeviceFolder } from '../../sim/syncCloudSim';
-import { syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { A_ID, B_ID, C_ID, closeAll, DAY, reassociate, setupRoom, type Room } from './reset/resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-01, QA : aucune règle de synchro n'est bloquée plus de 30 minutes de cycles (6 tours de 5 minutes) par la nouvelle comparaison de
@@ -59,7 +62,7 @@ describe('Y-TECH-01 QA : purge d\'une suppression (Y-09), 3 appareils actifs', (
     // La suppression a 31 jours : un saut, puis au plus 6 tours (30 minutes) jusqu'à la purge chez tous.
     for (const d of list) d.clock.advance(31 * DAY);
     let ticks = 0;
-    const purged = async (d: SimDevice): Promise<boolean> => (await d.driver.select('SELECT id FROM task WHERE id = ?', [doomed.id])).length === 0;
+    const purged = async (d: SimDevice): Promise<boolean> => (await d.driver.select('SELECT id FROM meal_entry WHERE id = ?', [doomed.id])).length === 0;
     for (; ticks < MAX_TICKS; ticks += 1) {
       await tick(list);
       if ((await Promise.all(list.map(purged))).every(Boolean)) break;

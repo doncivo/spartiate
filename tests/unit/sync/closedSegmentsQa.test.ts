@@ -7,8 +7,11 @@ import { createMemorySyncPlatform, MemorySyncFolder, type MemorySyncPlatform } f
 import { SyncPlatformError } from '../../../src/platform/sync/types';
 import { propagate } from '../../sim/syncCloudSim';
 import { armCrash } from '../../sim/syncCrash';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { B_ID as RB_ID, closeAll as closeRoom, publishedState, reassociate, setupRoom, settle as settleRoom, titles as roomTitles, type Room } from './reset/resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02 (QA), ADR 0011 §21 point 2 : `closed` des segments clos. iCloud qui livre dans le désordre à 2 et 3 appareils, troncature
@@ -74,7 +77,7 @@ const epochDirOf = (d: SimDevice, of: string) => {
   return { epoch, dir };
 };
 const segmentOf = (d: SimDevice, of: string, n: number): FileView => epochDirOf(d, of).dir.segments.get(n) as FileView;
-const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const publishedClosed = (d: SimDevice, of: string): readonly { segment: number; records: number }[] | undefined => parsePublishedStateText(d.folder.devices.get(of)?.state?.lines[0]?.text ?? '')?.closed;
 
 /** A écrit T1 (j-1, lu par les autres), T2 (j-1, pas encore livré), puis T3 dans j-2 (rotation). Renvoie j-1 tel que les autres le gardent (une ligne). */

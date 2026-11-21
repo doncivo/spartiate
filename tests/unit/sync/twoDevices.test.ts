@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TaskId } from '../../../src/domain/types';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const A_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const B_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -34,7 +37,7 @@ describe('deux appareils simulés (Y-02 critère 2)', () => {
     const onB = await b.task(task.id);
     expect(onB?.title).toBe('Payer le loyer');
     expect(await taskSnapshot(b)).toEqual(await taskSnapshot(a));
-    expect(b.changes.some((c) => c.tables.has('task'))).toBe(true);
+    expect(b.changes.some((c) => c.tables.has('meal_entry'))).toBe(true);
   });
 
   it('deux champs différents modifiés des deux côtés : les deux gardés ; même champ : le plus grand hlc gagne, conflit des deux côtés', async () => {
@@ -68,7 +71,7 @@ describe('deux appareils simulés (Y-02 critère 2)', () => {
     expect((await a.task(task.id))?.title).toBe('Titre B');
     expect((await b.task(task.id))?.title).toBe('Titre B');
     const conflictsOf = (d: SimDevice) => d.driver.select('SELECT field, kept_value, discarded_value FROM conflict_log');
-    expect(await conflictsOf(a)).toEqual([{ field: 'title', kept_value: '"Titre B"', discarded_value: '"Titre A"' }]);
+    expect(await conflictsOf(a)).toEqual([{ field: 'food_name', kept_value: '"Titre B"', discarded_value: '"Titre A"' }]);
     expect(await conflictsOf(b)).toEqual(await conflictsOf(a));
   });
 });

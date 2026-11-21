@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DeviceId } from '../../../src/domain/types';
 import type { RestoreMarker } from '../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * ADR 0011 §24 point 6 (tableau du report d'époque), lignes « appareil oublié », « oubli annulé » et « époque concurrente à `covers` vide ».
@@ -72,7 +75,7 @@ async function settle(list: readonly SimDevice[], rounds = 3): Promise<void> {
   }
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 
 describe('tableau de la règle de report (ADR 0011 §24 point 6), suite', () => {
   it('appareil oublié : ses écritures au-delà de covers[X] ne sont reportées par personne', async () => {

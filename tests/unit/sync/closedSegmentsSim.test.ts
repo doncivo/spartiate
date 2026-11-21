@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
 import { propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02, ADR 0011 §21 point 2 (simulation, rouge avant) : iCloud transfère les fichiers dans le désordre ; un segment clos livré dans
@@ -51,7 +54,7 @@ function refuseNextAppend(a: SimDevice, code: 'segment-full' | 'segment-mismatch
   };
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const segmentOne = (d: SimDevice, of: string) => {
   const epochs = d.folder.devices.get(of)?.epochs;
   const [, dir] = [...(epochs ?? new Map())].at(-1) as [string, { segments: Map<number, unknown> }];
