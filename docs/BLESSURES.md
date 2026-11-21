@@ -45,3 +45,5 @@ Verdict : à corriger, corrigé. (1) La carte de check-in utilisait des classes 
 Surcoût propre au ticket : +46 octets normalisés sur main (194 002 contre 193 956) avant le retrait de 7 clés de `fr.ts` sans usage (tasks.complete, tasks.reopen, reminders.more, editTitle, saveError, sectionTitle, recaps) ; après retrait 193 937. COQUILLE-PC retire les mêmes 7 clés : à la fusion, le surcoût propre reste +46 octets contre main (marge très large, plafond non touché).
 
 Constat pour Ali : le rappel est replanifié à l'ouverture, au retour au premier plan et après un lot de synchro touchant les compléments, pas en arrière-plan : une gêne déclarée puis une app fermée avant replanification n'est pas un cas (la déclaration replanifie tout de suite).
+
+Après fusion de main (COQUILLE-PC, qui retire les mêmes 7 clés) : 193 949 contre 193 901 sur main (+48) ; compensé par 62b42020 (état « agenda déconnecté » hérité de CircleTasks, sans producteur, retiré du bandeau, du domaine et de fr.ts) : **193 883 octets normalisés** (− 18 sur main). Relecture à froid : points 1 et 2 corrigés (69e136fe, 72d7e9f2, 62b42020), mineurs couverts. Numéros : D-402 à D-404, BL-120, BL-121.

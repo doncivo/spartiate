@@ -285,6 +285,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.28.x) |
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.28.x) |
 | BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | à examiner par Ali |
+| BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | à trancher par Ali |
+| BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -333,7 +335,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 10 | PRD § 10 | absent — unités configurables (kg seul) | à faire (lot 0.28.0) |
 | § 10.0 | PRD § 10.0 | partiel — scénario d'onboarding rejoué : étape 6 sans e2e | à faire (lot 0.28.0) |
 | § 10.1-1 | PRD § 10.1 | partiel — poids prérempli depuis Santé : par Raccourcis seulement (D-69) | reporté : HealthKit direct BLOCKED (H-3a) |
-| § 10.2 | PRD § 10.2 | absent — blessures avec check-in bimensuel | à faire (lot 0.28.0) |
+| § 10.2 | PRD § 10.2 | absent — blessures avec check-in bimensuel | fait (BLESSURES, 0.28.1, D-402 à D-404 ; BL-120, BL-121) |
 | § 10.3 | PRD § 10.3 | partiel — notifications demandées au premier repos, pas en fin de première séance | à faire (lot 0.28.0) |
 | § 11 | PRD § 11 | partiel — constantes ajustables par exercice : seul `deloadLoad` | à faire (lot 0.28.0) |
 | § 11.2-5 | PRD § 11.2 | partiel — difficulté, recalibrage « Facile » borné (C-004, C-027) | à faire (lot 0.28.0) |
