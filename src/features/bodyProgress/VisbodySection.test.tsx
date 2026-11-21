@@ -91,3 +91,18 @@ describe('SUIVIS-029 (qa) : séparation des genres', () => {
     expect((await m.list()).map((r) => r.kind)).toEqual(['waist']);
   });
 });
+
+describe('SUIVIS-029 (relecture) : préremplissage sans arrondi', () => {
+  it('72,45 kg enregistré puis bilan corrigé sur un autre champ : 72,45 reste 72,45 (jamais arrondi à 72,5)', async () => {
+    const m = await db.data.repos.measurements();
+    await m.save('2026-11-21' as LocalDate, 'visbody_weight_kg', 72.45);
+    mountWith(db, <VisbodySection />);
+    await screen.findByRole('region', { name: tVisbody('title') });
+    await waitFor(() => expect(field('visbody_weight_kg')).toHaveValue('72,45'));
+    fireEvent.change(field('visbody_fat_pct'), { target: { value: '18' } });
+    fireEvent.click(screen.getByRole('button', { name: tVisbody('save') }));
+    expect(await screen.findByText(tVisbody('saved'))).toBeInTheDocument();
+    expect((await m.find('2026-11-21' as LocalDate, 'visbody_weight_kg'))?.value).toBe(72.45);
+    expect((await m.find('2026-11-21' as LocalDate, 'visbody_fat_pct'))?.value).toBe(18);
+  });
+});
