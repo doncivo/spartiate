@@ -39,8 +39,9 @@ describe('C-005 moteur : une séance aberrante non confirmée ne devient jamais 
     expect(explanationNotes(p).map((n) => n.key as string)).toContain('noteOutlierHeld');
     expect(p.estimated1rmKg as number).toBeLessThan(150);
   });
-  it('ENGINE_VERSION inchangé (aucune constante modifiée, D-284)', () => {
-    expect(ENGINE_VERSION).toBe(3);
+  // MOTEUR-0281a : version 4 (poids du corps et chronométrés prescrits) ; FIX-ABERR ne l'avait pas changée.
+  it('ENGINE_VERSION : 4 depuis MOTEUR-0281a (FIX-ABERR n’a modifié aucune constante, D-284)', () => {
+    expect(ENGINE_VERSION).toBe(4);
   });
 });
 

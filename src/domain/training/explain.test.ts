@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FITNESS_PARK_ANTONY, PLANK, input, session, target } from '../../../tests/fixtures/training/progression';
+import { FARMER, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
 import { confidenceBand, confidencePercent, explainPrescription } from './explain';
 import { prescribe } from './prescribe';
 
@@ -15,8 +15,9 @@ describe('explainPrescription', () => {
     expect(explainPrescription(prescribe(input()))).toEqual({ key: 'toEnter', params: {} });
   });
 
-  it('métrique hors moteur (durée) : pas de proposition', () => {
-    expect(explainPrescription(prescribe(input({ exercise: PLANK })))).toEqual({ key: 'unsupported', params: {} });
+  // MOTEUR-0281a : la durée est prise en charge (C-189) ; la distance reste hors moteur.
+  it('métrique hors moteur (distance) : pas de proposition', () => {
+    expect(explainPrescription(prescribe(input({ exercise: FARMER })))).toEqual({ key: 'unsupported', params: {} });
   });
 
   it('haut de plage atteint partout : « +2,5 kg : 3 × 10 atteint la dernière fois »', () => {

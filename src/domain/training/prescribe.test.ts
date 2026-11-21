@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CURL, CURL_EZ, DEADLIFT_TRAP, KETTLEBELL_GYM, LEG_PRESS, NOW, PLANK, STACK_GYM, SWING, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
+import { CURL, CURL_EZ, DEADLIFT_TRAP, FARMER, KETTLEBELL_GYM, LEG_PRESS, NOW, PLANK, STACK_GYM, SWING, daysAgo, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG, ENGINE_VERSION, PRESCRIPTION_HEADLINES, REASON_ORDER } from './config';
 import { positionMultiplier, prescribe, primaryMuscle } from './prescribe';
 import type { ExerciseSession, Prescription } from './types';
@@ -259,8 +259,9 @@ describe('validation de l’historique', () => {
 });
 
 describe('métrique non prise en charge', () => {
-  it('exercice chronométré : « non pris en charge », aucune charge', () => {
-    const p = prescribe(input({ exercise: PLANK, history: [session(3, 0, [45])] }));
+  // MOTEUR-0281a : test qui figeait C-189 réécrit (le chronométré est prescrit en secondes, moteur0281a.test.ts) ; seuls les portés restent hors moteur.
+  it('exercice de distance (portés) : « non pris en charge », aucune charge', () => {
+    const p = prescribe(input({ exercise: FARMER, history: [session(3, 20, [30])] }));
     expect(p.status).toBe('unsupported');
     expect(p.headline).toBe('unsupported');
     expect(p.reasons).toEqual(['unsupported-metric']);
