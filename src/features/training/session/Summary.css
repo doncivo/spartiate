@@ -116,3 +116,13 @@
 .ct-summary__record-name {
   font-weight: var(--ct-font-weight-semibold);
 }
+
+/* SESS-01e : écart à la prescription, partage de l'image. */
+.ct-summary__gap {
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+.ct-summary__share {
+  display: grid;
+  gap: var(--ct-space-2);
+}
