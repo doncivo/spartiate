@@ -209,7 +209,7 @@ describe('saisie et validation (critère 2)', () => {
     const set = await firstOpenSet('Développé couché à la barre');
     const select = within(set).getByLabelText('Type de série') as HTMLSelectElement;
     expect(select.value).toBe('work');
-    expect([...select.options].map((o) => o.textContent)).toEqual(['Normale', 'Échauffement', 'Dégressive', 'Partielle']);
+    expect([...select.options].map((o) => o.textContent)).toEqual(['Normale', 'Échec', 'Échauffement', 'Dégressive', 'Partielle']);
     expect(within(set).queryByText('Travail')).toBeNull();
     expect(within(set).getByText(/Normale : comptée dans le volume et les records/)).toBeInTheDocument();
     fireEvent.change(select, { target: { value: 'drop' } });

@@ -13,13 +13,14 @@ import {
   type Exercise,
   type ExerciseBlock,
   type SetEntry,
-  type SetKind,
   type WorkoutSet,
   type WorkoutWithSets,
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
 import { parseExcludedExercises, withExcluded } from '../../../domain/training/exclusions';
 import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
+import { setKindPatch, type SetKindChoice } from '../../../domain/training/failureSet';
+import { implementOf } from '../../../domain/training/replacement';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
 import { loadGrid } from '../../../domain/training/loadGrid';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -58,6 +59,10 @@ const CircuitHeader = lazy(() => import('./CircuitUi').then((m) => ({ default: m
 const CircuitForm = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitForm })));
 /** SESS-01a : feuille « Remplacer l'exercice », bloc à la demande (règle de conversion et catalogue chargés avec elle). */
 const ReplaceExercise = lazy(() => import('./ReplaceExercise').then((m) => ({ default: m.ReplaceExercise })));
+/** SESS-01c : image (bloc des médias), notes et calculateur de disques, à la demande. */
+const ExerciseMedia = lazy(() => import('../media/ExerciseMedia'));
+const ExerciseNotes = lazy(() => import('./ExerciseExtras').then((m) => ({ default: m.ExerciseNotes })));
+const PlateCalculator = lazy(() => import('./ExerciseExtras').then((m) => ({ default: m.PlateCalculator })));
 const RedDayBanner = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RedDayBanner })));
 const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
@@ -83,6 +88,13 @@ export interface ActiveSessionProps {
   readonly onClosed: (closed: ClosedWorkout) => void;
 }
 
+/** SESS-01c : charge proposée au calculateur : celle de la série en cours (saisie, sinon cible), sinon la dernière faite. */
+const plateStart = (sets: readonly WorkoutSet[]): number | null => {
+  const work = sets.filter((s) => s.setKind !== 'warmup');
+  const next = work.find((s) => !s.done);
+  return next?.loadKg ?? next?.targetLoadKg ?? work.filter((s) => s.done).at(-1)?.loadKg ?? null;
+};
+
 const isTimedExercise = (exercise: Exercise | undefined, set: WorkoutSet): boolean => set.setKind === 'timed' || exercise?.metric === 'time';
 
 export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, onWorkout, onRestSetting, onClosed }: ActiveSessionProps) {
@@ -92,6 +104,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [grouping, setGrouping] = useState(false);
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
   const [replacing, setReplacing] = useState<string | null>(null);
+  /** SESS-01c : exercice dont le calculateur de disques est ouvert. */
+  const [platesFor, setPlatesFor] = useState<string | null>(null);
   /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage ; illisible : aucun. */
   const [excludedIds, setExcludedIds] = useState<readonly string[]>([]);
   const excluded = useMemo(() => new Set(excludedIds), [excludedIds]);
@@ -532,6 +546,14 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                   : tPlural(tTraining, work, 'sessionExerciseMetaOne', 'sessionExerciseMeta', { rest: formatRest(restSec) })}
               </p>
             </div>
+            {exercise !== undefined && (
+              <Suspense fallback={null}>
+                <div className="ct-session__extras">
+                  {exercise.media !== null && <ExerciseMedia exercise={exercise} />}
+                  <ExerciseNotes exercise={exercise} />
+                </div>
+              </Suspense>
+            )}
             <Suspense fallback={null}>
               <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} />
             </Suspense>
@@ -552,7 +574,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
-                    onKind={(kind: SetKind) => void write((repo) => repo.updateSet(set.id, { setKind: kind }))}
+                    onKind={(kind: SetKindChoice) => void write((repo) => repo.updateSet(set.id, setKindPatch(kind, set)))}
                     onRemove={() => void write((repo) => repo.removeSet(set.id))}
                   />
                 );
@@ -578,7 +600,17 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exclude', block })}>
                 {tSession('removeExclude')}
               </Button>
+              {exercise !== undefined && exercise.metric === 'load-reps' && implementOf(exercise) === 'barbell' && (
+                <Button variant="secondary" expanded={platesFor === block.exerciseId} onClick={() => setPlatesFor(platesFor === block.exerciseId ? null : block.exerciseId)}>
+                  {tSession(platesFor === block.exerciseId ? 'platesClose' : 'plates')}
+                </Button>
+              )}
             </div>
+            {exercise !== undefined && platesFor === block.exerciseId && (
+              <Suspense fallback={null}>
+                <PlateCalculator exercise={exercise} profile={data.active} initialKg={plateStart(block.sets)} />
+              </Suspense>
+            )}
           </section>
           </Fragment>
         );

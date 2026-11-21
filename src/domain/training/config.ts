@@ -217,6 +217,9 @@ export const REPLACEMENT_LOAD_FACTORS: Readonly<Partial<Record<`${ReplacementImp
   'machine>dumbbell': 0.6,
 });
 
+/** SESS-01c : jeu de disques standard (kg, par côté) du calculateur quand le profil n'en déclare aucun ; 10 de chaque masse. */
+export const STANDARD_PLATES_KG: readonly number[] = Object.freeze([25, 20, 15, 10, 5, 2.5, 1.25]);
+
 /** Ordre stable des choix facultatifs : fatigue (charge, puis répétitions), puis stagnation (variante, plage, mini-deload). */
 export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-load', 'fatigue-reps', 'stall-variant', 'stall-range', 'stall-mini-deload'];
 

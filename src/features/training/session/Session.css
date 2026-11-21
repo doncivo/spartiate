@@ -507,3 +507,27 @@
   border-color: var(--ct-color-accent);
   font-weight: 600;
 }
+
+/* SESS-01c : image, notes et calculateur de disques dans le bloc de l'exercice. */
+.ct-session__extras {
+  display: grid;
+  gap: var(--ct-space-2);
+}
+.ct-session__extras .ct-exmedia__img {
+  max-height: 160px;
+  width: auto;
+  max-width: 100%;
+}
+.ct-session__notes-summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.ct-session__plates {
+  display: grid;
+  gap: var(--ct-space-2);
+  padding: var(--ct-space-3);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+}
