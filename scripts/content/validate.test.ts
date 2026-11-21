@@ -6,6 +6,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
+import { encodePngGray } from './png-reduce.mjs';
 import { ALLOWED_MEDIA_LICENSES, MEDIA_MAX_BYTES, MEDIA_SOURCES, MEDIA_TOTAL_MAX_BYTES, PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
 
 const ROOT = resolve(__dirname, '..', '..');
@@ -362,6 +363,44 @@ describe('validateContent : médias d’exercice (I6-07)', () => {
     const { b, dir } = withMedia();
     writeFileSync(join(dir, 'oublie.png'), PNG);
     expect(runMedia(b, dir)).toMatch(/média orphelin : oublie\.png/);
+  });
+
+  /* BL-011 (lot 0.28.1, NETTOYAGE) : une source réduite (MEDIA_SOURCES[x].reduceMaxHeight) impose l'empreinte d'origine, la transformation
+   * et un PNG gris 8 bits intègre (CRC de chaque bloc) dont la hauteur respecte la réduction. */
+  const reducedPng = (height: number) => encodePngGray({ width: 2, height, gray: new Uint8Array(2 * height).fill(128) }) as Buffer;
+  function withReduced(bytes: Buffer = reducedPng(2), over: Json = {}): { b: Json; dir: string } {
+    const m = withMedia('ex-a.png', bytes);
+    m.b['exercises'].exercises[0].media.source = 'everkinetic-web:src/images-web/0001.png';
+    Object.assign(m.registry['files'][0], { source: 'everkinetic-web', originPath: 'src/images-web/0001.png', originBytes: 4096, originSha256: 'a'.repeat(64), transform: 'gris-8-bits-hauteur-640' }, over);
+    return { b: m.b, dir: m.dir };
+  }
+
+  it('accepte un média réduit complet et intègre', () => {
+    const { b, dir } = withReduced();
+    expect(runMedia(b, dir)).toBe('');
+  });
+
+  it('refuse un média réduit sans empreinte d’origine, taille d’origine ou transformation exacte', () => {
+    for (const over of [{ originBytes: undefined }, { originBytes: 0 }, { originSha256: 'abc' }, { transform: undefined }, { transform: 'gris-8-bits-hauteur-320' }]) {
+      const { b, dir } = withReduced(reducedPng(2), over);
+      expect(runMedia(b, dir), JSON.stringify(over)).toMatch(/média réduit : provenance d’origine incomplète/);
+    }
+  });
+
+  it('refuse un média non réduit qui porte des champs de réduction', () => {
+    const { b, dir, registry } = withMedia();
+    registry['files'][0].transform = 'gris-8-bits-hauteur-640';
+    expect(runMedia(b, dir)).toMatch(/champs de réduction sur une source non réduite/);
+  });
+
+  it('refuse un média réduit dont un CRC de bloc est faux, qui n’est pas un PNG gris 8 bits ou qui dépasse la hauteur', () => {
+    const bad = Buffer.from(reducedPng(2));
+    bad[bad.length - 1] ^= 0xff; // CRC du bloc IEND
+    expect(runMedia(withReduced(bad).b, withReduced(bad).dir)).toMatch(/média réduit : PNG invalide \(CRC/);
+    const notPng = withReduced(PNG);
+    expect(runMedia(notPng.b, notPng.dir)).toMatch(/média réduit : PNG invalide/);
+    const tall = withReduced(reducedPng(641));
+    expect(runMedia(tall.b, tall.dir)).toMatch(/média réduit : hauteur 641 > 640/);
   });
 });
 
