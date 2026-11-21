@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { computeTotals, isFavorite, parseRecipeFoodId, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type Recipe, type RecipeSearchable, type SearchProvenance } from '../../../domain/nutrition';
+import { addToPlate, computeTotals, plateEntries, removeFromPlate, type Plate, isFavorite, parseRecipeFoodId, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type Recipe, type RecipeSearchable, type SearchProvenance } from '../../../domain/nutrition';
 import type { SearchableFood } from '../../../domain/nutrition/foodSearch';
 import { missingNutrients } from '../../../domain/nutrition/offProduct';
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../domain/types';
@@ -14,6 +14,7 @@ import type { ScanOutcome } from '../scan/scanBarcode';
 import { MacroLine, NumberField, parseNumber, ProvenanceBadge, revealAfterKeyboard, TimeField } from '../shared';
 import { entryFromFood } from '../useCases';
 import { searchCatalogue, toSearchable, type CatalogueSearchResult } from './catalogueSearch';
+import { PlateCard } from './PlateCard';
 import { CustomFoodForm } from './CustomFoodForm';
 import { chooseOnline, resolveBarcode, searchOnline, type OffDeps, type OffFailure, type OnlineItem, type OnlineSearch } from './offLookup';
 import { missingList, offFailureCause, offFailureMessage, offRefusalMessage } from './offMessages';
@@ -69,6 +70,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [plate, setPlate] = useState<Plate>([]);
+  const [plateState, setPlateState] = useState<'idle' | 'busy' | 'failed'>('idle');
   const [recipeSearch, setRecipeSearch] = useState<RecipeSearchState | null>(null);
   const [recipeSelection, setRecipeSelection] = useState<Recipe | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -315,6 +318,18 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     hits[next]?.focus();
   };
 
+  async function commitPlate(): Promise<void> {
+    const drafts = plateEntries(plate, { date, time: defaultTime as LocalTime });
+    if (drafts === null || plateState === 'busy') return;
+    setPlateState('busy');
+    try {
+      await (await data.repos.mealEntries()).createMany(drafts);
+      onSaved();
+    } catch {
+      setPlateState('failed');
+    }
+  }
+
   async function pickRecent(recent: RecentFood): Promise<void> {
     // Un récent issu d'une recette (`recipe:<id>`) rouvre l'étape « portions ou grammes » de la recette.
     if (parseRecipeFoodId(recent.foodId) !== null) return pickRecipe(recent.foodId);
@@ -374,6 +389,10 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           date={date}
           defaultTime={defaultTime}
           onBack={() => setSelection(null)}
+          onAddToPlate={(food, grams) => {
+            setPlate((current) => addToPlate(current, food, grams));
+            setSelection(null);
+          }}
           onSaved={onSaved}
           onClose={onClose}
         />
@@ -406,6 +425,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           {tNutrition('searchClose')}
         </Button>
       </div>
+      {plate.length === 0 ? null : (
+        <PlateCard plate={plate} busy={plateState === 'busy'} failed={plateState === 'failed'} onRemove={(ref) => setPlate((current) => removeFromPlate(current, ref))} onClear={() => setPlate([])} onCommit={() => void commitPlate()} />
+      )}
       <SegmentedControl
         label={tNutrition('searchFilterLabel')}
         value={filter}
@@ -681,12 +703,13 @@ interface QuantityStepProps {
   readonly date: LocalDate;
   readonly defaultTime: string;
   readonly onBack: () => void;
+  readonly onAddToPlate: (food: SearchableFood, grams: number) => void;
   readonly onSaved: () => void;
   readonly onClose: () => void;
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onAddToPlate, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
@@ -814,6 +837,9 @@ function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favori
       <div className="ct-nutrition__actions" ref={actionsRef}>
         <Button type="submit" disabled={!valid || busy}>
           {tNutrition('addToJournal')}
+        </Button>
+        <Button variant="secondary" disabled={!valid || typeof amount !== 'number'} onClick={() => typeof amount === 'number' && onAddToPlate(food, amount)}>
+          {tNutrition('plateAdd')}
         </Button>
         <Button variant="secondary" onClick={onBack}>
           {tNutrition('changeFood')}

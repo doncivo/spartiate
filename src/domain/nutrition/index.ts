@@ -24,3 +24,4 @@ export * from './restDay';
 export * from './floor';
 export * from './weeklyRate';
 export * from './imputation';
+export * from './plate';
