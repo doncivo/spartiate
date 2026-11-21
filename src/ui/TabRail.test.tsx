@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { t } from '../i18n';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TabRail, type TabRailItem } from './TabRail';
 
@@ -75,5 +76,35 @@ describe('TabRail : coquilles des maquettes', () => {
     const { readFileSync } = await import('node:fs');
     const css = readFileSync('src/ui/TabRail.css', 'utf8');
     expect(css).not.toMatch(/writing-mode|rotate\(/);
+  });
+});
+
+/** COQUILLE-PC-b (§ 18.1, C-192) : barre latérale PC rétractable, chaque onglet reste atteignable et nommé. */
+describe('TabRail : repli de la barre latérale PC', () => {
+  const rail = () => render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} />);
+
+  it('un bouton replie puis déploie la barre (aria-expanded, état exposé), au clavier comme à la souris', () => {
+    rail();
+    const nav = screen.getByRole('navigation');
+    const toggle = screen.getByRole('button', { name: t('nav.collapse') });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(nav).not.toHaveAttribute('data-collapsed');
+    fireEvent.click(toggle);
+    expect(nav).toHaveAttribute('data-collapsed', 'true');
+    expect(screen.getByRole('button', { name: t('nav.expand') })).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(screen.getByRole('button', { name: t('nav.expand') }));
+    expect(nav).not.toHaveAttribute('data-collapsed');
+  });
+
+  it('repliée, les onglets gardent leur nom accessible et leur titre (infobulle)', () => {
+    rail();
+    fireEvent.click(screen.getByRole('button', { name: t('nav.collapse') }));
+    const training = screen.getByRole('button', { name: 'Entraînement' });
+    expect(training).toHaveAttribute('title', 'Entraînement');
+  });
+
+  it('le bouton de repli est avant la liste des onglets : Plus reste le dernier bouton', () => {
+    rail();
+    expect(screen.getAllByRole('button').at(-1)).toHaveTextContent('Plus');
   });
 });
