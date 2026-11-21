@@ -68,6 +68,9 @@ export function NutritionRemainingCard() {
       <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', search: true })}>
         {tNutrition('cardAddMeal')}
       </Button>
+      <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', meals: true })}>
+        {tNutrition('cardRecentMeals')}
+      </Button>
       {target === null ? (
         <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'strategy' })}>
           {tNutrition('setTarget')}

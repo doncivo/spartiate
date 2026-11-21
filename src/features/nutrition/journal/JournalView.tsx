@@ -1,5 +1,5 @@
 import { tPlural } from '../../../i18n/plural';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
@@ -17,6 +17,9 @@ import { KcalHero, MacroLine, nowTime, ProvenanceBadge } from '../shared';
 import type { NutritionSnapshot } from '../useCases';
 import { EntryEditor } from './EntryEditor';
 
+/** REPAS-029a : repas rapides à la demande (le graphe de départ et celui de l'écran Nutrition restent ceux d'avant, BUNDLE-01). */
+const QuickMeals = lazy(() => import('../quickAdd/QuickMeals').then((m) => ({ default: m.QuickMeals })));
+
 type DeclarationChoice = 'none' | DayDeclaration;
 
 /** Un formulaire ouvert garde le jour de son ouverture (C-097) : ni la navigation ni minuit ne le déplacent. */
@@ -24,6 +27,7 @@ type Mode =
   | { readonly kind: 'idle' }
   | { readonly kind: 'search'; readonly date: LocalDate }
   | { readonly kind: 'quick'; readonly date: LocalDate }
+  | { readonly kind: 'meals'; readonly date: LocalDate }
   | { readonly kind: 'edit'; readonly entry: MealEntryRecord; readonly date: LocalDate };
 
 export interface JournalViewProps {
@@ -31,6 +35,8 @@ export interface JournalViewProps {
   readonly onChanged: () => Promise<void>;
   /** ERGO-01b P2 : recherche ouverte d'office (route `search`). */
   readonly openSearch?: boolean;
+  /** REPAS-029a : repas rapides ouverts d'office (carte Nutrition d'Aujourd'hui). */
+  readonly openMeals?: boolean;
 }
 
 /** Couverture du jour : dit si l'état est DÉCLARÉ par Ali ou DÉDUIT (D-81) ; une journée sans entrée reste inconnue, même déclarée complète. */
@@ -67,7 +73,7 @@ function CoverageNote({ day, isToday }: { readonly day: DayTotals; readonly isTo
  * zéro (une journée sans entrée reste « rien de saisi », une journée partielle n'est pas présentée comme complète), entrées avec provenance,
  * ajout (recherche locale, Ajout rapide), correction et suppression avec confirmation. Le scan et la photo ne sont pas offerts : l'écran le dit.
  */
-export function JournalView({ snapshot, onChanged, openSearch = false }: JournalViewProps) {
+export function JournalView({ snapshot, onChanged, openSearch = false, openMeals = false }: JournalViewProps) {
   const container = useAppContainer();
   const { data } = container;
   const navigate = useNavigationStore((s) => s.navigate);
@@ -77,7 +83,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
   const [loaded, setLoaded] = useState<{ readonly date: LocalDate; readonly list: readonly MealEntryRecord[]; readonly declaration: DayDeclaration | null } | null>(null);
   const [version, setVersion] = useState(0);
   // ERGO-01b P2 : ouvert depuis « Ajouter un repas » d'Aujourd'hui, la recherche est déjà ouverte (champ actif).
-  const [mode, setMode] = useState<Mode>(openSearch ? { kind: 'search', date: snapshot.today } : { kind: 'idle' });
+  const [mode, setMode] = useState<Mode>(openSearch ? { kind: 'search', date: snapshot.today } : openMeals ? { kind: 'meals', date: snapshot.today } : { kind: 'idle' });
   const date = mode.kind === 'idle' ? (picked ?? snapshot.today) : mode.date;
   const formOpen = mode.kind !== 'idle';
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
@@ -239,6 +245,10 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
         <FoodSearchPanel date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'quick' ? (
         <QuickAddForm date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+      ) : mode.kind === 'meals' ? (
+        <Suspense fallback={<p className="ct-nutrition__muted" role="status">{tNutrition('loading')}</p>}>
+          <QuickMeals date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        </Suspense>
       ) : mode.kind === 'edit' ? (
         <EntryEditor entry={mode.entry} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : (
@@ -247,6 +257,9 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
             <Button onClick={() => setMode({ kind: 'search', date })}>{tNutrition('addSearch')}</Button>
             <Button variant="secondary" onClick={() => setMode({ kind: 'quick', date })}>
               {tNutrition('addQuick')}
+            </Button>
+            <Button variant="secondary" onClick={() => setMode({ kind: 'meals', date })}>
+              {tNutrition('quickMealsOpen')}
             </Button>
           </div>
         </div>

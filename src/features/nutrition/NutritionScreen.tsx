@@ -98,7 +98,7 @@ export function NutritionScreen() {
             <SupplementsView today={today} />
           </Suspense>
         ) : (
-          <JournalView snapshot={state.snapshot} onChanged={reload} openSearch={route.tab === 'nutrition' && route.search === true} />
+          <JournalView snapshot={state.snapshot} onChanged={reload} openSearch={route.tab === 'nutrition' && route.search === true} openMeals={route.tab === 'nutrition' && route.meals === true} />
         )}
       </section>
     </div>
