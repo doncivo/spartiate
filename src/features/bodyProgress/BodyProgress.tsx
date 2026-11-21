@@ -28,6 +28,7 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
 import { KIND_TEXT, Silhouette, ZoneChips, ZoneCurve, ZoneList, neighbourZone, signed } from './BodyZones';
 import { summarizeZone, type ZoneSummary } from './bodyZone';
+import { VisbodySection } from './VisbodySection';
 import './BodyProgress.css';
 
 /**
@@ -352,6 +353,9 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
         </section>
       )}
+
+      {/* SUIVIS-029d : bilans VISBODY (saisie manuelle, courbes, écart au bilan précédent). */}
+      <VisbodySection />
 
       <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-photos">
         <h3 id="ct-bodyprogress-photos" className="ct-bodyprogress__heading ct-section-title">

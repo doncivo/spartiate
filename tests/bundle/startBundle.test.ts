@@ -455,6 +455,16 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // SUIVIS-029 : carte « Suivis du jour » d’Aujourd’hui et Progrès › Suivis (catalogue fr.tracking, règles src/domain/tracking) : blocs à la demande.
+  it.each(['src/features/tracking/TrackingTodayCard.tsx', 'src/features/tracking/TrackingProgress.tsx'])('SUIVIS-029 : %s est un bloc à la demande, hors du départ ; aucun module des suivis au départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+    for (const [name, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/src\/domain\/tracking|src\/features\/tracking|fr\.tracking|trackingText/.test(name), name).toBe(false);
+  });
+
   // I6-06 : cardio (écran, carte de Progrès, catalogue fr.cardio, dépôt) : blocs à la demande, hors du départ.
   it.each(['src/features/cardio/CardioView.tsx', 'src/features/cardio/CardioProgress.tsx', 'src/db/repositories/sql/cardioRepository.ts'])('I6-06 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));

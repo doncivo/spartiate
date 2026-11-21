@@ -16,6 +16,9 @@ const TrainingProgress = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(()
 /** BILAN-029 (§ 17.3) : Progrès › Bilan de la semaine, bloc à part chargé avec son catalogue de textes et sa règle ; rien dans le départ. */
 const WeeklyReview = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/WeeklyReview').then((m) => ({ default: m.WeeklyReview })), undefined, { onDemand: true });
 
+/** SUIVIS-029 : Progrès › Suivis (objectifs, pas par semaine, zone 2, notes sur 10), bloc à part chargé avec son catalogue de textes ; rien dans le départ. */
+const TrackingProgress = lazyScreen<object>(() => import('../tracking/TrackingProgress').then((m) => ({ default: m.TrackingProgress })), undefined, { onDemand: true });
+
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
 
 const TITLE: Record<Exclude<NoticeTab, 'today'>, SectionsTextKey> = {
@@ -49,6 +52,8 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
       {tab === 'progress' ? <BodyProgress /> : null}
       {/* I6-06 : séances cardio des quatre dernières semaines. */}
       {tab === 'progress' ? <CardioProgress /> : null}
+      {/* SUIVIS-029 : pas, zone 2 et notes sur 10. */}
+      {tab === 'progress' ? <TrackingProgress /> : null}
     </section>
   );
 }

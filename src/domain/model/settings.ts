@@ -157,6 +157,8 @@ export interface SettingsValues {
   'healthBody.lastImport': unknown;
   /** FIX-0171 (D-121) : fiches de photos masquées sur cet appareil (« Masquer sur cet appareil »). Valeur BRUTE lue par `parseHiddenPhotoIds` ; locale, jamais synchronisée ni exportée. */
   'bodyProgress.hiddenPhotos': unknown;
+  /** SUIVIS-029 : objectifs de suivi (pas par jour, minutes de zone 2 par semaine, FC max saisie). Valeur BRUTE lue par `parseTrackingGoals` ; locale, jamais synchronisée. */
+  'today.prefs': unknown;
 }
 
 export type SettingKey = keyof SettingsValues;
@@ -172,6 +174,8 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'today.hideRoutines': { scope: 'shared', defaultValue: false },
   'view.compact': { scope: 'local', defaultValue: { today: false, routines: false, checklists: false, someday: false } },
   'search.recent': { scope: 'local', defaultValue: [] },
+  // SUIVIS-029 : placé ici (et non en fin de liste) pour la mesure du bundle de départ : l'ordre des définitions est sans effet.
+  'today.prefs': { scope: 'local', defaultValue: null },
   'spaces.filter': { scope: 'local', defaultValue: 'all' },
   'events.hideHolidays': { scope: 'local', defaultValue: false },
   'spaces.defaultSpaceId': { scope: 'shared', defaultValue: null },
