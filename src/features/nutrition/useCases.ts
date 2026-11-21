@@ -10,7 +10,6 @@ import {
   floorVerdict,
   upcomingTargets,
   estimateTdeeSmoothed,
-  type StepsDay,
   parseNutritionPrefs,
   resolveCheckIn,
   toMealEntryInput,
@@ -28,6 +27,7 @@ import {
   type TrendPoint,
   type WeighIn,
 } from '../../domain/nutrition';
+import type { StepsDay } from '../../domain/nutrition/stepsAdjustment';
 import { STEPS_ADJUSTMENT } from '../../domain/nutrition/config';
 import { tNutrition } from '../../i18n/nutritionText';
 import { logFailure } from '../../platform/desktop/log';

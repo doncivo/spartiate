@@ -1,6 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { useMemo } from 'react';
-import { adjustForSteps, remainingForDay, type StepsAdjustmentReason, type TdeeConfidence } from '../../../domain/nutrition';
+import { remainingForDay, type TdeeConfidence } from '../../../domain/nutrition';
+import { adjustForSteps, type StepsAdjustmentReason } from '../../../domain/nutrition/stepsAdjustment';
 import { formatDayShort, formatInt, formatKgDelta, formatSigned, formatTenth, orDash, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { useNavigationStore } from '../../app/navigation';

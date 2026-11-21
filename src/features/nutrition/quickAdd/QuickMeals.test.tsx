@@ -4,6 +4,7 @@ import { createHlcClock } from '../../../domain/hlc';
 import type { MealEntryDraft } from '../../../domain/nutrition';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
+import { tNutrition } from '../../../i18n/nutritionText';
 import { tQuick } from '../../../i18n/nutritionQuickText';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
@@ -41,7 +42,7 @@ afterEach(async () => {
 });
 
 async function openPanel(): Promise<void> {
-  fireEvent.click(await screen.findByRole('button', { name: tQuick('open') }));
+  fireEvent.click(await screen.findByRole('button', { name: tNutrition('quickMealsOpen') }));
 }
 
 describe('repas rapides (REPAS-029a)', () => {

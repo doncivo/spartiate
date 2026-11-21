@@ -1,6 +1,6 @@
 # REPAS-029 — saisie rapide des repas et dépense ajustée aux pas (lot 0.29.0, IA-0c et PRD-I6)
 
-Statut : en cours (branche REPAS-029, non poussée, sans PR). Budget M à L. Modules : nutrition, domain-logic ; recovery en lecture (échantillons `pas`).
+Statut : code et tests verts en local (branche REPAS-029, non poussée, sans PR). Budget M à L. Modules : nutrition, domain-logic ; recovery en lecture (échantillons `pas`).
 Chapitres : PRD § 15.1 (formules), § 15.2 (modificateurs), § 15.3 (saisie), § 18.4 (charte). Décisions : D-410 (aucune IA), D-415 (pas de repas à la
 voix), D-396 (assiette, écriture tout ou rien), D-26 (synchro : AUCUNE table ni colonne publiée nouvelle ici). H-25 (`pas.csv`) reste UNVERIFIED.
 
@@ -55,6 +55,14 @@ FIX-0181). Limites : un favori apparaît aussi dans Recettes ; une ligne sans al
   ou sans pas importés (test).
 - C-10 — Given le Dashboard, When la dépense est affichée, Then la ligne « Hier, N pas (base M) : +X kcal sur la part formule » ou la raison s'affiche
   avec la source.
+
+## Preuves et écarts
+
+- 029a : rouge a8b57464 (domaine) ; vert 14925475 puis corrections de graphe de chunks (voir 029b) ; `quickMeals.test.ts` (12 cas), `QuickMeals.test.tsx` (5 cas, base SQLite réelle : aperçu sans écriture, quantité modifiée au prorata, hier vide, quantité invalide, favori puis rejeu, récents).
+- 029b : rouge e106ea9c ; vert db27b5d0 ; `steps-adjustment.json` (13 vecteurs), `stepsAdjustment.test.ts`, `StepsAdjustment.test.tsx` (affichage, raisons, mesure seule, C-9 : l'instantané garde la même dépense avec ou sans pas).
+- Écart : les tests d'écran de 029a ont été écrits avec le code (le rouge de 029a ne porte que le domaine).
+- Bundle : le départ a d'abord gagné +3 octets normalisés (193 882 contre 193 879) parce que le Journal importait le domaine des recettes en statique et sortait `recipeTypes` et `renphoDay` de la vue Recettes ; QuickMeals est donc chargé à la demande depuis le Journal (lazy), et les textes « Repas rapides » du bouton passent par le catalogue Nutrition existant. Mesure finale : 193 879 (début : 193 879).
+- Synchro : aucune table, aucune colonne, aucun fichier de src/sync ou src/domain/sync touché (favoris = recettes déjà publiées).
 
 ## Décisions proposées (sans numéro)
 

@@ -3,7 +3,6 @@
  * tutoiement, 24 h, aucune formulation culpabilisante sur l'alimentation (§ 15.7).
  */
 export const nutritionQuickFr = {
-  open: 'Repas rapides',
   title: 'Repas rapides',
   loading: 'Chargement des repas…',
   loadError: 'Les repas n’ont pas pu être lus.',
@@ -45,5 +44,4 @@ export const nutritionQuickFr = {
   favoriteNameNeeded: 'Donne un nom au favori.',
   favoriteNothing: 'Aucune ligne de ce repas ne peut être enregistrée (il faut un aliment et des grammes).',
   favoriteError: 'Le favori n’a pas pu être enregistré.',
-  cardButton: 'Repas récents',
 } as const;

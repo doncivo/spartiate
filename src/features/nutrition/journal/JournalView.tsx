@@ -1,23 +1,24 @@
 import { tPlural } from '../../../i18n/plural';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
 import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals } from '../../../domain/nutrition';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatTime } from '../../../i18n/format';
-import { tQuick } from '../../../i18n/nutritionQuickText';
 import { formatDayLong, formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
 import { Button, ConfirmDialog, SegmentedControl } from '../../../ui';
 import { ContextMenuZone } from '../../../ui/ContextMenu';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
-import { QuickMeals } from '../quickAdd/QuickMeals';
 import { QuickAddForm } from '../quickAdd/QuickAddForm';
 import { FoodSearchPanel } from '../search/FoodSearchPanel';
 import { KcalHero, MacroLine, nowTime, ProvenanceBadge } from '../shared';
 import type { NutritionSnapshot } from '../useCases';
 import { EntryEditor } from './EntryEditor';
+
+/** REPAS-029a : repas rapides à la demande (le graphe de départ et celui de l'écran Nutrition restent ceux d'avant, BUNDLE-01). */
+const QuickMeals = lazy(() => import('../quickAdd/QuickMeals').then((m) => ({ default: m.QuickMeals })));
 
 type DeclarationChoice = 'none' | DayDeclaration;
 
@@ -245,7 +246,9 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
       ) : mode.kind === 'quick' ? (
         <QuickAddForm date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'meals' ? (
-        <QuickMeals date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        <Suspense fallback={<p className="ct-nutrition__muted" role="status">{tNutrition('loading')}</p>}>
+          <QuickMeals date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        </Suspense>
       ) : mode.kind === 'edit' ? (
         <EntryEditor entry={mode.entry} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : (
@@ -256,7 +259,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
               {tNutrition('addQuick')}
             </Button>
             <Button variant="secondary" onClick={() => setMode({ kind: 'meals', date })}>
-              {tQuick('open')}
+              {tNutrition('quickMealsOpen')}
             </Button>
           </div>
         </div>

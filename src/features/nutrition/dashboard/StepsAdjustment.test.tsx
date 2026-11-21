@@ -6,7 +6,7 @@ import { DEFAULT_NUTRITION_PREFS } from '../../../domain/nutrition/prefs';
 import { estimateTdee } from '../../../domain/nutrition/tdee';
 import type { WeighIn } from '../../../domain/nutrition/types';
 import { computeTrend } from '../../../domain/nutrition/weightTrend';
-import type { StepsDay } from '../../../domain/nutrition';
+import type { StepsDay } from '../../../domain/nutrition/stepsAdjustment';
 import type { DeviceId, LocalDate } from '../../../domain/types';
 import { openBaseDb } from '../../../db/repositories/sql/testSetup';
 import { tNutrition } from '../../../i18n/nutritionText';

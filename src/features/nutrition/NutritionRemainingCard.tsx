@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { aggregateDay, remainingForDay, toMealEntryInput, type DayTotals, type DayType, type Remaining, type Target } from '../../domain/nutrition';
-import { tQuick } from '../../i18n/nutritionQuickText';
 import { tNutrition } from '../../i18n/nutritionText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -70,7 +69,7 @@ export function NutritionRemainingCard() {
         {tNutrition('cardAddMeal')}
       </Button>
       <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'journal', meals: true })}>
-        {tQuick('cardButton')}
+        {tNutrition('cardRecentMeals')}
       </Button>
       {target === null ? (
         <Button variant="secondary" fullWidth onClick={() => navigate({ tab: 'nutrition', screen: 'strategy' })}>
