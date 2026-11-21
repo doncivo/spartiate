@@ -196,8 +196,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-134 | audit Claude 0.27.0 | à vérifier (D-36) — « code absent des captures d'écran » sans ligne UNVERIFIED ; couleurs d'appairage mal justifiées | à faire (lot 0.28.0) |
 | C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à faire (lot 0.28.0) |
 | C-136 | audit Claude 0.27.0 | important — export importable seulement sous 2 Mo | fait (FIX-EXPORT) ; mesure d’une base synthétique de 12 mois à faire |
-| C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | à faire (lot 0.28.0) |
-| C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | à faire (lot 0.28.0) |
+| C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | fait (SAUV-RUST) |
+| C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | fait (SAUV-RUST) |
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (lot 0.28.0) |
 | C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | fait (FIX-CONFID-IOS) |
 | C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | à faire (lot 0.28.0) |

@@ -289,6 +289,8 @@ pub fn set_aside_conflicts(
     backups_dir: &Path,
     stamp: &str,
 ) -> Result<SetAside, &'static str> {
+    // Même exclusion que les autres opérations de `backup.rs` (C-138) ; aucune des fonctions verrouillées n'est appelée d'ici : pas d'interblocage.
+    let _guard = crate::backup::OperationGuard::acquire(db_path).map_err(|error| error.code)?;
     let name = |suffix: &str| {
         let mut text = db_path.as_os_str().to_owned();
         text.push(suffix);
