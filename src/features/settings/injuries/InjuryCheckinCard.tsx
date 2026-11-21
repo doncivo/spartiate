@@ -56,11 +56,11 @@ export function InjuryCheckinCard() {
   const first = due[0];
   if (first === undefined && !worse) return null;
   return (
-    <section className="ct-body__card ct-flat ct-injuries" aria-label={tInjuries('checkinTitle')}>
+    <section className="ct-today__card ct-injuries" aria-label={tInjuries('checkinTitle')}>
       {first !== undefined && (
         <>
-          <h2 className="ct-body__section ct-section-title">{tInjuries('checkinTitle')}</h2>
-          <p className="ct-body__hint">{tInjuries('checkinLead')}</p>
+          <h2 className="ct-today__eyebrow ct-section-title">{tInjuries('checkinTitle')}</h2>
+          <p className="ct-today__muted">{tInjuries('checkinLead')}</p>
           <div className="ct-injuries__answers">
             {CHECKIN_ANSWERS.map((choice) => (
               <Button key={choice} variant="secondary" onClick={() => void answer(first.id, choice)}>
@@ -70,8 +70,8 @@ export function InjuryCheckinCard() {
           </div>
         </>
       )}
-      {worse && <p className="ct-body__hint" role="status">{tInjuries('worseAdvice')}</p>}
-      {failed && <p className="ct-body__message" role="alert">{tInjuries('checkinSaveError')}</p>}
+      {worse && <p className="ct-today__text" role="status">{tInjuries('worseAdvice')}</p>}
+      {failed && <p className="ct-today__muted" role="alert">{tInjuries('checkinSaveError')}</p>}
     </section>
   );
 }

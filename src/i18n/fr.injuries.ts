@@ -16,6 +16,8 @@ export const injuriesFr = {
   saved: 'Gêne enregistrée.',
   errorTarget: 'Choisis un muscle ou au moins un mouvement douloureux.',
   errorDate: 'La date de début ne peut pas être dans le futur.',
+  errorDateRequired: 'Indique la date de début.',
+  errorMuscles: 'La liste des muscles est indisponible : tu peux tout de même déclarer des mouvements douloureux.',
   errorNote: 'La note est trop longue (140 caractères au plus).',
   errorSave: 'Enregistrement impossible : réessaie.',
   activeTitle: 'Gênes actives',

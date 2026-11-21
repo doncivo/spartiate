@@ -37,3 +37,11 @@ Tests : `src/domain/training/injuries.test.ts`, `src/domain/injuryNotificationPl
 ## Constats d'Ali à faire
 
 iPhone : déclarer une gêne fictive, vérifier la carte Aujourd'hui après 14 jours (ou en avançant la date de début), la notification neutre. PC : la section Blessures dans Profil et poids.
+
+## Relecture à froid
+
+Verdict : à corriger, corrigé. (1) La carte de check-in utilisait des classes `ct-body__*` définies dans `BodyScreen.css`, absentes d'Aujourd'hui au lancement à froid : elle porte maintenant `ct-today__card`, `ct-today__eyebrow`, `ct-today__muted`, `ct-today__text` (feuille d'Aujourd'hui) et sa propre `Injuries.css`, avec test. (2) Tests de branchement ajoutés : proposition de séance sans exercice évité (`GeneratedSession.injuries.test.tsx`), replanification de `injury` par `supplementWake`, nature `injury` (contrat, validation, registre) ; date effacée : message « date requise » ; échec du chargement des muscles : message dit, aucun rejet non géré. Rouge 69e136fe (les tests de branchement et de nature étaient déjà verts : ils prouvent un code existant), vert dans le commit suivant.
+
+Surcoût propre au ticket : +46 octets normalisés sur main (194 002 contre 193 956) avant le retrait de 7 clés de `fr.ts` sans usage (tasks.complete, tasks.reopen, reminders.more, editTitle, saveError, sectionTitle, recaps) ; après retrait 193 937. COQUILLE-PC retire les mêmes 7 clés : à la fusion, le surcoût propre reste +46 octets contre main (marge très large, plafond non touché).
+
+Constat pour Ali : le rappel est replanifié à l'ouverture, au retour au premier plan et après un lot de synchro touchant les compléments, pas en arrière-plan : une gêne déclarée puis une app fermée avant replanification n'est pas un cas (la déclaration replanifie tout de suite).

@@ -44,10 +44,15 @@ export function InjuriesSection() {
       },
       () => undefined,
     );
-    void import('../../../../content/exercises/muscles.json').then((m) => {
-      const list = (m.default as { readonly muscles: readonly MuscleOption[] }).muscles;
-      if (live) setMuscles([...list].sort((a, b) => a.nameFr.localeCompare(b.nameFr, 'fr')));
-    });
+    void import('../../../../content/exercises/muscles.json').then(
+      (m) => {
+        const list = (m.default as { readonly muscles: readonly MuscleOption[] }).muscles;
+        if (live) setMuscles([...list].sort((a, b) => a.nameFr.localeCompare(b.nameFr, 'fr')));
+      },
+      () => {
+        if (live) setMessage({ kind: 'error', text: tInjuries('errorMuscles') });
+      },
+    );
     return () => {
       live = false;
     };
@@ -69,6 +74,10 @@ export function InjuriesSection() {
   );
 
   async function save(): Promise<void> {
+    if (startedOn === '') {
+      setMessage({ kind: 'error', text: tInjuries('errorDateRequired') });
+      return;
+    }
     const result = declareInjury(value, { id: String(container.ids.next()), muscleId: muscleId === '' ? null : muscleId, patterns, startedOn: startedOn as typeof today, note: note === '' ? null : note }, today);
     if (!result.ok) {
       const key = result.issue === 'target' ? 'errorTarget' : result.issue === 'date' ? 'errorDate' : result.issue === 'note' ? 'errorNote' : 'errorSave';
