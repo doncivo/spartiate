@@ -438,6 +438,18 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return rows.map(rowToWorkout);
     },
 
+    async closedSince(fromIso) {
+      const rows = await db.select<WorkoutRow>('SELECT * FROM workout WHERE ended_at IS NOT NULL AND deleted_at IS NULL AND started_at >= ? ORDER BY started_at, id', [fromIso]);
+      if (rows.length === 0) return [];
+      const sets = await db.select<SetRow>(
+        'SELECT s.* FROM workout_set s JOIN workout w ON w.id = s.workout_id WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL AND w.started_at >= ? AND s.deleted_at IS NULL ORDER BY s.position, s.id',
+        [fromIso],
+      );
+      const byWorkout = new Map<string, SetRow[]>();
+      for (const set of sets) byWorkout.set(set.workout_id, [...(byWorkout.get(set.workout_id) ?? []), set]);
+      return rows.map((row) => ({ ...rowToWorkout(row), sets: (byWorkout.get(row.id) ?? []).map(rowToSet) }));
+    },
+
     async addExercise(workoutId, input) {
       await requireOpen(workoutId);
       const count = input.sets ?? 1;

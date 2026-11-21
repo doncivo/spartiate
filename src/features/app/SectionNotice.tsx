@@ -8,6 +8,8 @@ import { TodayScreen } from './TodayScreen';
  * plutôt que dans lazyScreens.tsx : rien n'entre dans le départ.
  */
 const StrengthScore = lazyScreen<object>(() => import('../strength/StrengthScore').then((m) => ({ default: m.StrengthScore })), undefined, { onDemand: true });
+/** PROGRES (§ 17.1) : Progrès › Entraînement (volume, constance, adhérence), bloc à part chargé avec son catalogue de textes ; rien dans le départ. */
+const TrainingProgress = lazyScreen<object>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TrainingProgress })), undefined, { onDemand: true });
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
 
@@ -36,6 +38,7 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
         </>
       )}
       {tab === 'progress' ? <RecoveryProgress /> : null}
+      {tab === 'progress' ? <TrainingProgress /> : null}
       {tab === 'progress' ? <StrengthScore /> : null}
       {tab === 'progress' ? <BodyProgress /> : null}
       {/* I6-06 : séances cardio des quatre dernières semaines. */}
