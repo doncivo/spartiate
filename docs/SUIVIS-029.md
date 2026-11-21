@@ -1,6 +1,6 @@
 # SUIVIS-029 — suivis complémentaires : pas, zone 2, notes sur 10, VISBODY (lot 0.29.0, PROG-02)
 
-Statut : en cours (branche SUIVIS-029, non poussée, sans PR). Budget M à L. Modules : recovery (pas, notes), training (cardio, zone 2),
+Statut : code et tests verts en local (branche SUIVIS-029, non poussée, sans PR) ; constats d’Ali à faire. Budget M à L. Modules : recovery (pas, notes), training (cardio, zone 2),
 nutrition / corps (VISBODY), data-model (aucune migration, voir « Données »).
 Chapitres : PRD § 16 (récupération ; les notes n'y entrent pas), § 17.1 (indicateurs de Progrès, Corps), § 18.4 (charte), § 20.2
 (modèle de données, `measurement`), § 21 (export / import), § 26.2 (H-25). Décisions citées : D-113 (genres de mesure sans migration,
@@ -71,3 +71,60 @@ publiée `measurement` (identifiant naturel `measurement|AAAA-MM-JJ|genre`, fusi
 `visbody_bmr_dakcal`, la colonne `value` étant bornée à moins de 1 000 par le CHECK de la 0012). Catalogue `src/domain/sync/syncTables.ts`
 NON modifié ; `src/sync/**` non touché. Export : unité par genre dans `contenu.json` et le CSV (FIX-0173). Réglages des objectifs : clé
 LOCALE `today.prefs` (`settings` non publiés, D-55).
+
+## Passes (agent du module, qa-test, code-reviewer)
+
+| Sous-ticket | Rouge | Vert |
+| --- | --- | --- |
+| a — pas | 9597f522 | fef49b57 |
+| b — zone 2 | fc8c81b4 | c3b1688e |
+| c — notes sur 10 | 41dee499 | 30eea60d |
+| d — VISBODY | 10058bd1 | ffd843f1 |
+
+Puis f0f57895 (mesure du bundle : clé `today.prefs` placée, notes écrites dans `measurements.ts` pour ne pas créer de bloc partagé ; copie
+réduite de la courbe et des règles CSS dans le bloc Corps pour la même raison) et 761caa5f (qa-test : bornes exactes, semaine du lundi, âge
+limite, séparation des genres ; aucun défaut trouvé).
+
+- Agent du module : règles pures `src/domain/tracking` (objectifs, pas, zone 2, notes réexportées) et `src/domain/bodyProgress/visbody.ts` ;
+  écrans `src/features/tracking` (carte « Suivis du jour » à la demande depuis Aujourd'hui, Progrès › Suivis à la demande depuis Progrès) et
+  `src/features/bodyProgress/VisbodySection.tsx` (dans Progrès › Corps) ; catalogues `fr.tracking.ts`, `fr.visbody.ts`.
+- qa-test : `tracking.qa.test.ts`, test de séparation des genres ; gardes `plural.test.ts` et `unusedKeys.test.ts` vertes (trois familles
+  construites de `fr.tracking.ts`, deux de `fr.visbody.ts`, déclarées au WHITELIST).
+- code-reviewer (relecture à froid du diff) : aucune lecture de note par `src/domain/recovery` ni par l'import Raccourcis (test C-4) ; aucune
+  écriture `body_weight` ; aucune valeur dans un journal ; `src/sync/**` et `src/domain/sync/**` non touchés ; dataReset : `today.prefs`
+  effacé à « Repartir de zéro », comme les objectifs de nutrition.
+- Vérifications locales : `tsc` propre ; eslint propre sur tous les fichiers touchés ; 52 fichiers de tests ciblés verts (695 tests) ;
+  bundle de départ 193 879 octets normalisés au début, 193 878 à la fin.
+
+## Décisions proposées (sans numéro, révisables par Ali)
+
+1. Pas : objectif quotidien par défaut 8 000 (1 000 à 50 000), réglage LOCAL `today.prefs` (non publié, D-55 : à régler sur chaque appareil) ;
+   source `pas.csv` seule (H-25 reste UNVERIFIED) ; raisons de « — » : PC, jamais lu (absent ou illisible), sans total du jour, lecture
+   impossible. Moyenne hebdomadaire sur les jours connus, semaines du lundi, 4 semaines.
+2. Zone 2 : FC max saisie (100 à 230) prioritaire, sinon 220 − (année courante − année de naissance) ; zone = arrondi de 60 % à 70 % de la
+   FC max, bornes incluses ; une séance cardio compte pour TOUTE sa durée si sa FC moyenne est dans la zone, 0 sinon ; sans FC moyenne :
+   non comptée et dite. Objectif hebdomadaire par défaut 150 min (10 à 1 200).
+3. Notes sur 10 : fatigue (1 = pas fatigué, 10 = épuisé) et qualité du sommeil (1 = très mauvaise, 10 = excellente), une par jour, modifiables
+   le jour même, PUBLIÉES (genres `note_*` de `measurement`) ; AUCUN effet sur la récupération (choix prudent).
+4. VISBODY : genres `visbody_*` de `measurement` (16 : poids, masse grasse, masse musculaire, graisse viscérale, eau en kg, métabolisme de base
+   saisi en kcal et stocké en décakilocalories, masses maigre et grasse de 5 segments), PUBLIÉS comme les mensurations ; le poids d'un bilan
+   n'entre PAS dans les pesées ni dans la tendance.
+5. Aucune migration : précédent D-113. Conséquence : une version antérieure à 0.29.0 qui reçoit ces genres (synchro) les garde sans les
+   afficher, mais refuse une archive d'export qui en contient (genre inconnu) : mettre à jour le PC et l'iPhone le même jour.
+
+## Constats à faire par Ali
+
+- Pas : avec `pas.csv` lu, la carte « Suivis du jour » montre « n / 8 000 pas » ; sans fichier, « — » et la raison (H-25 non constaté).
+- Zone 2 : une séance cardio saisie avec une FC moyenne dans la zone apparaît en minutes dans Progrès › Suivis.
+- Notes : un geste sur Aujourd'hui (iPhone et PC), puis la courbe dans Progrès ; la note saisie sur un appareil arrive sur l'autre.
+- VISBODY : un bilan saisi dans Progrès › Corps, courbe et écart au bilan suivant ; vu sur l'autre appareil après synchro.
+
+## Écarts au brief
+
+- Aucune table nouvelle (genres de `measurement`, D-113) : `syncTables.ts` intact, la table `measurement` était déjà publiée ; relecture
+  sync-icloud non requise par D-26 (aucun fichier de synchro touché), mais le contenu publié s'enrichit de genres nouveaux : à signaler.
+- Rouge de 029a : le test de bundle ajouté avait une expression régulière mal échappée (erreur de typage), corrigée dans le vert ; le helper
+  `fr()` du test des pas normalise les espaces comme Testing Library (corrigé dans le vert). Rouge de 029d : `bodyWeights().list()` corrigé
+  en `listRecent(10)` (méthode réelle du dépôt) dans le vert.
+- Réglages des objectifs dans Progrès › Suivis (pas dans Plus) ; mesure du bundle obtenue en nommant la clé `today.prefs` (placement choisi).
+- Branche partie de c107a876 : `main` a reçu REPAS-029 depuis (pas de fusion faite ici, comme demandé).
