@@ -701,6 +701,22 @@ describe('validateContent : pictogrammes SVG', () => {
   ])('refuse %s', (_label, fragment, pattern) => {
     expect(errorsOf(GOOD.replace('</svg>', `${fragment}</svg>`))).toMatch(pattern);
   });
+  // Revue à froid de MEDIA-03 : liste blanche (éléments, attributs, guillemets doubles), les contournements de la liste noire sont refusés.
+  it.each([
+    ['un on* après une barre oblique', '<path/onload="x()"/>'],
+    ['une balise img', '<img/src=x/onerror=alert(1)>'],
+    ['une animation qui pose un href', '<g><animate attributeName="href" values="x"/></g>'],
+    ['une entité', '<path d="M0 0" fill="&#114;ed"/>'],
+    ['un iframe', '<iframe srcdoc="x"></iframe>'],
+    ['une couleur entre guillemets simples', "<path d='M0 0' fill='#f00'/>"],
+    ['une couleur sans guillemets', '<path d="M0 0" fill=red/>'],
+    ['un stop-color', '<path d="M0 0" stop-color="#f00"/>'],
+    ['un use', '<use/>'],
+    ['une donnée data:', '<path d="M0 0" opacity="data:x"/>'],
+    ['un attribut inconnu', '<path d="M0 0" filter="x"/>'],
+  ])('liste blanche : refuse %s', (_label, fragment) => {
+    expect(errorsOf(GOOD.replace('</svg>', `${fragment}</svg>`))).toMatch(/pictogramme non admis/);
+  });
   it('le contenu réel : un pictogramme par exercice sans photo, tous valides', () => {
     const real = validateContentDir(CONTENT);
     expect(real.errors).toEqual([]);
