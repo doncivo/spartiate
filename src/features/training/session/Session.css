@@ -479,3 +479,31 @@
 .ct-session__check .ct-session__hint {
   flex-basis: 100%;
 }
+
+/* SESS-01b : bandeau de vignettes réordonnables. */
+.ct-session__strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: var(--ct-space-2);
+  flex-wrap: wrap;
+}
+.ct-session__strip-item {
+  flex: 0 0 auto;
+}
+.ct-session__chip {
+  min-height: 44px;
+  padding: 0 var(--ct-space-3);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  font: inherit;
+  touch-action: none;
+  cursor: grab;
+}
+.ct-session__chip[aria-current='step'] {
+  border-color: var(--ct-color-accent);
+  font-weight: 600;
+}

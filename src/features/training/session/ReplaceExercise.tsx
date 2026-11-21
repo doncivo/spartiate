@@ -28,18 +28,21 @@ export interface ReplaceExerciseProps {
   readonly block: ExerciseBlock;
   /** Exercices écartés (« ne plus proposer », SESS-01b). */
   readonly excluded: ReadonlySet<string>;
+  /** SESS-01b : « Proposer à nouveau » un exercice écarté (réglage local écrit par l'appelant). */
+  readonly onRestore: (exerciseId: string) => Promise<void>;
   readonly onCancel: () => void;
   /** Remplacement écrit : la séance est relue par l'appelant. */
   readonly onDone: () => void;
 }
 
-export function ReplaceExercise({ data, access, workout, block, excluded, onCancel, onDone }: ReplaceExerciseProps) {
+export function ReplaceExercise({ data, access, workout, block, excluded, onRestore, onCancel, onDone }: ReplaceExerciseProps) {
   const [chosen, setChosen] = useState<Exercise | null>(null);
   const [estimate, setEstimate] = useState<Estimate>({ kind: 'reading' });
   const [alsoRoutine, setAlsoRoutine] = useState(false);
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [restored, setRestored] = useState<string | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const live = useRef(true);
   const routineId = useId();
@@ -115,6 +118,17 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onCanc
     }
   }
 
+  async function restore(exercise: Exercise): Promise<void> {
+    setError(null);
+    try {
+      await onRestore(exercise.id);
+      if (live.current) setRestored(tSession('restoredExcluded', { name: exercise.nameFr }));
+    } catch {
+      if (live.current) setError(tSession('restoreError'));
+    }
+  }
+  const excludedList = [...excluded].map((id) => exerciseOf(id)).filter((e): e is Exercise => e !== undefined).sort((a, b) => a.nameFr.localeCompare(b.nameFr, 'fr'));
+
   const onKey = (event: KeyboardEvent<HTMLElement>): void => {
     if (event.key === 'Escape') {
       event.stopPropagation();
@@ -156,6 +170,25 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onCanc
         {tSession(searching ? 'replaceSearchClose' : 'replaceSearch')}
       </Button>
       {searching && <ExerciseList data={data} mode="picker" onSelect={(exercise) => void choose(exercise)} />}
+      {excludedList.length > 0 && (
+        <>
+          <h3 className="ct-session__block-title">{tSession('excludedTitle')}</h3>
+          <ul className="ct-session__replace-list" aria-label={tSession('excludedTitle')}>
+            {excludedList.map((e) => (
+              <li key={e.id}>
+                <Button variant="secondary" fullWidth disabled={busy} onClick={() => void restore(e)}>
+                  {tSession('restoreExcluded', { name: e.nameFr })}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {restored !== null && (
+        <p className="ct-session__muted" role="status">
+          {restored}
+        </p>
+      )}
 
       {chosen !== null && (
         <div className="ct-session__replace-confirm" role="group" aria-label={tSession('replaceChosen', { name: chosen.nameFr })}>

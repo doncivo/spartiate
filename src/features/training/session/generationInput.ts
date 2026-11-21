@@ -57,6 +57,8 @@ export interface GenerationData {
   readonly exercises: readonly Exercise[];
   readonly active: Pick<AnyProfile, 'kind' | 'inventory'>;
   readonly content: Pick<TrainingContent, 'groupOfMuscle'>;
+  /** SESS-01b : exercices écartés (« ne plus proposer », réglage local) ; absent : aucun. */
+  readonly excluded?: readonly string[];
 }
 
 /** I3-02 : semaine du cycle suivi pour cette routine (`generationWeekOf`) et rotation Varied ; absent : la routine telle quelle. */
@@ -77,6 +79,7 @@ export function buildGenerationInput(data: GenerationData, source: GenerationSou
       style: settings.style,
       priorities: settings.priorities,
       painfulPatterns: settings.painfulPatterns,
+      ...(data.excluded !== undefined && data.excluded.length > 0 ? { excludedExerciseIds: data.excluded } : {}),
       days: source.days,
       startedAt: source.startedAt,
     },

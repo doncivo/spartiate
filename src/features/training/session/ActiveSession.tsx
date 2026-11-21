@@ -1,5 +1,5 @@
 import { tPlural } from '../../../i18n/plural';
-import { Fragment, Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
   REST_CHOICES_SEC,
@@ -18,6 +18,8 @@ import {
   type WorkoutWithSets,
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
+import { parseExcludedExercises, withExcluded } from '../../../domain/training/exclusions';
+import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
 import { loadGrid } from '../../../domain/training/loadGrid';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -32,6 +34,7 @@ import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
 import type { RestReport, RestTimerController } from './restTimer';
 import type { RedDayState } from './redDayState';
+import { SessionStrip } from './SessionStrip';
 import { SetRow } from './SetRow';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
@@ -89,10 +92,27 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [grouping, setGrouping] = useState(false);
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
   const [replacing, setReplacing] = useState<string | null>(null);
-  /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage. */
-  const [excluded] = useState<ReadonlySet<string>>(() => new Set());
+  /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage ; illisible : aucun. */
+  const [excludedIds, setExcludedIds] = useState<readonly string[]>([]);
+  const excluded = useMemo(() => new Set(excludedIds), [excludedIds]);
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.excludedExercises').then(
+      (raw) => {
+        if (alive) setExcludedIds(parseExcludedExercises(raw));
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access]);
   const [confirm, setConfirm] = useState<
-    { readonly kind: 'abandon' } | { readonly kind: 'finish'; readonly pending: number } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null
+    | { readonly kind: 'abandon' }
+    | { readonly kind: 'finish'; readonly pending: number }
+    | { readonly kind: 'exercise'; readonly block: ExerciseBlock }
+    | { readonly kind: 'exclude'; readonly block: ExerciseBlock }
+    | null
   >(null);
   const [rest, setRest] = useState<RestView | null>(null);
   const [restDone, setRestDone] = useState(false);
@@ -350,6 +370,33 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // comprises : règle `resumeState`, § 13.7) ; elle est le bloc central.
   const currentSetId = resumeState(workout, now)?.nextSetId ?? null;
   const currentBlock = blocks.findIndex((b) => b.sets.some((s) => s.id === currentSetId));
+  // SESS-01b : vignettes (un exercice libre ou un groupe par unité), « Sauter » sur l'exercice en cours.
+  const units = sessionUnits(workout.sets);
+  const currentUnit = units.find((u) => currentSetId !== null && u.setIds.includes(currentSetId))?.key ?? null;
+  const nameOfUnit = (unit: SessionUnit): string => unit.exerciseIds.map((id) => blocks.find((b) => b.exerciseId === id)?.exerciseName ?? id).join(tSession('stripJoin'));
+  const showUnit = (unit: SessionUnit): void => {
+    const first = unit.exerciseIds[0];
+    const region = first === undefined ? null : document.getElementById(`ct-session-block-${first}`);
+    region?.scrollIntoView?.({ block: 'start' });
+    region?.focus();
+  };
+  const reorder = (order: string[] | null): void => {
+    if (order !== null) void write((repo) => repo.reorderSets(workout.id, order));
+  };
+  async function exclude(block: ExerciseBlock): Promise<void> {
+    setConfirm(null);
+    const next = withExcluded(excludedIds, block.exerciseId, true);
+    const ok = await write(async (repo) => {
+      await repo.removeExercise(workout.id, block.exerciseId);
+    });
+    if (!ok) return;
+    try {
+      await access.repos.settings.set('training.excludedExercises', next);
+      if (live.current) setExcludedIds(next.ids);
+    } catch {
+      if (live.current) setError(tSession('excludeError'));
+    }
+  }
 
   const replacingBlock = replacing === null ? undefined : blocks.find((b) => b.exerciseId === replacing);
   if (replacingBlock !== undefined) {
@@ -361,6 +408,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           workout={workout}
           block={replacingBlock}
           excluded={excluded}
+          onRestore={async (id) => {
+            const next = withExcluded(excludedIds, id, false);
+            await access.repos.settings.set('training.excludedExercises', next);
+            if (live.current) setExcludedIds(next.ids);
+          }}
           onCancel={() => setReplacing(null)}
           onDone={() => {
             setReplacing(null);
@@ -447,9 +499,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </Suspense>
       )}
 
+      <SessionStrip units={units} nameOf={nameOfUnit} currentKey={currentUnit} busy={busy} onMove={(key, to) => reorder(moveUnitOrder(workout.sets, key, to))} onShow={showUnit} />
+
       {blocks.length === 0 && <p className="ct-session__muted">{tTraining('sessionNoExercise')}</p>}
 
-      {blocks.map((block) => {
+      {blocks.map((block, blockIndex) => {
         const exercise = exerciseOf(block.exerciseId);
         // Repos affiché : celui de la première série de travail (une rampe d'échauffement n'a pas de repos programmé).
         const first = block.sets.find((s) => s.setKind !== 'warmup') ?? block.sets[0];
@@ -468,7 +522,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <CircuitHeader circuit={circuit} workout={workout} busy={busy} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
             </Suspense>
           )}
-          <section className="ct-session__block" role="region" aria-label={block.exerciseName}>
+          <section className="ct-session__block" role="region" aria-label={block.exerciseName} id={`ct-session-block-${block.exerciseId}`} tabIndex={-1}>
             <div className="ct-session__block-head">
               <h3 className="ct-session__block-title">{block.exerciseName}</h3>
               <p className="ct-session__muted">
@@ -513,8 +567,16 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                   {tSession('replace')}
                 </Button>
               )}
+              {blockIndex === currentBlock && skipUnitOrder(workout.sets, block.exerciseId) !== null && (
+                <Button variant="secondary" disabled={busy} onClick={() => reorder(skipUnitOrder(workout.sets, block.exerciseId))}>
+                  {tSession('skip')}
+                </Button>
+              )}
               <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exercise', block })}>
                 {tTraining('sessionRemoveExercise')}
+              </Button>
+              <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exclude', block })}>
+                {tSession('removeExclude')}
               </Button>
             </div>
           </section>
@@ -607,6 +669,15 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           cancelLabel={tTraining('sessionFinishContinue')}
           onCancel={() => setConfirm(null)}
           onConfirm={() => void finish()}
+        />
+      )}
+      {confirm?.kind === 'exclude' && (
+        <ConfirmDialog
+          title={tSession('removeExcludeTitle', { name: confirm.block.exerciseName })}
+          description={tSession('removeExcludeHint')}
+          confirmLabel={tSession('removeExcludeConfirm')}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => void exclude(confirm.block)}
         />
       )}
       {confirm?.kind === 'exercise' && (

@@ -106,6 +106,11 @@ export interface WorkoutRepository {
    */
   replaceExercise(workoutId: string, fromExerciseId: string, input: ReplaceExerciseInput): Promise<WorkoutWithSets>;
   /**
+   * SESS-01b (vignettes, « Sauter ») : positions des séries de la séance OUVERTE dans l'ordre donné (`order` : exactement les séries vivantes,
+   * sans doublon, sinon `'invalid'` et rien n'est écrit). Close : `'invalid'` ; absente : `'not-found'`. Ne réécrit que les lignes qui changent.
+   */
+  reorderSets(workoutId: string, order: readonly string[]): Promise<WorkoutWithSets>;
+  /**
    * I6-03 (§ 13.8) : relie au moins deux exercices de la séance OUVERTE en un groupe (superset, triset, circuit : un seul mécanisme). `rounds` : nombre de
    * tours (par défaut le plus grand nombre de séries de travail des exercices) ; séries manquantes ajoutées, séries à faire en trop retirées, jamais une
    * série validée. `restBetweenSec` : repos entre exercices d'un tour (0 = aucun) ; `restRoundSec` : repos de fin de tour (null : celui de l'exercice).

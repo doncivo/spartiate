@@ -482,6 +482,15 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return loadOrThrow(workoutId);
     },
 
+    async reorderSets(workoutId, order) {
+      await requireOpen(workoutId);
+      const rows = await rawSets(workoutId);
+      const known = new Set(rows.map((r) => r.id));
+      if (order.length !== rows.length || new Set(order).size !== order.length || order.some((id) => !known.has(id))) invalid('workout_set', workoutId);
+      await applyOrder(order);
+      return loadOrThrow(workoutId);
+    },
+
     async replaceExercise(workoutId, fromExerciseId, input) {
       await requireOpen(workoutId);
       const rows = await rawSets(workoutId);
