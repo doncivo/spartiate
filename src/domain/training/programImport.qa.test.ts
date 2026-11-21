@@ -124,3 +124,27 @@ describe('IMPORT-029 qa : rapprochement', () => {
     expect(spec.days[0]?.exercises[0]?.restSec).toBe(900);
   });
 });
+
+describe('IMPORT-029 revue à froid : entrées hostiles', () => {
+  it('bloc JSON très profond : refusé avec sa raison, jamais une exception', () => {
+    const deep = `{"sessions":[${'['.repeat(100_000)}${']'.repeat(100_000)}]}`;
+    const result = parseProgramText(deep);
+    expect(result.sessions).toEqual([]);
+    expect(result.rejected.map((r) => r.reason)).toEqual(['json-field']);
+  });
+
+  it('ligne de plus de 500 caractères : refusée « trop longue » sans être analysée, en temps borné', () => {
+    const long = `Squat${' '.repeat(40_000)}3 x 10`;
+    const t0 = Date.now();
+    const result = parseProgramText(`Jour A\n${long}\nPompes 3 x 12`);
+    expect(Date.now() - t0).toBeLessThan(1_000);
+    expect(result.rejected.map((r) => r.reason)).toEqual(['too-long']);
+    expect(result.sessions.flatMap((s) => s.exercises).map((e) => e.name)).toEqual(['Pompes']);
+  });
+
+  it('« Jour 1 » vide suivi de « Jour 2 » : deux séances, « Jour 1 » n’est pas le nom de la routine', () => {
+    const result = parseProgramText('Jour 1\nJour 2\nPompes 3 x 12');
+    expect(result.name).toBeNull();
+    expect(result.sessions.map((s) => s.name)).toEqual(['Jour 1', 'Jour 2']);
+  });
+});
