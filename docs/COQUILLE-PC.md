@@ -17,8 +17,8 @@ Aucune donnée réelle.
 - Textes : `trainingFr.openItem`, `rowActions`, `nutritionFr.entryActions` (catalogues à la demande). Couleurs : jetons uniquement.
 
 ### COQUILLE-PC-b : barre latérale rétractable (PC)
-- Given PC, When on active « Replier la barre latérale » (bouton atteignable au clavier, `aria-expanded`), Then la barre passe à 64 px,
-  icônes seules ; chaque onglet garde son nom accessible et son infobulle ; la carte d'état est masquée ; « Déployer » la rétablit.
+- Given PC, When on active le bouton « Barre latérale » (atteignable au clavier, `aria-expanded` dit replié ou déployé), Then la barre passe à 64 px,
+  icônes seules ; chaque onglet garde son nom accessible (libellé lu, sans infobulle : retirée pour tenir le bundle) ; la carte d'état est masquée ; le même bouton la rétablit.
   État en mémoire du composant, non persisté (aucune donnée ajoutée). iPhone : pas de bouton.
 - Badge du minuteur dans le titre de la fenêtre : REPORTÉ (voir écarts).
 
@@ -33,8 +33,8 @@ Aucune donnée réelle.
 - Tests : `src/ui/ContextMenu.test.tsx`, `src/features/nutrition/journal/ContextMenu.test.tsx`, `src/features/training/history/ContextMenu.test.tsx`,
   `src/ui/TabRail.test.tsx`, `src/ui/theme/a11y.test.ts` (règle CSS Dynamic Type).
 - SHA : a rouge 9da7a3e5, a vert a487e689 ; b rouge bba7a6d9, b vert 692cf685 ; c rouge 2393e703, c vert 83713a26.
-- Bundle de départ (normalisé) : origin/main 193 956 octets, branche 194 130 octets (+ 174 : bouton de repli et deux clés `nav.*` dans la
-  coquille, qui est dans le départ) ; plafond 358 400 inchangé, marge 164 270 ; `startModules.test.ts` vert, aucun module ajouté.
+- Bundle de départ (normalisé) : origin/main 193 956 octets, première mesure de la branche 194 130 (+ 174 : bouton de repli
+  et deux clés `nav.*` dans la coquille), compensée par 011b44d6 : **193 901 octets** (− 55), plafond 358 400 inchangé, marge 164 499 ; `startModules.test.ts` vert, aucun module ajouté.
   Le menu contextuel n'est importé que par des écrans à la demande.
 
 ## Écarts, reporté
@@ -54,3 +54,7 @@ Aucune donnée réelle.
 1. Menu contextuel PC = composant commun `src/ui/ContextMenu`, jamais une action absente de l'élément ; PC seulement, iPhone inchangé.
 2. Dynamic Type par `font: -apple-system-body` sous `@supports` ; accepter le corps de 17 px au réglage par défaut d'iOS.
 3. Barre latérale repliée non persistée ; badge du minuteur reporté à un ticket qui possède l'état du minuteur et la permission fenêtre.
+
+## Relecture à froid (code-reviewer, agent distinct)
+
+Verdict initial : à corriger (trois points importants). Compensation du bundle (011b44d6) : un libellé « Barre latérale » porté par `aria-expanded`, chevron unique retourné en CSS, carte masquée en CSS, clés héritées de CircleTasks sans usage retirées de `fr.ts` (`tasks`, `reminders.*` sauf `status`, `detail.createdModified`, `undo.postponeTomorrow`, `undo.moveDate` ; tests ajustés). Corrections (rouge abe1fce8, vert 55edaa0d) : la liste servant aussi de sélecteur (routine, séance, remplacement) dit « Choisir » et non « Ouvrir » ; Échap rend le focus à l'élément d'où le menu est parti (ligne `<li>` non focalisable du journal) ; un double-clic parti d'un bouton de la ligne n'est pas l'action principale ; recalage horizontal à 280 px (largeur maximale du menu). Numéros : D-398 à D-401, BL-118, BL-119.
