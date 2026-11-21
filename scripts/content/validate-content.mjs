@@ -3,6 +3,7 @@
 // Validation du contenu embarqué de Spartiate (I1-01) : Node, aucune dépendance.
 // Usage : node scripts/content/validate-content.mjs [dossier-content]   (défaut : content/)
 // Sortie : lignes `::error::` et code 1 à la moindre erreur ; aucun avertissement toléré.
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -396,10 +397,64 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
     }
     if (entry.exerciseId !== m.exerciseId || `${entry.source}:${entry.originPath}` !== m.source) err(m.where, `registre incohérent (exercice ou source) : ${m.file}`);
     if (entry.bytes !== bytes.length || entry.sha256 !== createHash('sha256').update(bytes).digest('hex')) err(m.where, `empreinte ou taille différente du registre : ${m.file}`);
+    validateReduction(entry, bytes, m, err);
   }
   if (total > maxTotal) err(where, `budget total des médias dépassé : ${total} octets > ${maxTotal}`);
   for (const f of present) if (!referenced.has(f)) err(where, `média orphelin : ${f}`);
   for (const e of entries) if (isObj(e) && !referenced.has(e.file)) err(`${where}/sources.json`, `entrée sans média référencé : ${String(e.file)}`);
+}
+
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
+  let c = n;
+  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+  return c >>> 0;
+});
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (const b of buf) c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+/** Blocs d'un PNG (type, données) si la signature et le CRC de chaque bloc sont justes et qu'il finit par IEND ; sinon la raison. */
+function pngChunks(bytes) {
+  if (bytes.length < 8 || !bytes.subarray(0, 8).equals(PNG_SIGNATURE)) return { error: 'signature' };
+  const chunks = [];
+  let at = 8;
+  while (at + 12 <= bytes.length) {
+    const len = bytes.readUInt32BE(at);
+    if (at + 12 + len > bytes.length) return { error: 'bloc tronqué' };
+    const typeAndData = bytes.subarray(at + 4, at + 8 + len);
+    const type = typeAndData.subarray(0, 4).toString('latin1');
+    if (crc32(typeAndData) !== bytes.readUInt32BE(at + 8 + len)) return { error: `CRC du bloc ${type}` };
+    chunks.push({ type, data: typeAndData.subarray(4) });
+    at += 12 + len;
+    if (type === 'IEND') return at === bytes.length ? { chunks } : { error: 'octets après IEND' };
+  }
+  return { error: 'IEND absent' };
+}
+
+/**
+ * BL-011 (NETTOYAGE, lot 0.28.1) : une source réduite (`reduceMaxHeight`, MEDIA-02) impose au registre la taille et l'empreinte de
+ * l'original et la transformation exacte, et au fichier un PNG gris 8 bits intègre (CRC de chaque bloc) dont la hauteur respecte la
+ * réduction ; une source non réduite ne porte aucun de ces champs.
+ */
+function validateReduction(entry, bytes, m, err) {
+  const source = Object.hasOwn(MEDIA_SOURCES, entry.source) ? MEDIA_SOURCES[entry.source] : null;
+  const maxHeight = source?.reduceMaxHeight;
+  const fields = ['originBytes', 'originSha256', 'transform'];
+  if (!maxHeight) {
+    if (fields.some((f) => Object.hasOwn(entry, f))) err(m.where, `champs de réduction sur une source non réduite : ${m.file}`);
+    return;
+  }
+  const complete = Number.isInteger(entry.originBytes) && entry.originBytes > 0 && typeof entry.originSha256 === 'string' && /^[0-9a-f]{64}$/.test(entry.originSha256) && entry.transform === `gris-8-bits-hauteur-${maxHeight}`;
+  if (!complete) err(m.where, `média réduit : provenance d’origine incomplète (originBytes, originSha256, transform « gris-8-bits-hauteur-${maxHeight} ») : ${m.file}`);
+  const png = pngChunks(bytes);
+  if (png.error) return err(m.where, `média réduit : PNG invalide (${png.error}) : ${m.file}`);
+  const ihdr = png.chunks[0]?.type === 'IHDR' ? png.chunks[0].data : null;
+  if (!ihdr || ihdr.length !== 13 || ihdr[8] !== 8 || ihdr[9] !== 0) return err(m.where, `média réduit : PNG invalide (gris 8 bits attendu) : ${m.file}`);
+  const height = ihdr.readUInt32BE(4);
+  if (height > maxHeight) err(m.where, `média réduit : hauteur ${height} > ${maxHeight} : ${m.file}`);
 }
 
 /** Groupes du Strength Score, dans l'ordre de l'écran (D-311). */

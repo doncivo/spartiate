@@ -35,7 +35,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | BL-008 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | 95 exercices sur 196 sans image, dont 8 de la routine en cours ; chercher d'autres sources à licence vérifiée | à faire (lot 0.28.0) |
 | BL-009 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Lisibilité des images réduites (640 px, gris) en thèmes clair et sombre, à constater par Ali | à faire (lot 0.28.0) |
 | BL-010 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Auteur par image non affiché : image de gainage reportée pour cette raison | à faire (lot 0.28.0) |
-| BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | à faire (lot 0.28.0) |
+| BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | fait (NETTOYAGE, 0.28.1, D-375) |
 | BL-012 | rapport de lot 0.21 (docs/I6-07.md) | Image inversée en thème sombre : fond noir au lieu de la teinte de la carte, à constater par Ali | à faire (lot 0.28.0) |
 | BL-013 | rapport de lot 0.26.0 (docs/PROG-03.md) | Glisser-déposer PC (WebView2) : lâcher sur un champ, Alt+↑/↓, annonce du Narrateur, à constater par Ali | à faire (lot 0.28.0) |
 | BL-014 | rapport de lot 0.25.0 (docs/FIX-0241.md) | Séance active à la largeur d'usage du PC, hors test géométrique : à constater par Ali | à faire (lot 0.28.0) |

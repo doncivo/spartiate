@@ -30,3 +30,7 @@ La vérification que `node_modules` de ces worktrees est une jonction (et non un
 - agent du module (ci-release, outillage) : correctif de `normalize`.
 - qa-test : cas limite, un chemin hors du dépôt sans `node_modules` reste refusé (lecture de l'expression : le remplacement n'opère que sur `../…/node_modules/`).
 - code-reviewer : voir la fin de la fiche.
+
+## BL-011 : sources d'images réduites (point 3.3)
+
+- Rouge : 3581fedd (3 tests rouges : provenance incomplète, champs de réduction sur une source non réduite, PNG invalide ou trop haut). Vert : commit suivant, `validateReduction` dans scripts/content/validate-content.mjs ; contenu réel validé (14 médias réduits). D-375.
