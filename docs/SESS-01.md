@@ -155,3 +155,7 @@ et ajoute « Échec » à l'aide d'une ligne des types. Le test « jamais bloqua
 - Boutons « +30 s » et « Passer » dans la Live Activity (App Intents, ios-mobile), action « +30 s » de la notification de repli.
 - Exercices écartés communs aux deux appareils (décision 2).
 - Pause de séance (§ 13.2 « Pause / abandonner », C-190) : hors des sous-tickets du brief.
+
+## Passe code-reviewer à froid (agent distinct, 21/11) : approuvé, point important corrigé
+
+Remplace l'auto-relecture ci-dessus, qui n'était pas une passe distincte. Verdict : approuvé. Point important corrigé : sans grille, une barre pouvait être estimée sous la barre vide (machine 25 kg × 0,6 = 15 kg) ; désormais aucune estimation sous 20 kg pour une barre sans grille (rouge 5c7f6e2b, vert au commit suivant ; D-376). Écart de méthode ajouté : le vert 2d5c2bd1 laissait `SessionScreen.test.tsx` rouge (test qui figeait C-190), réécrit en 54a13445 sans affaiblir l'assertion. Suggestion non appliquée, consignée : au remplacement, une série dégressive ou partielle à faire repasse en « Normale » (le type « Échec » n'est pas touché : série de travail à RIR 0, D-379) ; à reprendre si Ali le demande.

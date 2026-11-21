@@ -53,6 +53,9 @@ export interface ReplacementLoadInput {
   readonly profile: ProgressionEquipment | null;
 }
 
+/** Barre vide supposée quand le profil ne dit rien (barre olympique) : aucune estimation en dessous. */
+const FALLBACK_EMPTY_BAR_KG = 20;
+
 const loadable = (e: ReplacementExercise): boolean => e.metric === 'load-reps' && !e.bodyweightFraction && !isAssistedEquipment(e.equipment);
 
 export function estimateReplacementLoad({ from, fromLoadKg, to, profile }: ReplacementLoadInput): ReplacementLoad | null {
@@ -75,6 +78,8 @@ export function estimateReplacementLoad({ from, fromLoadKg, to, profile }: Repla
     for (const kg of toGrid.loads) if (kg <= rawKg + EPS && (loadKg === null || kg > loadKg)) loadKg = kg;
   } else {
     loadKg = roundKg(Math.floor(rawKg / FALLBACK_LOAD_STEP_KG + EPS) * FALLBACK_LOAD_STEP_KG);
+    // Revue SESS-01 : sans grille, la barre vide est inconnue ; sous la barre olympique de 20 kg, la charge serait impossible : aucune estimation.
+    if (b === 'barbell' && loadKg < FALLBACK_EMPTY_BAR_KG) loadKg = null;
   }
   if (loadKg === null || !(loadKg > 0)) return null;
   return { loadKg, held, from: a, to: b, factor, rawKg };
