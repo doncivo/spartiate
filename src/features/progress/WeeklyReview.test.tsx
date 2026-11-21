@@ -64,23 +64,23 @@ describe('Progrès › Bilan de la semaine', () => {
     db.clock.set(NOW);
     mount();
     const card = await region();
-    expect(await within(card).findByText('2 séances closes. · source : séances closes')).toBeInTheDocument();
-    expect(within(card).getByText(/^4 records : Développé couché à la barre\. · source : records des séances closes$/)).toBeInTheDocument();
+    expect(await within(card).findByText('2 séances closes · source : séances closes')).toBeInTheDocument();
+    expect(within(card).getByText(/^4 records : Développé couché à la barre · source : records des séances closes$/)).toBeInTheDocument();
     expect(within(card).getByText(/source : séries de travail validées$/)).toBeInTheDocument();
   });
 
-  it('semaines précédentes : 7 boutons ≥ 44 pt ; en choisir une l’affiche', async () => {
+  it('semaines précédentes : 6 boutons ≥ 44 pt ; en choisir une l’affiche', async () => {
     await sessionAt('2026-11-03T08:00:00.000Z');
     db.clock.set(NOW);
     mount();
     const card = await region();
     const list = await within(card).findByRole('list', { name: tWeeklyReview('previousTitle') });
     const buttons = within(list).getAllByRole('button');
-    expect(buttons).toHaveLength(7);
+    expect(buttons).toHaveLength(6);
     for (const b of buttons) expect(b.className).toContain('ct-review__week');
     fireEvent.click(within(list).getByRole('button', { name: reviewWeekLabel('2026-11-02' as LocalDate, '2026-11-08' as LocalDate) }));
     expect(await within(card).findByText(reviewWeekLabel('2026-11-02' as LocalDate, '2026-11-08' as LocalDate), { selector: 'h3' })).toBeInTheDocument();
-    expect(within(card).getByText('1 séance close. · source : séances closes')).toBeInTheDocument();
+    expect(within(card).getByText('1 séance close · source : séances closes')).toBeInTheDocument();
   });
 
   it('début de semaine au dimanche : semaine du 8 au 14', async () => {
@@ -96,12 +96,12 @@ describe('Progrès › Bilan de la semaine', () => {
     const share = vi.fn(async () => 'downloaded' as const);
     mount({ share });
     const card = await region();
-    await within(card).findByText('1 séance close. · source : séances closes');
+    await within(card).findByText('1 séance close · source : séances closes');
     fireEvent.click(within(card).getByRole('button', { name: tWeeklyReview('export') }));
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
     const [text, fileName] = share.mock.calls[0] as unknown as [string, string];
     expect(fileName).toBe('spartiate-bilan-2026-11-09.md');
-    expect(text).toContain('- 1 séance close. · source : séances closes');
+    expect(text).toContain('- 1 séance close · source : séances closes');
     expect(await within(card).findByText(tWeeklyReview('exportDownloaded'))).toBeInTheDocument();
   });
 

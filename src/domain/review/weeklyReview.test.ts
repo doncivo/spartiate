@@ -215,7 +215,7 @@ describe('BILAN-029 : donnée absente = « pas assez de données », jamais 0 (C
   });
 
   it('semaine avec un jour de pause : « semaine en pause », sans prévues', () => {
-    const review = weeklyReview({ ...FULL, pauses: [{ from: d('2026-11-14'), to: d('2026-11-20') }] }, WEEK);
+    const review = weeklyReview({ ...FULL, pauses: [{ from: d('2026-11-14'), to: d('2026-11-20'), lightWeek: false }] }, WEEK);
     expect(byTheme(review.sentences, 'sessions')).toMatchObject({ kind: 'sessionsPaused', sources: [{ fact: 'sessions.done', value: 4 }] });
   });
 

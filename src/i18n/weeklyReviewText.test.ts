@@ -13,29 +13,29 @@ const S = (sentence: ReviewSentence): ReviewSentence => sentence;
 describe('BILAN-029 : phrases et sources lisibles', () => {
   it('séances : « 4 séances sur 4 prévues · source : séances closes »', () => {
     const s = S({ theme: 'sessions', kind: 'sessionsPlanned', sources: [{ fact: 'sessions.done', value: 4 }, { fact: 'sessions.planned', value: 4 }] });
-    expect(reviewText(s, muscleName)).toBe(tWeeklyReview('sessionsPlanned', { done: 4, planned: 4 }));
-    expect(reviewLine(s, muscleName)).toBe(`${tWeeklyReview('sessionsPlanned', { done: 4, planned: 4 })} · ${tWeeklyReview('sourceLabel', { label: tWeeklyReview('sourceSessions') })}`);
+    expect(reviewText(s, muscleName)).toBe('4 séances sur 4 prévues');
+    expect(reviewLine(s, muscleName)).toBe(`${reviewText(s, muscleName)} · ${tWeeklyReview('sourceLabel', { label: tWeeklyReview('sourceSessions') })}`);
     expect(reviewLine(s, muscleName)).toBe('4 séances sur 4 prévues · source : séances closes');
   });
 
   it('singulier : 1 séance, 0 séance', () => {
-    expect(reviewText(S({ theme: 'sessions', kind: 'sessionsDone', sources: [{ fact: 'sessions.done', value: 1 }] }), muscleName)).toBe('1 séance close.');
+    expect(reviewText(S({ theme: 'sessions', kind: 'sessionsDone', sources: [{ fact: 'sessions.done', value: 1 }] }), muscleName)).toBe('1 séance close');
     expect(reviewText(S({ theme: 'sessions', kind: 'sessionsPlanned', sources: [{ fact: 'sessions.done', value: 0 }, { fact: 'sessions.planned', value: 3 }] }), muscleName)).toBe('0 séance sur 3 prévues');
   });
 
   it('volume : noms des muscles, dixièmes à virgule', () => {
     const s = S({ theme: 'volume', kind: 'volumeTop', sources: [{ fact: 'volume.muscle', value: 'chest' }, { fact: 'volume.sets', value: 7.5 }, { fact: 'volume.muscle', value: 'back' }, { fact: 'volume.sets', value: 6 }] });
-    expect(reviewText(s, muscleName)).toBe('Volume : Pectoraux 7,5 séries, Dos 6 séries.');
+    expect(reviewText(s, muscleName)).toBe('Volume : Pectoraux 7,5 séries, Dos 6 séries');
   });
 
   it('poids : signe de la variation, tendance au dixième', () => {
     const s = S({ theme: 'weight', kind: 'weightTrendRate', sources: [{ fact: 'weight.trendKg', value: 80.4 }, { fact: 'weight.rateKg', value: -0.25 }] });
-    expect(reviewText(s, muscleName)).toBe('Poids tendance 80,4 kg, −0,25 kg sur la semaine.');
-    expect(reviewText(S({ ...s, sources: [{ fact: 'weight.trendKg', value: 80 }, { fact: 'weight.rateKg', value: 0.1 }] }), muscleName)).toBe('Poids tendance 80 kg, +0,1 kg sur la semaine.');
+    expect(reviewText(s, muscleName)).toBe('Poids tendance 80,4 kg, −0,25 kg sur la semaine');
+    expect(reviewText(S({ ...s, sources: [{ fact: 'weight.trendKg', value: 80 }, { fact: 'weight.rateKg', value: 0.1 }] }), muscleName)).toBe('Poids tendance 80 kg, +0,1 kg sur la semaine');
   });
 
   it('sommeil : heures et minutes', () => {
-    expect(reviewText(S({ theme: 'sleep', kind: 'sleepMean', sources: [{ fact: 'sleep.nights', value: 3 }, { fact: 'sleep.meanMinutes', value: 424 }] }), muscleName)).toBe('Sommeil moyen 7 h 04 sur 3 nuits mesurées.');
+    expect(reviewText(S({ theme: 'sleep', kind: 'sleepMean', sources: [{ fact: 'sleep.nights', value: 3 }, { fact: 'sleep.meanMinutes', value: 424 }] }), muscleName)).toBe('Sommeil moyen 7 h 04 sur 3 nuits mesurées');
   });
 
   it('donnée absente : « pas assez de données » par thème, source dite', () => {
@@ -71,7 +71,7 @@ function randomData(seed: number): ReviewData {
     firstWeekday: pick(['monday', 'sunday', 'saturday'] as const),
     sessionDays: days,
     target: r() < 0.5 ? null : { perWeek: 1 + n(5), since: day() },
-    pauses: r() < 0.2 ? [{ from: day(), to: null }] : [],
+    pauses: r() < 0.2 ? [{ from: day(), to: null, lightWeek: false }] : [],
     workouts: days.map((dd) => ({ day: dd, sets: Array.from({ length: n(12) }, () => ({ exerciseId: pick(['bench', 'row', 'squat', 'ghost']), setKind: pick(['work', 'warmup', 'drop'] as const), done: r() < 0.8 })) })),
     musclesOf: (id) => ({ bench: [{ id: 'chest', weight: 1 }, { id: 'triceps', weight: 0.35 }], row: [{ id: 'back', weight: 1 }], squat: [{ id: 'quads', weight: 1 }] })[id] ?? null,
     records: Array.from({ length: n(6) }, () => ({ day: day(), exerciseName: pick(['Développé couché', 'Squat', 'Rowing', 'Tirage', 'Fente']) })),
