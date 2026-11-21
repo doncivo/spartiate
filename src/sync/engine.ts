@@ -1413,7 +1413,7 @@ export async function resumeFromSnapshot(
     tried.applying(pick.end);
     const now = iso(deps.clock.nowMs());
     // Dernière transaction (même fonction que l'arrivée, join.ts) : curseurs aux positions couvertes, fin de la reprise, instantané essayé.
-    const result = await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, now, knows, logger: deps.logger }, hooks.onProgress, (tx) =>
+    const result = await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, writer: deviceId, now, knows, logger: deps.logger }, hooks.onProgress, (tx) =>
       finishResumeTx(tx, deps, { epoch, from: deviceId, loaded, accepted, coverage, tried: tried.value() }),
     );
     if (result === 'clock-ahead') {

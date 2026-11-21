@@ -38,6 +38,11 @@ export interface ApplyContext {
   /** `schema_version` local et celui de l'écrivain. */
   readonly localSv: number;
   readonly remoteSv: number;
+  /**
+   * SYNC-0281a (ADR 0018, M2) : appareil qui a publié les opérations (journal ou instantané lu), noté avec `sv` dans le JSON local d'une
+   * création gardée d'un schéma plus ancien (`w`) : l'écrivain à mettre à jour, jamais déduit du hlc. Absent (rejeu, report) : rien noté.
+   */
+  readonly writer?: DeviceId;
   readonly now: IsoDateTime;
   /** Valeurs d'un instantané (base inconnue, section 5.5). */
   readonly fromSnapshot?: boolean;
@@ -83,12 +88,12 @@ interface CachedRow {
 
 /**
  * `carry` : opération mise de côté par le report d'époque (republiée entière quand elle s'applique, Y-FIX-04). `sv` (SYNC-01) : schéma de
- * l'écrivain quand il est inférieur au schéma local (création sans les colonnes ajoutées depuis, `older-device`, `olderWriter.ts`).
+ * l'écrivain quand il est inférieur au schéma local (création sans les colonnes ajoutées depuis, `older-device`, `olderWriter.ts`), avec l'appareil lu `w` quand il est connu (M2).
  */
-const opText = (op: SyncOp, carry: boolean, sv?: number): string => {
+const opText = (op: SyncOp, carry: boolean, sv?: number, writer?: DeviceId): string => {
   const f: Record<string, SyncField> = {};
   for (const [name, field] of op.f) f[name] = field;
-  return JSON.stringify({ t: op.t, id: op.id, at: op.at, f, ...(carry ? { [CARRY_HELD_MARK]: 1 } : {}), ...(sv === undefined ? {} : { sv }) });
+  return JSON.stringify({ t: op.t, id: op.id, at: op.at, f, ...(carry ? { [CARRY_HELD_MARK]: 1 } : {}), ...(sv === undefined ? {} : { sv }), ...(sv === undefined || writer === undefined ? {} : { w: writer }) });
 };
 
 const maxOf = (hlcs: readonly Hlc[]): Hlc => hlcs.reduce((a, b) => (b > a ? b : a));
@@ -426,7 +431,7 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         } else if (ctx.noPark || (!full && kept)) {
           outcomes.push('parked');
         } else {
-          await sync.park(full ? 'missing-parent' : 'missing-row', t.name, op.id, maxOf([...fields.values()].map((f) => f[1])), opText({ ...op, f: fields }, ctx.carry !== undefined, !full && ctx.remoteSv < ctx.localSv ? ctx.remoteSv : undefined), ctx.now);
+          await sync.park(full ? 'missing-parent' : 'missing-row', t.name, op.id, maxOf([...fields.values()].map((f) => f[1])), opText({ ...op, f: fields }, ctx.carry !== undefined, !full && ctx.remoteSv < ctx.localSv ? ctx.remoteSv : undefined, ctx.writer), ctx.now);
           outcomes.push('parked');
         }
         continue;
