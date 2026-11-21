@@ -189,7 +189,7 @@ function Zone2({ read, goal, today }: { readonly read: Zone2Read; readonly goal:
   );
 }
 
-type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean; readonly zone2: Zone2Read; readonly ratings: Readonly<Record<RatingKind, readonly RatingPoint[]>> | null };
+type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean; readonly zone2: Zone2Read; readonly ratings: Readonly<Record<RatingKind, readonly RatingPoint[]>> | null };
 
 export function TrackingProgress() {
   const container = useAppContainer();
@@ -201,15 +201,20 @@ export function TrackingProgress() {
   useEffect(() => {
     let live = true;
     void (async () => {
-      const goals = await loadGoals(container).catch(() => TRACKING_DEFAULTS);
+      const goals = await loadGoals(container);
       const phone = isPhone(container);
       const steps: StepsRead = phone ? await readStepsDays(container, today, WEEKS * 7) : { days: [], everRead: false };
       const zone2 = await readZone2(container, goals, today);
       const ratings = await readRatings(container);
       return { goals, steps, phone, zone2, ratings };
-    })().then((r) => {
-      if (live) setLoad({ status: 'ready', ...r });
-    });
+    })().then(
+      (r) => {
+        if (live) setLoad({ status: 'ready', ...r });
+      },
+      () => {
+        if (live) setLoad({ status: 'failed' });
+      },
+    );
     return () => {
       live = false;
     };
@@ -225,6 +230,19 @@ export function TrackingProgress() {
         <p className="ct-today__muted" role="status">
           {tTracking('loading')}
         </p>
+      ) : load.status === 'failed' ? (
+        <div role="alert">
+          <p className="ct-today__muted">{tTracking('loadFailed')}</p>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setLoad({ status: 'loading' });
+              setEpoch((n) => n + 1);
+            }}
+          >
+            {tTracking('retry')}
+          </Button>
+        </div>
       ) : (
         <>
           <GoalsForm goals={load.goals} onSaved={() => setEpoch((n) => n + 1)} />
