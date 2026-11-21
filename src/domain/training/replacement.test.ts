@@ -84,6 +84,11 @@ describe('estimateReplacementLoad — vecteurs', () => {
     expect(estimateReplacementLoad({ from: R_BENCH_BB, fromLoadKg: 90, to: R_BENCH_DB, profile: null })?.loadKg).toBe(32.5);
   });
 
+  it('revue : sans grille, une barre n’est jamais estimée sous la barre vide de 20 kg (machine 25 → 15 kg : aucune)', () => {
+    expect(estimateReplacementLoad({ from: R_CHEST_MACHINE, fromLoadKg: 25, to: R_BENCH_BB, profile: null })).toBeNull();
+    expect(estimateReplacementLoad({ from: R_CHEST_MACHINE, fromLoadKg: 50, to: R_BENCH_BB, profile: null })?.loadKg).toBe(30);
+  });
+
   it('estimation sous la plus petite charge du matériel : aucune (jamais plus lourd que l’estimation)', () => {
     expect(est(R_BENCH_BB, 4, R_BENCH_DB)).toBeNull();
   });
