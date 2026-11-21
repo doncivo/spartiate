@@ -6,7 +6,7 @@ export const trainingProgressFr = {
   volumeTitle: 'Volume par muscle',
   volumeSubtitle: 'Séries de travail validées par semaine (semaines glissantes : {weeks}) ; un muscle secondaire compte pour sa part (par exemple 0,5 série).',
   volumeEmpty: 'Aucune série de travail validée sur la période.',
-  volumeLine: 'Cette semaine : {n} · moyenne sur {weeks} semaines : {mean}',
+  volumeLine: 'Cette semaine : {n} · moyenne des {weeks} dernières semaines : {mean}',
   volumeChart: '{muscle}, séries par semaine : {values}',
   volumeWeek: 'semaine du {date} : {n}',
   volumeUnknownOne: '{n} série d’un exercice absent de la bibliothèque n’est pas comptée.',
