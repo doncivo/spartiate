@@ -34,6 +34,8 @@ export const MEDIA_MAX_BYTES = 153_600;
 export const MEDIA_TOTAL_MAX_BYTES = 8_388_608;
 /** Licences admises pour un média (D-233) : aucune licence NC ni ND, aucune licence floue. */
 export const ALLOWED_MEDIA_LICENSES = ['CC0-1.0', 'CC-BY-4.0', 'CC-BY-SA-4.0', 'PDM'];
+/** Pictogrammes SVG des exercices sans photo (MEDIA-03, D-413) : plafond par fichier, en octets. */
+export const PICTOGRAM_MAX_BYTES = 6_144;
 export const MEDIA_EXTENSIONS = ['.png', '.jpg', '.webp'];
 /** Sources vérifiées (D-231) : licence lue sur la page source, commit épinglé. Une nouvelle source entre ici, par une décision. */
 export const MEDIA_SOURCES = {
@@ -229,6 +231,7 @@ export function validateContent(c, opts = {}) {
       }
     });
     if (opts.mediaDir) validateMediaFiles(mediaFiles, c.mediaRegistry, opts, err);
+    if (Array.isArray(c.pictograms)) validatePictograms(c.pictograms, list, err);
 
     // liens internes : alternatives
     for (const x of list) {
@@ -404,6 +407,43 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
   for (const e of entries) if (isObj(e) && !referenced.has(e.file)) err(`${where}/sources.json`, `entrée sans média référencé : ${String(e.file)}`);
 }
 
+/** Valeurs de couleur admises dans un SVG embarqué : aucune couleur en dur, seulement l'encre courante et les variables de la charte. */
+const SVG_PAINT_OK = /^(none|currentColor|var\(--ct-[a-z0-9-]+\))$/;
+
+/**
+ * Pictogrammes (MEDIA-03) : un fichier `<id>.svg` par exercice existant et sans photo (la photo reste prioritaire), au plus
+ * PICTOGRAM_MAX_BYTES, SVG inerte : ni script, ni `on*=`, ni lien, ni adresse externe, ni foreignObject, ni feuille de style, ni couleur en dur.
+ * @param {Array<{file:string, text:string}>} files
+ */
+function validatePictograms(files, list, err) {
+  const byId = new Map(list.filter((x) => isObj(x) && isStr(x.id)).map((x) => [x.id, x]));
+  for (const { file, text } of files) {
+    const w = `exercises/pictograms/${file}`;
+    const id = file.endsWith('.svg') ? file.slice(0, -4) : '';
+    const ex = byId.get(id);
+    if (!ex) err(w, 'pictogramme sans exercice (nom attendu : <id>.svg)');
+    else if (isObj(ex.media) && Array.isArray(ex.media.images) && ex.media.images.length > 0) err(w, 'pictogramme d’un exercice qui a une photo (la photo est prioritaire)');
+    const bytes = Buffer.byteLength(text, 'utf8');
+    if (bytes > PICTOGRAM_MAX_BYTES) err(w, `pictogramme trop lourd (${bytes} octets > ${PICTOGRAM_MAX_BYTES})`);
+    if (!/^<svg[\s>]/.test(text) || !/viewBox="[^"]+"/.test(text)) err(w, 'SVG attendu avec un viewBox');
+    const body = text.replace(' xmlns="http://www.w3.org/2000/svg"', '');
+    if (/<script/i.test(body)) err(w, 'script interdit dans un pictogramme');
+    if (/\son[a-z]+\s*=/i.test(body)) err(w, 'attribut d’événement (on*) interdit dans un pictogramme');
+    if (/href\s*=|xlink:/i.test(body)) err(w, 'lien (href) interdit dans un pictogramme');
+    if (/foreignObject/i.test(body)) err(w, 'foreignObject interdit dans un pictogramme');
+    if (/<style|<image|<use|<!DOCTYPE|<!ENTITY|javascript:/i.test(body)) err(w, 'élément interdit dans un pictogramme (style, image, use, entité)');
+    if (NETWORK.test(body) || /url\(/i.test(body)) err(w, 'adresse externe interdite dans un pictogramme');
+    for (const m of body.matchAll(/\b(?:fill|stroke)="([^"]*)"/g)) if (!SVG_PAINT_OK.test(m[1])) err(w, `couleur en dur interdite : ${m[1]}`);
+    for (const m of body.matchAll(/style="([^"]*)"/g)) {
+      for (const decl of m[1].split(';').filter((d) => d.trim() !== '')) {
+        const [prop, ...rest] = decl.split(':');
+        const value = rest.join(':').trim();
+        if (/^(fill|stroke)$/.test(prop.trim()) ? !SVG_PAINT_OK.test(value) : true) err(w, `style non admis : ${decl.trim()}`);
+      }
+    }
+  }
+}
+
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
   let c = n;
@@ -545,6 +585,12 @@ export function validateContentDir(dir, opts = {}) {
     strength: existsSync(join(root, 'strength', 'standards.json')) ? readJson(join(root, 'strength', 'standards.json'), errors) : null,
     mediaRegistry: existsSync(join(root, 'exercises', 'media', 'sources.json')) ? readJson(join(root, 'exercises', 'media', 'sources.json'), errors) : null,
   };
+  const pictogramsDir = join(root, 'exercises', 'pictograms');
+  if (existsSync(pictogramsDir)) {
+    content.pictograms = readdirSync(pictogramsDir)
+      .sort()
+      .map((file) => ({ file, text: readFileSync(join(pictogramsDir, file), 'utf8') }));
+  }
   const result = validateContent(content, { mediaDir: join(root, 'exercises', 'media'), ...opts });
   return { errors: [...errors, ...result.errors], stats: result.stats };
 }

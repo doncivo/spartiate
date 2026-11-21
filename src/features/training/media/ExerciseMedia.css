@@ -28,3 +28,16 @@
   color: var(--ct-color-text-secondary);
   overflow-wrap: anywhere;
 }
+
+/* MEDIA-03 : pictogramme SVG en ligne ; encre = couleur du texte, accent = bronze de la charte (jetons seulement). */
+.ct-exmedia__picto {
+  max-width: 320px;
+  margin: 0 auto;
+  color: var(--ct-color-text);
+}
+
+.ct-exmedia__picto svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
