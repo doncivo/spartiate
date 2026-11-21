@@ -70,7 +70,11 @@ interface ChunkInfo {
 function normalize(id: string): string {
   const clean = id.replace(/^\0/, '').replace(/\?.*$/, '');
   if (!/^[a-zA-Z]:[\\/]|^\//.test(clean)) return clean;
-  return relative(root, clean).replace(/\\/g, '/');
+  const rel = relative(root, clean).replace(/\\/g, '/');
+  // Worktree (point 3.4 du lot 0.28.0) : `node_modules` y est une jonction vers celui du dépôt principal et Vite rend le chemin réel
+  // (`../../node_modules/react/…`). Seul un chemin hors du dépôt QUI PASSE PAR un `node_modules` est ramené à `node_modules/…` ; tout
+  // autre chemin hors du dépôt garde ses `../` et reste refusé par la liste blanche.
+  return rel.startsWith('../') ? rel.replace(/^(\.\.\/)+(?:[^/]+\/)*?node_modules\//, 'node_modules/') : rel;
 }
 
 function allowed(module: string): boolean {
