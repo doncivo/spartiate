@@ -36,4 +36,16 @@ describe('WorkoutRepository : lectures de Progrès', () => {
     expect(since[0]?.sets.map((s) => s.done)).toEqual([true, false]);
     expect((await r.closedSince('2026-10-01T00:00:00.000Z' as IsoDateTime)).map((w) => w.id)).toEqual([W1, W2]);
   });
+
+  it('closedStarts : débuts de toutes les séances closes non supprimées, du plus ancien au plus récent', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-01T08:00:00.000Z');
+    await closedWorkout(W2, '2026-11-10T08:00:00.000Z');
+    await closedWorkout(W1, '2026-11-02T08:00:00.000Z');
+    await closedWorkout(W3, '2026-11-12T08:00:00.000Z');
+    const r = await db.data.repos.workouts();
+    await r.deleteClosed(W3);
+    db.clock.set('2026-11-14T08:00:00.000Z');
+    await r.start({ source: 'empty', id: W_OPEN, name: 'Ouverte' });
+    expect(await r.closedStarts()).toEqual(['2026-11-02T08:00:00.000Z', '2026-11-10T08:00:00.000Z']);
+  });
 });
