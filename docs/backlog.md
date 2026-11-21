@@ -10,7 +10,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
-| CLEAN-03 | rapport de lot 0.27.0 (docs/reprise.md), docs/CLEAN-02.md | Migrer les tests de synchro hérités hors du banc legacy (222 fichiers, lots A à F, taille L, D-201) | à faire (lot 0.28.0) |
+| CLEAN-03 | rapport de lot 0.27.0 (docs/reprise.md), docs/CLEAN-02.md | Migrer les tests de synchro hérités hors du banc legacy (222 fichiers, lots A à F, taille L, D-201) | fait en partie (TECH-01, 0.29.0 : lots A à C, 49 fichiers ; 177 restants, D-442, D-443) |
 | BL-001 | rapport de lot 0.19 (docs/CLEAN-02.md) | Plugin vision et OCR natif conservés sans appelant (D-200) | reporté : gardés pour l'import de programme (I6-08) |
 | BL-002 | rapport de lot 0.19 (docs/CLEAN-02.md) | CSP : `'wasm-unsafe-eval'` à retirer ou justifier (security-privacy, essai sur appareil) | à faire (lot 0.28.0) |
 | BL-003 | rapport de lot 0.27.0 (docs/reprise.md) | Méthodes SQL de l'ancien schéma encore dans `SyncRepository` (banc legacy, D-67), à purger avec CLEAN-03 | à faire (lot 0.28.0) |
@@ -298,6 +298,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-130 | IOS-029 (D-436) | build-ios : relever la version du SDK et vérifier le lien faible de FoundationModels (`otool -l`) | à faire (0.29.x, ci-release) |
 | BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | à trancher par Ali |
 | BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | à faire par Ali |
+| BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | à faire (0.29.x, sync-icloud) |
+| BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | à faire (0.29.x, ci-release) |
 
 ## 3. Audit Codex 0.26.0
 

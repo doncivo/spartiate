@@ -86,3 +86,7 @@ Aucun (rien de visible dans l'app).
 - CLEAN-03 partiel : 49 fichiers sur 225, en lots complets ; le reste inventorié ci-dessus. Les lots ne suivent pas le découpage A à F de CLEAN-02 (par famille) mais la dépendance réelle au banc, mesurée par script.
 - BL-003, BL-035 : non purgés (appelants).
 - `cargo audit` non lancé (non installé). minimatch non corrigé (justifié).
+
+## Relecture à froid et sync-icloud (agent distinct)
+
+Verdict : approuvé, aucun bloquant. Les 49 fichiers comparés à origin/main : 1 366 `expect` et 233 tests avant comme après ; synchro réelle (`createSyncService`, catalogue et migrations de production) ; défaut `legacy` intact. Mineurs consignés pour le lot suivant (BL-133) : `syncEntries.update` sans champ ne pose pas de tampon (le dépôt de tâches en posait un) ; une note vide devient NULL (le banc legacy écrivait une chaîne vide) ; l’inventaire compte encore `hostile/evictedHeadReaders` à tort. Numéros : D-442 à D-446, BL-133, BL-134.
