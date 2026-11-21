@@ -111,4 +111,61 @@ describe('repas rapides (REPAS-029a)', () => {
     fireEvent.click(await screen.findByRole('button', { name: tQuick('add') }));
     await waitFor(async () => expect(await todayEntries()).toHaveLength(1));
   });
+
+  it("un favori n'est qu'une recette d'UNE portion sans poids cuit : une recette de 4 portions n'est pas rejouable ici", async () => {
+    const recipes = await db.data.repos.recipes();
+    const ing = { name: 'Haricots test', source: 'custom' as const, foodRef: 'ciqual:1000', grams: 400, per100g: { kcal: 100, proteinG: 5, fatG: 1, carbG: 15, fiberG: null } };
+    await recipes.create({ name: 'Chili', servings: 4, cookedWeightG: null, ingredients: [ing] });
+    await recipes.create({ name: 'Repas simple', servings: 1, cookedWeightG: null, ingredients: [ing] });
+    await recipes.create({ name: 'Repas cuit', servings: 1, cookedWeightG: 500, ingredients: [ing] });
+    open();
+    await openPanel();
+    expect(await screen.findByRole('button', { name: tQuick('favoriteButton', { name: 'Repas simple' }) })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: tQuick('favoriteButton', { name: 'Chili' }) })).toBeNull();
+    expect(screen.queryByRole('button', { name: tQuick('favoriteButton', { name: 'Repas cuit' }) })).toBeNull();
+  });
+
+  it('double appui sur « Enregistrer comme favori » : une seule recette', async () => {
+    await (await db.data.repos.mealEntries()).createMany([entry({})]);
+    open();
+    await openPanel();
+    fireEvent.click(await screen.findByRole('button', { name: tQuick('copyDay') }));
+    fireEvent.change(await screen.findByLabelText(tQuick('favoriteName')), { target: { value: 'Une fois' } });
+    const save = screen.getByRole('button', { name: tQuick('favoriteSave') });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    await screen.findByText(tQuick('favoriteSaved', { name: 'Une fois' }));
+    expect(await (await db.data.repos.recipes()).list()).toHaveLength(1);
+  });
+
+  it("copie d'hier répétée : « déjà dans le journal », rien n'est écrit une seconde fois", async () => {
+    await (await db.data.repos.mealEntries()).createMany([entry({})]);
+    open();
+    await openPanel();
+    fireEvent.click(await screen.findByRole('button', { name: tQuick('copyDay') }));
+    fireEvent.click(await screen.findByRole('button', { name: tQuick('add') }));
+    await waitFor(async () => expect(await todayEntries()).toHaveLength(1));
+    await openPanel();
+    fireEvent.click(await screen.findByRole('button', { name: tQuick('copyDay') }));
+    expect(await screen.findByText(tQuick('alreadyCopied'))).toBeTruthy();
+    expect(await todayEntries()).toHaveLength(1);
+  });
+
+  it('pluriels : « 1 aliment », jamais « 1 aliments »', async () => {
+    await (await db.data.repos.mealEntries()).createMany([entry({ date: '2026-11-05' as LocalDate })]);
+    open();
+    await openPanel();
+    expect(await screen.findByText(tQuick('summaryOne', { n: 1, names: 'Pain test' }))).toBeTruthy();
+  });
+
+  it('un ingrédient de favori sans aliment est retiré et le retrait est dit', async () => {
+    const recipes = await db.data.repos.recipes();
+    const good = { name: 'Pain test', source: 'ciqual' as const, foodRef: 'ciqual:1000', grams: 100, per100g: { kcal: 250, proteinG: 8, fatG: 2, carbG: 50, fiberG: null } };
+    const orphan = { name: 'Sans fiche', source: 'custom' as const, foodRef: null, grams: 50, per100g: { kcal: 100, proteinG: 1, fatG: 1, carbG: 1, fiberG: null } };
+    await recipes.create({ name: 'Mixte', servings: 1, cookedWeightG: null, ingredients: [good, orphan] });
+    open();
+    await openPanel();
+    fireEvent.click(await screen.findByRole('button', { name: tQuick('favoriteButton', { name: 'Mixte' }) }));
+    expect(await screen.findByText(tQuick('replaySkippedOne', { n: 1 }))).toBeTruthy();
+  });
 });

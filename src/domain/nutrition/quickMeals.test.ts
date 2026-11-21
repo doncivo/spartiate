@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { LocalDate, LocalTime } from '../types';
 import { validateRecipeDraft } from './recipe';
 import type { MealEntryDraft } from './mealEntry';
-import { entriesOfMoment, favoriteFromLines, linesFromRecipe, linesToDrafts, mealLines, mealMoment, recentMeals, scaleLine } from './quickMeals';
+import { isFavoriteRecipe, entriesOfMoment, favoriteFromLines, linesFromRecipe, linesToDrafts, mealLines, mealMoment, recentMeals, scaleLine } from './quickMeals';
 
 const D = (s: string) => s as LocalDate;
 const T = (s: string) => s as LocalTime;
@@ -106,11 +106,26 @@ describe('favoris = recettes d\'une portion (C-4)', () => {
     const fav = favoriteFromLines('Pain', lines);
     if (fav === null) throw new Error('favori');
     const recipe = { id: 'r', name: 'Pain', servings: 1, cookedWeightG: null, updatedAt: '2026-11-21T00:00:00.000Z', ingredients: fav.draft.ingredients.map((i, n) => ({ ...i, id: `i${n}`, position: n })) };
-    const back = linesFromRecipe(recipe as never);
+    const back = linesFromRecipe(recipe as never).lines;
     expect(back).toHaveLength(1);
     expect(back[0]?.kcal).toBeCloseTo(325, 0);
     expect(back[0]?.fatG).toBeNull();
     expect(back[0]?.foodId).toBe('ciqual:1000');
     expect(back[0]?.method).toBe('search');
+  });
+
+  it('linesFromRecipe divise par les portions (4 portions de 400 g : 100 g) et compte les ingrédients retirés', () => {
+    const ing = { id: 'a', position: 0, name: 'Haricots', source: 'custom' as const, foodRef: 'ciqual:1000', grams: 400, per100g: { kcal: 100, proteinG: 5, fatG: 1, carbG: 15, fiberG: null } };
+    const orphan = { ...ing, id: 'b', position: 1, foodRef: null };
+    const r = linesFromRecipe({ servings: 4, ingredients: [ing, orphan] } as never);
+    expect(r.lines).toHaveLength(1);
+    expect(r.lines[0]).toMatchObject({ grams: 100, kcal: 100 });
+    expect(r.skipped).toBe(1);
+  });
+
+  it('isFavoriteRecipe : une portion, sans poids cuit', () => {
+    expect(isFavoriteRecipe({ servings: 1, cookedWeightG: null })).toBe(true);
+    expect(isFavoriteRecipe({ servings: 4, cookedWeightG: null })).toBe(false);
+    expect(isFavoriteRecipe({ servings: 1, cookedWeightG: 300 })).toBe(false);
   });
 });
