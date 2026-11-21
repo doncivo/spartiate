@@ -451,6 +451,7 @@ Unité par genre :
 | pct | `health_body_fat_pct` (masse grasse, en pour cent ; « pct » plutôt que « % », qu’un tableur prendrait pour une formule) |
 | kg | `health_lean_mass_kg` (masse maigre) |
 | g | `health_fiber_g` (fibres du jour) |
+| score | `note_fatigue`, `note_sleep` (notes du matin, entiers de 1 à 10, SUIVIS-029) |
 
 ### `csv/progress_photo.csv`
 

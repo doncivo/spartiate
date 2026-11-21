@@ -3,11 +3,12 @@ import { todayLocal } from '../../domain/clock';
 import { stepsToday, TRACKING_DEFAULTS, type StepsToday } from '../../domain/tracking';
 import { formatCount, tTracking } from '../../i18n/trackingText';
 import { useAppContainer } from '../app/AppContainerContext';
+import { MorningRatings } from './MorningRatings';
 import { isPhone, loadGoals, readStepsDays } from './trackingData';
 import './Tracking.css';
 
 /**
- * SUIVIS-029 : carte « Suivis du jour » d'Aujourd'hui (objectif de pas). Bloc chargé à la demande avec son catalogue de textes (jamais dans le
+ * SUIVIS-029 : carte « Suivis du jour » d'Aujourd'hui (objectif de pas, notes du matin). Bloc chargé à la demande avec son catalogue de textes (jamais dans le
  * départ). Pas inconnus : « — » et la raison (H-25 UNVERIFIED), jamais 0 ; la barre est doublée du texte.
  */
 type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly steps: StepsToday };
@@ -66,6 +67,7 @@ export function TrackingTodayCard() {
       ) : (
         <StepsGoal steps={load.steps} />
       )}
+      <MorningRatings today={today} />
     </section>
   );
 }

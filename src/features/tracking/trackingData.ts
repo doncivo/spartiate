@@ -1,5 +1,6 @@
 import { addDays } from '../../domain/localDate';
 import { hrMaxOf, parseTrackingGoals, serializeTrackingGoals, type HrMax, type StepsDay, type TrackingGoals, type Zone2Session } from '../../domain/tracking';
+import { RATING_KINDS, type RatingKind, type RatingPoint } from '../../domain/tracking/ratings';
 import type { LocalDate } from '../../domain/types';
 import type { AppContainer } from '../app/container';
 
@@ -54,5 +55,17 @@ export async function readZone2(container: AppContainer, goals: TrackingGoals, t
     return { hrMax, sessions: rows.map((r) => ({ startedAt: r.startedAt, durationSec: r.durationSec, avgHr: r.avgHr })) };
   } catch {
     return { hrMax, sessions: null };
+  }
+}
+
+/** Notes du matin des deux genres (lignes vivantes, de la plus ancienne à la plus récente) ; null : lecture impossible. */
+export async function readRatings(container: AppContainer): Promise<Readonly<Record<RatingKind, readonly RatingPoint[]>> | null> {
+  try {
+    const repo = await container.data.repos.measurements();
+    const [fatigue, sleep] = await Promise.all(RATING_KINDS.map((k) => repo.list(k)));
+    const points = (rows: typeof fatigue): RatingPoint[] => (rows ?? []).map((r) => ({ day: r.day, value: r.value }));
+    return { note_fatigue: points(fatigue), note_sleep: points(sleep) };
+  } catch {
+    return null;
   }
 }

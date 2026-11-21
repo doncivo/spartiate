@@ -132,3 +132,7 @@
 .ct-tracking__dot {
   fill: var(--ct-color-bronze);
 }
+
+.ct-tracking__clear {
+  padding: 0 var(--ct-space-2);
+}

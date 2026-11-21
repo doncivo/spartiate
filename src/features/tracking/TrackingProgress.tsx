@@ -6,11 +6,14 @@ import { formatDayMonthYear } from '../../i18n/format';
 import { formatCount, tTracking } from '../../i18n/trackingText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
-import { isPhone, loadGoals, readStepsDays, readZone2, saveGoals, type StepsRead, type Zone2Read } from './trackingData';
+import type { RatingKind, RatingPoint } from '../../domain/tracking/ratings';
+import { useSyncedData } from '../sync/remoteChanges';
+import { RatingsCurves } from './RatingsCurves';
+import { isPhone, loadGoals, readRatings, readStepsDays, readZone2, saveGoals, type StepsRead, type Zone2Read } from './trackingData';
 import './Tracking.css';
 
 /**
- * SUIVIS-029 : Progrès › Suivis — objectifs (réglage local), pas par semaine (4 semaines). Bloc chargé à la demande avec son catalogue de textes
+ * SUIVIS-029 : Progrès › Suivis — objectifs (réglage local), pas par semaine et cardio en zone 2 (4 semaines), notes du matin (30 jours). Bloc chargé à la demande avec son catalogue de textes
  * (jamais dans le départ). Aucune valeur inventée : semaine sans donnée « — », pas absents du PC avec leur raison.
  */
 
@@ -186,13 +189,14 @@ function Zone2({ read, goal, today }: { readonly read: Zone2Read; readonly goal:
   );
 }
 
-type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean; readonly zone2: Zone2Read };
+type Load = { readonly status: 'loading' } | { readonly status: 'ready'; readonly goals: TrackingGoals; readonly steps: StepsRead; readonly phone: boolean; readonly zone2: Zone2Read; readonly ratings: Readonly<Record<RatingKind, readonly RatingPoint[]>> | null };
 
 export function TrackingProgress() {
   const container = useAppContainer();
   const today = todayLocal(container.clock);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [epoch, setEpoch] = useState(0);
+  const synced = useSyncedData(['measurement', 'cardio_session', 'profile']);
 
   useEffect(() => {
     let live = true;
@@ -201,14 +205,15 @@ export function TrackingProgress() {
       const phone = isPhone(container);
       const steps: StepsRead = phone ? await readStepsDays(container, today, WEEKS * 7) : { days: [], everRead: false };
       const zone2 = await readZone2(container, goals, today);
-      return { goals, steps, phone, zone2 };
+      const ratings = await readRatings(container);
+      return { goals, steps, phone, zone2, ratings };
     })().then((r) => {
       if (live) setLoad({ status: 'ready', ...r });
     });
     return () => {
       live = false;
     };
-  }, [container, today, epoch]);
+  }, [container, today, epoch, synced]);
 
   return (
     <section className="ct-today__card ct-tracking ct-flat" aria-labelledby="ct-tracking-progress-title">
@@ -225,6 +230,7 @@ export function TrackingProgress() {
           <GoalsForm goals={load.goals} onSaved={() => setEpoch((n) => n + 1)} />
           <StepsWeeks phone={load.phone} read={load.steps} goal={load.goals.stepsDaily} today={today} />
           <Zone2 read={load.zone2} goal={load.goals.zone2WeeklyMin} today={today} />
+          <RatingsCurves ratings={load.ratings} today={today} />
         </>
       )}
     </section>

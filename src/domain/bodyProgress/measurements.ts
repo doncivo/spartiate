@@ -1,5 +1,6 @@
 import { parseDecimal } from '../bodyProfile';
 import { isLocalDate, type LocalDate } from '../types';
+import { RATING_KINDS, RATING_MAX, RATING_MIN, type RatingKind } from '../tracking/ratings';
 
 /**
  * Corps (I6-02, § 17.1) : mensurations en centimètres et nom de fichier des photos de progression. Règles pures, sans accès base ni plateforme.
@@ -118,24 +119,53 @@ export const HEALTH_METRIC_BOUNDS: Readonly<Record<HealthMetricKind, { readonly 
 
 export const isHealthMetricKind = (value: string): value is HealthMetricKind => (HEALTH_METRIC_KINDS as readonly string[]).includes(value);
 
-/** Genre de mesure stocké : une zone saisie ou un genre importé de Santé. */
-export type StoredMeasurementKind = MeasurementKind | HealthMetricKind;
-export const isStoredMeasurementKind = (value: string): value is StoredMeasurementKind => isMeasurementKind(value) || isHealthMetricKind(value);
 
-/** Unité de la valeur stockée, par genre (FIX-0173, constat 4 : l'export complet la dit ligne par ligne ; la valeur stockée ne change jamais). */
-export type MeasurementUnit = 'cm' | 'pct' | 'kg' | 'g';
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Suivis saisis (SUIVIS-029, lot 0.29.0) : même table `measurement`, genres propres, aucune migration (précédent D-113).
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/** Spécification d'un genre de suivi : unité, bornes incluses, entier ou non. */
+export interface TrackedKindSpec {
+  readonly unit: MeasurementUnit;
+  readonly min: number;
+  readonly max: number;
+  readonly integer: boolean;
+}
+
+/**
+ * Genres de suivi saisis (jamais affichés comme des zones de `MEASUREMENT_KINDS`) : notes du matin de 1 à 10 (`note_*`, src/domain/tracking/ratings.ts).
+ * Chaque genre garde ses propres bornes ; le CHECK SQL (0 < valeur < 1000) reste le dernier recours.
+ */
+export const TRACKED_KIND_SPECS: Readonly<Record<RatingKind, TrackedKindSpec>> = Object.fromEntries(
+  RATING_KINDS.map((k) => [k, { unit: 'score', min: RATING_MIN, max: RATING_MAX, integer: true }]),
+) as Record<RatingKind, TrackedKindSpec>;
+export type TrackedKind = keyof typeof TRACKED_KIND_SPECS;
+export const isTrackedKind = (value: string): value is TrackedKind => Object.prototype.hasOwnProperty.call(TRACKED_KIND_SPECS, value);
+
+/** Genre de mesure stocké : une zone saisie, un genre importé de Santé ou un genre de suivi saisi. */
+export type StoredMeasurementKind = MeasurementKind | HealthMetricKind | TrackedKind;
+export const isStoredMeasurementKind = (value: string): value is StoredMeasurementKind => isMeasurementKind(value) || isHealthMetricKind(value) || isTrackedKind(value);
+
+/**
+ * Unité de la valeur stockée, par genre (FIX-0173, constat 4 : l'export complet la dit ligne par ligne ; la valeur stockée ne change jamais). `score` :
+ * note de 1 à 10.
+ */
+export type MeasurementUnit = 'cm' | 'pct' | 'kg' | 'g' | 'score';
 const HEALTH_METRIC_UNITS: Readonly<Record<HealthMetricKind, MeasurementUnit>> = { health_body_fat_pct: 'pct', health_lean_mass_kg: 'kg', health_waist_cm: 'cm', health_height_cm: 'cm', health_fiber_g: 'g' };
 export const MEASUREMENT_UNITS: Readonly<Record<StoredMeasurementKind, MeasurementUnit>> = {
   ...(Object.fromEntries(MEASUREMENT_KINDS.map((k) => [k, 'cm'])) as Record<MeasurementKind, 'cm'>),
   ...HEALTH_METRIC_UNITS,
+  ...(Object.fromEntries(Object.entries(TRACKED_KIND_SPECS).map(([k, spec]) => [k, spec.unit])) as Record<TrackedKind, MeasurementUnit>),
 };
 /** Unité d'un genre ; genre inconnu (appareil plus récent) : `null`, jamais une unité supposée. */
 export const measurementUnit = (kind: string): MeasurementUnit | null => (isStoredMeasurementKind(kind) ? MEASUREMENT_UNITS[kind] : null);
 
-/** Bornes d'un genre stocké (zone ou importé). */
-export const storedMeasurementBounds = (kind: StoredMeasurementKind): { readonly min: number; readonly max: number } => (isMeasurementKind(kind) ? MEASUREMENT_BOUNDS_CM[kind] : HEALTH_METRIC_BOUNDS[kind]);
+/** Bornes d'un genre stocké (zone, importé ou suivi). */
+export const storedMeasurementBounds = (kind: StoredMeasurementKind): { readonly min: number; readonly max: number } =>
+  isMeasurementKind(kind) ? MEASUREMENT_BOUNDS_CM[kind] : isHealthMetricKind(kind) ? HEALTH_METRIC_BOUNDS[kind] : TRACKED_KIND_SPECS[kind];
 
 export const isStoredMeasurementValue = (kind: StoredMeasurementKind, value: number): boolean => {
   const { min, max } = storedMeasurementBounds(kind);
+  if (isTrackedKind(kind) && TRACKED_KIND_SPECS[kind].integer && !Number.isInteger(value)) return false;
   return Number.isFinite(value) && value >= min && value <= max;
 };
