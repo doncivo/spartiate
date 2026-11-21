@@ -73,13 +73,13 @@ C. **Retenue (exemption maintenue).** **Historique exempté (D-290).** Republier
   (journal ou instantané) est noté avec `sv` dans le JSON local de `sync_parked.op` (`w`, jamais publié ; format inchangé) ; `olderParked`
   attribue l'opération à cet appareil, et seulement à défaut (parties gardées de la 0.25.0 à la 0.28.0) au plus grand hlc, comme avant
   (`tests/unit/sync/versions/olderWriterLimits.test.ts`, « M2 »).
-- **Reprise depuis l'instantané (M3, limite acceptée, D-… à numéroter).** Entre la lecture de l'état publié en 19 de l'écrivain et celle de
+- **Reprise depuis l'instantané (M3, limite acceptée, D-406).** Entre la lecture de l'état publié en 19 de l'écrivain et celle de
   son journal republié (ajout refusé ou en retard), un cycle peut voir l'écrivain à jour et ses lignes encore de côté : `received-unapplied`
   et la reprise unique depuis l'instantané de l'époque sont alors demandées, puis consommées sans effet ; la republication `'+'` arrive au
   cycle suivant et applique la ligne. Aucune perte (`olderWriterLimits.test.ts`, « M3 » : ligne appliquée une fois, mêmes valeurs,
   `sync_parked` vide, aucun conflit) ; au pire, une reprise automatique gaspillée pour l'époque (le bouton de Détails reste disponible).
   Non corrigé : retirer la reprise pour ces lignes la retirerait aussi quand le journal republié a réellement été sauté, seul cas où elle sert.
-- **Parties gardées par la 0.24.0 (M4, limite acceptée, D-… à numéroter).** Les opérations mises de côté avant SYNC-01 n'ont ni `sv` ni `w`
+- **Parties gardées par la 0.24.0 (M4, limite acceptée, D-407).** Les opérations mises de côté avant SYNC-01 n'ont ni `sv` ni `w`
   dans `sync_parked.op` : elles restent comptées en `received-unapplied` (reprise), jamais en `older-device`, jusqu'à la republication de
   l'écrivain qui les applique (`olderWriterLimits.test.ts`, « M4 » : aucune perte, `sync_parked` vide après la mise à jour). Un `sv` deviné
   serait faux pour une ligne réellement sautée ; ces parties ne se créent plus depuis la 0.25.0.
