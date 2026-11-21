@@ -274,29 +274,29 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 | BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | à faire (S) |
 | BL-108 | SESS-01 (docs/SESS-01.md) | Live Activity : boutons « +30 s » et « Passer » (App Intents, ios-mobile) et action « +30 s » de la notification de repli | à faire (0.28.x) |
-| BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | à trancher par Ali |
+| BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | décidé par Ali (D-447) ; à faire (0.29.1, données et synchro) |
 | BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à faire (0.28.x) |
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | à faire (0.28.x) |
 | BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | à faire (0.28.x) |
 | BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.28.x) |
-| BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | à trancher par Ali |
-| BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | à trancher par Ali |
+| BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | décidé par Ali (D-448) ; à faire (0.29.1, Progrès) |
+| BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | décidé par Ali (D-449) ; à faire (0.29.1, Progrès) |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.28.x) |
 | BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.28.x) |
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.28.x) |
-| BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | à examiner par Ali |
-| BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | à trancher par Ali |
+| BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | décidé par Ali (D-450) ; à faire (0.29.1, coquille) |
+| BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | décidé par Ali (D-447) ; à faire (0.29.1, données et synchro) |
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.28.x) |
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.28.x) |
-| BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart proposé, à trancher par Ali |
+| BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart décidé par Ali (D-451) : kg seulement |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | à faire (nutrition, 0.29.x) |
-| BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | à trancher par Ali |
+| BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | décidé par Ali (D-452) ; à faire (0.29.1, bilan) |
 | BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à faire (0.29.x, sans dépendance nouvelle) |
 | BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | à faire (0.29.x) |
 | BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | à faire (0.29.x) |
 | BL-129 | IOS-029 (D-434) | Textes d'usage caméra et micro de Info.ios.plist hérités de CircleTasks (« tâches ») | à faire (0.29.x) |
 | BL-130 | IOS-029 (D-436) | build-ios : relever la version du SDK et vérifier le lien faible de FoundationModels (`otool -l`) | à faire (0.29.x, ci-release) |
-| BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | à trancher par Ali |
+| BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | fait : conservé, décision d'Ali (D-453) |
 | BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | à faire par Ali |
 | BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | à faire (0.29.x, sync-icloud) |
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | à faire (0.29.x, ci-release) |
@@ -341,11 +341,11 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
 | § 8 I1 | PRD § 8 | partiel — « 2 semaines d'usage réel » pas encore atteint (usage depuis le 16/11, D-292) | reporté : durée d'usage non atteinte |
-| § 8 I2 | PRD § 8 | absent — adhérence ≥ 70 % sur 2 semaines : aucune mesure | à faire (lot 0.28.0) |
+| § 8 I2 | PRD § 8 | absent — adhérence ≥ 70 % sur 2 semaines : aucune mesure | décidé par Ali (D-449, BL-115) ; à faire (0.29.1) |
 | § 8 I3 | PRD § 8 | partiel — aucun exercice impossible, décharge non destructive (C-001, C-007) | à faire (lot 0.28.0) |
 | § 8 I6 | PRD § 8 | partiel — confort : App Intents et import de programme absents | à faire (lot 0.28.0) |
 | § 9.2 | PRD § 9.2 | absent — e2e « séance iPhone → PC → édition PC → iPhone » | fait (SYNC-0281b, D-408) |
-| § 10 | PRD § 10 | absent — unités configurables (kg seul) | à faire (lot 0.28.0) |
+| § 10 | PRD § 10 | absent — unités configurables (kg seul) | écart décidé par Ali (D-451) : kg seulement |
 | § 10.0 | PRD § 10.0 | partiel — scénario d'onboarding rejoué : étape 6 sans e2e | à faire (lot 0.28.0) |
 | § 10.1-1 | PRD § 10.1 | partiel — poids prérempli depuis Santé : par Raccourcis seulement (D-69) | reporté : HealthKit direct BLOCKED (H-3a) |
 | § 10.2 | PRD § 10.2 | absent — blessures avec check-in bimensuel | fait (BLESSURES, 0.28.1, D-402 à D-404 ; BL-120, BL-121) |
@@ -418,7 +418,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | à faire (lot 0.28.0) |
 | § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à faire (lot 0.28.0) |
 | § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | fait (COQUILLE-PC-c, D-400 ; constat d'Ali H-19a) |
-| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | à examiner (D-401, BL-119) |
+| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | décidé par Ali (D-450, BL-119) ; à faire (0.29.1) |
 | § 18.6 c | PRD § 18.6 | partiel — équivalent clavier (C-068, C-121, C-122) | à faire (lot 0.28.0) |
 | § 19.1 a | PRD § 19.1 | partiel — notification-actions : aucune notification de check-in (C-194) | à faire (lot 0.28.0) |
 | § 19.1 b | PRD § 19.1 | partiel — privacy-shield activable (C-159) | à faire (lot 0.28.0) |
