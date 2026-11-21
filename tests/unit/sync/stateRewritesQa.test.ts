@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { STATE_REFRESH_MS } from '../../../src/domain/sync/format';
 import type { DeviceId } from '../../../src/domain/types';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-01, QA : nombre d'écritures de `state.spx` par cycle à 2, 3 et 4 appareils (actifs ou non, avec écritures locales, avec un appareil

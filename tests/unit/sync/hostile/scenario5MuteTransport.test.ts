@@ -2,7 +2,10 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { statusLine } from '../../../../src/features/sync/syncText';
 import type { SyncStatus } from '../../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-03 (B13), scénario 5 du banc, critère 23 (B6) : un appel au transport iCloud ne répond jamais (listage du dossier du PC, panne

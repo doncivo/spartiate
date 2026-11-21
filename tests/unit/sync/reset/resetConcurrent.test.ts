@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { A_ID, C_ID, closeAll, publishedState, reassociate, setupRoom, settle, titles, W_ID, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11 critère 15 (ADR 0011 §14.3, §18 point 2, D4) : A et W réinitialisent en même temps ; l'annonce valide de plus grande époque (A,

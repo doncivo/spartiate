@@ -4,7 +4,10 @@ import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { currentPurgeHorizon } from '../../../../src/sync';
 import { FORGET_META } from '../../../../src/sync/forget';
 import { mirrorDeviceFolder, propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10, revue et audit (ADR 0011 §18 points 3 à 10, tranché par l'architecte) par simulation du moteur : liste maître republiée par tous

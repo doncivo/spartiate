@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { RestoreMarker } from '../../../src/platform/sync/types';
 import { setEpochSwitchTestHooks, type SwitchStep } from '../../../src/sync/epochSwitch';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Changement d'époque avec écritures concurrentes, restauration avec modifications jamais lues de l'autre appareil (ADR 0010, ADR 0011

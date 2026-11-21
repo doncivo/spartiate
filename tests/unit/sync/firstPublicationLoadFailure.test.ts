@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { statusLine } from '../../../src/features/sync/syncText';
 import { armCrash } from '../../sim/syncCrash';
-import { createSimDevice, pair, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-FIX-02, revue M3 : le bloc à la demande `orphanEpoch` (borne locale, journal `publish-deferred`, reprise d'`inflight`) ne se charge pas.

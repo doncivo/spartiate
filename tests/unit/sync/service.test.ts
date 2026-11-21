@@ -4,7 +4,10 @@ import type { IsoDateTime } from '../../../src/domain/types';
 import type { SyncReason, SyncStatus } from '../../../src/platform/sync/types';
 import { INITIAL_STATUS, phaseOf, startSyncScheduler, syncAge } from '../../../src/sync';
 import type { CycleFacts } from '../../../src/sync/status';
-import { createSimDevice, setupFirst, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, setupFirst, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /** Déclenchement, un seul cycle à la fois, état (ADR 0011, sections 10.1, 10.4 ; Y-02 critères 1, 16, 17 ; Y-03 critères 2 et 3). */
 

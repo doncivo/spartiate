@@ -2,7 +2,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { RestoreMarker } from '../../../src/platform/sync/types';
 import type * as EpochSwitch from '../../../src/sync/epochSwitch';
 import type { DeviceId, TaskId } from '../../../src/domain/types';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-04 partie A, critère 7 : la règle de report d'époque validée par Ali le 2026-10-17 (option B, ADR 0011 §24 point 6 et §26)
@@ -73,7 +76,7 @@ async function restore(device: SimDevice, copy: Map<string, unknown[]>): Promise
     await tx.execute('DELETE FROM sync_guard');
   });
   await device.driver.execute('PRAGMA foreign_keys = ON');
-  const marker: RestoreMarker = { backup: 'spartiate-daily-20261016.db', backupTakenAt: '2026-10-16T07:00:00.000Z' as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: SCHEMA_VERSION };
+  const marker: RestoreMarker = { backup: 'spartiate-daily-20261016.db', backupTakenAt: '2026-10-16T07:00:00.000Z' as RestoreMarker['backupTakenAt'], restoredAt: new Date(device.clock.nowMs()).toISOString() as RestoreMarker['restoredAt'], schemaVersion: I0_SCHEMA_VERSION };
   device.platform.testing.setRestoreMarker(marker);
   await device.restart();
 }

@@ -1,6 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { statusLine } from '../../../../src/features/sync/syncText';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-03 (B13), scénario 6 du banc (revue S6, défaut nouveau n° 1 de la fiche) : iOS évince le segment de tête de l'iPhone (« optimiser

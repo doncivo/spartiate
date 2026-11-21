@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { statusLine } from '../../../../src/features/sync/syncText';
 import { armCrash } from '../../../sim/syncCrash';
-import { createSimDevice, setupFirst, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-FIX-02, revue B1 (option a) : voisin de `joinAfterRecords.test.ts:97` (§24 point 10, état supprimé après publication, `stateSeq`

@@ -2,8 +2,11 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { DeviceId } from '../../../../src/domain/types';
 import type { IsoDateTime } from '../../../../src/domain/types';
 import { propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { B_ID, C_ID, closeAll, publishedState, reassociate, settle, setupRoom, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02, ADR 0011 §21 point 4 : changement d'époque en fusion (réassociation après une réinitialisation, Y-11), ligne d'un autre

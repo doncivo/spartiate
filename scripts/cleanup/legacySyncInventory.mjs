@@ -21,7 +21,8 @@ function walk(dir, out = []) {
 const ENTITIES = ['tasks', 'projects', 'spaces', 'routines', 'routineLogs', 'reminders', 'recurrences', 'goals', 'checklists', 'checklistItems'];
 const LEGACY_IMPORT = /legacy-schema|repositories\/sql\/(task|recurrence|reminder|project|space|routine|goal|checklist)[A-Za-z]*['"]/;
 const SIM_IMPORT = /from ['"][./]*(tests\/)?sim(\/[A-Za-z]+)?['"]|from ['"]\.\.\/sim['"]|tests\/sim\//;
-const SPARTIATE_SCHEMA = /schema:\s*['"](i0|v\d+)['"]/;
+// CLEAN-03 : un fichier migré déclare le banc Spartiate pour tous ses appareils (`selectSimSchema('i0')`, tests/sim/syncDevice.ts).
+const SPARTIATE_SCHEMA = /schema:\s*['"](i0|v\d+)['"]|selectSimSchema\(['"](i0|v\d+)['"]\)/;
 const rows = [];
 for (const file of ['src', 'tests', 'scripts'].flatMap((d) => walk(join(ROOT, d)))) {
   const path = rel(file);
