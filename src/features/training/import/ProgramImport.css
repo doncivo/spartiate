@@ -1,0 +1,86 @@
+/* IMPORT-029 : import de programme (bloc à la demande). Tokens seulement, aucune couleur en dur. */
+.ct-import__text {
+  min-height: 12rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.ct-import__session {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-import__exercise {
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.ct-import__exercise[data-removed='true'] {
+  opacity: 0.6;
+}
+
+.ct-import__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2);
+}
+
+.ct-import__choices {
+  margin: var(--ct-space-2) 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-import__choice {
+  display: flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+  min-height: 44px;
+}
+
+.ct-import__choice input {
+  inline-size: 22px;
+  block-size: 22px;
+  accent-color: var(--ct-color-bronze);
+}
+
+.ct-import__rejected-list {
+  margin: 0;
+  padding-inline-start: var(--ct-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-import__rejected-text {
+  overflow-wrap: anywhere;
+}
+
+.ct-import__photo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ct-space-1);
+}
+
+.ct-import__photo-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.ct-import__photo:focus-within .ct-import__photo-button {
+  outline: 2px solid var(--ct-color-bronze);
+  outline-offset: 2px;
+}
+
+.ct-import__photo-button[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}

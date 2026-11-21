@@ -188,6 +188,7 @@ export const trainingFr = {
   newRoutineName: 'Nouvelle routine',
   newDayName: 'Jour {n}',
   addProgram: 'Ajouter un programme de départ',
+  importProgram: 'Importer un programme',
   programsTitle: 'Programmes de départ',
   programsHint: 'Un programme ajouté devient une routine ordinaire, que tu modifies librement.',
   programDays: '{n} jours',
