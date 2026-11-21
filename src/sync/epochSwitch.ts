@@ -634,7 +634,7 @@ export async function switchEpoch(
     // Y-11 : réinitialisation : fusion (la base locale et les écritures faites pendant le changement sont gardées par la règle de hlc).
     const result =
       options.mode === 'merge'
-        ? await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, now, knows: options.knows ?? (() => false), logger: deps.logger })
+        ? await mergeSnapshot(deps, loaded, { catalogue: deps.catalogue, localSv: deps.sv, remoteSv: loaded.end.sv, writer: progress.from.deviceId, now, knows: options.knows ?? (() => false), logger: deps.logger })
         : await replaceFromSnapshot(deps, loaded, (tx) => carryNewer(deps, tx));
     if (result === 'clock-ahead') {
       // Instantané d'ouverture trop en avance (section 4.4) : rien n'a été remplacé ; l'ouvreur est signalé, le changement attend.

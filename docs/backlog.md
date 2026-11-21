@@ -19,9 +19,9 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | DEP-01 | rapport de lot 0.18.1 (docs/DEP-01.md) | Retirer `src-tauri/vendor/sqlx-sqlite` dès qu'un sqlx publié accepte libsqlite3-sys >= 0.39 (D-160) | reporté : attente d'une version publiée de sqlx |
 | BL-006 | rapport de lot 0.26.0 (docs/reprise.md) | Worktree verrouillé `.codex-tmp/wt-STR-01` à supprimer | à faire (lot 0.28.0) |
 | BL-007 | rapport de lot 0.25.0 (docs/LOT-0.25.0.md) | PR #127 (relecture Codex du 13/11) encore ouverte : à clore ou fusionner | à faire (lot 0.28.0) |
-| M2 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Écrivain d'une ligne gardée déduit du plus grand hlc : message faux possible (older-device / received-unapplied) | à faire (lot 0.28.0) |
-| M3 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Reprise depuis l'instantané gaspillée quand l'écrivain est vu à jour avant sa republication | à faire (lot 0.28.0) |
-| M4 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Parties gardées par la 0.24.0 sans `sv` : comptées en received-unapplied, jamais en older-device | à faire (lot 0.28.0) |
+| M2 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Écrivain d'une ligne gardée déduit du plus grand hlc : message faux possible (older-device / received-unapplied) | fait (SYNC-0281a, 0.28.1, D-405) |
+| M3 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Reprise depuis l'instantané gaspillée quand l'écrivain est vu à jour avant sa republication | limite acceptée (SYNC-0281a, D-406) |
+| M4 (ADR 0018) | rapport de lot 0.25.0 (docs/adr/0018) | Parties gardées par la 0.24.0 sans `sv` : comptées en received-unapplied, jamais en older-device | limite acceptée (SYNC-0281a, D-407) |
 | H-36 | rapport de lot 0.22.2 (docs/FIX-0221.md) | « Pris » depuis la notification, app en arrière-plan puis app tuée : constaté par Ali le 13/11 (D-318 (9)) | fait (DOC-PRIV, PR #156) |
 | H-34 | rapport de lot 0.20 (docs/I6-05.md) | Rappels de compléments : retrait de la notification quand la prise est cochée sur l'autre appareil, non constaté | à faire (lot 0.28.0) |
 | H-35 | rapport de lot 0.21.0 (docs/I6-06.md) | GPS au premier plan : distance après passage en arrière-plan, à constater (UNVERIFIED) | à faire (lot 0.28.0) |
@@ -287,6 +287,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | à examiner par Ali |
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | à trancher par Ali |
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.28.x) |
+| BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -331,7 +332,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 8 I2 | PRD § 8 | absent — adhérence ≥ 70 % sur 2 semaines : aucune mesure | à faire (lot 0.28.0) |
 | § 8 I3 | PRD § 8 | partiel — aucun exercice impossible, décharge non destructive (C-001, C-007) | à faire (lot 0.28.0) |
 | § 8 I6 | PRD § 8 | partiel — confort : App Intents et import de programme absents | à faire (lot 0.28.0) |
-| § 9.2 | PRD § 9.2 | absent — e2e « séance iPhone → PC → édition PC → iPhone » | à faire (lot 0.28.0) |
+| § 9.2 | PRD § 9.2 | absent — e2e « séance iPhone → PC → édition PC → iPhone » | fait (SYNC-0281b, D-408) |
 | § 10 | PRD § 10 | absent — unités configurables (kg seul) | à faire (lot 0.28.0) |
 | § 10.0 | PRD § 10.0 | partiel — scénario d'onboarding rejoué : étape 6 sans e2e | à faire (lot 0.28.0) |
 | § 10.1-1 | PRD § 10.1 | partiel — poids prérempli depuis Santé : par Raccourcis seulement (D-69) | reporté : HealthKit direct BLOCKED (H-3a) |

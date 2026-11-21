@@ -69,16 +69,20 @@ C. **Retenue (exemption maintenue).** **Historique exempté (D-290).** Republier
 - **Écrivain oublié ou inconnu (M1, corrigé).** Seul un écrivain connu et actif (`sync_state` présent, statut autre que `forgotten`) peut
   donner `older-device` : oublié ou absent de l'état local, sa ligne de côté est une ligne manquante ordinaire (`received-unapplied`,
   reprise proposée par Détails), jamais « Mets-le à jour » pour un appareil qui n'existe plus (`olderWriter.test.ts`, « revue 1 »).
-- **Écrivain déduit du plus grand hlc (M2).** `olderParked` attribue une opération gardée à l'appareil de son hlc (le plus grand de ses
-  champs). Si ce champ vient d'un autre appareil (report, reprise), l'écrivain retenu peut être faux : seul le message change
-  (`older-device` ou `received-unapplied`), la ligne reste gardée et reprise de la même façon.
-- **Reprise depuis l'instantané (M3).** Entre la lecture de l'état publié en 19 de l'écrivain et celle de son journal republié, un cycle peut
-  voir l'écrivain à jour et ses lignes encore de côté : `received-unapplied` et la reprise unique depuis l'instantané de l'époque sont
-  alors demandées, puis consommées sans effet ; la republication `'+'` arrive au cycle suivant et applique la ligne. Aucune perte ; au
-  pire, une reprise automatique gaspillée pour l'époque (le bouton de Détails reste disponible). Non corrigé : la correction demanderait de
-  relier la marque `parkedResume` au journal lu, hors de quelques lignes.
-- **Parties gardées par la 0.24.0 (M4).** Les opérations mises de côté avant SYNC-01 n'ont pas de `sv` dans `sync_parked.op` : elles
-  restent comptées en `received-unapplied` (reprise), jamais en `older-device`, jusqu'à la republication de l'écrivain qui les applique.
+- **Écrivain déduit du plus grand hlc (M2, corrigé par SYNC-0281a).** À la mise de côté d'une création d'un `sv` inférieur, l'appareil lu
+  (journal ou instantané) est noté avec `sv` dans le JSON local de `sync_parked.op` (`w`, jamais publié ; format inchangé) ; `olderParked`
+  attribue l'opération à cet appareil, et seulement à défaut (parties gardées de la 0.25.0 à la 0.28.0) au plus grand hlc, comme avant
+  (`tests/unit/sync/versions/olderWriterLimits.test.ts`, « M2 »).
+- **Reprise depuis l'instantané (M3, limite acceptée, D-406).** Entre la lecture de l'état publié en 19 de l'écrivain et celle de
+  son journal republié (ajout refusé ou en retard), un cycle peut voir l'écrivain à jour et ses lignes encore de côté : `received-unapplied`
+  et la reprise unique depuis l'instantané de l'époque sont alors demandées, puis consommées sans effet ; la republication `'+'` arrive au
+  cycle suivant et applique la ligne. Aucune perte (`olderWriterLimits.test.ts`, « M3 » : ligne appliquée une fois, mêmes valeurs,
+  `sync_parked` vide, aucun conflit) ; au pire, une reprise automatique gaspillée pour l'époque (le bouton de Détails reste disponible).
+  Non corrigé : retirer la reprise pour ces lignes la retirerait aussi quand le journal republié a réellement été sauté, seul cas où elle sert.
+- **Parties gardées par la 0.24.0 (M4, limite acceptée, D-407).** Les opérations mises de côté avant SYNC-01 n'ont ni `sv` ni `w`
+  dans `sync_parked.op` : elles restent comptées en `received-unapplied` (reprise), jamais en `older-device`, jusqu'à la republication de
+  l'écrivain qui les applique (`olderWriterLimits.test.ts`, « M4 » : aucune perte, `sync_parked` vide après la mise à jour). Un `sv` deviné
+  serait faux pour une ligne réellement sautée ; ces parties ne se créent plus depuis la 0.25.0.
 - **Texte chargé à la demande en échec (M5, corrigé).** Le bandeau montre le texte générique (jamais muet) et le chargement est retenté au
   retour suivant de l'avertissement, sans boucle (`olderDeviceText.retry.test.tsx`).
 

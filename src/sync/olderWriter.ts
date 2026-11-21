@@ -1,5 +1,6 @@
 import { hlcDevice } from '../domain/sync/parse';
 import { tablesToRepublish } from '../domain/sync/schemaRepublish';
+import type { DeviceId } from '../domain/types';
 import type { SyncDeps } from './deps';
 
 /**
@@ -33,8 +34,10 @@ export async function olderParked(deps: SyncDeps): Promise<number> {
   for (let after = 0; ; ) {
     const page = await sync.parked(['missing-row'], after, PAGE);
     for (const p of page) {
-      const op = JSON.parse(p.op) as { sv?: unknown };
-      const device = hlcDevice(p.hlc);
+      const op = JSON.parse(p.op) as { sv?: unknown; w?: unknown };
+      // SYNC-0281a (ADR 0018, M2 corrigé) : écrivain noté à la mise de côté (appareil lu) ; partie gardée de 0.25.0 à 0.28.0 sans `w` :
+      // déduit du plus grand hlc, comme avant.
+      const device = typeof op.w === 'string' ? (op.w as DeviceId) : hlcDevice(p.hlc);
       if (!published.has(device)) continue;
       const writer = published.get(device) ?? null;
       if (typeof op.sv === 'number' && op.sv < deps.sv && (writer === null || writer < deps.sv)) count += 1;
