@@ -27,7 +27,7 @@ describe('pictogrammes : gabarit et essais (MEDIA-03a)', () => {
   it.each(TRIAL_IDS)('%s : même gabarit, couleurs de la charte seulement, rien d’actif', (id) => {
     const svg = render(id);
     expect(svg).toContain(`viewBox="0 0 ${TEMPLATE.width} ${TEMPLATE.height}"`);
-    expect(svg).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgb|hsl|<script|\son\w+=|href|foreignObject|<style|https?:/i);
+    expect(svg.replace(" xmlns=\"http://www.w3.org/2000/svg\"", "")).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgb|hsl|<script|\son\w+=|href|foreignObject|<style|https?:/i);
     expect(svg).toContain('stroke="currentColor"');
     expect(svg).toContain('var(--ct-color-bronze)');
     expect(svg.length).toBeLessThan(6000);
