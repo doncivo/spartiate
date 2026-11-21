@@ -62,4 +62,17 @@ describe('MOTEUR-0281b : ProgressionRepository.decisions et décision de retour'
     // Rien n'est effacé : les deux décisions restent, publiables avec leur séance close (D-27).
     expect((await db.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM recommendation_decision WHERE deleted_at IS NULL'))[0]?.n).toBe(2);
   });
+
+  it('revue : la décision de retour n’est pas la valeur retenue de la séance close (decisionFor l’ignore) et entre dans la boîte d’envoi (D-27)', async () => {
+    db = await openBaseDb(DEVICE, day(1));
+    const repo = await db.data.repos.progression();
+    await closedWorkout(u(1), day(1));
+    await repo.recordDecision({ id: u(301), exerciseId: 'bench-press-barbell', workoutId: u(1), prescription: base, accepted: true, chosenLoadKg: 62.5, chosenReps: [8, 8, 8] });
+    db.clock.advance(86_400_000);
+    const revert = revertDecisionPrescription({ loadKg: 60, reps: [10, 10, 10], decidedAt: day(0) as IsoDateTime }, 'load-reps');
+    await repo.recordDecision({ id: u(302), exerciseId: 'bench-press-barbell', workoutId: u(1), prescription: revert, accepted: false, chosenLoadKg: 60, chosenReps: [10, 10, 10] });
+    expect((await repo.decisionFor(u(1), 'bench-press-barbell'))?.id).toBe(u(301));
+    const sent = await db.driver.select<{ row_id: string }>("SELECT DISTINCT row_id FROM sync_outbox WHERE table_name = 'recommendation_decision'");
+    expect(sent.map((r) => r.row_id)).toContain(u(302));
+  });
 });
