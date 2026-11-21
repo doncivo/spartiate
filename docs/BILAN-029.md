@@ -1,6 +1,6 @@
 # BILAN-029 — bilan hebdomadaire par règles (lot 0.29.0, IA-0a)
 
-Statut : en cours (branche BILAN-029, non poussée). Budget M à L. Modules : training (Progrès), domain-logic ; nutrition et recovery en lecture.
+Statut : code et tests verts en local (branche BILAN-029, non poussée, sans PR) ; constats d'Ali à faire. Budget M à L. Modules : training (Progrès), domain-logic ; nutrition et recovery en lecture.
 Chapitres : PRD § 17.1, § 17.3 (bilans, modèle de secours « fallback template »), § 12.2 (cycle, décharge), § 15.1 (tendance de poids),
 § 16 (sommeil de `recovery_day`), § 18.4 (charte). Décisions : D-294 (aucun fournisseur d'IA), D-410 (lot 0.29.0 : tout par règles, sur
 l'appareil), D-381 (partage local du résumé de séance), D-26 (synchro non touchée).
@@ -17,7 +17,8 @@ l'appareil), D-381 (partage local du résumé de séance), D-26 (synchro non tou
   moins de 3 nuits mesurées, aucune série validée), When le bilan est calculé, Then la phrase du thème est « pas assez de données »,
   jamais une valeur 0 ; un 0 n'est écrit que s'il est un fait (0 séance sur 3 prévues, aucun record dans une semaine avec séances).
 - C-4 (semaine) — Given le réglage « Début de semaine » (lundi, samedi, dimanche), When Progrès s'ouvre, Then le bilan montré est celui
-  de la dernière semaine COMPLÈTE, et les 7 semaines précédentes sont listées (archivage par recalcul, aucune table).
+  de la dernière semaine COMPLÈTE, et les 6 semaines précédentes sont listées (archivage par recalcul, aucune table ; 7 semaines en tout :
+  le journal est relu sur 60 jours, `SNAPSHOT_DAYS`).
 - C-5 (écran) — Given Progrès (iPhone et PC), When la carte « Bilan de la semaine » se charge (bloc à la demande, catalogue de textes
   chargé avec lui), Then chaque phrase s'affiche avec sa source lisible (« 4 séances sur 4 prévues · source : séances closes ») ; choisir
   une semaine précédente l'affiche ; boutons ≥ 44 pt ; jetons de couleur seulement ; échec de lecture : message et « Réessayer ».
@@ -47,13 +48,50 @@ bilan (le brief demande texte ou Markdown) ; aucun fournisseur d'IA (D-294).
 
 ## Preuves
 
-(à compléter : SHA rouge, SHA vert, tests nommés, mesure du bundle)
+- Rouge : 603cca60 « BILAN-029 : tests rouges (C-1 à C-7…) » (modules absents : 3 fichiers en échec). Vert : 21b6dee1. QA : commit suivant.
+- Tests : `src/domain/review/weeklyReview.test.ts` (24 vecteurs : nominal, donnée absente par thème, pause, programme commencé après,
+  records « et N autres », décharge, début de semaine au dimanche, `numbersIn`), `weeklyReview.copies.test.ts` (copies équivalentes à
+  weeklyRate.ts et cycleWeek.ts), `src/i18n/weeklyReviewText.test.ts` (phrases, sources, 300 bilans aléatoires : chaque nombre du texte est
+  une valeur de ses sources, Markdown), `weeklyReviewText.qa.test.ts`, `src/features/progress/WeeklyReview.test.tsx` et `.qa.test.tsx`
+  (base de test : semaine passée, semaine en cours exclue, records, semaines précédentes, dimanche, export, échec de lecture, échec
+  d'export dit, retour à la semaine passée, aucune ligne en `sync_outbox`), `tests/bundle/startBundle.test.ts` (bloc à la demande,
+  marqueurs hors du départ). Couverture `src/domain/review` : 100 % lignes, 97,75 % branches.
+- Typage et eslint propres sur tous les fichiers touchés. Aucune migration, aucune table, `src/sync/**` et `src/domain/sync/**` non touchés.
+- Bundle (mesure normalisée) : début 193 879 octets, fin 193 879 octets. Premier essai à 193 923 (+44) : weeklyRate.ts, cycleWeek.ts et
+  dayTotals.ts sortaient en blocs partagés listés au préchargement du départ ; corrigé en recopiant les deux petites règles (équivalence
+  testée) et en lisant le journal par `loadNutritionSnapshot`.
 
-## Décisions proposées (sans numéro)
+## Passes
 
-(à compléter)
+- product-owner : critères C-1 à C-7 ci-dessus.
+- training / domain-logic : règle pure, catalogue, carte, export.
+- qa-test : accords au singulier, années et 1er du mois, changement d'heure, valeurs non finies, échec d'export, retour, lecture seule.
+- code-reviewer (relecture du diff à froid) : aucune écriture en base ni appel réseau ; paramètres des phrases tirés des seules sources ;
+  promesses parallèles toutes gérées par `Promise.all` ; aucune couleur en dur (jetons), boutons de semaine à `--ct-hit-target-min`.
+  Mineur accepté : les records d'une séance comptent charge et meilleure série séparément (règle du résumé de séance, `personalRecords`).
+
+## Écarts au brief
+
+- Pas de « recommandation » (§ 17.3 « 3 faits, 1 recommandation ») : aucune règle de conseil dans le PRD ; arbitrage d'Ali.
+- Export Markdown seul (pas de CSV / JSON du § 17.3) ; archive de 7 semaines (et non 8, borne de l'instantané Nutrition de 60 jours).
+- Textes des tests rouges ajustés au vert (point final retiré, gabarit « sessionsPlanned » comparé au texte attendu ; 7 → 6 boutons de
+  semaines avec l'archive de 7 semaines) : formulations, sans changement de règle.
+- Le repère du cycle d'une semaine passée vient de l'enregistrement actuel du cycle (un cycle clos depuis n'est plus montré).
+
+## Décisions proposées (sans numéro, choix prudents révisables par Ali)
+
+- Bilan hebdomadaire par règles sur l'appareil (D-294, D-410) : sept thèmes (séances, records, volume, poids, nutrition, sommeil, cycle),
+  une phrase chacun avec sa source ; « pas assez de données » au lieu de 0 ; sommeil moyen à partir de 3 nuits mesurées ; cible calorique
+  citée seulement si elle est unique (pas de cible de repos) ; volume : 3 muscles en tête ; records : 3 exercices nommés.
+- Archivage par recalcul, aucune table : une semaine passée peut changer si ses données sont corrigées (le texte n'est pas figé). Figer
+  demanderait une table locale non publiée ; non proposé tant qu'Ali ne le demande pas.
+- Export : fichier Markdown `spartiate-bilan-AAAA-MM-JJ.md`, feuille de partage du système, sinon téléchargement (comme D-381).
 
 ## Constats d'Ali à faire
 
 - iPhone : Progrès › Bilan de la semaine, la semaine passée et une semaine précédente ; « Exporter » ouvre la feuille de partage.
 - PC : même carte ; « Exporter » télécharge le fichier Markdown.
+
+## Budget
+
+M à L annoncé ; consommé dans l'enveloppe L (environ 200 k).
