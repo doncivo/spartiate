@@ -21,6 +21,11 @@ export const trainingFr = {
   search: 'Rechercher un exercice',
   groupFilter: 'Groupe musculaire',
   groupAll: 'Tous les groupes',
+  // MOTEUR-0281c (§ 14.2) : filtres par muscle et par pattern de mouvement.
+  muscleFilter: 'Muscle',
+  muscleAll: 'Tous les muscles',
+  patternFilter: 'Mouvement',
+  patternAll: 'Tous les mouvements',
   compatibleOnly: 'Compatibles avec mon matériel',
   compatibleWith: 'Profil actif : {name}',
   countOne: '{n} exercice',
