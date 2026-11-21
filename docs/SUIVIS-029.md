@@ -128,3 +128,19 @@ limite, séparation des genres ; aucun défaut trouvé).
   en `listRecent(10)` (méthode réelle du dépôt) dans le vert.
 - Réglages des objectifs dans Progrès › Suivis (pas dans Plus) ; mesure du bundle obtenue en nommant la clé `today.prefs` (placement choisi).
 - Branche partie de c107a876 : `main` a reçu REPAS-029 depuis (pas de fusion faite ici, comme demandé).
+
+## Relecture sync-icloud et à froid
+
+Verdict : approuvé avec réserves ; réserves levées ci-dessous (rouge avant vert, sauf le test de garde).
+
+1. Synchro des genres nouveaux : `tests/unit/sync/i6/trackingKindsSync.test.ts` (c334da76). Un iPhone insère en SQL `visbody_bmr_dakcal` = 178.3
+   et `note_fatigue` = 1, comme une 0.29.0. Le PC reçoit des lignes identiques ; `sync_unknown` et `sync_parked` restent vides ; les cycles
+   se font sans erreur ; `list()` sans genre ne rend que les zones. Test de garde, vert par construction (catalogue et table inchangés).
+2. Préremplissage VISBODY sans arrondi : rouge 66b28ca2, vert 7ed19142. 72,45 kg reste 72,45 quand on corrige un autre champ ; l'arrondi au
+   dixième ne sert plus qu'à l'affichage des courbes et des écarts.
+3. Échec de lecture des suivis : rouge 79889553, vert fe2a843b. Sur Aujourd'hui et dans Progrès, un échec de lecture s'affiche (alerte et
+   « Réessayer ») : plus de promesse sans gestionnaire de rejet. Les objectifs illisibles ne retombent plus en silence sur les valeurs par défaut.
+4. Consigné (comme D-113) : une 0.28.1 qui a reçu ces genres par la synchro produit un export complet qu'elle refuse elle-même à
+   l'import (genre inconnu) ; la 0.29.0 importe cet export sans perte.
+
+Contrôles : `plural.test.ts` et `unusedKeys.test.ts` verts. Bundle de départ : 193 878 octets normalisés, sous les 193 879 du début.
