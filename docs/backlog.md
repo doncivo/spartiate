@@ -272,6 +272,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-105 | revue TESTS-FIGES | mineur — `eightWeeks.test.ts` : « lissée ≠ brute » à cibler sur une semaine et une valeur ; test de déterminisme de `testsFiges.test.ts` peu probant ; garde avant `readPrefs` (`SupplementsView.tsx`) sans cas | reporté (S) |
 | BL-106 | TESTS-FIGES (D-365) | important — après un changement de salle, une charge d'historique hors de la grille de la nouvelle salle (ou au-dessus du maximum du matériel) est prescrite telle quelle en échelle de répétitions ; à trancher par Ali (arrondi à la grille, plafond du matériel) | à trancher par Ali |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
+| BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | à faire (S) |
 
 ## 3. Audit Codex 0.26.0
 
