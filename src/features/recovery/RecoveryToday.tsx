@@ -1,7 +1,7 @@
 import { isSingular, tPlural } from '../../i18n/plural';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { unusualValues, type RecoveryExplanationKey, type UnusualValues } from '../../domain/recovery';
+import { recoveryZoneTier, unusualValues, type RecoveryExplanationKey, type RecoveryZoneTier, type UnusualValues } from '../../domain/recovery';
 import type { LocalDate } from '../../domain/types';
 import type { FactorEntry, RecoveryDayRecord, RecoveryFactorRecord } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
@@ -108,6 +108,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
   const stale = stalenessOf(phone ? (load.importedAt ?? s.computedAt) : s.computedAt, nowMs);
   const recovery = recoveryDial(s);
   const exertion = exertionDial(s);
+  const zoneTier = recoveryZoneTier(s.recovery);
   const sleep = sleepDial(s);
   const quality = tRecovery(`quality_${s.quality}`);
   const staleKey = isSingular(stale.days) ? (phone ? 'staleImportOne' : 'staleSummaryOne') : phone ? 'staleImport' : 'staleSummary';
@@ -161,6 +162,13 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
             </Dial>
             <p className="ct-recovery__name">{tRecovery('exertionLabel')}</p>
             <p className="ct-today__muted">{exertion.kind === 'value' ? tRecovery('exertionScope') : tRecovery('exertionNone')}</p>
+            {/* PROGRES-c (§ 16.3) : zone cible stockée avec le résumé, et son sens en texte (jamais la couleur seule). */}
+            {s.targetZone !== null && zoneTier !== null ? (
+              <>
+                <p className="ct-today__text">{tRecovery('targetZone', { from: s.targetZone.from, to: s.targetZone.to })}</p>
+                <p className="ct-today__muted">{tRecovery(ZONE_TEXT[zoneTier])}</p>
+              </>
+            ) : null}
           </section>
           <section className="ct-recovery__cell" aria-label={tRecovery('sleepLabel')}>
             <Dial fraction={sleep.kind === 'value' && sleep.scorePct !== null ? ringFraction(sleep.scorePct, 100) : null} label={sleepLabel}>
@@ -225,6 +233,8 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
     </>
   );
 }
+
+const ZONE_TEXT: Readonly<Record<RecoveryZoneTier, RecoveryTextKey>> = { high: 'zoneHigh', mid: 'zoneMid', low: 'zoneLow' };
 
 export function RecoveryToday() {
   const container = useAppContainer();

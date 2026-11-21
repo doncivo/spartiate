@@ -1,3 +1,4 @@
+import type { SetKind } from './session';
 import type { PrescriptionHeadline, ProposalOptionKind, ReasonCode } from './types';
 
 /**
@@ -318,4 +319,25 @@ export const DEFAULT_GENERATION_CONFIG: GenerationConfig = Object.freeze({
   mesoSetsOffsetRange: Object.freeze([-1, 1] as const),
   deloadWeekRir: 4,
   lightWeekDays: 7,
+});
+
+/**
+ * Progrès › Entraînement (PROGRES, § 17.1 ; choix prudents consignés dans docs/PROGRES.md, révisables par Ali). Types de série comptés
+ * dans le volume : travail et chrono (échauffement, drop et partielle exclus) ; part d'un muscle : son poids dans le contenu (§ 14.1).
+ */
+export interface ProgressConfig {
+  /** Semaines glissantes du volume par muscle, semaine en cours comprise. */
+  readonly volumeWeeks: number;
+  readonly volumeSetKinds: readonly SetKind[];
+  /** Semaines complètes de l'adhérence. */
+  readonly adherenceWeeks: number;
+  /** Objectif hebdomadaire hors programme suivi (ou avant son début). */
+  readonly defaultWeeklyTarget: number;
+}
+
+export const DEFAULT_PROGRESS_CONFIG: ProgressConfig = Object.freeze({
+  volumeWeeks: 8,
+  volumeSetKinds: Object.freeze(['work', 'timed'] as const),
+  adherenceWeeks: 4,
+  defaultWeeklyTarget: 1,
 });

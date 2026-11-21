@@ -1,0 +1,123 @@
+/* Progrès › Entraînement (PROGRES) : jetons de tokens.css seulement, aucune couleur en dur, tailles en rem, chiffres tabulaires. */
+.ct-tprogress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-tprogress__lead,
+.ct-tprogress__foot {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ct-tprogress__foot {
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-tprogress__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-tprogress__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5rem;
+  grid-template-areas:
+    'name bars'
+    'value value';
+  align-items: center;
+  gap: var(--ct-space-1) var(--ct-space-3);
+}
+
+.ct-tprogress__name {
+  grid-area: name;
+  font-weight: 600;
+}
+
+.ct-tprogress__bars {
+  grid-area: bars;
+  width: 5rem;
+  height: 1.5rem;
+}
+
+.ct-tprogress__bar {
+  fill: var(--ct-color-border-strong);
+}
+
+.ct-tprogress__bar--current {
+  fill: var(--ct-color-bronze);
+}
+
+.ct-tprogress__value {
+  grid-area: value;
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tprogress__hero {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ct-space-2);
+}
+
+.ct-tprogress__hero-value {
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--ct-color-bronze);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tprogress__calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(2.75rem, 1fr));
+  gap: var(--ct-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-tprogress__weekday {
+  text-align: center;
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-xs);
+}
+
+.ct-tprogress__day {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ct-radius-sm);
+  border: 1px solid var(--ct-color-border);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tprogress__day--done {
+  border-color: var(--ct-color-bronze);
+  font-weight: 700;
+}
+
+.ct-tprogress__day--done::after {
+  content: '•';
+  color: var(--ct-color-bronze);
+  margin-left: 0.125rem;
+}
+
+.ct-tprogress__day--paused {
+  border-style: dashed;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-tprogress__day--today {
+  outline: 2px solid var(--ct-color-text);
+  outline-offset: -2px;
+}

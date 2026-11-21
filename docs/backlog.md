@@ -250,7 +250,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-188 | audit Claude 0.27.0 | mineur — PRD contradictoire : 1 024 / 900 px, Ctrl+K, Recovery Split, HealthKit, CI à chaque push | à faire (lot 0.28.0) |
 | C-189 | audit Claude 0.27.0 | important — progression au poids du corps et chronométrée absente ; retour à une prescription antérieure absent | fait (MOTEUR-0281, 0.28.1, D-383 à D-388 ; reportés : BL-111, BL-112) |
 | C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | fait en partie (SESS-01, 0.28.1, D-376 à D-382 ; reportés : BL-108, BL-110) |
-| C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | à faire (lot 0.28.0) |
+| C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | fait en partie (PROGRES, 0.28.1, D-389 à D-394 ; restent records en séance § 17.1 a, BL-114 à BL-116) |
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
 | C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (lot 0.28.0) |
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | à faire (lot 0.28.0) |
@@ -279,6 +279,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | à faire (0.28.x) |
 | BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | à faire (0.28.x) |
 | BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.28.x) |
+| BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | à trancher par Ali |
+| BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | à trancher par Ali |
+| BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -373,21 +376,21 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 16.1 C | PRD § 16.1 | partiel — niveau C : zone cible jamais affichée (C-191) | à faire (lot 0.28.0) |
 | § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | à faire (lot 0.28.0) |
 | § 16.3 b | PRD § 16.3 | partiel — Exertion par zones FC remplacée par minutes × ressenti (D-88, D-220) | reporté : zones FC sans HealthKit direct (D-69) |
-| § 16.3 c | PRD § 16.3 | partiel — zone cible ≥ 66 / 34–65 / ≤ 33 calculée et stockée, non affichée (C-191) | à faire (lot 0.28.0) |
+| § 16.3 c | PRD § 16.3 | partiel — zone cible ≥ 66 / 34–65 / ≤ 33 calculée et stockée, non affichée (C-191) | fait (PROGRES-c, D-393) |
 | § 16.3 d | PRD § 16.3 | partiel — récupération par muscle : cardio importé non retiré (C-062) | à faire (lot 0.28.0) |
 | § 16.4 | PRD § 16.4 | partiel — Recovery Split et modulation (C-009) | à faire (lot 0.28.0) |
 | § 16.7 | PRD § 16.7 | partiel — heure de coucher et rappel 30 min avant (C-050) | à faire (lot 0.28.0) |
 | § 17.1 a | PRD § 17.1 | partiel — records au résumé seulement, aucune notification en séance (C-191) | à faire (lot 0.28.0) |
-| § 17.1 b | PRD § 17.1 | absent — volume par muscle et par semaine (C-191) | à faire (lot 0.28.0) |
-| § 17.1 c | PRD § 17.1 | partiel — constance : streak et calendrier absents (C-191) | à faire (lot 0.28.0) |
-| § 17.1 d | PRD § 17.1 | absent — tendances de récupération sur 30 jours (C-191) | à faire (lot 0.28.0) |
+| § 17.1 b | PRD § 17.1 | absent — volume par muscle et par semaine (C-191) | fait (PROGRES-a, D-389) |
+| § 17.1 c | PRD § 17.1 | partiel — constance : streak et calendrier absents (C-191) | fait (PROGRES-b, D-391) |
+| § 17.1 d | PRD § 17.1 | absent — tendances de récupération sur 30 jours (C-191) | fait (PROGRES-c, D-393) |
 | § 17.1 e | PRD § 17.1 | partiel — graphiques Recharts < 300 ms : recharts déclaré, jamais importé (C-167) | à faire (lot 0.28.0) |
 | § 18.1 a | PRD § 18.1 | partiel — barre latérale PC non rétractable (C-192) | à faire (lot 0.28.0) |
 | § 18.1 b | PRD § 18.1 | partiel — Ctrl+1…5 présents, Ctrl+K absent (C-135) | à faire (lot 0.28.0) |
 | § 18.1 c | PRD § 18.1 | partiel — swipe et appui long absents, haptique seule (C-192) | à faire (lot 0.28.0) |
 | § 18.1 d | PRD § 18.1 | absent — clic droit et double-clic (C-192) | à faire (lot 0.28.0) |
 | § 18.1 e | PRD § 18.1 | partiel — minuteur PC sans badge dans le titre (C-192) | à faire (lot 0.28.0) |
-| § 18.2 a | PRD § 18.2 | partiel — Aujourd'hui : streak absent (C-191) | à faire (lot 0.28.0) |
+| § 18.2 a | PRD § 18.2 | partiel — Aujourd'hui : streak absent (C-191) | fait (PROGRES-b, carte Constance, D-391) |
 | § 18.2 b | PRD § 18.2 | partiel — Progrès : graphiques, records, bilans (C-191) | à faire (lot 0.28.0) |
 | § 18.2 c | PRD § 18.2 | partiel — Plus : « À propos et licences » (C-119) | à faire (lot 0.28.0) |
 | § 18.3 a | PRD § 18.3 | partiel — signature < 24 h sans lien vers la procédure SideStore (C-126, C-192) | à faire (lot 0.28.0) |
