@@ -14,7 +14,7 @@ import { useSyncedData } from '../sync/remoteChanges';
  */
 
 /** Durée « 7 h 00 » (règle de display.ts recopiée : l'importer partageait un bloc et allongeait la liste de préchargement du départ). */
-function formatDuration(minutes: number): string {
+export function formatDuration(minutes: number): string {
   const total = Math.round(minutes);
   if (total < 60) return `${String(total)} min`;
   return `${String(Math.floor(total / 60))} h ${String(total % 60).padStart(2, '0')}`;
