@@ -125,3 +125,7 @@ listes de préchargement du bloc d'entrée, exports de `localDate` en plus ; cor
 - Part du muscle secondaire : poids du contenu (§ 14.1) au lieu de « moitié » (le brief demandait de suivre le PRD s'il le dit).
 - Records en séance (§ 17.1 « notification en séance ») : **reporté** (toucherait l'écran de séance active, non trivial).
 - Budget L : environ 250 k consommés ; rien à signaler.
+
+## Relecture à froid (code-reviewer, agent distinct)
+
+Verdict initial : à corriger (un point important). Corrigé : trois règles recopiées sans test d'équivalence (semaine, date locale, durée) désormais gardées par `src/features/progress/copiedRules.test.ts` (83cfec36, a12a68b7 ; test de garde, vert par construction). Mineur corrigé : la moyenne du volume est dite « des 8 dernières semaines » (rouge 83cfec36, vert 2ea21f31 puis libellé final conforme à la garde des pluriels). Mineurs consignés, non corrigés : pauses des cycles précédents non lues pour geler la série ; carte Constance d'Aujourd'hui muette en cas d'échec de lecture (Progrès le dit) ; seuils 66 / 34–65 / 33 recopiés dans fr.recovery.ts ; « min », « h » et « 1er » écrits dans le code (comme display.ts). Numéros : D-389 à D-394, BL-114 à BL-116.
