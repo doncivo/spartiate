@@ -69,3 +69,12 @@ export function targetZone(score: number | null): TargetZone | null {
   const [from, to] = score >= z.high.from ? z.high.target : score >= z.mid.from ? z.mid.target : z.low.target;
   return { from, to };
 }
+
+export type RecoveryZoneTier = 'high' | 'mid' | 'low';
+
+/** PROGRES-c : palier de Recovery qui fixe la zone cible d'Exertion (§ 16.3 : ≥ 66 / 34–65 / ≤ 33), pour en dire le sens ; `null` sans score. */
+export function recoveryZoneTier(score: number | null): RecoveryZoneTier | null {
+  if (score === null || !Number.isFinite(score)) return null;
+  const z = RECOVERY_CONFIG.zones;
+  return score >= z.high.from ? 'high' : score >= z.mid.from ? 'mid' : 'low';
+}
