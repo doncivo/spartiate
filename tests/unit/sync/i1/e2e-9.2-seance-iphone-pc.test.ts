@@ -145,4 +145,50 @@ describe('e2e § 9.2 : séance iPhone → PC → édition PC → iPhone', () => 
     expect({ pc: await aggregate(pc), iphone: await aggregate(iphone), clocks: await fieldClocks(pc) }).toEqual(before);
     expect(await count(iphone, 'SELECT COUNT(*) AS n FROM conflict_log')).toBe(0);
   });
+
+  // qa-test : cas limites du même parcours.
+  it('qa : charge corrigée sur le PC et répétitions corrigées sur l’iPhone hors ligne, même série : les deux gardées, aucun conflit', async () => {
+    const { pc, iphone } = await pcAndIphone();
+    const workouts = await iphone.data.repos.workouts();
+    await workouts.start({ source: 'empty', id: W1, name: 'Haut A' });
+    const added = await workouts.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 2 });
+    for (const s of added.sets) await workouts.validateSet(s.id, { reps: 8, loadKg: 60 });
+    await iphone.data.transaction(async (repos) => (await repos.workouts()).close(W1));
+    await exchange();
+    const target = added.sets[0]?.id as string;
+    pc.clock.advance(60_000);
+    await (await pc.data.repos.workouts()).correctSet(target, { loadKg: 62.5 });
+    iphone.clock.advance(90_000);
+    await (await iphone.data.repos.workouts()).correctSet(target, { reps: 7 });
+    await exchange();
+    for (const d of [pc, iphone]) {
+      const set = (await (await d.data.repos.workouts()).getClosed(W1))?.sets.find((s) => s.id === target);
+      expect(set && [set.loadKg, set.reps], d.name).toEqual([62.5, 7]);
+      expect(await count(d, 'SELECT COUNT(*) AS n FROM conflict_log'), d.name).toBe(0);
+      expect(await count(d, `SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = '${W1}'`), d.name).toBe(2);
+    }
+    expect(await aggregate(pc)).toEqual(await aggregate(iphone));
+    expect(await fieldClocks(pc)).toEqual(await fieldClocks(iphone));
+  });
+
+  it('qa : séance reçue par le PC après un redémarrage de chacun, correction faite avant que l’iPhone ne relise : même résultat, une seule séance', async () => {
+    const { pc, iphone } = await pcAndIphone();
+    const workouts = await iphone.data.repos.workouts();
+    await workouts.start({ source: 'empty', id: W1, name: 'Haut A' });
+    const added = await workouts.addExercise(W1, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 1 });
+    await workouts.validateSet(added.sets[0]?.id as string, { reps: 8, loadKg: 60 });
+    await iphone.data.transaction(async (repos) => (await repos.workouts()).close(W1));
+    await exchange();
+    await pc.restart();
+    pc.clock.advance(60_000);
+    await (await pc.data.repos.workouts()).correctSet(added.sets[0]?.id as string, { loadKg: 55 });
+    await iphone.restart();
+    await exchange();
+    expect((await (await iphone.data.repos.workouts()).getClosed(W1))?.sets.map((s) => s.loadKg)).toEqual([55]);
+    expect(await aggregate(iphone)).toEqual(await aggregate(pc));
+    for (const d of [pc, iphone]) {
+      expect(await count(d, 'SELECT COUNT(*) AS n FROM conflict_log'), d.name).toBe(0);
+      expect(await count(d, 'SELECT COUNT(*) AS n FROM workout'), d.name).toBe(1);
+    }
+  });
 });
