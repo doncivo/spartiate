@@ -8,6 +8,7 @@ import type { MealEntryRecord } from '../../../db/repositories/mealEntryReposito
 import { formatTime } from '../../../i18n/format';
 import { formatDayLong, formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
 import { Button, ConfirmDialog, SegmentedControl } from '../../../ui';
+import { ContextMenuZone } from '../../../ui/ContextMenu';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
 import { QuickAddForm } from '../quickAdd/QuickAddForm';
@@ -254,27 +255,39 @@ export function JournalView({ snapshot, onChanged, openSearch = false }: Journal
       {entries !== null && entries.length > 0 ? (
         <ul className="ct-nutrition__entries" aria-label={tNutrition('entriesLabel')}>
           {entries.map((entry) => (
-            <li key={entry.id} className="ct-nutrition__entry">
-              <span className="ct-nutrition__time ct-nutrition__num">{formatTime(entry.time)}</span>
-              <div className="ct-nutrition__entry-main">
-                <p className="ct-nutrition__entry-name">
-                  <span>{entry.foodName}</span> <ProvenanceBadge source={entry.source} />
-                </p>
-                <p className="ct-nutrition__muted ct-nutrition__num">
-                  {entry.grams === null ? null : <span>{tNutrition('gramsValue', { n: formatTenth(entry.grams) })} · </span>}
-                  <MacroLine p={orDash(entry.proteinG)} c={orDash(entry.carbG)} f={orDash(entry.fatG)} />
-                </p>
-              </div>
-              <p className="ct-nutrition__entry-kcal ct-nutrition__num">{entry.kcal === null ? tNutrition('unknown') : tNutrition('kcalValue', { n: formatInt(entry.kcal) })}</p>
-              <div className="ct-nutrition__entry-actions">
-                <Button variant="secondary" ariaLabel={tNutrition('editEntry', { name: entry.foodName })} onClick={() => setMode({ kind: 'edit', entry, date })}>
-                  {tNutrition('edit')}
-                </Button>
-                <Button variant="secondary" ariaLabel={tNutrition('deleteEntry', { name: entry.foodName })} onClick={() => setToDelete(entry)}>
-                  {tNutrition('delete')}
-                </Button>
-              </div>
-            </li>
+            <ContextMenuZone
+              key={entry.id}
+              items={[
+                { id: 'edit', label: tNutrition('edit'), onSelect: () => setMode({ kind: 'edit', entry, date }) },
+                { id: 'delete', label: tNutrition('delete'), onSelect: () => setToDelete(entry), danger: true },
+              ]}
+              menuLabel={tNutrition('entryActions', { name: entry.foodName })}
+              onActivate={() => setMode({ kind: 'edit', entry, date })}
+            >
+              {(bind) => (
+                <li className="ct-nutrition__entry" {...bind}>
+                  <span className="ct-nutrition__time ct-nutrition__num">{formatTime(entry.time)}</span>
+                  <div className="ct-nutrition__entry-main">
+                    <p className="ct-nutrition__entry-name">
+                      <span>{entry.foodName}</span> <ProvenanceBadge source={entry.source} />
+                    </p>
+                    <p className="ct-nutrition__muted ct-nutrition__num">
+                      {entry.grams === null ? null : <span>{tNutrition('gramsValue', { n: formatTenth(entry.grams) })} · </span>}
+                      <MacroLine p={orDash(entry.proteinG)} c={orDash(entry.carbG)} f={orDash(entry.fatG)} />
+                    </p>
+                  </div>
+                  <p className="ct-nutrition__entry-kcal ct-nutrition__num">{entry.kcal === null ? tNutrition('unknown') : tNutrition('kcalValue', { n: formatInt(entry.kcal) })}</p>
+                  <div className="ct-nutrition__entry-actions">
+                    <Button variant="secondary" ariaLabel={tNutrition('editEntry', { name: entry.foodName })} onClick={() => setMode({ kind: 'edit', entry, date })}>
+                      {tNutrition('edit')}
+                    </Button>
+                    <Button variant="secondary" ariaLabel={tNutrition('deleteEntry', { name: entry.foodName })} onClick={() => setToDelete(entry)}>
+                      {tNutrition('delete')}
+                    </Button>
+                  </div>
+                </li>
+              )}
+            </ContextMenuZone>
           ))}
         </ul>
       ) : null}

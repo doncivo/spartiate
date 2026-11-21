@@ -4,8 +4,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--ct-space-2);
-  height: 48px;
-  min-height: var(--ct-hit-target-min); /* ERGO-01b : jamais sous 44 px, même quand un écran réduit la hauteur */
+  /* COQUILLE-PC-c (Dynamic Type) : 48 px au texte normal, grandit avec le texte ; jamais sous 44 px (ERGO-01b), même quand un écran réduit la hauteur. */
+  min-height: var(--ct-hit-target-min);
+  min-height: max(48px, 3rem);
   padding: 0 20px;
   border-radius: var(--ct-radius-pill);
   font-family: var(--ct-font-text);

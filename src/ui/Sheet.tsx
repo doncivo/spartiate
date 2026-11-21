@@ -21,7 +21,7 @@ export interface SheetProps {
  * poignée de balayage, fond assombri. Piège de focus, Échap pour fermer.
  *
  * @example
- * <Sheet open={overlay !== null} onClose={closeOverlay} label={t('tasks.newTask')}>
+ * <Sheet open={overlay !== null} onClose={closeOverlay} label={t('exemple.newTask')}>
  *   <TaskForm />
  * </Sheet>
  */

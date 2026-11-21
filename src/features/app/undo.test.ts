@@ -94,7 +94,7 @@ describe('undoMessage (typage de t, T-05)', () => {
   it('compose le libellé du type, ou le libellé propre à la commande, avec ses paramètres', () => {
     expect(undoMessage({ ...command(), labelParams: { title: 'Courses' } })).toBe('« Courses » terminée');
     expect(undoMessage({ ...command(), kind: 'postpone' })).toBe('Tâche reportée');
-    expect(undoMessage({ ...command(), kind: 'postpone', labelKey: 'undo.postponeTomorrow', labelParams: { title: 'Courses' } })).toBe('« Courses » reportée à demain');
+    expect(undoMessage({ ...command(), kind: 'duplicate', labelKey: 'undo.duplicate', labelParams: { title: 'Courses' } })).toBe('« Courses » dupliquée');
   });
 });
 
@@ -108,8 +108,8 @@ describe('undoMessage au pluriel (T-13, critère 6)', () => {
   });
 
   it('le message de déplacement cite le titre et le jour', () => {
-    expect(undoMessage({ ...command(), kind: 'move', labelKey: 'undo.moveDate', labelParams: { title: 'Courses', date: 'jeu. 24' } })).toBe(
-      '« Courses » déplacée au jeu. 24',
+    expect(undoMessage({ ...command(), kind: 'move', labelKey: 'undo.scheduleDate', labelParams: { title: 'Courses', date: 'jeu. 24' } })).toBe(
+      '« Courses » planifiée au jeu. 24',
     );
   });
 });

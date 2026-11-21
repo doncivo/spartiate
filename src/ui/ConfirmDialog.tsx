@@ -31,7 +31,7 @@ export interface ConfirmDialogProps {
  * Rendue dans `document.body` : elle passe au-dessus d'une fiche détail ou d'une feuille.
  *
  * @example
- * <ConfirmDialog title={t('tasks.deleteConfirmTitle', { title })} confirmLabel={t('tasks.deleteConfirm')} onConfirm={remove} onCancel={close} />
+ * <ConfirmDialog title={t('exemple.deleteConfirmTitle', { title })} confirmLabel={t('exemple.deleteConfirm')} onConfirm={remove} onCancel={close} />
  */
 export function ConfirmDialog({ title, description, confirmLabel, cancelLabel, onConfirm, onCancel, container }: ConfirmDialogProps) {
   const descriptionId = useId();
