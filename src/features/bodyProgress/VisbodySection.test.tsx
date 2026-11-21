@@ -81,3 +81,13 @@ describe('Bilans VISBODY', () => {
     for (const call of [...log.mock.calls, ...info.mock.calls]) expect(JSON.stringify(call)).not.toContain('81.3');
   });
 });
+
+describe('SUIVIS-029 (qa) : séparation des genres', () => {
+  it('les bilans VISBODY et les notes ne se mêlent jamais aux mensurations saisies (liste des zones)', async () => {
+    const m = await db.data.repos.measurements();
+    await m.save('2026-11-20' as LocalDate, 'visbody_weight_kg', 78);
+    await m.save('2026-11-20' as LocalDate, 'note_fatigue', 6);
+    await m.save('2026-11-20' as LocalDate, 'waist', 80);
+    expect((await m.list()).map((r) => r.kind)).toEqual(['waist']);
+  });
+});
