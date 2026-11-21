@@ -2,6 +2,22 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.0
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 20. Mais les notes du matin et les bilans VISBODY saisis en 0.29.0 voyagent par la synchro : un appareil resté en 0.28.1 les garde sans les afficher, et refuserait ensuite l'import de son propre export complet (la 0.29.0 l'importe sans perte).
+
+- **Bilan de la semaine** (Progrès › Bilan) : un texte écrit par règles à partir de ta semaine (séances faites et prévues, records, volume par muscle, poids et tendance, nutrition, sommeil, cycle et décharge) ; chaque phrase dit d'où vient son chiffre ; « pas assez de données » plutôt qu'un 0 ; semaines précédentes consultables ; export en Markdown. Aucune IA, rien n'est envoyé.
+- **Importer un programme** (Entraînement › Routines) : colle un programme (un bloc préparé avec Claude grâce au guide `docs/guide-import-programme.md`, ou des lignes « Squat 4×8-10 RIR 2 ») ou lis une photo ou une capture ; chaque exercice est rapproché de la bibliothèque, toute ligne non reconnue est montrée ; aperçu complet, rien n'est écrit avant « Créer la routine » ; aucune charge importée.
+- **Repas rapides** : « Copier le repas d'hier », « Copier la journée d'hier », repas récents et repas favoris (enregistrés comme recettes d'une portion), quantités modifiables avant l'ajout.
+- **Dépense du jour ajustée aux pas** (tableau de bord Nutrition) : affichage seulement, d'après les pas de la veille ; le check-in et tes cibles n'en tiennent jamais compte.
+- **Suivis** : objectif de pas (8 000 par défaut) sur Aujourd'hui, minutes en zone 2 par semaine (objectif 150 min), notes du matin sur 10 (fatigue, sommeil ; sans effet sur la récupération), bilans VISBODY dans Progrès › Corps.
+- **Verrou de l'iPhone** : dans Plus, la ligne « Verrouillage Face ID » (repli sur le code de l'iPhone), désactivée par défaut ; aucun verrou sur le PC.
+- **Essai Apple Intelligence** (Plus › Journaux › Outils de test) : un essai du modèle local d'Apple avec un texte fixe, sans aucune de tes données ; il dit ce qu'il obtient (réponse ou erreur).
+- **Pictogrammes** : les 95 exercices sans photo ont un dessin (positions de départ et d'arrivée, muscle principal en bronze), marqué « pictogramme ».
+- **Maintenance** : 49 anciens tests de synchro passés sur le schéma de Spartiate (le reste suit) ; deux dépendances de développement mises à jour pour des avis de sécurité ; aucune alerte sur ce qui est livré.
+
+Après la mise à jour : sur l'iPhone, active le verrou dans Plus et vérifie Face ID, le repli sur le code et le retour au premier plan ; lance l'essai Apple Intelligence et note ce qu'il affiche ; importe un programme collé puis une photo ; essaie « Copier le repas d'hier » ; regarde le bilan de la semaine et quelques pictogrammes (dont ceux de ta routine).
+
 ## 0.28.1
 
 Aucune migration : ta base reste au schéma 20. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.
