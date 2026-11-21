@@ -521,6 +521,11 @@ export const GRAPHIC_TOKEN_PAIRS: readonly TokenPair[] = [
   ['--ct-color-switch-on-thumb', '--ct-color-switch-on'],
   // UI-REFONTE-02 : rond d'événement et trait « maintenant » de l'agenda.
   ['--ct-color-agenda-event', '--ct-color-bg'],
+  // A11Y (C-111, C-112) : anneau de focus et bordure des champs ≥ 3:1 sur chaque surface . L'interrupteur éteint clair reste celui de la maquette Reglages.html (décision d'Ali du 2026-10-18).
+  ...['--ct-color-bg', '--ct-color-surface', '--ct-color-surface-raised', '--ct-color-surface-input'].flatMap((surface): TokenPair[] => [
+    ['--ct-color-focus-ring', surface],
+    ['--ct-color-control-border', surface],
+  ]),
 ];
 
 /** Écran Focus (F-01 critère 13) : texte 4,5:1. */

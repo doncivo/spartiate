@@ -182,7 +182,7 @@
 .ct-onb__link:focus-visible,
 .ct-onb__close:focus-visible,
 .ct-onb__muscle:focus-visible {
-  outline: 2px solid var(--ct-color-select-ring);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -260,7 +260,7 @@
   padding: 0 var(--ct-space-3);
   background: var(--ct-color-surface-input);
   color: var(--ct-color-text);
-  border: 1px solid var(--ct-color-border-strong);
+  border: 1px solid var(--ct-color-control-border);
   border-radius: var(--ct-radius-md);
   font: inherit;
 }
@@ -270,7 +270,7 @@
 }
 
 .ct-onb__input:focus-visible {
-  outline: 2px solid var(--ct-color-select-ring);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 1px;
 }
 
@@ -538,7 +538,7 @@
   padding: var(--ct-space-4);
   background: transparent;
   color: var(--ct-color-text);
-  border: 1px solid var(--ct-color-border-strong);
+  border: 1px solid var(--ct-color-control-border);
   border-radius: var(--ct-radius-lg);
   font: inherit;
   font-size: var(--ct-font-size-text-lg);
@@ -561,7 +561,7 @@
 }
 
 .ct-onb__card-option:focus-visible {
-  outline: 2px solid var(--ct-color-select-ring);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 

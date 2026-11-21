@@ -125,3 +125,7 @@ Hors du pool, donc non concernées : les sauvegardes, restaurations et vérifica
 ## Avenant FIX-A008 (2026-11-20) : échec fermé du pilote sérialisé (A-008, D-326)
 
 Si l'annulation d'une transaction ne peut pas être établie (ROLLBACK rejeté hors « no transaction is active », ou retrait de `sync_guard` en échec après une transaction perdue), le pilote sérialisé est empoisonné : toute opération suivante est refusée (`DbError('connection-poisoned')`), seul `close()` reste permis, et l'app n'offre que le redémarrage (aucune réouverture automatique, aucun rechargement : le pool sqlx survit côté Rust). Tests : `src/db/serializedDriver.a008.test.ts`. Détail : D-326, docs/FIX-A008.md.
+
+## Avenant SAUV-RUST (2026-11-20) : sauvegardes Rust, cible jamais purgée, exclusion mutuelle (C-137, C-138, D-326 (5))
+
+`backup.rs` : (1) la rotation exclut le fichier que l'appel vient de créer (migration, quotidienne, copie avant restauration), l'horodatage fourni par la WebView ne pouvant plus la purger ; `created` / `path` supposent que le fichier existe. (2) Un verrou de processus, clé = chemin de la base, pris sans attente par les créations de sauvegarde, la restauration et la récupération : une seconde opération est refusée avec le code `busy` (déjà connu du front). (3) L'échange de restauration ne remplace jamais une base existante ; le retour arrière non plus (`rollback-failed`, `.restore-old` conservé). Tests : `src-tauri/tests/desktop/backup_safety.rs`. Détail : docs/SAUV-RUST.md.
