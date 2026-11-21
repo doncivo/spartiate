@@ -249,7 +249,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-187 | audit Claude 0.27.0 | mineur — guide Santé « Plus → Logs » ; licences.md et install-pc.md périmés | à faire (lot 0.28.0) |
 | C-188 | audit Claude 0.27.0 | mineur — PRD contradictoire : 1 024 / 900 px, Ctrl+K, Recovery Split, HealthKit, CI à chaque push | à faire (lot 0.28.0) |
 | C-189 | audit Claude 0.27.0 | important — progression au poids du corps et chronométrée absente ; retour à une prescription antérieure absent | à faire (lot 0.28.0) |
-| C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | à faire (lot 0.28.0) |
+| C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | fait en partie (SESS-01, 0.28.1, D-376 à D-382 ; reportés : BL-108, BL-110) |
 | C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | à faire (lot 0.28.0) |
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
 | C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (lot 0.28.0) |
@@ -273,6 +273,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-106 | TESTS-FIGES (D-365) | important — après un changement de salle, une charge d'historique hors de la grille de la nouvelle salle (ou au-dessus du maximum du matériel) est prescrite telle quelle en échelle de répétitions ; à trancher par Ali (arrondi à la grille, plafond du matériel) | à trancher par Ali |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
 | BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | à faire (S) |
+| BL-108 | SESS-01 (docs/SESS-01.md) | Live Activity : boutons « +30 s » et « Passer » (App Intents, ios-mobile) et action « +30 s » de la notification de repli | à faire (0.28.x) |
+| BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | à trancher par Ali |
+| BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -452,4 +455,4 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | D-317 | rapport de lot 0.27.0 (docs/reprise.md) | Rattachement par le nom du jour à l'import seulement | fait (décision d'Ali du 20/11) |
 | D-73 (4) | rapport de lot 0.27.0 (docs/reprise.md) | Durée estimée de séance (45 s par série, repos, sans transitions), à recaler sur demande | à faire (lot 0.28.0) |
 | D-88 / D-220 | rapport de lot 0.27.0 (docs/reprise.md) | Exertion : cardio compté en minutes × ressenti faute de zones FC, à recaler sur demande | à faire (lot 0.28.0) |
-| D-144 | rapport de lot 0.27.0 (docs/reprise.md) | Archive `archive/agent-a0528c3a67af21a44` sur origin : supprimable sur décision d'Ali | à faire (lot 0.28.0) |
+| D-144 | rapport de lot 0.27.0 (docs/reprise.md) | Archive `archive/agent-a0528c3a67af21a44` sur origin : supprimable sur décision d'Ali | fait (NETTOYAGE, 0.28.1 : contenu prouvé dans main, branche supprimée, docs/NETTOYAGE.md) |
