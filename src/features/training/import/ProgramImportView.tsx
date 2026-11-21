@@ -127,6 +127,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
   const create = async (): Promise<void> => {
     if (!parsed || blocked !== null) return;
     setBusy(true);
+    let created: { readonly id: string; readonly message: string };
     setError(null);
     try {
       const routineName = name.trim();
@@ -148,9 +149,17 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
         days: spec.days.map((day) => ({ ...day, id: ids.next(), exercises: day.exercises.map((line) => ({ ...line, id: ids.next() })) })),
       };
       await access.transaction(async (repos) => (await repos.trainingRoutines()).create(routine));
-      await onCreated(routine.id, tImport('created', { name: routineName }));
+      created = { id: routine.id, message: tImport('created', { name: routineName }) };
     } catch {
       setError(tImport('createError'));
+      setBusy(false);
+      return;
+    }
+    try {
+      await onCreated(created.id, created.message);
+    } catch {
+      // La routine est écrite : on le dit, sans prétendre que rien n'a été enregistré (elle est dans la liste des routines).
+      setMessage(created.message);
       setBusy(false);
     }
   };

@@ -64,7 +64,7 @@ Une ligne par exercice ; une ligne de titre ouvre une séance.
 | Écrit | Lu |
 | --- | --- |
 | `Jour A — Poussée`, `Séance 1`, `Lundi`, `# Haut du corps`, `Pectoraux :` | titre de séance (mot « Jour », « Séance », « Session », « Semaine », un jour de la semaine, un `#` en tête ou un `:` final) |
-| `Squat 4×8-10`, `Curl marteau 3 x 12`, `Rowing 4x8 RIR 2` | 4 séries de 8 à 10 ; 3 séries de 12 ; 4 séries de 8, RIR 2 |
+| `Squat 4×8-10`, `Curl marteau 3 x 12`, `Rowing 4x8 RIR 2`, `Dips 4 sets x 10` | 4 séries de 8 à 10 ; 3 séries de 12 ; 4 séries de 8, RIR 2 ; 4 séries de 10 |
 | `Développé couché : 3 séries de 10`, `Fente bulgare 3 séries de 8 à 10 répétitions` | 3 séries de 10 ; 3 séries de 8 à 10 |
 | `Planche 3 x 30 s` | 3 séries de 30 secondes |
 | `… RIR 1-2` | plage de RIR : la valeur haute est retenue (plus de réserve), et c'est dit |
