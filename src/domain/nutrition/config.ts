@@ -72,3 +72,15 @@ export const NUTRITION_CONFIG = {
 
 /** Énergie par gramme de macronutriment (Atwater) ; protéines et glucides 4, lipides 9. */
 export const KCAL_PER_G = { protein: 4, carb: 4, fat: 9 } as const;
+
+/**
+ * REPAS-029b (§ 15.2 « modificateurs », choix prudent révisable par Ali) : dépense du jour ajustée aux pas importés. Affichage seul : jamais
+ * utilisée par le check-in, la dépense mesurée ni les cibles (la mesure intègre déjà l'activité). Pas de `NUTRITION_ENGINE_VERSION` à changer.
+ */
+export const STEPS_ADJUSTMENT = {
+  /** Énergie par pas d'écart à la base personnelle (ordre de grandeur courant, non prouvé : H-25 reste UNVERIFIED pour la source). */
+  kcalPerStep: 0.04,
+  baselineWindowDays: 28,
+  minBaselineDays: 14,
+  maxAdjustKcal: 300,
+} as const;

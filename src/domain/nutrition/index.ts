@@ -26,3 +26,4 @@ export * from './weeklyRate';
 export * from './imputation';
 export * from './plate';
 export * from './quickMeals';
+export * from './stepsAdjustment';

@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { useMemo } from 'react';
-import { remainingForDay, type TdeeConfidence } from '../../../domain/nutrition';
+import { adjustForSteps, remainingForDay, type StepsAdjustmentReason, type TdeeConfidence } from '../../../domain/nutrition';
 import { formatDayShort, formatInt, formatKgDelta, formatSigned, formatTenth, orDash, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { useNavigationStore } from '../../app/navigation';
@@ -14,6 +14,15 @@ const CONFIDENCE_KEY: Readonly<Record<TdeeConfidence, NutritionTextKey>> = {
   low: 'confidenceLow',
   medium: 'confidenceMedium',
   high: 'confidenceHigh',
+};
+
+const STEPS_REASON_KEY: Readonly<Record<StepsAdjustmentReason, NutritionTextKey>> = {
+  'no-steps': 'stepsAdjNoSteps',
+  unreadable: 'stepsAdjUnreadable',
+  'day-unknown': 'stepsAdjDayUnknown',
+  'baseline-short': 'stepsAdjBaselineShort',
+  'no-estimate': 'stepsAdjNoEstimate',
+  'measured-only': 'stepsAdjMeasuredOnly',
 };
 
 const daysText = (n: number): string => (n === 0 ? tNutrition('daysCompleteNone') : tPlural(tNutrition, n, 'daysCompleteOne', 'daysComplete'));
@@ -42,6 +51,24 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
       <p className="ct-nutrition__muted">{tNutrition('imputedKcalNone')}</p>
     ) : null;
   const measuredTerms = (tdee.basis === 'blend' || tdee.basis === 'measured') && tdee.measuredRaw !== null && tdee.meanKcal !== null && tdee.deltaKg !== null;
+
+  // REPAS-029b : dépense du jour de référence ajustée aux pas, affichage seul (jamais utilisée par le check-in ni la dépense mesurée).
+  const steps = adjustForSteps({ date: snapshot.reference, steps: snapshot.stepsDays === undefined ? [] : snapshot.stepsDays, estimate: { value: tdee.value, weightMeasured: tdee.weightMeasured } });
+  const stepsLine = (
+    <div className="ct-nutrition__steps" aria-label={tNutrition('stepsAdjTitle')}>
+      {steps.status === 'adjusted' ? (
+        <>
+          <p className="ct-nutrition__muted ct-nutrition__num">
+            {tNutrition('stepsAdjLine', { day: formatDayShort(steps.date), steps: formatInt(steps.steps), base: formatInt(steps.baseline), days: steps.baselineDays, sign: steps.appliedKcal < 0 ? '−' : '+', kcal: formatInt(Math.abs(steps.appliedKcal)), share: formatInt(steps.formulaShare * 100), value: formatInt(steps.adjusted) })}
+          </p>
+          {steps.capped ? <p className="ct-nutrition__muted">{tNutrition('stepsAdjCapped')}</p> : null}
+        </>
+      ) : (
+        <p className="ct-nutrition__muted">{tNutrition(STEPS_REASON_KEY[steps.reason])}</p>
+      )}
+      <p className="ct-nutrition__muted">{tNutrition('stepsAdjSource')}</p>
+    </div>
+  );
 
   return (
     <div className="ct-nutrition__dashboard">
@@ -137,6 +164,7 @@ export function DashboardView({ snapshot }: { readonly snapshot: NutritionSnapsh
           </>
         )}
         {tdee.reasons.includes('no-recent-weigh-in-at-start') || tdee.reasons.includes('no-recent-weigh-in-at-end') ? <p className="ct-nutrition__muted">{tNutrition('tdeeWeighInNeeded')}</p> : null}
+        {stepsLine}
         <p className="ct-nutrition__confidence">{tNutrition(CONFIDENCE_KEY[model.confidence])}</p>
       </section>
 

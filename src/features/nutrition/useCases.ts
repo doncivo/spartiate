@@ -10,6 +10,7 @@ import {
   floorVerdict,
   upcomingTargets,
   estimateTdeeSmoothed,
+  type StepsDay,
   parseNutritionPrefs,
   resolveCheckIn,
   toMealEntryInput,
@@ -27,6 +28,7 @@ import {
   type TrendPoint,
   type WeighIn,
 } from '../../domain/nutrition';
+import { STEPS_ADJUSTMENT } from '../../domain/nutrition/config';
 import { tNutrition } from '../../i18n/nutritionText';
 import { logFailure } from '../../platform/desktop/log';
 import type { SearchableFood } from '../../domain/nutrition/foodSearch';
@@ -57,6 +59,8 @@ export interface NutritionSnapshot {
   readonly profile: Profile | null;
   /** PROG-01 (D-270) : dates locales des séances de musculation closes (type de jour) ; absent : aucune. */
   readonly strengthDays?: ReadonlySet<LocalDate>;
+  /** REPAS-029b : pas par jour des 28 derniers jours et du jour de référence (`pas.csv`, import Santé) ; `null` = lecture impossible ; absent : aucun. Affichage seul. */
+  readonly stepsDays?: readonly StepsDay[] | null;
   /** Cible en vigueur à `today` ; `null` tant qu'aucune n'est acceptée. */
   readonly target: NutritionTargetRecord | null;
   /** Toutes les décisions, de la plus récente à la plus ancienne. */
@@ -98,7 +102,20 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
   });
   // PROG-01 : les séances closes ne servent qu'avec une cible de repos (aucune lecture de plus sinon).
   const strength = decisions.some((d) => d.restPlan !== null && d.restPlan !== undefined) ? await strengthDays(access) : new Set<LocalDate>();
-  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions, strengthDays: strength };
+  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions, strengthDays: strength, stepsDays: await readStepsDays(access, reference) };
+}
+
+/** REPAS-029b : pas importés de `reference − 28` à `reference` (un total par jour, `startAt` = midi UTC) ; `null` si la lecture échoue (dit, jamais 0). */
+async function readStepsDays(access: DataAccess, reference: LocalDate): Promise<readonly StepsDay[] | null> {
+  try {
+    const samples = await (await access.repos.recoverySamples()).listWindow('pas', `${addDays(reference, -STEPS_ADJUSTMENT.baselineWindowDays)}T00:00:00.000Z`, `${reference}T23:59:59.999Z`);
+    const out: StepsDay[] = [];
+    for (const s of samples) if (s.value !== null) out.push({ day: s.startAt.slice(0, 10) as LocalDate, steps: s.value });
+    return out;
+  } catch {
+    logFailure('nutrition', 'steps-read-failed');
+    return null;
+  }
 }
 
 /** Dépense estimée à une autre date de fin (le check-in analyse la semaine qui précède son jour, pas la veille d'aujourd'hui). */
