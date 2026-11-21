@@ -28,6 +28,7 @@ describe('build-ios : SDK iOS 26 et lien faible de FoundationModels (BL-130)', (
   });
 
   it("l'étape du SDK précède la compilation de l'IPA", () => {
+    expect(workflow.indexOf('- name: SDK iOS 26')).toBeGreaterThan(-1);
     expect(workflow.indexOf('- name: SDK iOS 26')).toBeLessThan(workflow.indexOf("- name: Compiler l'IPA sans signature"));
   });
 
@@ -36,7 +37,7 @@ describe('build-ios : SDK iOS 26 et lien faible de FoundationModels (BL-130)', (
     expect(body).toMatch(/otool -l/);
     expect(body).toMatch(/LC_LOAD_WEAK_DYLIB/);
     expect(body).toMatch(/LC_LOAD_DYLIB/);
-    expect(body).toMatch(/FoundationModels\.framework/);
+    expect(body).toMatch(/FoundationModels\\\.framework/);
     expect(body).toMatch(/exit 1/);
   });
 });
