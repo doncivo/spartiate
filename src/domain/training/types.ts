@@ -297,6 +297,8 @@ export interface DecisionReference {
   readonly accepted: boolean;
   readonly loadKg: number | null;
   readonly reps: readonly number[];
+  /** MOTEUR-0281b : décision de retour à la prescription d'avant la dernière hausse (raison `revert-previous`) ; absent : non. */
+  readonly revert?: boolean;
 }
 
 /** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : « Salle complète », FIX-0173). */
@@ -370,6 +372,8 @@ export type ReasonCode =
   | 'outlier-excluded'
   | 'no-history'
   | 'decision-reference'
+  // MOTEUR-0281b (§ 11.5) : la décision de référence est un retour à la prescription d'avant la dernière hausse, demandé depuis la fiche.
+  | 'revert-previous'
   | 'history-reference'
   | 'provisional'
   | 'top-reached'

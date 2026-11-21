@@ -123,6 +123,7 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   recoveryLowNoLoad: 'explainRecoveryLowNoLoad',
   redDayNoLoad: 'explainRedDayNoLoad',
   decisionNoLoad: 'explainDecisionNoLoad',
+  revert: 'explainRevert',
 };
 /** ERGO-02b : phrase d'un écart en kg pour deux haltères (« +2 kg par haltère »), l'écart du moteur étant celui d'un haltère (D-261). */
 const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {

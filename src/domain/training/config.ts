@@ -148,6 +148,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'outlier-excluded',
   'no-history',
   'decision-reference',
+  'revert-previous',
   'history-reference',
   'provisional',
   'top-reached',

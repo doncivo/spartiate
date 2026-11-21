@@ -24,6 +24,7 @@ import type { IsoDateTime } from '../../domain/types';
 import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
+import { RevertPrescription } from './library/RevertPrescription';
 import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
@@ -191,6 +192,8 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
       <SheetFigures {...stats} />
     </Suspense>
   );
+  // MOTEUR-0281b (§ 11.5) : retour à la prescription d'avant la dernière hausse, avec l'historique (sections de la maquette inchangées avant elle).
+  const revert = <RevertPrescription key={exercise.id} access={access} exercise={exercise} held={held} />;
   const recent = (
     <Suspense fallback={null}>
       <SheetSessions {...stats} limit={RECENT_SESSIONS} label={tTraining('sheetRecent')} />
@@ -320,6 +323,7 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
               <SectionTitle level={3}>{tTraining('sheetHistory')}</SectionTitle>
               {recent}
             </section>
+            {revert}
             {muscles}
             {facts}
             {equipmentAndAlternatives}
@@ -357,6 +361,7 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
               <Suspense fallback={null}>
                 <SheetSessions {...stats} limit={null} label={tTraining('sheetHistory')} />
               </Suspense>
+              {revert}
             </div>
           )}
         </>

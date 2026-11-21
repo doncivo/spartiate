@@ -4,6 +4,7 @@ import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
 import type { SetKind } from '../../../domain/training/session';
 import { isProgressionExerciseId, progressionId } from '../../../domain/sync/naturalIds';
 import { recalibrationKept } from '../../../domain/training/decision';
+import { isRevertPrescription } from '../../../domain/training/revertPrescription';
 import { DIFFICULTIES, type Difficulty, type ExerciseSession, type HistorySet, type Prescription } from '../../../domain/training/types';
 import { isIsoDateTime, type IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
@@ -55,6 +56,8 @@ interface DecisionRow extends SqlRow, SyncRow {
 const EXERCISE_ID_MAX = 128;
 /** I4-08 : décisions lues au plus pour trouver la plus récente lisible (borne de la lecture ; au-delà, aucune référence). */
 const DECISIONS_SCANNED = 20;
+/** MOTEUR-0281b : décisions lues pour le retour à une prescription antérieure (les plus récentes). */
+const DECISIONS_LISTED = 60;
 /** Identifiant naturel du profil d'un exercice (une ligne par exercice, quel que soit l'appareil). */
 export const progressionProfileId = progressionId;
 const isDifficulty = (v: string | null): v is Difficulty => v !== null && (DIFFICULTIES as readonly string[]).includes(v);
@@ -103,6 +106,8 @@ function rowToDecision(row: DecisionRow, report?: DecisionReadReporter): Recomme
     loadKg: row.chosen_load_kg,
     reps: reps as number[],
     decidedAt: row.decided_at as IsoDateTime,
+    // MOTEUR-0281b : décision de retour (raison `revert-previous` de la prescription tracée).
+    ...(isRevertPrescription(prescription) ? { revert: true } : {}),
     ...readSyncMeta(row),
   };
 }
@@ -164,6 +169,12 @@ function targetRirOf(prescription: string): number | null {
   return typeof rir === 'number' && Number.isInteger(rir) && rir >= 0 && rir <= 10 ? rir : null;
 }
 
+/** MOTEUR-0281b : prescription tracée d'une décision de retour (illisible : non). */
+function isRevertRow(prescription: string): boolean {
+  const p = parseOrNull(prescription) as { reasons?: unknown } | null | undefined;
+  return typeof p === 'object' && p !== null && Array.isArray(p.reasons) && p.reasons.includes('revert-previous');
+}
+
 const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
 const finiteOrNull = (n: number | null, ok: (x: number) => boolean): boolean => n === null || (Number.isFinite(n) && ok(n));
 
@@ -213,7 +224,8 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
           [exerciseId, ...sessions.map((s) => s.workoutId)],
         );
         const latest = new Map<string, Decided>();
-        for (const row of decided) latest.set(row.workout_id, row);
+        // MOTEUR-0281b : une décision de retour, attachée à la séance après sa clôture, ne remplace jamais la valeur retenue de la séance.
+        for (const row of decided) if (!isRevertRow(row.prescription)) latest.set(row.workout_id, row);
         for (const [workoutId, row] of latest) {
           if (isRetainedDeload(row)) deloads.add(workoutId);
           else if (isRetainedFatigueChoice(row)) fatigueChoices.add(workoutId);
@@ -312,6 +324,17 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
         [exerciseId, DECISIONS_SCANNED],
       );
       return firstReadable(rows, report);
+    },
+
+    async decisions(exerciseId, report) {
+      // MOTEUR-0281b : décisions lisibles des séances CLOSES non supprimées (comme `lastDecision`), de la plus ancienne à la plus récente.
+      const rows = await db.select<DecisionRow>(
+        `SELECT * FROM (SELECT d.* FROM recommendation_decision d JOIN workout w ON w.id = d.workout_id
+           WHERE d.exercise_id = ? AND d.deleted_at IS NULL AND w.ended_at IS NOT NULL AND w.deleted_at IS NULL
+           ORDER BY d.decided_at DESC, d.id DESC LIMIT ?) ORDER BY decided_at, id`,
+        [exerciseId, DECISIONS_LISTED],
+      );
+      return rows.map((row) => rowToDecision(row, report)).filter((d): d is RecommendationDecisionRecord => d !== null);
     },
 
     async decisionFor(workoutId, exerciseId, report) {

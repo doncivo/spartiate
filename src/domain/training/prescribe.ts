@@ -134,6 +134,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   const decision = input.lastDecision;
   if (decision !== null && (latestEnd === null || decision.decidedAt > latestEnd)) {
     reasons.add('decision-reference');
+    if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
     return finish({
       status: decision.loadKg === null ? 'to-enter' : 'prescribed',

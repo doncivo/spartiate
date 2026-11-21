@@ -46,7 +46,9 @@ export type ExplanationKey =
   | 'inactivityNoLoad'
   | 'recoveryLowNoLoad'
   | 'redDayNoLoad'
-  | 'decisionNoLoad';
+  | 'decisionNoLoad'
+  // MOTEUR-0281b : retour à la prescription précédente, demandé depuis la fiche.
+  | 'revert';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -89,6 +91,7 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'decision':
       // Une décision sans charge retenue ne fixe rien : « à saisir » (relecture de la #61, point C).
       if (p.loadKg === null) return { key: 'toEnter', params: {} };
+      if (p.reasons.includes('revert-previous')) return { key: 'revert', params: {} };
       return unloaded ? { key: 'decisionNoLoad', params: {} } : { key: 'decision', params: { load: p.loadKg } };
     case 'increase': {
       const reps = p.reference?.reps ?? [];

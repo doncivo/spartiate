@@ -41,6 +41,9 @@ async function openSheet(): Promise<HTMLElement> {
     </AppContainerProvider>,
   );
   fireEvent.click(await screen.findByRole('button', { name: NAME }));
+  // iPhone : la section est dans l'onglet Historique de la fiche (PC : colonne de l'historique).
+  const tabs = screen.queryByRole('radiogroup', { name: tTraining('sheetSections') });
+  if (tabs !== null) fireEvent.click(within(tabs).getByRole('radio', { name: tTraining('sheetTabHistory') }));
   return screen.findByRole('region', { name: tTraining('revertTitle') });
 }
 

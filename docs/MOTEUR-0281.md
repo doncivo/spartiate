@@ -66,3 +66,18 @@ Fatigue intra-séance, stagnation et décote de position pour les exercices sans
 répétitions seulement : reporté) ; 1RM et Strength Score des exercices au poids du corps ; métrique `distance` ; gilet lesté (aucun
 identifiant de matériel dans `content/exercises/equipment.json`, proposition à content-data) ; plage de la routine (le retour ne touche pas
 la routine, seulement la proposition).
+
+## Passe agent du module (training + domain-logic)
+
+- 0281a : `src/domain/training/bodyweightProgression.ts` (règle pure, `ballastLoads`, `timeStepSec`), appelée par `prescribe` ; types
+  (`HistorySet.durationSec`, `Prescription.metric`, raisons `ballast-added`, `ballast-unavailable`, `time-step`, raisons principales
+  `ballast-add`, `time-increase`, `time-ladder`), `config.ts` (`timeStepMaxSec: 5`, `ENGINE_VERSION` 4) ; `explain.ts` (11 phrases, aucune
+  alerte « charge réduite » pour un exercice sans charge) ; `progressionRepository.history` lit `duration_sec`. Séance active
+  (`src/features/training/session/ExerciseProgression.tsx`, touché par nécessité alors que SESS-01 est en revue : valeur, écriture de la
+  durée, champs de « Modifier » ; conflit de fusion possible, limité à ce fichier) ; textes `src/i18n/fr.progression.ts`.
+- 0281b : `src/domain/training/revertPrescription.ts` (`revertProposal`, `isHarder`, `revertDecisionPrescription`) ; repository
+  `decisions(exerciseId)`, marque `revert` à la lecture, `history` ignore une décision de retour pour les marqueurs de séance ; fiche :
+  `src/features/training/library/RevertPrescription.tsx` (confirmation `ConfirmDialog`), textes `src/i18n/fr.training.ts`.
+- 0281c : `src/domain/training/libraryFilter.ts` (`matchesLibraryFilters`, `muscleOptions`), deux sélecteurs dans `LibraryView.tsx`.
+- Aucune migration ; aucune table publiée ne change (la décision de retour est une ligne `recommendation_decision` ordinaire, attachée à
+  une séance close : publiée par la règle D-27 existante) ; `src/sync/**` et `src/domain/sync/**` non touchés ; export / import inchangés.

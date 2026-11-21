@@ -57,6 +57,8 @@ export const progressionFr = {
   explainRecoveryLowNoLoad: 'Mêmes valeurs que la dernière fois : récupération basse aujourd’hui, aucune hausse.',
   explainRedDayNoLoad: 'Journée rouge : mêmes valeurs que la dernière fois, aucune hausse ; estimation, pas un avis médical.',
   explainDecisionNoLoad: 'Ta dernière décision, reprise telle quelle.',
+  // MOTEUR-0281b (§ 11.5).
+  explainRevert: 'Retour à la prescription précédente, demandé depuis la fiche de l’exercice.',
   valueBodyweight: 'Poids du corps × {reps}',
   valueBallast: 'Lest {load} × {reps}',
   valueSeconds: '{sec} s',

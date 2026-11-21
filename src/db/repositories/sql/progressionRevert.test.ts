@@ -19,7 +19,7 @@ async function closedWorkout(id: string, endedAt: string | null): Promise<void> 
   await db.driver.execute(
     `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, reps, load_kg, done, created_at, updated_at, device_id, hlc)
      VALUES (?, ?, 'bench-press-barbell', 'Nom figé', 0, 'work', 10, 60, 1, ?, ?, ?, ?)`,
-    [`${id.slice(0, -2)}99`, id, day(0), day(0), DEVICE, HLC],
+    [`${id.slice(0, -3)}9${id.slice(-2)}`, id, day(0), day(0), DEVICE, HLC],
   );
 }
 const base = prescribe(input({ history: [session(3, 60, [10, 10, 10])] }));
