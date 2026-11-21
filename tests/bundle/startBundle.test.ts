@@ -484,6 +484,20 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // IMPORT-029 : import de programme (bloc à la demande ProgramImportView, catalogue fr.programImport, analyseur programImport) : hors du départ, présents dans le build.
+  it('IMPORT-029 : src/features/training/import/ProgramImportView.tsx est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/training/import/ProgramImportView.tsx'];
+    if (!chunk) throw new Error('bloc ProgramImportView absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/training/import/ProgramImportView.tsx'))).toBe(true);
+  });
+  it.each(['Lignes non reconnues', 'aucune série × répétitions reconnue'])('IMPORT-029 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I6-03b : déroulé série par série (bloc à la demande HistoryTimelineView, catalogue fr.workoutReplay, domaine replay) : hors du départ, présents dans le build.
   it('I6-03b : src/features/training/history/HistoryTimelineView.tsx est un bloc à la demande, hors du départ', () => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
