@@ -24,9 +24,12 @@ const dmy = (date: string): string => {
   const [y, m, d] = date.split('-');
   return `${d ?? ''}/${m ?? ''}/${y ?? ''}`;
 };
-/** Texte d'un champ prérempli : valeur affichée (kcal pour le métabolisme), virgule décimale. */
+/**
+ * Texte d'un champ prérempli : valeur affichée (kcal pour le métabolisme), virgule décimale, SANS arrondi (relecture SUIVIS-029 : 72,45 kg arrondi
+ * à 72,5 aurait été réécrit à la correction d'un autre champ). L'arrondi au dixième ne vaut que pour l'affichage des courbes et des écarts.
+ */
 const textsOf = (report: VisbodyReport | undefined): Texts =>
-  Object.fromEntries(VISBODY_KINDS.flatMap((k) => (report?.values[k] === undefined ? [] : [[k, num(visbodyDisplayValue(k, report.values[k] ?? 0)).replace(/\s/g, '')]])));
+  Object.fromEntries(VISBODY_KINDS.flatMap((k) => (report?.values[k] === undefined ? [] : [[k, String(visbodyDisplayValue(k, report.values[k] ?? 0)).replace('.', ',')]])));
 
 /**
  * Courbe des bilans (valeurs affichées, au moins deux). Copie volontaire et réduite de src/features/tracking/Sparkline.tsx : l'importer créait un bloc
