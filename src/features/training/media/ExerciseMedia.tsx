@@ -37,16 +37,21 @@ function Photo({ exercise, file, sourceId }: { readonly exercise: Exercise; read
 
 /** SVG du dossier de contenu, contrôlé par validate-content (aucun script, lien ni couleur en dur) : inséré tel quel pour hériter des couleurs. */
 function Pictogram({ exercise }: { readonly exercise: Exercise }) {
-  const [svg, setSvg] = useState<string | null>(null);
+  const [loaded, setLoaded] = useState<{ readonly id: string; readonly svg: string | null } | null>(null);
   useEffect(() => {
     let live = true;
-    void loadPictogram(exercise.id).then((text) => {
-      if (live) setSvg(text);
-    });
+    // Revue : jamais le dessin de l'exercice précédent sous le nom du suivant (dessin rattaché à son id) ; un échec n'affiche rien.
+    loadPictogram(exercise.id).then(
+      (text) => {
+        if (live) setLoaded({ id: exercise.id, svg: text });
+      },
+      () => undefined,
+    );
     return () => {
       live = false;
     };
   }, [exercise.id]);
+  const svg = loaded !== null && loaded.id === exercise.id ? loaded.svg : null;
   if (svg === null) return null;
   return (
     <figure className="ct-exmedia">
