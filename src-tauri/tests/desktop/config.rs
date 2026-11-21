@@ -626,6 +626,40 @@ fn live_activity_commands_are_registered_in_the_minimal_ios_capability() {
     }
 }
 
+/// IOS-029b : l'essai Apple Intelligence (une commande) est au manifeste, accordé par la seule capability iPhone `apple-intelligence-ios.json` ;
+/// le plugin est une dépendance iOS seulement, par chemin.
+#[test]
+fn apple_intelligence_probe_is_registered_in_the_minimal_ios_capability() {
+    assert!(manifest_commands().contains("apple_intelligence_probe"));
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("capabilities")
+        .join("apple-intelligence-ios.json");
+    let capability = std::fs::read_to_string(path).expect("capability Apple Intelligence absente");
+    let capability: Value =
+        serde_json::from_str(&capability).expect("capability Apple Intelligence valide");
+    assert_eq!(capability["windows"], serde_json::json!(["main"]));
+    assert_eq!(capability["platforms"], serde_json::json!(["iOS"]));
+    assert_eq!(
+        capability["permissions"],
+        serde_json::json!(["allow-apple-intelligence-probe"])
+    );
+    for (name, other) in all_capabilities() {
+        if name != "apple-intelligence-ios.json" {
+            assert!(
+                !other.contains("allow-apple-intelligence-"),
+                "{name} accorde l'essai Apple Intelligence"
+            );
+        }
+    }
+    assert_eq!(
+        cargo_sections_of("tauri-plugin-apple-intelligence"),
+        [(
+            IOS_SECTION.to_owned(),
+            "tauri-plugin-apple-intelligence = { path = \"plugins/apple-intelligence\" }".to_owned()
+        )]
+    );
+}
+
 /// (2) `sync.json` : exactement les 22 permissions de `main` (18, les trois du lot Y4 et `sync_abandon_orphan_epoch`), Windows, sans les trois commandes de `pairing`.
 #[test]
 fn sync_2_main_capability_grants_exactly_twenty_one_commands() {
