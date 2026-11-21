@@ -18,7 +18,7 @@ ni migration, ni table publiée touchés ; ni `src/domain/training/prescribe.ts`
   date du jour, Then pectoraux 3, triceps 1,5, deltoïdes antérieurs 0,9, grand dorsal 1 (poids du rowing) cette semaine ; les semaines sans
   séance valent 0 ; l'ordre est par total décroissant puis identifiant.
 - Écran Progrès › Volume (bloc à la demande `TrainingProgress`, catalogue `fr.trainingProgress` chargé avec lui) : une ligne par muscle avec
-  valeur écrite (« 12 séries cette semaine · moyenne 9,5 sur 8 semaines ») et barres en SVG décoratif doublées d'une étiquette textuelle
+  valeur écrite (« Cette semaine : 12 · moyenne par semaine : 9,5 ») et barres en SVG décoratif doublées d'une étiquette textuelle
   (`role="img"`, valeurs semaine par semaine) ; aucune couleur seule. « vs plage » (§ 17.1) : aucune plage dans le PRD → non affichée,
   décision proposée.
 - Repository : `WorkoutRepository.closedSince(fromIso)` (séances closes non supprimées commencées à partir de l'instant, séries vivantes,
@@ -33,8 +33,8 @@ ni migration, ni table publiée touchés ; ni `src/domain/training/prescribe.ts`
 - Given objectif 3, semaines S-1, S-2 à 3 séances, S-3 en pause à 0, S-4 à 3, S-5 à 2, When on calcule, Then streak 3 semaines.
 - Calendrier du mois courant : grille de semaines (début de semaine du réglage), chaque jour dit en texte (« 12 novembre : 1 séance »,
   « en pause ») ; séances / semaine : cette semaine x sur objectif.
-- Aujourd'hui (§ 18.2) : carte « Constance » (streak et semaine en cours), bloc à la demande déclaré dans `TodayScreen.tsx` (hors départ,
-  comme `TodayPcSide`) ; bundle de départ inchangé (mesure ci-dessous).
+- Aujourd'hui (§ 18.2) : carte « Constance » (streak et semaine en cours), servie par le bloc à la demande `TrainingProgress`, déclarée
+  dans `TodayScreen.tsx` (hors départ, comme `TodayPcSide`) ; bundle de départ inchangé (mesure ci-dessous).
 - Repository : `WorkoutRepository.closedStarts()` (débuts des séances closes non supprimées, une colonne).
 
 ### PROGRES-c — Tendances de récupération sur 30 jours et zone cible (§ 17.1, § 16.3)
@@ -63,4 +63,65 @@ ni migration, ni table publiée touchés ; ni `src/domain/training/prescribe.ts`
 
 ## Journal des passes
 
-À remplir au fil des passes.
+- product-owner : critères ci-dessus, écrits avant le premier test (commit rouge `da3da563`).
+- agent du module (training, recovery, domain-logic) : un commit rouge puis un commit vert par sous-ticket (tableau ci-dessous). Règles
+  pures dans `src/domain/training/progressStats.ts` et `src/domain/recovery/trends.ts` (+ `recoveryZoneTier` dans `recoveryScore.ts`) ;
+  constantes dans `config.ts` (`DEFAULT_PROGRESS_CONFIG`) ; lectures `WorkoutRepository.closedSince` et `closedStarts` (lecture seule) ;
+  écran `src/features/progress/TrainingProgress.tsx` (Constance, Adhérence, Volume), `TodayStreak.tsx`, `constancyData.ts` ;
+  `src/features/recovery/RecoveryTrends.tsx` ; catalogues `fr.trainingProgress.ts` (nouveau, chargé avec le bloc), `fr.recovery.ts`,
+  `fr.recoveryFactors.ts`.
+- qa-test (`progressStats.qa.test.ts`) : pause en cours sans fin, objectif nul, séance future, février de 28 jours avec semaine du samedi,
+  muscle de poids nul, valeur non finie, bornes 33 / 34 / 65 / 66 de la zone, équivalence `pausedOn` / `isPausedOn` sur 70 jours.
+  Deux tests rouges de PROGRES-b corrigés dans le commit vert (dit dans son message) : 0 et 1 s'accordent au singulier (FIX-0241).
+- code-reviewer (relecture du diff à froid, même agent) : aucune écriture en base, aucune table publiée ni migration, ni `src/sync/**` ni
+  `src/domain/sync/**` ; ni `prescribe.ts` ni `library/**` (MOTEUR-0281) ; textes en i18n, jetons seulement, chiffres tabulaires, barres
+  et courbes doublées d'un texte (`role="img"` + étiquette, valeurs écrites) ; eslint propre sur les 30 fichiers touchés, `tsc` propre ;
+  854 tests ciblés verts. Point relevé et accepté : quatre petites règles recopiées (début de semaine, pause, date locale, durée) pour ne
+  pas scinder les blocs du départ ; chacune le dit en commentaire, la pause est gardée par un test d'équivalence.
+
+## Commits (rouge puis vert, D-374)
+
+| Sous-ticket | Rouge | Vert |
+| --- | --- | --- |
+| PROGRES-a volume | `da3da563` | `f1f4a3fe` |
+| PROGRES-b constance | `e9f96d61` | `cf5eac21` |
+| PROGRES-c tendances, zone cible | `e423c272` | `faac5568` |
+| PROGRES-d adhérence | `a24f1c13` | `6062e91f` |
+| Bundle et qa-test | — | `989fa890` |
+
+## Mesure du bundle de départ
+
+`CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts` : origin/main 773e881a **45 blocs, 193 956 octets
+normalisés** ; branche **45 blocs, 193 956 octets normalisés** (inchangé). Première version verte : 47 blocs, 194 492 (+536) : `week.ts`,
+`formatPrefs.ts` et `localDate.ts` sortis de leurs blocs, blocs partagés (`display`, `currentCycle`, `loadDisplay`, `programPause`) ajoutés aux
+listes de préchargement du bloc d'entrée, exports de `localDate` en plus ; corrigé dans `989fa890` sans toucher au départ ni à la liste blanche.
+
+## Décisions proposées (numéros à donner par l'appelant)
+
+1. Volume (§ 17.1) : séries validées de travail et chrono (échauffement, drop, partielle exclus), chaque muscle compté pour son poids du
+   contenu (§ 14.1), non « moitié » ; séance rattachée au jour local de son début ; semaine au réglage « Début de semaine ». Révisable par Ali.
+2. « vs plage » (§ 17.1) : aucune plage de séries par muscle dans le PRD : volume affiché sans plage ni jugement. **À trancher par Ali**
+   (exemple courant : 10 à 20 séries par semaine et par muscle principal).
+3. Streak en semaines : objectif = jours du programme suivi (jours de la semaine rattachés, sinon jours garnis) depuis le début du cycle,
+   1 séance avant ou sans programme ; semaine en cours ajoutée si atteinte, jamais cassante ; semaine non atteinte contenant un jour de pause
+   gelée (§ 12.6). Révisable par Ali.
+4. Adhérence (I2) : 4 dernières semaines complètes, faites plafonnées à l'objectif, semaines de pause ou d'avant le cycle non comptées ;
+   sans programme : non calculée. Le § 8 peut aussi se lire « part des prescriptions acceptées » (`recommendation_decision.accepted`) :
+   **à trancher par Ali** ; la règle du brief est appliquée.
+5. Tendances de récupération : moyenne 30 j, 7 j, min, max, jours mesurés ; aucune flèche de tendance (aucun seuil dans le PRD). Zone cible
+   affichée sous le cadran Exertion d'Aujourd'hui, avec son sens (haute / moyenne / basse). Révisable par Ali.
+6. Graphiques : SVG simples accessibles (barres et courbes), Recharts toujours non importé (C-167 : dépendance déclarée, inutile pour ces
+   vues ; la retirer de `package.json` relève d'un ticket à part). Révisable par Ali.
+
+## Constats d'Ali à faire (iPhone et PC, données réelles)
+
+- Progrès : cartes Constance (série, semaine, calendrier du mois), Adhérence, Volume par muscle ; valeurs cohérentes avec ses séances.
+- Aujourd'hui : carte Constance sous la carte Séance (iPhone et PC) ; zone cible sous le cadran Exertion.
+- Progrès › Récupération : « Tendances sur 30 jours », quatre courbes lisibles en mode clair et sombre ; VoiceOver lit les valeurs.
+- Réglage « Début de semaine » sur dimanche : calendrier et semaines suivent.
+
+## Écarts au brief
+
+- Part du muscle secondaire : poids du contenu (§ 14.1) au lieu de « moitié » (le brief demandait de suivre le PRD s'il le dit).
+- Records en séance (§ 17.1 « notification en séance ») : **reporté** (toucherait l'écran de séance active, non trivial).
+- Budget L : environ 250 k consommés ; rien à signaler.
