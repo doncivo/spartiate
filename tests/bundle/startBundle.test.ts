@@ -439,6 +439,22 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // BILAN-029 : Progrès › Bilan de la semaine (écran, catalogue fr.weeklyReview, règle src/domain/review) : bloc à la demande, hors du départ.
+  it('BILAN-029 : src/features/progress/WeeklyReview.tsx est un bloc à la demande, hors du départ ; aucun module du bilan au départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/progress/WeeklyReview.tsx'];
+    if (!chunk) throw new Error('bloc WeeklyReview absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/progress/WeeklyReview.tsx'))).toBe(true);
+    for (const [source, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/src\/domain\/review|weeklyReview|WeeklyReview|reviewExport/.test(source), source).toBe(false);
+  });
+
+  it.each(['records des séances closes', 'spartiate-bilan-', 'Sommeil : pas assez de données'])('BILAN-029 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I6-06 : cardio (écran, carte de Progrès, catalogue fr.cardio, dépôt) : blocs à la demande, hors du départ.
   it.each(['src/features/cardio/CardioView.tsx', 'src/features/cardio/CardioProgress.tsx', 'src/db/repositories/sql/cardioRepository.ts'])('I6-06 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));

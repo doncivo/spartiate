@@ -289,6 +289,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.28.x) |
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.28.x) |
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart proposé, à trancher par Ali |
+| BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | à faire (nutrition, 0.29.x) |
+| BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | à trancher par Ali |
 
 ## 3. Audit Codex 0.26.0
 
@@ -443,7 +445,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
-| § 17.3 | PRD § 17.3 | absent — bilans avec repli sur gabarit (aucun fournisseur IA, D-294) | lot prévu 0.29.0 |
+| § 17.3 | PRD § 17.3 | absent — bilans avec repli sur gabarit (aucun fournisseur IA, D-294) | fait (BILAN-029, 0.29.0, D-416 à D-418 ; recommandation BL-125) |
 | § 17.4 | PRD § 17.4 | absent — import de programme vers une routine Libre (C-141, C-191) | lot prévu 0.29.0 |
 | I6-08 | rapport de lot 0.27.0 (docs/I6-08.md) | Fiche d'import de programme (texte, PDF, capture ; aperçu et confirmation), taille L, non exécutée | lot prévu 0.29.0 |
 | BL-050 | demande d'Ali (lot 0.29.0) | Objectif de pas quotidien (dépend du format de `pas.csv`, H-25) | lot prévu 0.29.0 |
