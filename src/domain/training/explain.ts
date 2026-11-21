@@ -34,7 +34,19 @@ export type ExplanationKey =
   | 'assistDecreaseUnknownStep'
   | 'extraRepAssistMin'
   | 'inactivityAssistHeld'
-  | 'recoveryLowAssistHeld';
+  | 'recoveryLowAssistHeld'
+  // MOTEUR-0281a : exercices sans charge (poids du corps, chronométrés).
+  | 'bodyweightRepLadder'
+  | 'ballastAdd'
+  | 'ballastNone'
+  | 'timeIncrease'
+  | 'timeLadder'
+  | 'holdHardNoLoad'
+  | 'deloadNoLoad'
+  | 'inactivityNoLoad'
+  | 'recoveryLowNoLoad'
+  | 'redDayNoLoad'
+  | 'decisionNoLoad';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -54,16 +66,30 @@ export function confidenceBand(confidence: number): ConfidenceBand {
   return confidence < HIGH_FROM ? 'medium' : 'high';
 }
 
+/** MOTEUR-0281a : exercice sans charge (poids du corps, chronométré). */
+export const isUnloaded = (p: Prescription): boolean => p.metric === 'bodyweight-reps' || p.metric === 'time';
+
 export function explainPrescription(p: Prescription): Explanation {
   const set = (p.ladderSetIndex ?? 0) + 1;
+  const unloaded = isUnloaded(p);
+  const refValues = p.reference?.reps ?? [];
   switch (p.headline) {
+    case 'ballast-add':
+      return { key: 'ballastAdd', params: { load: p.loadKg ?? 0, reps: p.sets.length > 0 ? Math.min(...p.sets.map((s) => s.reps)) : 0, sets: refValues.length, top: refValues.length > 0 ? Math.min(...refValues) : 0 } };
+    case 'time-increase':
+      return { key: 'timeIncrease', params: { delta: (p.sets[0]?.reps ?? 0) - (refValues[0] ?? 0), sets: refValues.length, sec: refValues.length > 0 ? Math.min(...refValues) : 0 } };
+    case 'time-ladder': {
+      const i = p.ladderSetIndex ?? 0;
+      return { key: 'timeLadder', params: { delta: (p.sets[i]?.reps ?? 0) - (refValues[i] ?? 0), set } };
+    }
     case 'to-enter':
       return { key: 'toEnter', params: {} };
     case 'unsupported':
       return { key: 'unsupported', params: {} };
     case 'decision':
       // Une décision sans charge retenue ne fixe rien : « à saisir » (relecture de la #61, point C).
-      return p.loadKg === null ? { key: 'toEnter', params: {} } : { key: 'decision', params: { load: p.loadKg } };
+      if (p.loadKg === null) return { key: 'toEnter', params: {} };
+      return unloaded ? { key: 'decisionNoLoad', params: {} } : { key: 'decision', params: { load: p.loadKg } };
     case 'increase': {
       const reps = p.reference?.reps ?? [];
       const delta = p.deltaKg ?? 0;
@@ -74,12 +100,13 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: unknown ? 'increaseUnknownStep' : 'increase', params: { ...params, delta } };
     }
     case 'rep-ladder':
-      return { key: 'repLadder', params: { set } };
+      return { key: unloaded && p.loadKg === 0 ? 'bodyweightRepLadder' : 'repLadder', params: { set } };
     case 'recalibration':
       return { key: 'recalibration', params: { delta: p.deltaKg ?? 0 } };
     case 'hold-hard':
-      return { key: 'holdHard', params: {} };
+      return { key: unloaded ? 'holdHardNoLoad' : 'holdHard', params: {} };
     case 'extra-rep':
+      if (p.reasons.includes('ballast-unavailable')) return { key: 'ballastNone', params: { set } };
       if (p.reasons.includes('gain-capped')) return { key: 'extraRepCapped', params: { set } };
       if (p.reasons.includes('equipment-max')) return { key: 'extraRepMax', params: { set } };
       if (p.reasons.includes('assistance-min')) return { key: 'extraRepAssistMin', params: { set } };
@@ -87,6 +114,7 @@ export function explainPrescription(p: Prescription): Explanation {
     case 'fatigue':
       return { key: 'fatigue', params: {} };
     case 'inactivity': {
+      if (unloaded) return { key: 'inactivityNoLoad', params: {} };
       if (p.reasons.includes('assistance-held')) return { key: 'inactivityAssistHeld', params: { cut: percent(p.inactivityCut ?? 0) } };
       // I4-08 : l'écart dit est celui de la charge appliquée (arrondie au matériel), jamais la décote théorique ; aucun écart : charge maintenue.
       const ref = p.reference?.loadKg ?? 0;
@@ -95,6 +123,7 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: 'inactivity', params: { delta: Math.round(delta * 100) / 100, cut: Math.round((delta / ref) * 1000) / 10 } };
     }
     case 'deload':
+      if (unloaded && !((p.loadKg ?? 0) < (p.reference?.loadKg ?? 0))) return { key: 'deloadNoLoad', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
       return { key: 'deload', params: { sets: p.sets.length, rir: p.rirTarget ?? 0 } };
     case 'position':
     {
@@ -106,6 +135,7 @@ export function explainPrescription(p: Prescription): Explanation {
       return { key: 'position', params: { delta: Math.round(delta * 100) / 100, rank, cut: Math.round((delta / ref) * 1000) / 10 } };
     }
     case 'recovery-low':
+      if (unloaded) return { key: p.reasons.includes('recovery-red-day') ? 'redDayNoLoad' : 'recoveryLowNoLoad', params: {} };
       if (p.reasons.includes('recovery-red-day')) {
         // Journée rouge acceptée (D-170) : charges × 0,95 arrondies au matériel vers le bas ; l'écart dit est celui de la charge appliquée.
         // Aucun écart (charge minimale du matériel, exercice assisté) : maintien dit.
@@ -163,6 +193,8 @@ const ALERTS: readonly { readonly reason: ReasonCode; readonly headline: Prescri
 
 /** Alertes des contraintes actives autres que la raison principale (déjà dite par la phrase), dans l'ordre normatif. */
 export function constraintAlerts(p: Prescription): { readonly key: ConstraintAlertKey; readonly params: Readonly<Record<string, number>> }[] {
+  // MOTEUR-0281a : exercice sans charge, aucune réduction de charge à dire ; la phrase principale dit la contrainte.
+  if (isUnloaded(p)) return [];
   return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => {
     if (a.key === 'alertStall') return { key: a.key, params: { sessions: p.activeConfig.stallSessions } };
     if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };

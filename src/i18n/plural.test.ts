@@ -93,6 +93,7 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
     'fr.onboarding.ts:splitMismatch',
     'fr.onboarding.ts:splitDayLine', // un jour de programme compte au moins 2 exercices
     'fr.progression.ts:explainDeload', // deload : au moins 2 répétitions en réserve
+    'fr.progression.ts:explainDeloadNoLoad', // MOTEUR-0281a : même RIR de deload (au moins 4), exercice sans charge
     'fr.progression.ts:optionFatigueReps', // coupe fixe de 2 répétitions (fatigueRepsCut)
     'fr.signing.ts:remainingDays', // affiché à partir de 48 h : toujours ≥ 2 jours
     'fr.backup.ts:summaryTodayOne', // une sauvegarde existe toujours avec au moins 1 version (sinon « Aucune sauvegarde »)

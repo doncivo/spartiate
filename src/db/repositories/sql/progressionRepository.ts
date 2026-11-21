@@ -30,6 +30,7 @@ interface HistoryRow extends SqlRow {
   readonly reps: number | null;
   readonly load_kg: number | null;
   readonly rir: number | null;
+  readonly duration_sec: number | null;
   readonly difficulty: string | null;
 }
 interface ProfileRow extends SqlRow, SyncRow {
@@ -181,7 +182,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
            WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL
              AND EXISTS (SELECT 1 FROM workout_set s WHERE s.workout_id = w.id AND s.exercise_id = ? AND s.deleted_at IS NULL)
            ORDER BY w.ended_at DESC, w.id DESC LIMIT ?)
-         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir, s.difficulty
+         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir, s.duration_sec, s.difficulty
          FROM recent r JOIN workout_set s ON s.workout_id = r.id AND s.exercise_id = ? AND s.deleted_at IS NULL
          ORDER BY r.ended_at DESC, r.id DESC, s.position, s.id`,
         [exerciseId, Math.max(0, Math.floor(limit)), exerciseId],
@@ -193,7 +194,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
           current = { workoutId: row.workout_id, endedAt: row.ended_at as IsoDateTime, difficulty: null, sets: [] };
           sessions.push(current);
         }
-        current.sets.push({ position: row.position, setKind: row.set_kind as SetKind, done: row.done === 1, reps: row.reps, loadKg: row.load_kg, rir: row.rir });
+        current.sets.push({ position: row.position, setKind: row.set_kind as SetKind, done: row.done === 1, reps: row.reps, loadKg: row.load_kg, rir: row.rir, ...(row.duration_sec === null ? {} : { durationSec: row.duration_sec }) });
         // Difficulté de l'exercice dans la séance (0006) : portée par ses séries ; la série renseignée de plus haute position l'emporte.
         if (isDifficulty(row.difficulty)) current.difficulty = row.difficulty;
       }

@@ -1,3 +1,5 @@
+import { isAssistedEquipment } from './assisted';
+import { prescribeUnloaded } from './bodyweightProgression';
 import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
@@ -101,7 +103,12 @@ export function prescribe(input: PrescribeInput): Prescription {
     ...base,
   });
 
-  if (input.exercise.metric !== 'load-reps') {
+  const metric = input.exercise.metric;
+  // MOTEUR-0281a (§ 11.3, C-189) : poids du corps (reps puis lest) et chronométrés (secondes) ; la distance et la traction assistée du
+  // catalogue en `bodyweight-reps` (la charge saisie y est une assistance, FIX-ASSIST) restent hors moteur.
+  const assistedUnloaded = metric !== 'load-reps' && (input.exercise.assisted === true || isAssistedEquipment(input.exercise.equipment));
+  if ((metric === 'bodyweight-reps' || metric === 'time') && !assistedUnloaded) return prescribeUnloaded(input);
+  if (metric !== 'load-reps') {
     reasons.add('unsupported-metric');
     return finish({ status: 'unsupported', headline: 'unsupported', sets: [], loadKg: null, deltaKg: null, reference: null, ladderSetIndex: null, estimated1rmKg: null, confidence: 0, recalibration: null });
   }
