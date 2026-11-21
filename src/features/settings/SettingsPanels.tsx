@@ -9,7 +9,6 @@ import { ShortcutsSettingsSection } from '../shortcuts';
 import { SyncSettingsSection } from '../sync/SyncSettingsSection';
 import { AboutSection } from './AboutSection';
 import { BackupRow } from './BackupRow';
-import { SecuritySection } from './SecuritySection';
 import { settingsStore } from './settingsStore';
 
 /** Réglages ouvrables dans le panneau de droite de Plus sur PC (ERGO-02, aperçu PC-Plus-apres). */
@@ -79,7 +78,7 @@ function content(id: PanelId): ReactNode {
         <div className="ct-settings__card ct-flat">
           <SigningAboutRow />
           <AboutSection heading={false} />
-          <SecuritySection />
+          {/* IOS-029a : jamais de verrou sur le PC (décision proposée) ; SecuritySection n’est monté que sur l’iPhone. */}
         </div>
       );
     case 'export':

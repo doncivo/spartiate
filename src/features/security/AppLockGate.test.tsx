@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeAuthenticator, guardAuthenticator, type FakeAuthenticator } from '../../platform/biometric';
 import { createFakePrivacyShield } from '../../platform/privacyShield';
 import { reopenSigning as reopenReminders, setupSigning as setupReminders, type SigningHarness as ReminderHarness } from '../signing/testKit';
@@ -155,6 +155,14 @@ describe('écran de verrou et coquille (critères 6, 7 et 11)', () => {
 });
 
 describe('Réglages > DONNÉES ET SÉCURITÉ (critères 5 et 9, D2)', () => {
+  // IOS-029a : la ligne n'existe que sur l'iPhone (jamais sur le PC) : écran Plus de l'iPhone (largeur 390 px).
+  beforeEach(() => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   async function settings(appLock: unknown) {
     const container = reopenReminders(h, { parts: { authenticator: guardAuthenticator(fake), privacyShield: createFakePrivacyShield() } });
     await container.data.repos.settings.set('security.appLock', appLock);
@@ -165,9 +173,6 @@ describe('Réglages > DONNÉES ET SÉCURITÉ (critères 5 et 9, D2)', () => {
         <SettingsScreen />
       </AppContainerProvider>,
     );
-    await flush();
-    // ERGO-02 : sur PC (jsdom = 1 024 px), la ligne de verrouillage est dans le panneau « À propos et diagnostic » de Plus.
-    fireEvent.click(screen.getByRole('button', { name: /^À propos et diagnostic/ }));
     await flush();
     return container;
   }

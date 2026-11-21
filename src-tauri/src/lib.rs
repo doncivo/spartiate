@@ -6,6 +6,9 @@
 //! Les migrations de schéma sont gérées côté TypeScript (src/db/migrator.ts, ADR 0002) :
 //! aucune migration n'est déclarée dans tauri-plugin-sql.
 
+/// Essai du modèle local d'Apple (IOS-029b, Foundation Models) ; iPhone seulement, aucune commande sur PC.
+#[cfg(target_os = "ios")]
+mod apple_intelligence;
 /// Journal technique persistant (I-04, ADR 0014) : PC et iPhone.
 pub mod applog;
 pub mod backup;
@@ -131,6 +134,7 @@ pub fn run() {
         .plugin(tauri_plugin_speech::init())
         .plugin(tauri_plugin_healthkit::init())
         .plugin(tauri_plugin_live_activity::init())
+        .plugin(tauri_plugin_apple_intelligence::init())
         .manage(ocr::vision::VisionState::default())
         .manage(speech::SpeechState::default())
         .manage(sync::commands_ios::SyncState::default());
@@ -210,6 +214,8 @@ pub fn run() {
         live_activity::live_activity_status,
         live_activity::live_activity_start,
         live_activity::live_activity_end,
+        // IOS-029b : essai Apple Intelligence (capability apple-intelligence-ios.json).
+        apple_intelligence::apple_intelligence_probe,
     ]);
     // N-01 : notifications locales de l'iPhone (rappels, ADR 0012 N1.1). Aucune ligne sous cfg(desktop) : le PC n'envoie aucune notification.
     #[cfg(target_os = "ios")]

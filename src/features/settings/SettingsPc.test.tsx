@@ -8,6 +8,9 @@ import { AppContainerProvider } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
+import { t } from '../../i18n';
+import { tPlus } from '../../i18n/plusText';
+import { createFakeAuthenticator, guardAuthenticator } from '../../platform/biometric';
 import { SettingsScreen } from './SettingsScreen';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d9');
@@ -135,5 +138,21 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
     expect(screen.getByRole('button', { name: 'Thème : Sombre' })).toBeInTheDocument();
     expect(screen.getByText('Europe/Paris (automatique)')).toBeInTheDocument();
     expect(screen.queryByText('Suit celui de Windows')).toBeNull();
+  });
+
+  it('IOS-029a C-a4 — jamais de verrou sur le PC : aucune ligne dans « À propos et diagnostic », même si une authentification répondait', async () => {
+    const withAuth = createAppContainer({
+      clock: db.clock,
+      hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
+      data: db.data,
+      desktop,
+      authenticator: guardAuthenticator(createFakeAuthenticator()),
+    });
+    renderScreen(withAuth);
+    const about = await open(new RegExp(`^${tPlus('navAbout')}`));
+    await within(about).findAllByRole('button');
+    expect(within(about).queryByText(t('security.settings.rowFaceId'))).toBeNull();
+    expect(within(about).queryByText(t('security.settings.fallback'))).toBeNull();
+    expect(screen.queryByRole('switch', { name: t('security.settings.rowFaceId') })).toBeNull();
   });
 });

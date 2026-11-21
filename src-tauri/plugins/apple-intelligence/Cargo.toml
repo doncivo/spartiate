@@ -1,0 +1,19 @@
+[package]
+name = "tauri-plugin-apple-intelligence"
+version = "0.1.0"
+description = "Spartiate : essai du modèle local d’Apple (IOS-029b, H-41 proposée). Appelé par Rust seulement, iPhone seulement."
+authors = ["Ali Cherif"]
+edition = "2021"
+rust-version = "1.80"
+publish = false
+links = "tauri-plugin-apple-intelligence"
+
+[dependencies]
+tauri = { version = "2", default-features = false }
+serde_json = "1"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tauri = { version = "2", default-features = false, features = ["wry"] }
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }
