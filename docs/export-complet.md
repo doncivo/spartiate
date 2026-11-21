@@ -448,9 +448,12 @@ Unité par genre :
 | Unité | Genres |
 | --- | --- |
 | cm | `neck`, `shoulders`, `chest`, `waist`, `hips`, `arm_left`, `arm_right`, `thigh_left`, `thigh_right`, `calf_left`, `calf_right` (zones saisies) ; `health_waist_cm`, `health_height_cm` (importés) |
-| pct | `health_body_fat_pct` (masse grasse, en pour cent ; « pct » plutôt que « % », qu’un tableur prendrait pour une formule) |
-| kg | `health_lean_mass_kg` (masse maigre) |
+| pct | `health_body_fat_pct` (masse grasse, en pour cent ; « pct » plutôt que « % », qu’un tableur prendrait pour une formule) ; `visbody_fat_pct` (bilan VISBODY, SUIVIS-029) |
+| kg | `health_lean_mass_kg` (masse maigre) ; `visbody_weight_kg`, `visbody_muscle_kg`, `visbody_water_kg`, `visbody_lean_arm_left_kg`, `visbody_lean_arm_right_kg`, `visbody_lean_trunk_kg`, `visbody_lean_leg_left_kg`, `visbody_lean_leg_right_kg`, `visbody_fat_arm_left_kg`, `visbody_fat_arm_right_kg`, `visbody_fat_trunk_kg`, `visbody_fat_leg_left_kg`, `visbody_fat_leg_right_kg` (bilan VISBODY : poids, masse musculaire, eau, masses maigre et grasse par segment ; le poids n’entre pas dans les pesées) |
 | g | `health_fiber_g` (fibres du jour) |
+| level | `visbody_visceral_level` (graisse viscérale, niveau entier sans unité) |
+| dakcal | `visbody_bmr_dakcal` (métabolisme de base en décakilocalories : kcal ÷ 10, la valeur stockée restant sous 1 000) |
+| score | `note_fatigue`, `note_sleep` (notes du matin, entiers de 1 à 10, SUIVIS-029) |
 
 ### `csv/progress_photo.csv`
 

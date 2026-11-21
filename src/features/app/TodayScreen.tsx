@@ -25,6 +25,8 @@ import './TodayScreen.css';
 const TodayPcSide = lazyScreen<TodayPcSideProps>(() => import('./TodayPcSide').then((m) => ({ default: m.TodayPcSide })), 'todaypcside', { onDemand: true });
 /** PROGRES-b (§ 18.2) : carte « Constance » (streak), bloc à la demande déclaré ici comme TodayPcSide : rien n'entre dans le départ. */
 const TodayStreak = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TodayStreak })), undefined, { onDemand: true });
+/** SUIVIS-029 : carte « Suivis du jour » (objectif de pas, notes du matin), bloc à la demande déclaré ici comme TodayStreak : rien n'entre dans le départ. */
+const TrackingTodayCard = lazyScreen<object>(() => import('../tracking/TrackingTodayCard').then((m) => ({ default: m.TrackingTodayCard })), undefined, { onDemand: true });
 
 
 const CHART_POINTS = 6;
@@ -204,6 +206,7 @@ export function TodayScreen() {
               à droite Nutrition et macros, Poids, Dépense, Semaine, Derniers records ; la carte « État » reste, petite, en dernier. */}
           <div className="ct-today__col">
             <RecoveryToday />
+            <TrackingTodayCard />
             <TodaySessionCard />
             <TodayStreak firstWeekday={getFirstWeekday()} />
             <SupplementsTodayCard />
@@ -270,6 +273,7 @@ export function TodayScreen() {
       <SupplementsTodayCard />
       {weights.length > 0 ? <WeightCard weights={weights} nowMs={nowMs} showActions={false} /> : null}
       <RecoveryToday />
+      <TrackingTodayCard />
       <p className="ct-today__footer">{syncText ?? tToday('syncNotConfigured')}</p>
     </section>
   );
