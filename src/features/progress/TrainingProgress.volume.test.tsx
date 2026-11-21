@@ -48,6 +48,8 @@ describe('Progrès › Volume par muscle', () => {
     mount();
     const chest = await screen.findByRole('listitem', { name: 'Pectoraux' });
     expect(within(chest).getByText(tTrainingProgress('volumeLine', { n: '3', mean: '0,4', weeks: 8 }))).toBeInTheDocument();
+    // Revue à froid : la moyenne porte sur les 8 semaines de la fenêtre, et le texte le dit (pas « par semaine » d'entraînement).
+    expect(within(chest).getByText('Cette semaine : 3 · moyenne sur 8 semaines : 0,4')).toBeInTheDocument();
     expect(within(screen.getByRole('listitem', { name: 'Triceps' })).getByText(tTrainingProgress('volumeLine', { n: '1,5', mean: '0,2', weeks: 8 }))).toBeInTheDocument();
     expect(within(screen.getByRole('listitem', { name: 'Deltoïdes antérieurs' })).getByText(tTrainingProgress('volumeLine', { n: '0,9', mean: '0,1', weeks: 8 }))).toBeInTheDocument();
     // Les barres disent leurs valeurs semaine par semaine (jamais la couleur seule).
