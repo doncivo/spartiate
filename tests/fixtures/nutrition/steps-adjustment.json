@@ -1,0 +1,19 @@
+{
+  "note": "Vecteurs REPAS-029b (synthétiques). base : jours à pas connus dans les 28 jours avant `date` ; today : pas de `date` (null = absents) ; value et weightMeasured : dépense retenue et poids de la mesure.",
+  "date": "2026-11-20",
+  "cases": [
+    { "name": "formule seule, au-dessus de la base", "base": { "days": 28, "steps": 8000 }, "today": 12000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "rawKcal": 160, "appliedKcal": 160, "adjusted": 2660, "capped": false, "formulaShare": 1, "baseline": 8000, "baselineDays": 28 } },
+    { "name": "mélange 50 %", "base": { "days": 28, "steps": 8000 }, "today": 12000, "value": 2500, "weightMeasured": 0.5, "expect": { "status": "adjusted", "rawKcal": 160, "appliedKcal": 80, "adjusted": 2580, "capped": false, "formulaShare": 0.5 } },
+    { "name": "en dessous de la base : signe négatif", "base": { "days": 28, "steps": 8000 }, "today": 5000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "rawKcal": -120, "appliedKcal": -120, "adjusted": 2380, "capped": false } },
+    { "name": "borne haute 300", "base": { "days": 28, "steps": 8000 }, "today": 30000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "rawKcal": 300, "appliedKcal": 300, "adjusted": 2800, "capped": true } },
+    { "name": "borne basse -300", "base": { "days": 28, "steps": 20000 }, "today": 1000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "rawKcal": -300, "appliedKcal": -300, "adjusted": 2200, "capped": true } },
+    { "name": "part de formule arrondie", "base": { "days": 28, "steps": 8000 }, "today": 8500, "value": 2500, "weightMeasured": 0.3, "expect": { "status": "adjusted", "rawKcal": 20, "appliedKcal": 14, "adjusted": 2514, "capped": false } },
+    { "name": "égal à la base : ajustement nul mais dit", "base": { "days": 28, "steps": 8000 }, "today": 8000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "rawKcal": 0, "appliedKcal": 0, "adjusted": 2500 } },
+    { "name": "mesure seule : jamais deux fois", "base": { "days": 28, "steps": 8000 }, "today": 12000, "value": 2500, "weightMeasured": 1, "expect": { "status": "none", "reason": "measured-only" } },
+    { "name": "14 jours de base : suffisant", "base": { "days": 14, "steps": 8000 }, "today": 9000, "value": 2500, "weightMeasured": 0, "expect": { "status": "adjusted", "baselineDays": 14, "appliedKcal": 40 } },
+    { "name": "13 jours de base : insuffisant", "base": { "days": 13, "steps": 8000 }, "today": 9000, "value": 2500, "weightMeasured": 0, "expect": { "status": "none", "reason": "baseline-short" } },
+    { "name": "pas du jour absents", "base": { "days": 28, "steps": 8000 }, "today": null, "value": 2500, "weightMeasured": 0, "expect": { "status": "none", "reason": "day-unknown" } },
+    { "name": "pas du jour à 0 : donnée absente, pas un fait", "base": { "days": 28, "steps": 8000 }, "today": 0, "value": 2500, "weightMeasured": 0, "expect": { "status": "none", "reason": "day-unknown" } },
+    { "name": "aucune dépense", "base": { "days": 28, "steps": 8000 }, "today": 12000, "value": null, "weightMeasured": 0, "expect": { "status": "none", "reason": "no-estimate" } }
+  ]
+}
