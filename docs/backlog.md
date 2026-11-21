@@ -171,7 +171,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | fait (FIX-EXPORT, D-334, horizon dans le manifeste) |
 | C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | fait (DOC-PRIV, PR #156) |
 | C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | fait (A11Y) |
-| C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | fait en partie (A11Y ; interrupteur éteint clair conservé, décision d'Ali du 18/10) |
+| C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | fait (A11Y ; interrupteur éteint clair porté à 3,80:1, consigne d'Ali du 21/11) |
 | C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | reporté (0.28.1, D-372) |
 | C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | fait (FIX-COQUILLE) |
 | C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | fait (FIX-COQUILLE) |

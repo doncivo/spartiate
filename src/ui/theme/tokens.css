@@ -104,7 +104,7 @@
   /* Interrupteur (Reglages.html .sw en clair ; sombre : lavande comme --ct-edit-track, à valider sur la capture Reglages-Sombre). */
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #bdb5a5;
+  --ct-color-switch-off: #8a8273; /* A11Y 0.28.0 : 3,80:1 sur la surface et sous le pouce blanc (WCAG 1.4.11) ; maquette #bdb5a5 à 2,04:1 */
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
@@ -348,7 +348,7 @@
   --ct-color-accent-on: #ede7dc;
   --ct-color-switch-on: #b8322a;
   --ct-color-switch-on-thumb: #ede7dc;
-  --ct-color-switch-off: #bdb5a5;
+  --ct-color-switch-off: #8a8273; /* A11Y 0.28.0 : 3,80:1 sur la surface et sous le pouce blanc (WCAG 1.4.11) ; maquette #bdb5a5 à 2,04:1 */
   --ct-color-switch-off-thumb: #ffffff;
   --ct-color-space-pro: #2f6b7a;
   --ct-color-space-perso: #b5483b;
