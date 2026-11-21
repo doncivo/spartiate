@@ -1,0 +1,81 @@
+/* BILAN-029 : Progrès › Bilan de la semaine. Jetons de tokens.css seulement, aucune couleur en dur, tailles en rem, chiffres tabulaires. */
+.ct-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-review__lead {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ct-review__week-title {
+  margin: 0;
+  font-size: var(--ct-font-size-item);
+  color: var(--ct-color-text);
+}
+
+.ct-review__list,
+.ct-review__weeks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+}
+
+.ct-review__line {
+  line-height: 1.5;
+  color: var(--ct-color-text);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* Thème sans donnée : texte secondaire, jamais la couleur seule (la phrase dit « pas assez de données »). */
+.ct-review__line--missing {
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-3);
+}
+
+.ct-review__status {
+  margin: 0;
+}
+
+/* Semaines précédentes : cibles de 44 px, la semaine affichée en trait épais et en gras. */
+.ct-review__weeks {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.ct-review__week {
+  min-height: var(--ct-hit-target-min);
+  min-width: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  background: transparent;
+  color: var(--ct-color-text-secondary);
+  border: 1px solid var(--ct-color-border-strong);
+  border-radius: var(--ct-radius-lg);
+  font: inherit;
+  font-size: var(--ct-font-size-sm);
+  cursor: pointer;
+}
+
+.ct-review__week[aria-pressed='true'] {
+  color: var(--ct-color-text);
+  border-width: 2px;
+  font-weight: 600;
+}
+
+.ct-review__week:focus-visible {
+  outline: 2px solid var(--ct-color-focus-ring);
+  outline-offset: 2px;
+}
