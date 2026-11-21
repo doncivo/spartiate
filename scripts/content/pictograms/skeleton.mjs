@@ -157,6 +157,51 @@ export const prop = {
   step: (S) => [{ t: 'l', p: [S.ankle[0] - 10, S.ankle[1] + 3, S.ankle[0] + 16, S.ankle[1] + 3] }],
   /** Banc derrière le corps à la hauteur donnée (pied arrière surélevé). */
   benchBehind: (x, y) => () => [{ t: 'l', p: [x - 9, y, x + 9, y] }, { t: 'l', p: [x, y, x, TEMPLATE.floor], thin: true }],
+  /** Barre de landmine : du poignet au point d'attache au sol. */
+  landmine: (to) => (S, C) => [{ t: 'l', p: [...C.wrist, ...to] }, { t: 'c', c: [...to, 2], f: true }],
+  /** Pastille pleine sur une articulation (patin, curseur, roue). */
+  dot: (joint, r = 3) => (S, C) => [{ t: 'c', c: [C[joint][0], C[joint][1], r], f: true }],
+  /** Lien fin entre deux articulations (bande élastique). */
+  link: (a, b) => (S, C) => [{ t: 'l', p: [...C[a], ...C[b]], thin: true }],
+  /** Poids suspendu à la ceinture. */
+  beltWeight: (S, C) => [{ t: 'l', p: [C.hip[0], C.hip[1], C.hip[0], C.hip[1] + 14], thin: true }, { t: 'c', c: [C.hip[0], C.hip[1] + 18, 5], f: true }],
+  /** Dossier vertical ou incliné derrière le tronc de départ. */
+  back: (S) => {
+    const ux = S.neck[0] - S.hip[0];
+    const uy = S.neck[1] - S.hip[1];
+    const len = Math.hypot(ux, uy) || 1;
+    const nx = (uy / len) * 9;
+    const ny = (-ux / len) * 9;
+    return [{ t: 'l', p: [S.hip[0] + nx, S.hip[1] + ny, S.neck[0] + nx, S.neck[1] + ny] }];
+  },
+  /** Appui devant le tronc (banc incliné face à soi) avec son pied au sol. */
+  frontPad: (S) => {
+    const ux = S.neck[0] - S.hip[0];
+    const uy = S.neck[1] - S.hip[1];
+    const len = Math.hypot(ux, uy) || 1;
+    const nx = (-uy / len) * 9;
+    const ny = (ux / len) * 9;
+    const x = S.hip[0] + nx;
+    const y = S.hip[1] + ny;
+    return [{ t: 'l', p: [x, y, S.neck[0] + nx, S.neck[1] + ny] }, { t: 'l', p: [x, y, x, TEMPLATE.floor], thin: true }];
+  },
+  /** Banc sous le ventre (allongé sur le ventre), un pied de chaque côté. */
+  proneBench: (S) => {
+    const y = S.hip[1] + 8;
+    const x0 = S.hip[0] - 8;
+    const x1 = S.neck[0] + 12;
+    return [{ t: 'l', p: [x0, y, x1, y] }, { t: 'l', p: [x0 + 3, y, x0 + 3, TEMPLATE.floor], thin: true }, { t: 'l', p: [x1 - 3, y, x1 - 3, TEMPLATE.floor], thin: true }];
+  },
+  /** Mur derrière le dos. */
+  wall: (S) => [{ t: 'l', p: [S.hip[0] - 9, 10, S.hip[0] - 9, TEMPLATE.floor], thin: true }],
+  /** Assise basse (banc ou sol surélevé) sous la hanche de départ. */
+  stool: (S) => [{ t: 'l', p: [S.hip[0] - 8, S.hip[1] + 8, S.hip[0] + 10, S.hip[1] + 8] }, { t: 'l', p: [S.hip[0], S.hip[1] + 8, S.hip[0], TEMPLATE.floor], thin: true }],
+  /** Barres parallèles sous les mains de départ. */
+  bars: (S) => [{ t: 'l', p: [S.wrist[0] - 10, S.wrist[1] + 4, S.wrist[0] + 10, S.wrist[1] + 4] }, { t: 'l', p: [S.wrist[0], S.wrist[1] + 4, S.wrist[0], TEMPLATE.floor], thin: true }],
+  /** Rail vertical d'une machine guidée (Smith) à l'abscisse x. */
+  rail: (x) => () => [{ t: 'l', p: [x, 8, x, TEMPLATE.floor], thin: true }],
+  /** Patin ou plateau perpendiculaire à la jambe au niveau de la cheville (presse). */
+  footPlate: (S, C) => [{ t: 'l', p: [C.ankle[0] - 3, C.ankle[1] - 11, C.ankle[0] + 3, C.ankle[1] + 11] }],
   line: (x1, y1, x2, y2, thin = false) => () => [{ t: 'l', p: [x1, y1, x2, y2], thin }],
   circle: (x, y, r, f = false) => () => [{ t: 'c', c: [x, y, r], f }],
 };
