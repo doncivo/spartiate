@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { statusLine } from '../../../../src/features/sync/syncText';
 import { armCrash } from '../../../sim/syncCrash';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-03 (B13), scénario 2 du banc, critère 20 (B2, cousin S2 de B1) : arrêt brutal entre l'ajout du premier segment et l'écriture de

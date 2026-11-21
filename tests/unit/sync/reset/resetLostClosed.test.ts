@@ -1,8 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { parsePublishedStateText } from '../../../../src/domain/sync/parse';
 import { SyncPlatformError } from '../../../../src/platform/sync/types';
-import { syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { closeAll, setupRoom, settle, W_ID, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02 (revue, point 6 ; ADR 0011 §21 point 2) : rotation dans l'époque `n` (entrée `closed` publiée), réinitialisation perdue,

@@ -6,8 +6,11 @@ import type { FolderScan, SyncPlatform } from '../../../src/platform/sync/types'
 import { META } from '../../../src/sync/meta';
 import { FORGET_META } from '../../../src/sync/forget';
 import { mirrorDeviceFolder } from '../../sim/syncCloudSim';
-import { syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { B_ID, C_ID, closeAll, publishedState, reassociate, setupRoom, settle, titles, type Room } from './reset/resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02 (QA), points C et avertissements : oubli d'un appareil après une réassociation en fusion (la suppression aboutit),

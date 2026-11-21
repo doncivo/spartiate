@@ -3,8 +3,11 @@ import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { setEpochSwitchTestHooks } from '../../../../src/sync/epochSwitch';
 import { RESET_META } from '../../../../src/sync/reset';
 import { hydrate, propagate } from '../../../sim/syncCloudSim';
-import { syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { B_ID, closeAll, meta, reassociate, setupRoom, settle, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11 critères 12 et 17 (ADR 0011 §14.3 étape 5) : arrêt brutal avant **chacune** des écritures de la bascule (même méthode que
@@ -100,7 +103,7 @@ describe('réassociation de B interrompue à chaque étape du changement d’ép
       expect(a.service.status().reset?.step).toBe('done');
       await settle(room.devices, 3);
       expect(await taskSnapshot(b)).toEqual(await taskSnapshot(a));
-      expect((await a.driver.select<{ title: string }>("SELECT title FROM task WHERE title = 'B hors ligne'")).length).toBe(1);
+      expect((await a.driver.select<{ title: string }>("SELECT food_name AS title FROM meal_entry WHERE food_name = 'B hors ligne'")).length).toBe(1);
     });
   }
 });

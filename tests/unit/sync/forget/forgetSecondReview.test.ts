@@ -3,7 +3,10 @@ import type { DeviceId } from '../../../../src/domain/types';
 import { currentPurgeHorizon } from '../../../../src/sync';
 import { armCrash } from '../../../sim/syncCrash';
 import { mirrorDeviceFolder, propagate, segmentPath } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10, seconde revue (ADR 0011 §18 points 11 à 13), simulations exigées : (1) instantané plus récent mais non couvrant écarté à
@@ -53,7 +56,7 @@ async function settle(list: readonly SimDevice[], rounds = 3): Promise<void> {
   }
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const meta = async (d: SimDevice, key: string): Promise<unknown> => {
   const raw = await d.data.repos.sync.getMeta(key);
   return raw === null ? null : (JSON.parse(raw) as unknown);

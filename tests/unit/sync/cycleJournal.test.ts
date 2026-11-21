@@ -1,6 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * 0.2.4 points 1 et 2 : le journal de synchro dit ce qui se passe (reçu, publié, fichiers attendus d'iCloud) seulement quand il se passe
@@ -43,12 +46,12 @@ describe('journal de synchro : received, published, cloud-pending', () => {
     await pc.cycle();
     const published = events(pc, 'published').slice(before.published);
     expect(published).toHaveLength(1);
-    expect(published[0]?.detail).toMatchObject({ count: expect.any(Number), tables: 'task' });
+    expect(published[0]?.detail).toMatchObject({ count: expect.any(Number), tables: 'meal_entry' });
     syncFolders(devices);
     await iphone.cycle();
     const received = events(iphone, 'received').slice(before.received);
     expect(received).toHaveLength(1);
-    expect(received[0]?.detail).toMatchObject({ from: PC_ID.slice(0, 8), tables: 'task:1', ms: expect.any(Number) });
+    expect(received[0]?.detail).toMatchObject({ from: PC_ID.slice(0, 8), tables: 'meal_entry:1', ms: expect.any(Number) });
     const all = JSON.stringify(iphone.logger.entries) + JSON.stringify(pc.logger.entries);
     expect(all).not.toContain('Titre secret du PC');
   });

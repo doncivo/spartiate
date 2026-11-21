@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SyncPlatformError } from '../../../../src/platform/sync/types';
-import { syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { B_ID, closeAll, reassociate, setupRoom, settle, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11 critère 20 (même méthode que Y-06 critère 16) : réinitialisation complète à deux appareils avec capture de toutes les sorties :

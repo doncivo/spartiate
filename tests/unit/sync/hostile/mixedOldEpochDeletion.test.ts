@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, expect, it } from 'vitest';
 import { compareEpochs, type EpochId } from '../../../../src/domain/sync/format';
 import { statusLine } from '../../../../src/features/sync/syncText';
-import { createSimDevice, setupFirst, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const SELF = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const OLD = 'e0001-11111111-1111-4111-8111-111111111111' as EpochId;

@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TaskId } from '../../../src/domain/types';
 import { armCrash } from '../../sim/syncCrash';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Arrêt brutal à chaque écriture d'un cycle (ADR 0011, sections 3.3, 5.5 et 10.2 ; Y-02 critères 3, 5, 6, 11 et 12, Y-05 critère 5,
@@ -176,7 +179,7 @@ async function expectRecovered(ctx: Ctx, label: string): Promise<void> {
   }
   expect(await taskSnapshot(a), `${label} : convergence`).toEqual(await taskSnapshot(b));
   // Aucune ligne en double : le rejeu après l'arrêt ne crée ni tâche de plus ni conflit inventé entre deux valeurs identiques.
-  const count = (d: SimDevice): Promise<unknown[]> => d.driver.select('SELECT COUNT(*) AS n FROM task');
+  const count = (d: SimDevice): Promise<unknown[]> => d.driver.select('SELECT COUNT(*) AS n FROM meal_entry');
   expect(await count(a)).toEqual(await count(b));
   for (const d of [a, b]) {
     const same = await d.driver.select('SELECT field FROM conflict_log WHERE kept_value = discarded_value');

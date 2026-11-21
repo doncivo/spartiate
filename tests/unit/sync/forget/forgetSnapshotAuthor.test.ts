@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { DeviceId } from '../../../../src/domain/types';
 import { propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10, seconde revue point 1 (bloquant) : un instantané dont l'auteur est oublié n'est jamais proposé, ni à l'arrivée d'un appareil
@@ -30,7 +33,7 @@ async function settle(list: readonly SimDevice[], rounds = 3): Promise<void> {
   }
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry ORDER BY food_name')).map((r) => r.title);
 const snapshotCount = (d: SimDevice, of: string): number => [...(d.folder.devices.get(of)?.epochs.values() ?? [])].reduce((n, e) => n + e.snapshots.size, 0);
 
 /** A et X associés ; X écrit X1 lu par A ; A oublie X. X n'apprend rien. */

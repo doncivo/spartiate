@@ -1,7 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, SCHEMA_VERSION, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, I0_SCHEMA_VERSION, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { META, readJson } from '../../../../src/sync/meta';
 import type { DeviceAck } from '../../../../src/domain/sync/format';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const A = '56d4eec1-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const B = 'ef50b6f7-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -68,7 +71,7 @@ describe('Y-IOS-07 : lecture et purge après rotation', () => {
     // Le PC est actif mais n'a pas lu ces segments : annonce fraîche, accusés inchangés.
     const own = (await a.platform.scan({ keep: [] })).devices.find((d) => d.deviceId === a.id)?.state;
     if (!own) throw new Error('état PC absent');
-    await a.platform.writeState({ sv: SCHEMA_VERSION, state: { ...own, stateSeq: own.stateSeq + 1, head: { ...own.head, stateSeq: own.stateSeq + 1 }, lastSyncHlc: a.hlc.now() } });
+    await a.platform.writeState({ sv: I0_SCHEMA_VERSION, state: { ...own, stateSeq: own.stateSeq + 1, head: { ...own.head, stateSeq: own.stateSeq + 1 }, lastSyncHlc: a.hlc.now() } });
     syncFolders(devices);
     const beforeAck = await b.cycle();
     expect(beforeAck.warnings ?? []).not.toContain('folder-large');

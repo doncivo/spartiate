@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SyncPlatformError } from '../../../../src/platform/sync/types';
-import { createSimDevice, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { propagate } from '../../../sim/syncCloudSim';
 import { B_ID, C_ID, closeAll, publishedState, recoveryOf, setupRoom, settle, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11 critères 5, 7, 10 et D1 sur la plateforme mémoire (mêmes règles que Rust, `reset.rs` / `SyncCore`) : annonce maîtresse, clé de la

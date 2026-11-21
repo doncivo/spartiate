@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { parseSyncFileName } from '../../../src/domain/sync/format';
-import { createSimDevice, setupFirst, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, setupFirst, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * 0.1.4 (5) : copies de conflit d'iCloud (« state 2.spx »). Ignorées à la lecture, jamais supprimées, signalées une seule fois dans le journal

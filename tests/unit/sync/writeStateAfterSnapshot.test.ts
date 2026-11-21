@@ -1,6 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
-import { createSimDevice, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * TRI-03 (audit 1.0, « writeState refusé en silence ») : l'étape 6 est déjà couverte (Y-IOS-02-FIX-02, `publish-blocked`). Restait l'écriture de

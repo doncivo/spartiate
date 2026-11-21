@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { RESET_META } from '../../../../src/sync/reset';
-import { syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { B_ID, backupOf, closeAll, meta, reassociate, restoreBackup, setupRoom, settle, titles, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11, passe QA : DÉFAUTS constatés (tests volontairement rouges, renvoyés à l'agent sync-icloud avec le diagnostic ; voir le rapport).

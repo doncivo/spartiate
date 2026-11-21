@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { SyncStatus } from '../../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-IOS-05 (B6), critères 5 et 6 : suite du scénario 5 du banc (transport muet). L'échéance du faux (`MUTE_DEADLINE_TURNS` tours de

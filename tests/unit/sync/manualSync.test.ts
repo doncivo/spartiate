@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Synchro manuelle avec le vrai moteur (ADR 0011, sections 10.1 et 11.2 ; Y-03 critères 2, 3 et 7, Y-02 critère 1) : un seul cycle à la
