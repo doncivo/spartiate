@@ -7,6 +7,7 @@ import { tInjuries } from '../../../i18n/injuriesText';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
+import { readFileSync } from 'node:fs';
 import { InjuryCheckinCard } from './InjuryCheckinCard';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c5' as DeviceId;
@@ -67,5 +68,16 @@ describe('Carte « Où en est ta gêne ? » (BLESSURES-b)', () => {
     open();
     fireEvent.click(await screen.findByRole('button', { name: tInjuries('answerHealed') }));
     await waitFor(async () => expect((await stored()).items[0]?.status).toBe('healed'));
+  });
+
+  it('porte le style des cartes d’Aujourd’hui et ne dépend pas de la feuille de Profil (lancement à froid sur Aujourd’hui)', async () => {
+    await seed('2026-11-06');
+    const { container } = open();
+    await screen.findByText(tInjuries('checkinTitle'));
+    expect(container.querySelector('section.ct-today__card')).not.toBeNull();
+    expect(container.querySelector('[class*="ct-body__"]')).toBeNull();
+    const source = readFileSync('src/features/settings/injuries/InjuryCheckinCard.tsx', 'utf8');
+    expect(source).not.toContain('BodyScreen.css');
+    expect(source).toContain("import './Injuries.css'");
   });
 });

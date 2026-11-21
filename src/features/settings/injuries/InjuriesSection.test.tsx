@@ -73,4 +73,13 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
     await waitFor(async () => expect((await stored()).items[0]?.status).toBe('healed'));
     expect(await screen.findByRole('list', { name: tInjuries('pastTitle') })).toBeTruthy();
   });
+
+  it('date de début effacée : message « date requise », pas « dans le futur »', async () => {
+    open();
+    fireEvent.change(await muscleSelect(), { target: { value: 'chest' } });
+    fireEvent.change(screen.getByLabelText(tInjuries('startedOn')), { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: tInjuries('save') }));
+    expect((await screen.findByRole('alert')).textContent).toBe(tInjuries('errorDateRequired'));
+    expect((await stored()).items).toEqual([]);
+  });
 });
