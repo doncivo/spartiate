@@ -147,8 +147,8 @@ const RANGE = `(?:\\s*(?:${DASH}|à|/)\\s*(\\d{1,4}))?`;
 const UNIT = '(?:\\s*(secondes?|sec|s|r[ée]p[ée]titions?|reps?|r[ée]ps?\\.?))?(?![\\p{L}\\p{N}])';
 /** « 4×8-10 », « 3 x 12 », « 4X8 », « 3 * 30 s ». */
 const SCHEME_X = new RegExp(`(?<![\\p{L}\\p{N}])(\\d{1,3})\\s*[x×✕✖*]\\s*(\\d{1,4})${RANGE}${UNIT}`, 'iu');
-/** « 3 séries de 10 », « 3 séries de 8 à 10 répétitions », « 4 series x 8 ». */
-const SCHEME_SERIES = new RegExp(`(?<![\\p{L}\\p{N}])(\\d{1,3})\\s*s[ée]ries?\\s*(?:de\\s*|x\\s*|×\\s*|:\\s*)?(\\d{1,4})${RANGE}${UNIT}`, 'iu');
+/** « 3 séries de 10 », « 3 séries de 8 à 10 répétitions », « 4 series x 8 », « 4 sets x 10 ». */
+const SCHEME_SERIES = new RegExp(`(?<![\\p{L}\\p{N}])(\\d{1,3})\\s*(?:s[ée]ries?|sets?)\\s*(?:de\\s*|x\\s*|×\\s*|:\\s*)?(\\d{1,4})${RANGE}${UNIT}`, 'iu');
 /** « RIR 2 », « @RIR 1-2 », « RIR : 3 ». */
 const RIR_RE = new RegExp(`@?\\s*(?<![\\p{L}])RIR\\s*:?\\s*(\\d{1,2})(?:\\s*(?:${DASH}|à)\\s*(\\d{1,2}))?(?![\\p{N}])`, 'iu');
 /** « repos 90 s », « repos 2 min », « repos 1 min 30 », « repos 1,5 min », « récup 60 ». */
@@ -364,6 +364,8 @@ export const IMPORT_MATCH_CHOICES = 3;
 /** Deux mots se valent (faute de frappe, lecture d'image) à partir de cette ressemblance de bigrammes, pour des mots de 4 lettres et plus. */
 const TOKEN_FUZZY = 0.7;
 const TOKEN_WEIGHT = 0.6;
+/** Mêmes mots dans un autre ordre (« de bas en haut » / « de haut en bas ») : presque identique, jamais égal à un nom exact. */
+const SAME_WORDS_SCORE = 0.95;
 
 const STOP_WORDS = new Set(['le', 'la', 'les', 'l', 'de', 'du', 'des', 'd', 'au', 'aux', 'a', 'en', 'avec', 'sur', 'un', 'une', 'et', 'pour', 'the', 'of', 'with', 'on', 'to']);
 /** Synonymes d'un mot (après accents, casse et pluriel). */
@@ -454,7 +456,8 @@ function scoreTokens(a: readonly string[], b: readonly string[]): number {
   if (a.length === 0 || b.length === 0) return 0;
   const joinedA = [...a].sort().join(' ');
   const joinedB = [...b].sort().join(' ');
-  if (joinedA === joinedB) return 1;
+  if (a.join(' ') === b.join(' ')) return 1;
+  if (joinedA === joinedB) return SAME_WORDS_SCORE;
   const tokenScore = (bestCover(a, b) + bestCover(b, a)) / (a.length + b.length);
   const charScore = dice(joinedA, joinedB);
   return Math.min(1, TOKEN_WEIGHT * tokenScore + (1 - TOKEN_WEIGHT) * charScore);
@@ -494,7 +497,9 @@ export function matchExerciseName(name: string, candidates: readonly ImportCandi
   const top = scored[0];
   if (!top || top.score < IMPORT_MATCH_DOUBT) return { level: 'none', choices: scored.slice(0, IMPORT_MATCH_CHOICES) };
   const second = scored[1];
-  const sure = top.score >= IMPORT_MATCH_SURE && (second === undefined || top.score - second.score >= IMPORT_MATCH_MARGIN);
+  // Un nom identique après normalisation (score 1) et seul à l'être est proposé même si un autre candidat le suit de près.
+  const uniqueExact = top.score === 1 && (second === undefined || second.score < 1);
+  const sure = top.score >= IMPORT_MATCH_SURE && (uniqueExact || second === undefined || top.score - second.score >= IMPORT_MATCH_MARGIN);
   return { level: sure ? 'sure' : 'doubt', choices: scored.slice(0, IMPORT_MATCH_CHOICES) };
 }
 
