@@ -30,6 +30,7 @@ interface HistoryRow extends SqlRow {
   readonly reps: number | null;
   readonly load_kg: number | null;
   readonly rir: number | null;
+  readonly duration_sec: number | null;
   readonly difficulty: string | null;
 }
 interface ProfileRow extends SqlRow, SyncRow {
@@ -54,6 +55,8 @@ interface DecisionRow extends SqlRow, SyncRow {
 const EXERCISE_ID_MAX = 128;
 /** I4-08 : décisions lues au plus pour trouver la plus récente lisible (borne de la lecture ; au-delà, aucune référence). */
 const DECISIONS_SCANNED = 20;
+/** MOTEUR-0281b : décisions lues pour le retour à une prescription antérieure (les plus récentes). */
+const DECISIONS_LISTED = 60;
 /** Identifiant naturel du profil d'un exercice (une ligne par exercice, quel que soit l'appareil). */
 export const progressionProfileId = progressionId;
 const isDifficulty = (v: string | null): v is Difficulty => v !== null && (DIFFICULTIES as readonly string[]).includes(v);
@@ -102,6 +105,9 @@ function rowToDecision(row: DecisionRow, report?: DecisionReadReporter): Recomme
     loadKg: row.chosen_load_kg,
     reps: reps as number[],
     decidedAt: row.decided_at as IsoDateTime,
+    // MOTEUR-0281b : décision de retour (raison `revert-previous` de la prescription tracée ; lue ici sans importer le module du retour, qui
+    // resterait sinon un bloc partagé de plus, référencé par le départ).
+    ...(prescription.reasons.includes('revert-previous') ? { revert: true } : {}),
     ...readSyncMeta(row),
   };
 }
@@ -163,6 +169,12 @@ function targetRirOf(prescription: string): number | null {
   return typeof rir === 'number' && Number.isInteger(rir) && rir >= 0 && rir <= 10 ? rir : null;
 }
 
+/** MOTEUR-0281b : prescription tracée d'une décision de retour (illisible : non). */
+function isRevertRow(prescription: string): boolean {
+  const p = parseOrNull(prescription) as { reasons?: unknown } | null | undefined;
+  return typeof p === 'object' && p !== null && Array.isArray(p.reasons) && p.reasons.includes('revert-previous');
+}
+
 const validExerciseId = (id: string): boolean => id.length >= 1 && id.length <= EXERCISE_ID_MAX;
 const finiteOrNull = (n: number | null, ok: (x: number) => boolean): boolean => n === null || (Number.isFinite(n) && ok(n));
 
@@ -181,7 +193,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
            WHERE w.ended_at IS NOT NULL AND w.deleted_at IS NULL
              AND EXISTS (SELECT 1 FROM workout_set s WHERE s.workout_id = w.id AND s.exercise_id = ? AND s.deleted_at IS NULL)
            ORDER BY w.ended_at DESC, w.id DESC LIMIT ?)
-         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir, s.difficulty
+         SELECT r.id AS workout_id, r.ended_at, s.position, s.set_kind, s.done, s.reps, s.load_kg, s.rir, s.duration_sec, s.difficulty
          FROM recent r JOIN workout_set s ON s.workout_id = r.id AND s.exercise_id = ? AND s.deleted_at IS NULL
          ORDER BY r.ended_at DESC, r.id DESC, s.position, s.id`,
         [exerciseId, Math.max(0, Math.floor(limit)), exerciseId],
@@ -193,7 +205,7 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
           current = { workoutId: row.workout_id, endedAt: row.ended_at as IsoDateTime, difficulty: null, sets: [] };
           sessions.push(current);
         }
-        current.sets.push({ position: row.position, setKind: row.set_kind as SetKind, done: row.done === 1, reps: row.reps, loadKg: row.load_kg, rir: row.rir });
+        current.sets.push({ position: row.position, setKind: row.set_kind as SetKind, done: row.done === 1, reps: row.reps, loadKg: row.load_kg, rir: row.rir, ...(row.duration_sec === null ? {} : { durationSec: row.duration_sec }) });
         // Difficulté de l'exercice dans la séance (0006) : portée par ses séries ; la série renseignée de plus haute position l'emporte.
         if (isDifficulty(row.difficulty)) current.difficulty = row.difficulty;
       }
@@ -212,7 +224,8 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
           [exerciseId, ...sessions.map((s) => s.workoutId)],
         );
         const latest = new Map<string, Decided>();
-        for (const row of decided) latest.set(row.workout_id, row);
+        // MOTEUR-0281b : une décision de retour, attachée à la séance après sa clôture, ne remplace jamais la valeur retenue de la séance.
+        for (const row of decided) if (!isRevertRow(row.prescription)) latest.set(row.workout_id, row);
         for (const [workoutId, row] of latest) {
           if (isRetainedDeload(row)) deloads.add(workoutId);
           else if (isRetainedFatigueChoice(row)) fatigueChoices.add(workoutId);
@@ -313,13 +326,25 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
       return firstReadable(rows, report);
     },
 
+    async decisions(exerciseId, report) {
+      // MOTEUR-0281b : décisions lisibles des séances CLOSES non supprimées (comme `lastDecision`), de la plus ancienne à la plus récente.
+      const rows = await db.select<DecisionRow>(
+        `SELECT * FROM (SELECT d.* FROM recommendation_decision d JOIN workout w ON w.id = d.workout_id
+           WHERE d.exercise_id = ? AND d.deleted_at IS NULL AND w.ended_at IS NOT NULL AND w.deleted_at IS NULL
+           ORDER BY d.decided_at DESC, d.id DESC LIMIT ?) ORDER BY decided_at, id`,
+        [exerciseId, DECISIONS_LISTED],
+      );
+      return rows.map((row) => rowToDecision(row, report)).filter((d): d is RecommendationDecisionRecord => d !== null);
+    },
+
     async decisionFor(workoutId, exerciseId, report) {
       const rows = await db.select<DecisionRow>('SELECT * FROM recommendation_decision WHERE workout_id = ? AND exercise_id = ? AND deleted_at IS NULL ORDER BY decided_at DESC, id DESC LIMIT ?', [
         workoutId,
         exerciseId,
         DECISIONS_SCANNED,
       ]);
-      return firstReadable(rows, report);
+      // Revue MOTEUR-0281 : la décision de retour, attachée à la séance close pour sa publication, n'est pas la valeur retenue de cette séance.
+      return firstReadable(rows.filter((row) => !isRevertRow(row.prescription)), report);
     },
 
     async applyClosedWorkout(workoutId, report) {

@@ -81,3 +81,42 @@ export const input = (over: Partial<PrescribeInput> = {}): PrescribeInput => ({
   now: NOW,
   ...over,
 });
+
+// MOTEUR-0281a (§ 11.3 « Sans charge ») : exercices au poids du corps et chronométrés, matériel de lest.
+export const PUSH_UP = { id: 'push-up', metric: 'bodyweight-reps', equipment: ['bodyweight'], kind: 'compound' } as const;
+export const DIPS = { id: 'dips', metric: 'bodyweight-reps', equipment: ['parallel-bars', 'loading-belt'], kind: 'compound' } as const;
+export const FARMER = { id: 'farmer-carry', metric: 'distance', equipment: ['dumbbell', 'kettlebell'] } as const;
+
+/** Profil « poids de corps » : aucun lest possible (ni ceinture, ni haltère, ni kettlebell, ni disque). */
+export const BODYWEIGHT_ONLY: ProgressionEquipment = {
+  inventory: { available: ['parallel-bars', 'pull-up-bar'], forced: [], forbidden: [], bodyweight: true, barbells: [], platesPerSideKg: [], dumbbells: null, kettlebellsKg: [], machines: [], cables: [] },
+  increments: {},
+};
+
+/** Ceinture de lest et disques de 1,25 / 2,5 / 5 kg (deux de chaque par côté), sans haltère. */
+export const BELT_GYM: ProgressionEquipment = {
+  inventory: {
+    ...BODYWEIGHT_ONLY.inventory,
+    available: ['parallel-bars', 'pull-up-bar', 'loading-belt'],
+    platesPerSideKg: [1.25, 2.5, 5].map((weightKg) => ({ weightKg, count: 2 })),
+  },
+  increments: {},
+};
+
+/** Séance close chronométrée de `daysBefore` jours : séries `timed` validées, durées en secondes. */
+export function timedSession(daysBefore: number, seconds: readonly number[], over: Partial<ExerciseSession> = {}): ExerciseSession {
+  seq += 1;
+  return {
+    workoutId: `t-${String(daysBefore).padStart(3, '0')}-${String(seq)}`,
+    endedAt: daysAgo(daysBefore),
+    difficulty: null,
+    sets: seconds.map((durationSec, position) => set(null, null, { position, setKind: 'timed', durationSec })),
+    ...over,
+  };
+}
+
+/** Séance close au poids du corps : lest `ballastKg` (null : aucun), répétitions par série. */
+export const bwSession = (daysBefore: number, ballastKg: number | null, reps: readonly number[], over: Partial<ExerciseSession> = {}): ExerciseSession => {
+  const s = session(daysBefore, 0, reps, over);
+  return { ...s, sets: s.sets.map((x) => ({ ...x, loadKg: ballastKg })) };
+};

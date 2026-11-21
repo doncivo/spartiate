@@ -70,8 +70,9 @@ describe('explanationNotes', () => {
     expect(explanationNotes(p)).toEqual([]);
   });
 
-  it('nouvelle raison : version du moteur 3', () => {
-    expect(ENGINE_VERSION).toBe(3);
-    expect(prescribe(input()).engineVersion).toBe(3);
+  // MOTEUR-0281a : poids du corps et chronométrés prescrits, version 4.
+  it('version du moteur 4', () => {
+    expect(ENGINE_VERSION).toBe(4);
+    expect(prescribe(input()).engineVersion).toBe(4);
   });
 });

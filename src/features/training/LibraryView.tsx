@@ -16,6 +16,7 @@ import {
   type ExerciseMetric,
   type ExercisePattern,
 } from '../../domain/training';
+import { LIBRARY_ALL, matchesLibraryFilters, muscleOptions, type LibraryFilters } from '../../domain/training/libraryFilter';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { RepositoryError } from '../../db/repositories/common';
@@ -24,6 +25,7 @@ import type { IsoDateTime } from '../../domain/types';
 import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
+import { RevertPrescription } from './library/RevertPrescription';
 import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
@@ -48,7 +50,13 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState('');
   const [compatibleOnly, setCompatibleOnly] = useState(true);
+  // MOTEUR-0281c (§ 14.2) : muscle et pattern, combinés avec le groupe, la compatibilité et le texte.
+  const [muscle, setMuscle] = useState<string>(LIBRARY_ALL);
+  const [pattern, setPattern] = useState<LibraryFilters['pattern']>(LIBRARY_ALL);
   const filterId = useId();
+  const muscleId = useId();
+  const patternId = useId();
+  const muscleGroups = useMemo(() => muscleOptions(data.content.muscles, data.exercises), [data]);
   const listId = useId();
   const filtered = useMemo(() => {
     const q = normalizeSearch(query);
@@ -56,8 +64,9 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
     return data.exercises
       .filter((e) => (usable ? isExerciseCompatible(e, usable) : true))
       .filter((e) => group === '' || exerciseGroup(e, data.content) === group)
+      .filter((e) => matchesLibraryFilters(e, { muscle, pattern }))
       .filter((e) => q === '' || normalizeSearch(e.nameFr).includes(q) || e.aliasesEn.some((a) => normalizeSearch(a).includes(q)));
-  }, [data, query, group, compatibleOnly, mode]);
+  }, [data, query, group, compatibleOnly, mode, muscle, pattern]);
 
   return (
     <div className="ct-training__list-block">
@@ -73,6 +82,32 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
             {data.content.groups.map((g) => (
               <option key={g} value={g}>
                 {groupLabel(g)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="ct-training__field" htmlFor={muscleId}>
+          <span className="ct-training__label">{tTraining('muscleFilter')}</span>
+          <select id={muscleId} className="ct-training__input" value={muscle} onChange={(e) => setMuscle(e.target.value)}>
+            <option value={LIBRARY_ALL}>{tTraining('muscleAll')}</option>
+            {muscleGroups.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.muscles.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nameFr}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+        <label className="ct-training__field" htmlFor={patternId}>
+          <span className="ct-training__label">{tTraining('patternFilter')}</span>
+          <select id={patternId} className="ct-training__input" value={pattern} onChange={(e) => setPattern(e.target.value as LibraryFilters['pattern'])}>
+            <option value={LIBRARY_ALL}>{tTraining('patternAll')}</option>
+            {EXERCISE_PATTERNS.map((p) => (
+              <option key={p} value={p}>
+                {tTraining(PATTERN_KEY[p])}
               </option>
             ))}
           </select>
@@ -191,6 +226,8 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
       <SheetFigures {...stats} />
     </Suspense>
   );
+  // MOTEUR-0281b (§ 11.5) : retour à la prescription d'avant la dernière hausse, avec l'historique (sections de la maquette inchangées avant elle).
+  const revert = <RevertPrescription key={exercise.id} access={access} exercise={exercise} held={held} />;
   const recent = (
     <Suspense fallback={null}>
       <SheetSessions {...stats} limit={RECENT_SESSIONS} label={tTraining('sheetRecent')} />
@@ -320,6 +357,7 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
               <SectionTitle level={3}>{tTraining('sheetHistory')}</SectionTitle>
               {recent}
             </section>
+            {revert}
             {muscles}
             {facts}
             {equipmentAndAlternatives}
@@ -357,6 +395,7 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
               <Suspense fallback={null}>
                 <SheetSessions {...stats} limit={null} label={tTraining('sheetHistory')} />
               </Suspense>
+              {revert}
             </div>
           )}
         </>

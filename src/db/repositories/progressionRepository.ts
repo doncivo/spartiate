@@ -79,6 +79,11 @@ export interface ProgressionRepository {
    * abandonnée. I4-08 : une décision illisible est ignorée (la plus récente lisible sert) et signalée à `report`.
    */
   lastDecision(exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
+  /**
+   * MOTEUR-0281b (§ 11.5) : décisions lisibles de l'exercice des séances CLOSES non supprimées (au plus les 60 plus récentes), de la plus
+   * ancienne à la plus récente ; une décision illisible est ignorée et signalée.
+   */
+  decisions(exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord[]>;
   /** Dernière décision lisible de cet exercice dans cette séance (ouverte comprise), ou null : état affiché dans la séance en cours. */
   decisionFor(workoutId: string, exerciseId: string, report?: DecisionReadReporter): Promise<RecommendationDecisionRecord | null>;
   /**

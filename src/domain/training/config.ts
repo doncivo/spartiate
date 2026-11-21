@@ -5,7 +5,7 @@ import type { PrescriptionHeadline, ProposalOptionKind, ReasonCode } from './typ
  * prescription incrémente `ENGINE_VERSION` (la version est jointe à chaque prescription et à chaque décision tracée).
  */
 
-export const ENGINE_VERSION = 3;
+export const ENGINE_VERSION = 4;
 
 export interface ProgressionConfig {
   /** Au-delà, une série pèse `lowQualityWeight` dans l'estimation (§ 11.3). */
@@ -67,6 +67,8 @@ export interface ProgressionConfig {
   readonly lowSleepHours: number;
   readonly highRestingHrDelta: number;
   readonly lowRecoveryLoad: number;
+  /** MOTEUR-0281a : pas d'un chronométré, `maxGainPerSession` du temps tenu arrondi en dessous, au moins 1 s, au plus `timeStepMaxSec`. */
+  readonly timeStepMaxSec: number;
 }
 
 export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
@@ -105,6 +107,7 @@ export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
   lowSleepHours: 6,
   highRestingHrDelta: 0.08,
   lowRecoveryLoad: 0.95,
+  timeStepMaxSec: 5,
 });
 
 /**
@@ -145,6 +148,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'outlier-excluded',
   'no-history',
   'decision-reference',
+  'revert-previous',
   'history-reference',
   'provisional',
   'top-reached',
@@ -168,6 +172,9 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'assistance-min',
   'snap-extra-rep',
   'gain-capped',
+  'ballast-added',
+  'ballast-unavailable',
+  'time-step',
   'unsupported-metric',
   'declared-fatigue',
 ];
@@ -186,6 +193,9 @@ export const PRESCRIPTION_HEADLINES: readonly PrescriptionHeadline[] = [
   'deload',
   'recovery-low',
   'position',
+  'ballast-add',
+  'time-increase',
+  'time-ladder',
 ];
 
 /** Étape d'une rampe d'échauffement : fraction de la charge de travail et répétitions (arrondies en dessous à l'usage). */

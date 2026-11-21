@@ -145,8 +145,8 @@ describe('FIX-ASSIST (b) réductions : l’assistance n’est jamais baissée', 
     expect(p.loadKg).toBe(30);
     expect(explainPrescription(p).key).toBe('recoveryLowAssistHeld');
   });
-  it('critère 12 : moteur en version 3 (aucune constante modifiée)', () => {
-    expect(ENGINE_VERSION).toBe(3);
+  it('critère 12 : moteur en version 4 depuis MOTEUR-0281a (FIX-ASSIST n’a modifié aucune constante)', () => {
+    expect(ENGINE_VERSION).toBe(4);
   });
 });
 

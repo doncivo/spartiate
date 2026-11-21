@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
+import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, isUnloaded, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
 import { holdForDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { isAssistedEquipment } from '../../../domain/training/assisted';
@@ -8,7 +8,7 @@ import { loadGrid } from '../../../domain/training/loadGrid';
 import { prescriptionInputOf } from '../../../domain/training/prescriptionInput';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
-import type { WorkoutSet, WorkoutWithSets } from '../../../domain/training/session';
+import { DURATION_MAX_SEC, type WorkoutSet, type WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
@@ -117,7 +117,20 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   extraRepAssistMin: 'explainExtraRepAssistMin',
   inactivityAssistHeld: 'explainInactivityAssistHeld',
   recoveryLowAssistHeld: 'explainRecoveryLowAssistHeld',
+  bodyweightRepLadder: 'explainBodyweightRepLadder',
+  ballastAdd: 'explainBallastAdd',
+  ballastNone: 'explainBallastNone',
+  timeIncrease: 'explainTimeIncrease',
+  timeLadder: 'explainTimeLadder',
+  holdHardNoLoad: 'explainHoldHardNoLoad',
+  deloadNoLoad: 'explainDeloadNoLoad',
+  inactivityNoLoad: 'explainInactivityNoLoad',
+  recoveryLowNoLoad: 'explainRecoveryLowNoLoad',
+  redDayNoLoad: 'explainRedDayNoLoad',
+  decisionNoLoad: 'explainDecisionNoLoad',
+  revert: 'explainRevert',
   declaredFatigue: 'explainDeclaredFatigue',
+  declaredFatigueNoLoad: 'explainDeclaredFatigueNoLoad',
 };
 /** ERGO-02b : phrase d'un écart en kg pour deux haltères (« +2 kg par haltère »), l'écart du moteur étant celui d'un haltère (D-261). */
 const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {
@@ -163,6 +176,18 @@ function targetOf(sets: readonly WorkoutSet[], exercise: Exercise | undefined, r
 
 /** ERGO-02 (D-261) : charge affichée, « 2 × 26 kg » pour deux haltères (la valeur reste celle d'un haltère). */
 const loadText = (n: number, held: Held): string => tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: kg(n) });
+/**
+ * MOTEUR-0281a : valeur d'une proposition ou d'un choix. Charge × répétitions ; poids du corps : « Poids du corps × 10 · 10 · 9 » ou
+ * « Lest 2 kg × 8 · 8 · 8 » ; chronométré : « 49 s · 49 s · 49 s » (secondes dans `reps`), précédé du lest s'il y en a un.
+ */
+function valueText(metric: Prescription['metric'], loadKg: number, values: readonly number[], held: Held): string {
+  if (metric === 'time') {
+    const secs = values.map((sec) => tProgression('valueSeconds', { sec })).join(tProgression('repsJoin'));
+    return loadKg > 0 ? tProgression('valueBallast', { load: loadText(loadKg, held), reps: secs }) : secs;
+  }
+  if (metric === 'bodyweight-reps') return loadKg > 0 ? tProgression('valueBallast', { load: loadText(loadKg, held), reps: repsText(values) }) : tProgression('valueBodyweight', { reps: repsText(values) });
+  return tProgression('value', { load: loadText(loadKg, held), reps: repsText(values) });
+}
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[], held: Held): string => ramp.map((s) => tProgression('warmupStep', { load: loadText(s.loadKg, held), reps: s.reps })).join(tProgression('warmupJoin'));
 
@@ -300,9 +325,13 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           const workouts = await repos.workouts();
           const work = sets.filter((s) => s.setKind !== 'warmup');
           // Autant de séries que proposées (deload, Recovery bas : moins de séries) ; les autres restent vides, à Ali de décider.
+          // MOTEUR-0281a : chronométré, la valeur est une durée ; exercice sans charge, un lest nul n'écrit aucune charge.
+          const timedValue = prescription.metric === 'time';
+          const loadKg = isUnloaded(prescription) && chosen.loadKg === 0 ? null : chosen.loadKg;
           for (const [i, s] of work.slice(0, chosen.reps.length).entries()) {
-            if (s.done || s.reps !== null || s.loadKg !== null) continue;
-            await workouts.updateSet(s.id, { loadKg: chosen.loadKg, reps: chosen.reps[i] ?? null });
+            if (s.done || s.reps !== null || s.loadKg !== null || s.durationSec !== null) continue;
+            const value = chosen.reps[i] ?? null;
+            await workouts.updateSet(s.id, timedValue ? { loadKg, durationSec: value } : { loadKg, reps: value });
           }
           // I2-03 : rampe sur la charge retenue, avant la première série de travail (rien si l'exercice en a déjà une).
           const ramp = rampFor(chosen.loadKg);
@@ -336,9 +365,12 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
 
   function saveEdit(): void {
     if (editing === null) return;
-    const loadKg = parse(editing.load);
+    const unloaded = prescription !== null && isUnloaded(prescription);
+    // MOTEUR-0281a : sans charge, un lest vide vaut 0 ; chronométré, la valeur est une durée (secondes).
+    const loadKg = unloaded && editing.load.trim() === '' ? 0 : parse(editing.load);
     const reps = parse(editing.reps);
-    if (loadKg === null || loadKg > 1000 || reps === null || !Number.isInteger(reps) || reps < 1 || reps > 999) {
+    const maxValue = prescription?.metric === 'time' ? DURATION_MAX_SEC : 999;
+    if (loadKg === null || loadKg > 1000 || reps === null || !Number.isInteger(reps) || reps < 1 || reps > maxValue) {
       setError(tProgression('editInvalid'));
       return;
     }
@@ -368,7 +400,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const explainKey = EXPLAIN_KEYS[explanation.key];
     const sentenceKey = held === 2 && typeof explanation.params['delta'] === 'number' ? (PAIR_KEYS[explainKey] ?? explainKey) : explainKey;
     const sentence = [tProgression(sentenceKey, params), ...notes].join(' ');
-    const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : tProgression('value', { load: loadText(p.loadKg, held), reps: repsText(p.sets.map((s) => s.reps)) });
+    const value = p.status === 'unsupported' ? tProgression('noProposal') : p.loadKg === null ? tProgression('toEnter') : valueText(p.metric, p.loadKg, p.sets.map((s) => s.reps), held);
     const proposed = p.status === 'prescribed' && p.loadKg !== null;
     const alerts = constraintAlerts(p);
     const ramp = proposed && ownDecision === null && p.loadKg !== null ? rampFor(p.loadKg) : [];
@@ -394,7 +426,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               ? tProgression('refused')
               : ownDecision.accepted
                 ? tProgression('accepted')
-                : tProgression('modified', { load: loadText(ownDecision.loadKg, held), reps: chosenRepsText(ownDecision.reps) })}
+                : isUnloaded(p)
+                  ? tProgression('modifiedValue', { value: valueText(p.metric, ownDecision.loadKg, ownDecision.reps, held) })
+                  : tProgression('modified', { load: loadText(ownDecision.loadKg, held), reps: chosenRepsText(ownDecision.reps) })}
           </p>
         ) : proposed && p.loadKg !== null && editing === null ? (
           <>
@@ -453,7 +487,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         {editing !== null && ownDecision === null ? (
           <div className="ct-progression__edit">
             <label className="ct-progression__field">
-              <span className="ct-training__label">{tProgression(held === 2 ? 'editLoadPair' : 'editLoad')}</span>
+              <span className="ct-training__label">{tProgression(isUnloaded(p) ? 'editBallast' : held === 2 ? 'editLoadPair' : 'editLoad')}</span>
               <input
                 ref={editLoad}
                 className="ct-session__input"
@@ -466,7 +500,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               />
             </label>
             <label className="ct-progression__field">
-              <span className="ct-training__label">{tProgression('editReps')}</span>
+              <span className="ct-training__label">{tProgression(p.metric === 'time' ? 'editSeconds' : 'editReps')}</span>
               <input
                 className="ct-session__input"
                 inputMode="numeric"
