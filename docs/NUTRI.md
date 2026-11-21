@@ -28,7 +28,16 @@ Reporté : « go-tos » (§ 15.3) non traités ; assiette enregistrable en recet
 Backlog proposé : « go-tos » du § 15.3 ; assiette → recette.
 
 ## Preuves
-`imputation.test.ts` (14), `Imputation.test.tsx` (7), `plate.test.ts` (7), `Plate.test.tsx` (1), `useCases.nutria.test.ts` (2). tsc et eslint propres.
+`imputation.test.ts`, `Imputation.test.tsx`, `plate.test.ts`, `Plate.test.tsx`, `useCases.nutria.test.ts`. tsc et eslint propres ; `unusedKeys.test.ts`, `plural.test.ts`, `src/domain/nutrition` (563 tests) et `src/features/nutrition` + `today` (342 tests) verts.
+Bundle de départ (`CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts --silent=false`) : origin/main c9059b26 = 45 blocs, normalisé 193956 octets (brut 193996) ; branche NUTRI = 45 blocs, normalisé 193956 octets (brut 193980) : aucun octet de plus. Le commit 1b49bdc0 ne fait que normaliser des espaces dans `Imputation.test.tsx` pour le bundle : aucun effet sur la mesure.
 
 ## À faire par Ali (iPhone)
 Dashboard : vérifier la lisibilité de la barre en tirets et de la ligne « estimés ». Journal : composer une assiette de deux aliments au pouce, cibles ≥ 44 pt, clavier qui ne masque pas « Ajouter l'assiette au journal ».
+
+## Relecture à froid
+Verdict : à corriger, corrigé. Rouge 0cbebc04, vert 90fc2681.
+1. Bloquant : clé `barImputed` morte (`unusedKeys.test.ts` rouge) : retirée ; le test lit `barItemImputed`.
+2. Le poids estimé n'est plus affiché pendant l'apprentissage de la tendance (moins de 14 pesées), comme la tendance elle-même.
+3. Jours partiels : jamais estimés (imputation.ts ignore tout jour qui porte des kcal) ; la ligne ne compte que les jours sans kcal et affiche la moyenne des jours complets ; les partiels restent partiels partout (champ `loggedKcal` supprimé).
+4. « logué » unifié dans `fr.nutrition.ts` ; garde du double appui de l'assiette par une ref (`committingPlate`, comme `togglingFavorite`). Limite : `fireEvent` re-rend entre deux clics et le bouton est désactivé, le test de double appui ne distingue donc pas la ref de l'état ; c'est une garde de non-régression.
+5. Mesure du bundle ci-dessus ; un worktree temporaire `wt-NUTRI-main` (c9059b26) a servi à mesurer main, à supprimer.
