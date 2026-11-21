@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CURL, LEG_PRESS, PLANK, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
+import { CURL, FARMER, LEG_PRESS, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, PROPOSAL_OPTION_ORDER, REASON_ORDER } from './config';
 import { deloadSetCount, inactivityCut, isLowRecovery, isStalled, progressed, repsDrop } from './constraints';
 import { analyzeHistory } from './estimate1rm';
@@ -388,7 +388,7 @@ describe('combinaisons, décisions et stabilité', () => {
   });
 
   it('métrique hors moteur : aucune contrainte', () => {
-    const p = prescribe(input({ exercise: PLANK, history: [session(40, 0, [45])], recovery: SNAP(0), deload: true }));
+    const p = prescribe(input({ exercise: FARMER, history: [session(40, 20, [45])], recovery: SNAP(0), deload: true }));
     expect(p.status).toBe('unsupported');
     expect(p.options).toEqual([]);
     expect(p.deload).toBe(false);

@@ -35,7 +35,7 @@ export interface PrescriptionInputArgs {
 export function prescriptionInputOf(a: PrescriptionInputArgs): PrescribeInput {
   const d = a.context.reference;
   // Référence du moteur : décision d'une séance close avec une valeur retenue (un refus ne fixe rien).
-  const lastDecision: DecisionReference | null = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps } : null;
+  const lastDecision: DecisionReference | null = d !== null && d.loadKg !== null ? { decidedAt: d.decidedAt, accepted: d.accepted, loadKg: d.loadKg, reps: d.reps, ...(d.revert === true ? { revert: true } : {}) } : null;
   const { exercise } = a;
   return {
     exercise: {

@@ -248,6 +248,8 @@ export interface HistorySet {
   readonly rir: number | null;
   /** Charge aberrante confirmée par Ali (§ 11.5) ; absent : non confirmée. */
   readonly confirmed?: boolean;
+  /** MOTEUR-0281a : durée tenue (secondes) d'une série chronométrée ; absent ou null : aucune. */
+  readonly durationSec?: number | null;
 }
 
 /** Séance close, réduite aux séries d'UN exercice. */
@@ -295,6 +297,8 @@ export interface DecisionReference {
   readonly accepted: boolean;
   readonly loadKg: number | null;
   readonly reps: readonly number[];
+  /** MOTEUR-0281b : décision de retour à la prescription d'avant la dernière hausse (raison `revert-previous`) ; absent : non. */
+  readonly revert?: boolean;
 }
 
 /** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : « Salle complète », FIX-0173). */
@@ -368,6 +372,8 @@ export type ReasonCode =
   | 'outlier-excluded'
   | 'no-history'
   | 'decision-reference'
+  // MOTEUR-0281b (§ 11.5) : la décision de référence est un retour à la prescription d'avant la dernière hausse, demandé depuis la fiche.
+  | 'revert-previous'
   | 'history-reference'
   | 'provisional'
   | 'top-reached'
@@ -395,6 +401,10 @@ export type ReasonCode =
   | 'assistance-min'
   | 'snap-extra-rep'
   | 'gain-capped'
+  // MOTEUR-0281a (§ 11.3 « Sans charge ») : poids du corps au haut de plage, lest ajouté au plus petit cran, ou aucun lest possible ; chronométré, pas de secondes.
+  | 'ballast-added'
+  | 'ballast-unavailable'
+  | 'time-step'
   | 'unsupported-metric'
   // SESS-01d : « Fatigué » déclaré au démarrage, la hausse prévue est remplacée par la charge de référence (`holdForDeclaredFatigue`).
   | 'declared-fatigue';
@@ -413,7 +423,11 @@ export type PrescriptionHeadline =
   | 'inactivity'
   | 'deload'
   | 'recovery-low'
-  | 'position';
+  | 'position'
+  // MOTEUR-0281a : lest ajouté (poids du corps) ; secondes ajoutées à toutes les séries, ou à une seule (chronométré).
+  | 'ballast-add'
+  | 'time-increase'
+  | 'time-ladder';
 
 /**
  * Choix facultatif présenté avec la proposition (I2-02, D-72 points 7 et 8), jamais appliqué d'office : Ali le choisit ou l'ignore.
@@ -441,7 +455,7 @@ export interface PrescriptionReference {
 }
 
 export interface Prescription {
-  /** `to-enter` : aucune charge (Ali saisit) ; `unsupported` : métrique hors moteur (poids de corps, durée, distance). */
+  /** `to-enter` : aucune charge (Ali saisit) ; `unsupported` : métrique hors moteur (distance, traction assistée du catalogue). */
   readonly status: 'prescribed' | 'to-enter' | 'unsupported';
   readonly headline: PrescriptionHeadline;
   readonly reasons: readonly ReasonCode[];
@@ -472,6 +486,11 @@ export interface Prescription {
   readonly positionCut?: number;
   /** DEP-01 : charge sur laquelle la décote est dite (charge totale corps ± saisie si le poids de corps est connu, sinon la charge de référence). */
   readonly positionBasisKg?: number;
+  /**
+   * MOTEUR-0281a : exercice sans charge (absent : charge × répétitions). `bodyweight-reps` : `loadKg` est le lest (0 : aucun) ; `time` : chaque
+   * `sets[i].reps` est une durée en secondes (convention de `defaultRepRange`), `loadKg` le lest éventuel.
+   */
+  readonly metric?: 'bodyweight-reps' | 'time';
   readonly engineVersion: number;
   readonly activeConfig: ProgressionConfig;
 }

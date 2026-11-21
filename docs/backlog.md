@@ -248,7 +248,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-186 | audit Claude 0.27.0 | mineur — CHANGELOG 0.27.0 : rattachement à l'import et jour du check-in décrits à tort | à faire (lot 0.28.0) |
 | C-187 | audit Claude 0.27.0 | mineur — guide Santé « Plus → Logs » ; licences.md et install-pc.md périmés | à faire (lot 0.28.0) |
 | C-188 | audit Claude 0.27.0 | mineur — PRD contradictoire : 1 024 / 900 px, Ctrl+K, Recovery Split, HealthKit, CI à chaque push | à faire (lot 0.28.0) |
-| C-189 | audit Claude 0.27.0 | important — progression au poids du corps et chronométrée absente ; retour à une prescription antérieure absent | à faire (lot 0.28.0) |
+| C-189 | audit Claude 0.27.0 | important — progression au poids du corps et chronométrée absente ; retour à une prescription antérieure absent | fait (MOTEUR-0281, 0.28.1, D-383 à D-388 ; reportés : BL-111, BL-112) |
 | C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | fait en partie (SESS-01, 0.28.1, D-376 à D-382 ; reportés : BL-108, BL-110) |
 | C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | à faire (lot 0.28.0) |
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
@@ -276,6 +276,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-108 | SESS-01 (docs/SESS-01.md) | Live Activity : boutons « +30 s » et « Passer » (App Intents, ios-mobile) et action « +30 s » de la notification de repli | à faire (0.28.x) |
 | BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | à trancher par Ali |
 | BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à faire (0.28.x) |
+| BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | à faire (0.28.x) |
+| BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | à faire (0.28.x) |
+| BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.28.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -331,9 +334,9 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 11.2-6 | PRD § 11.2 | partiel — contraintes « maintien ou réduction seulement » (C-001) | à faire (lot 0.28.0) |
 | § 11.2-7 | PRD § 11.2 | partiel — arrondi au matériel (C-006, C-007, C-029) | à faire (lot 0.28.0) |
 | § 11.3 a | PRD § 11.3 | partiel — machines : 1RM par profil de salle (D-86, constat 5 reporté) | à faire (lot 0.28.0) |
-| § 11.3 b | PRD § 11.3 | absent — poids de corps (répétitions puis lest) et exercices chronométrés (C-189) | à faire (lot 0.28.0) |
+| § 11.3 b | PRD § 11.3 | absent — poids de corps (répétitions puis lest) et exercices chronométrés (C-189) | fait (MOTEUR-0281a, D-383, D-384) |
 | § 11.5 a | PRD § 11.5 | absent — aberrantes signalées avant enregistrement (C-005) | à faire (lot 0.28.0) |
-| § 11.5 b | PRD § 11.5 | absent — retour à une prescription antérieure (C-189) | à faire (lot 0.28.0) |
+| § 11.5 b | PRD § 11.5 | absent — retour à une prescription antérieure (C-189) | fait (MOTEUR-0281b, D-386) |
 | § 11.6 a | PRD § 11.6 | partiel — fixtures et propriétés : nominal 8 séances, changement de salle absents (C-169) | à faire (lot 0.28.0) |
 | § 11.6 b | PRD § 11.6 | absent — couverture training ≥ 90 % (C-170) | à faire (lot 0.28.0) |
 | § 12.1-1 | PRD § 12.1 | partiel — Recovery Split ≥ 80 % (C-009 : 50 %) | à faire (lot 0.28.0) |
@@ -356,7 +359,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 13.8 b | PRD § 13.8 | partiel — « Mettre à jour la routine ? » (C-003, C-010) | à faire (lot 0.28.0) |
 | § 13.8 c | PRD § 13.8 | partiel — historique éditable et recalcul (C-072, C-082) | à faire (lot 0.28.0) |
 | § 14.2 a | PRD § 14.2 | partiel — graphique d'exercice : tracé SVG décoratif au lieu de Recharts (C-191) | à faire (lot 0.28.0) |
-| § 14.2 b | PRD § 14.2 | absent — filtres par carte du corps et par schéma de mouvement | à faire (lot 0.28.0) |
+| § 14.2 b | PRD § 14.2 | absent — filtres par carte du corps et par schéma de mouvement | fait en partie (MOTEUR-0281c, D-387 : liste ; body map BL-111) |
 | § 14.3 a | PRD § 14.3 | partiel — inventaire complet du matériel (C-066, C-081) | à faire (lot 0.28.0) |
 | § 14.3 b | PRD § 14.3 | partiel — matériel forcé ou interdit (C-029) | à faire (lot 0.28.0) |
 | § 14.3 c | PRD § 14.3 | partiel — machines : 1RM par profil (D-86, constat 5) | à faire (lot 0.28.0) |
