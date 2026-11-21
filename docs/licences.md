@@ -149,3 +149,10 @@ Toutes les dépendances de `dependencies` (package.json), version et licence du 
 | `recharts` | 3.10.1 | MIT |
 | `zustand` | 5.0.15 | MIT |
 <!-- licences-npm:fin -->
+
+# Licences — pictogrammes des exercices sans photo (MEDIA-03, D-413)
+
+- Fichiers embarqués : `content/exercises/pictograms/<id-exercice>.svg` (95 pour 95 exercices sans photo), **dessinés pour le projet** : aucune image copiée ni adaptée d'une source tierce. Générés par `node scripts/content/build-pictograms.mjs` depuis `scripts/content/pictograms/specs.mjs` (angles d'articulations, gabarit unique `skeleton.mjs`).
+- Licence : œuvre originale du projet Spartiate, mêmes conditions que le code du projet ; aucune attribution tierce exigée. Aucune donnée personnelle.
+- Affichage : mention discrète « pictogramme » sous le dessin ; une photo sous licence (Everkinetic, plus haut) reste prioritaire et le validateur refuse un pictogramme pour un exercice qui a une photo.
+- Contrôle : `validate-content.mjs` (plafond 6 144 octets, aucun script, `on*`, lien, adresse externe, `foreignObject`, feuille de style, couleur en dur).

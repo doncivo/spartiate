@@ -597,7 +597,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             {exercise !== undefined && (
               <Suspense fallback={null}>
                 <div className="ct-session__extras">
-                  {exercise.media !== null && <ExerciseMedia exercise={exercise} />}
+                  <ExerciseMedia exercise={exercise} />
                   <ExerciseNotes exercise={exercise} />
                 </div>
               </Suspense>

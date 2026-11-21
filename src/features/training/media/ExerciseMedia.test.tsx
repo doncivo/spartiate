@@ -85,3 +85,32 @@ describe('ExerciseMedia', () => {
     expect(csp).toContain(`"img-src":"'self' data: asset: http://asset.localhost"`);
   });
 });
+
+// MEDIA-03c (D-413) : l'exercice sans photo affiche son pictogramme SVG, avec la mention « pictogramme » ; la photo reste prioritaire.
+describe('ExerciseMedia : pictogramme', () => {
+  it('sans photo : affiche le pictogramme du dossier de contenu, texte alternatif et mention discrète', async () => {
+    const { container } = render(<ExerciseMedia exercise={exercise('face-pull', null)} />);
+    const picto = await screen.findByRole('img', { name: 'Pictogramme : Développé couché à la barre, position de départ puis position d’arrivée' });
+    expect(picto.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 220 120');
+    expect(screen.getByText('pictogramme')).toBeInTheDocument();
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.innerHTML).not.toMatch(/<script|https?:\/\/(?!www\.w3\.org)/);
+  });
+
+  it('avec une photo : la photo seule, aucun pictogramme', async () => {
+    render(<ExerciseMedia exercise={exercise('bench-press-barbell', { images: ['bench-press-barbell.png'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0042-tension.png' })} />);
+    expect(screen.getByRole('img', { name: 'Illustration : Développé couché à la barre' })).toBeInTheDocument();
+    expect(screen.queryByText('pictogramme')).toBeNull();
+  });
+
+  it('sans photo ni pictogramme : rien (D-71)', async () => {
+    const { container } = render(<ExerciseMedia exercise={exercise('inconnu-sans-image', null)} />);
+    await Promise.resolve();
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('le pictogramme se charge à la demande : jamais importé en dur par le code de départ', () => {
+    expect(readFileSync(resolve(__dirname, 'pictograms.ts'), 'utf8')).toMatch(/import\.meta\.glob[\s\S]*pictograms\/\*\.svg[\s\S]*\?raw/);
+    expect(readFileSync(resolve(__dirname, 'pictograms.ts'), 'utf8')).not.toMatch(/eager:\s*true/);
+  });
+});

@@ -32,7 +32,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | H-25 | rapport de lot 0.26.0 (docs/DOC-H21.md) | Format réel de `pas.csv` encore UNVERIFIED (D-293) | à faire (lot 0.28.0) |
 | H-3a / H-3b | rapport de lot 0.27.0 (docs/reprise.md) | HealthKit direct BLOCKED (compte Apple gratuit) ; import par Raccourcis en place (D-69) | reporté : compte Apple gratuit |
 | H-4 | rapport de lot 0.27.0 (docs/reprise.md) | Live Activity CONFIRMED avec deux défauts d'affichage restants (matrice) | à faire (lot 0.28.0) |
-| BL-008 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | 95 exercices sur 196 sans image, dont 8 de la routine en cours ; chercher d'autres sources à licence vérifiée | à faire (lot 0.28.0) |
+| BL-008 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | 95 exercices sur 196 sans image, dont 8 de la routine en cours ; chercher d'autres sources à licence vérifiée | fait (MEDIA-03, 0.29.0 : 95 pictogrammes, D-437 à D-441 ; relecture des poses par Ali, BL-132) |
 | BL-009 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Lisibilité des images réduites (640 px, gris) en thèmes clair et sombre, à constater par Ali | à faire (lot 0.28.0) |
 | BL-010 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Auteur par image non affiché : image de gainage reportée pour cette raison | à faire (lot 0.28.0) |
 | BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | fait (NETTOYAGE, 0.28.1, D-375) |
@@ -297,6 +297,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-129 | IOS-029 (D-434) | Textes d'usage caméra et micro de Info.ios.plist hérités de CircleTasks (« tâches ») | à faire (0.29.x) |
 | BL-130 | IOS-029 (D-436) | build-ios : relever la version du SDK et vérifier le lien faible de FoundationModels (`otool -l`) | à faire (0.29.x, ci-release) |
 | BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | à trancher par Ali |
+| BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | à faire par Ali |
 
 ## 3. Audit Codex 0.26.0
 
