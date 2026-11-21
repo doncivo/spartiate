@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { tPlural } from '../../../i18n/plural';
 import { addDays } from '../../../domain/localDate';
 import {
   entriesOfMoment,
   favoriteFromLines,
+  isFavoriteRecipe,
   linesFromRecipe,
   linesToDrafts,
   mealLines,
@@ -35,10 +37,14 @@ interface Source {
   readonly lines: readonly MealLine[];
   /** Vrai : heures d'origine (copie d'hier) ; faux : heure courante (récents, favoris). */
   readonly keepTimes: boolean;
+  /** Ingrédients de favori retirés au rejeu (dits à l'écran). */
+  readonly skipped: number;
 }
 
 interface Loaded {
   readonly yesterday: readonly MealLine[];
+  /** Lignes déjà présentes au jour affiché (une copie répétée ne double rien). */
+  readonly present: readonly MealLine[];
   readonly recents: readonly RecentMeal[];
   readonly favorites: readonly Recipe[];
 }
@@ -105,18 +111,24 @@ function Preview({
     }
   }
 
+  const favBusy = useRef(false);
+
   async function saveFavorite(): Promise<void> {
+    if (favBusy.current) return;
     setFavNote(null);
     setFavError(null);
     if (name.trim() === '') return setFavError(tQuick('favoriteNameNeeded'));
     const fav = favoriteFromLines(name, okLines);
     if (fav === null) return setFavError(tQuick('favoriteNothing'));
+    favBusy.current = true;
     try {
       await (await data.repos.recipes()).create(fav.draft);
-      setFavNote(tQuick('favoriteSaved', { name: fav.draft.name }) + (fav.skipped > 0 ? ` ${tQuick('favoriteSkipped', { n: fav.skipped })}` : ''));
+      setFavNote(tQuick('favoriteSaved', { name: fav.draft.name }) + (fav.skipped > 0 ? ` ${tPlural(tQuick, fav.skipped, 'favoriteSkippedOne', 'favoriteSkippedMany')}` : ''));
       setName('');
     } catch {
       setFavError(tQuick('favoriteError'));
+    } finally {
+      favBusy.current = false;
     }
   }
 
@@ -125,6 +137,11 @@ function Preview({
     <div className="ct-nutrition__panel ct-nutrition__form ct-flat">
       <h2 className="ct-nutrition__subtitle ct-section-title">{tQuick('previewTitle', { title: source.title })}</h2>
       <p className="ct-nutrition__muted">{tQuick('previewHint')}</p>
+      {source.skipped > 0 ? (
+        <p role="status" className="ct-nutrition__warning">
+          {tPlural(tQuick, source.skipped, 'replaySkippedOne', 'replaySkippedMany')}
+        </p>
+      ) : null}
       <ul className="ct-nutrition__entries" aria-label={tQuick('linesLabel')}>
         {source.lines.map((line, i) => {
           const shown = lines[i];
@@ -197,7 +214,7 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
   const { data } = useAppContainer();
   const [load, setLoad] = useState<{ readonly status: 'loading' } | { readonly status: 'failed' } | { readonly status: 'ready'; readonly value: Loaded }>({ status: 'loading' });
   const [source, setSource] = useState<Source | null>(null);
-  const [empty, setEmpty] = useState<'meal' | 'day' | null>(null);
+  const [empty, setEmpty] = useState<'meal' | 'day' | 'copied' | null>(null);
 
   const [version, setVersion] = useState(0);
   const refresh = (): void => setVersion((v) => v + 1);
@@ -208,14 +225,20 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
       try {
         const entries = await data.repos.mealEntries();
         const recipes = await data.repos.recipes();
-        const [yesterday, window, favorites] = await Promise.all([entries.listByDate(addDays(date, -1)), entries.listBetween(addDays(date, -RECENT_DAYS), date), recipes.list()]);
+        const [yesterday, window, recipeList, present] = await Promise.all([
+          entries.listByDate(addDays(date, -1)),
+          entries.listBetween(addDays(date, -RECENT_DAYS), date),
+          recipes.list(),
+          entries.listByDate(date),
+        ]);
         if (live)
           setLoad({
             status: 'ready',
             value: {
               yesterday: mealLines(yesterday),
               recents: recentMeals(window, date, RECENT_LIMIT),
-              favorites,
+              present: mealLines(present),
+              favorites: recipeList.filter(isFavoriteRecipe),
             },
           });
       } catch {
@@ -269,7 +292,10 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
     );
   }
   const loaded: Loaded = load.value;
-  const { yesterday, recents, favorites } = loaded;
+  const { yesterday, present, recents, favorites } = loaded;
+  const key = (l: MealLine): string => `${l.time}|${l.foodName}|${l.grams}|${l.kcal}`;
+  // Une copie d'hier répétée ne double rien : toutes ses lignes sont déjà au journal du jour.
+  const alreadyPresent = (lines: readonly MealLine[]): boolean => lines.every((l) => present.some((p) => key(p) === key(l)));
   const moment = mealMoment(defaultTime as LocalTime);
   const yesterdayMeal: MealLine[] = entriesOfMoment<MealLine>(yesterday, moment);
 
@@ -281,11 +307,14 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
           onClick={() =>
             yesterdayMeal.length === 0
               ? setEmpty('meal')
-              : setSource({
-                  title: tQuick('copyMeal'),
-                  lines: yesterdayMeal,
-                  keepTimes: true,
-                })
+              : alreadyPresent(yesterdayMeal)
+                ? setEmpty('copied')
+                : setSource({
+                    title: tQuick('copyMeal'),
+                    lines: yesterdayMeal,
+                    keepTimes: true,
+                    skipped: 0,
+                  })
           }
         >
           {tQuick('copyMeal')}
@@ -295,11 +324,14 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
           onClick={() =>
             yesterday.length === 0
               ? setEmpty('day')
-              : setSource({
-                  title: tQuick('copyDay'),
-                  lines: yesterday,
-                  keepTimes: true,
-                })
+              : alreadyPresent(yesterday)
+                ? setEmpty('copied')
+                : setSource({
+                    title: tQuick('copyDay'),
+                    lines: yesterday,
+                    keepTimes: true,
+                    skipped: 0,
+                  })
           }
         >
           {tQuick('copyDay')}
@@ -307,7 +339,7 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
       </div>
       {empty === null ? null : (
         <p role="status" className="ct-nutrition__muted">
-          {tQuick(empty === 'meal' ? 'noMealYesterday' : 'noDayYesterday')}
+          {tQuick(empty === 'meal' ? 'noMealYesterday' : empty === 'day' ? 'noDayYesterday' : 'alreadyCopied')}
         </p>
       )}
       <h3 className="ct-nutrition__eyebrow ct-section-title">{tQuick('recentsTitle')}</h3>
@@ -324,12 +356,7 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
               <li key={`${meal.date}/${meal.moment}`} className="ct-nutrition__entry">
                 <div className="ct-nutrition__entry-main">
                   <p className="ct-nutrition__entry-name">{label}</p>
-                  <p className="ct-nutrition__muted">
-                    {tQuick('summary', {
-                      count: meal.lines.length,
-                      names: meal.lines.map((l) => l.foodName).join(', '),
-                    })}
-                  </p>
+                  <p className="ct-nutrition__muted">{tPlural(tQuick, meal.lines.length, 'summaryOne', 'summaryMany', { names: meal.lines.map((l) => l.foodName).join(', ') })}</p>
                 </div>
                 <p className="ct-nutrition__entry-kcal ct-nutrition__num">{meal.kcal === null ? tQuick('kcalUnknown') : tQuick('kcal', { n: formatInt(meal.kcal) })}</p>
                 <Button
@@ -340,6 +367,7 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
                       title: label,
                       lines: meal.lines,
                       keepTimes: false,
+                      skipped: 0,
                     })
                   }
                 >
@@ -359,23 +387,15 @@ export function QuickMeals({ date, defaultTime, onSaved, onClose }: QuickMealsPr
             <li key={fav.id} className="ct-nutrition__entry">
               <div className="ct-nutrition__entry-main">
                 <p className="ct-nutrition__entry-name">{fav.name}</p>
-                <p className="ct-nutrition__muted">
-                  {tQuick('summary', {
-                    count: fav.ingredients.length,
-                    names: fav.ingredients.map((i) => i.name).join(', '),
-                  })}
-                </p>
+                <p className="ct-nutrition__muted">{tPlural(tQuick, fav.ingredients.length, 'summaryOne', 'summaryMany', { names: fav.ingredients.map((i) => i.name).join(', ') })}</p>
               </div>
               <Button
                 variant="secondary"
                 ariaLabel={tQuick('favoriteButton', { name: fav.name })}
-                onClick={() =>
-                  setSource({
-                    title: fav.name,
-                    lines: linesFromRecipe(fav),
-                    keepTimes: false,
-                  })
-                }
+                onClick={() => {
+                  const replay = linesFromRecipe(fav);
+                  setSource({ title: fav.name, lines: replay.lines, keepTimes: false, skipped: replay.skipped });
+                }}
               >
                 {tQuick('favoriteButton', { name: fav.name })}
               </Button>

@@ -115,13 +115,27 @@ export function favoriteFromLines(name: string, lines: readonly MealLine[]): Fav
   return { draft, skipped: lines.length - ingredients.length };
 }
 
-/** Lignes d'un favori (une par ingrédient, méthode « search ») à l'heure de référence `12:00`, remplacée à l'écriture. */
-export function linesFromRecipe(recipe: Pick<Recipe, 'ingredients'>): MealLine[] {
-  const out: MealLine[] = [];
+/** Un favori est une recette d'UNE portion sans poids cuit : une recette de plusieurs portions ne se rejoue pas comme un repas ici (D-396, BL-117). */
+export const isFavoriteRecipe = (recipe: Pick<Recipe, 'servings' | 'cookedWeightG'>): boolean => recipe.servings === 1 && recipe.cookedWeightG === null;
+
+export interface RecipeLines {
+  readonly lines: MealLine[];
+  /** Ingrédients retirés : sans référence d'aliment ou aux valeurs inconnues ou invalides. */
+  readonly skipped: number;
+}
+
+/**
+ * Lignes d'une portion de recette (une par ingrédient, méthode « search »), à l'heure de référence `12:00`, remplacée à l'écriture.
+ * Les grammes sont divisés par le nombre de portions par sécurité : jamais plus d'une portion n'est écrite.
+ */
+export function linesFromRecipe(recipe: Pick<Recipe, 'ingredients' | 'servings'>): RecipeLines {
+  const lines: MealLine[] = [];
+  const servings = recipe.servings >= 1 ? recipe.servings : 1;
   for (const ing of recipe.ingredients) {
-    const totals = computeTotals(ing.per100g, ing.grams);
+    const grams = tenth(ing.grams / servings);
+    const totals = computeTotals(ing.per100g, grams);
     if (totals === null || ing.foodRef === null) continue;
-    out.push({ time: '12:00' as LocalTime, foodId: ing.foodRef, foodName: ing.name, source: ing.source, grams: ing.grams, ...totals, method: 'search', confidence: null });
+    lines.push({ time: '12:00' as LocalTime, foodId: ing.foodRef, foodName: ing.name, source: ing.source, grams, ...totals, method: 'search', confidence: null });
   }
-  return out;
+  return { lines, skipped: recipe.ingredients.length - lines.length };
 }

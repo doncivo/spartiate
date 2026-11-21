@@ -73,3 +73,14 @@ FIX-0181). Limites : un favori apparaît aussi dans Recettes ; une ligne sans al
 ## Constats d'Ali à faire
 
 À remplir en fin de passe.
+
+## Relecture à froid
+
+Verdict : à corriger, corrigé. Rouge 5847c3c4 (tests d'écran et de domaine), vert dans le commit suivant (« REPAS-029a : relecture à froid »).
+
+- BLOQUANT : les favoris étaient `recipes.list()` sans filtre et `linesFromRecipe` ignorait `servings` ; un « Chili » de 4 portions rejoué écrivait 4 portions. Corrigé : un favori est une recette d'UNE portion sans poids cuit (`isFavoriteRecipe`, filtre à l'affichage) ; `linesFromRecipe` divise par les portions par sécurité. Preuves : tests d'écran (Chili 4 portions et recette à poids cuit absents de la liste) et de domaine (4 × 400 g = 100 g). Limite : une recette de plusieurs portions n'est pas rejouable ici (BL-117).
+- Garde contre le double appui sur « Enregistrer comme favori » (une seule recette), test d'écran.
+- Copie d'hier répétée : si toutes les lignes (heure, nom, grammes, kcal) sont déjà au journal du jour, message « déjà dans le journal » et aperçu non ouvert ; test d'écran.
+- Pluriels par `tPlural` (« 1 aliment », lignes non enregistrées au singulier / pluriel) ; ingrédient de favori sans référence d'aliment ou aux valeurs inconnues retiré et dit à l'aperçu (`replaySkipped`) ; test d'écran.
+- I1 : la preuve rouge d'écran de 029a arrive avec ce commit (5847c3c4), les tests d'écran de 029a initiaux ayant été écrits avec le code.
+- Bundle après correction : 193 879 octets normalisés (inchangé).
