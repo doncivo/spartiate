@@ -382,7 +382,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 15.1 b | PRD § 15.1 | absent — imputation des jours non saisis affichée avec incertitude (C-194) | fait (NUTRI-b, D-395) |
 | § 15.2 a | PRD § 15.2 | partiel — check-in accepter / refuser / personnaliser (C-031, C-086) | à faire (lot 0.28.0) |
 | § 15.2 b | PRD § 15.2 | partiel — bornes 1 200 / 800, perte 1 %, alerte 25 % (C-031, C-087) | à faire (lot 0.28.0) |
-| § 15.3 a | PRD § 15.3 | partiel — recherche : récents, favoris, provenances ; « go-tos » absents (C-092, C-100) | à faire (lot 0.28.0) |
+| § 15.3 a | PRD § 15.3 | partiel — recherche : récents, favoris, provenances ; « go-tos » absents (C-092, C-100) | fait en partie (REPAS-029a, D-424, D-425 : repas récents et favoris ; « go-tos » BL-117) |
 | § 15.3 b | PRD § 15.3 | absent — assiette (C-194) | fait en partie (NUTRI-c, D-396 ; BL-117) |
 | § 15.5 | PRD § 15.5 | partiel — tableau de bord (C-088) | à faire (lot 0.28.0) |
 | § 16.1 C | PRD § 16.1 | partiel — niveau C : zone cible jamais affichée (C-191) | à faire (lot 0.28.0) |
