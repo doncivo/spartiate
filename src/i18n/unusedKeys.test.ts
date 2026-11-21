@@ -41,6 +41,7 @@ const WHITELIST: readonly string[] = [
   'fr.recovery.ts:hrv_*', // RecoveryToday : tRecovery(`${c.key}_${tone}`), contributeur HRV : up, flat, down
   'fr.recovery.ts:resting_hr_*', // idem, contributeur FC de repos : up, flat, down
   'fr.recovery.ts:sleep_*', // idem, contributeur sommeil : up, down
+  'fr.programImport.ts:note_*', // ProgramImportView : tImport(`note_${note.code}`), une par ImportNote (seconds, rir-range)
   'fr.recovery.ts:explain_*', // RecoveryToday : tRecovery(`explain_${k}`), un par code d'explication du score
 ];
 

@@ -30,6 +30,8 @@ import type { TrainingData } from './trainingState';
 // I6-03b : groupes de la routine (en-tête et formulaire), bloc à la demande avec son catalogue de textes.
 const RoutineCircuitHeader = lazy(() => import('./RoutineCircuitUi').then((m) => ({ default: m.RoutineCircuitHeader })));
 const RoutineCircuitForm = lazy(() => import('./RoutineCircuitUi').then((m) => ({ default: m.RoutineCircuitForm })));
+// IMPORT-029 : import d'un programme collé ou photographié, bloc à la demande avec son catalogue de textes (fr.programImport).
+const ProgramImportView = lazy(() => import('./import/ProgramImportView').then((m) => ({ default: m.ProgramImportView })));
 
 /**
  * Écran « Routines » (§ 14, § 12.5 ; maquettes iPhone-Routine, PC-Routine) : liste, programmes de départ (une transaction par ajout, noms
@@ -736,6 +738,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
     readonly message: string | null;
   } | null>(null);
   const [programs, setPrograms] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -813,12 +816,33 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
     );
   }
 
+  if (importing) {
+    return (
+      <Suspense fallback={<p className="ct-training__muted">{tTraining('loading')}</p>}>
+        <ProgramImportView
+          data={data}
+          access={access}
+          ids={ids}
+          onClose={() => setImporting(false)}
+          onCreated={async (id, message) => {
+            await refresh();
+            setImporting(false);
+            await openTree(id, message);
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   return (
     <div className="ct-training__routines">
       <div className="ct-training__actions">
         <Button onClick={() => void create(null)}>{tTraining('newRoutine')}</Button>
         <Button variant="secondary" expanded={programs} onClick={() => setPrograms((v) => !v)}>
           {tTraining('addProgram')}
+        </Button>
+        <Button variant="secondary" onClick={() => setImporting(true)}>
+          {tTraining('importProgram')}
         </Button>
       </div>
       {notice && (
