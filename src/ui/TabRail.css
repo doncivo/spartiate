@@ -205,6 +205,7 @@
 
 .ct-tab-rail[data-collapsed='true'] .ct-tab-rail__toggle {
   margin-left: 0;
+  transform: scaleX(-1);
 }
 
 .ct-tab-rail[data-collapsed='true'] .ct-tab-rail__name,
@@ -221,4 +222,9 @@
 .ct-tab-rail[data-collapsed='true'] .ct-tab-rail__tab {
   justify-content: center;
   padding: 0;
+}
+
+/* Repliée : la carte de l'appareil est masquée (CSS, et non retirée du rendu, pour tenir le bundle de départ). */
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__footer {
+  display: none;
 }

@@ -86,21 +86,20 @@ describe('TabRail : repli de la barre latérale PC', () => {
   it('un bouton replie puis déploie la barre (aria-expanded, état exposé), au clavier comme à la souris', () => {
     rail();
     const nav = screen.getByRole('navigation');
-    const toggle = screen.getByRole('button', { name: t('nav.collapse') });
+    const toggle = screen.getByRole('button', { name: t('nav.sidebar') });
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(nav).not.toHaveAttribute('data-collapsed');
     fireEvent.click(toggle);
     expect(nav).toHaveAttribute('data-collapsed', 'true');
-    expect(screen.getByRole('button', { name: t('nav.expand') })).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(screen.getByRole('button', { name: t('nav.expand') }));
+    expect(screen.getByRole('button', { name: t('nav.sidebar') })).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(screen.getByRole('button', { name: t('nav.sidebar') }));
     expect(nav).not.toHaveAttribute('data-collapsed');
   });
 
-  it('repliée, les onglets gardent leur nom accessible et leur titre (infobulle)', () => {
+  it('repliée, les onglets gardent leur nom accessible (libellé lu, hors de l’écran)', () => {
     rail();
-    fireEvent.click(screen.getByRole('button', { name: t('nav.collapse') }));
-    const training = screen.getByRole('button', { name: 'Entraînement' });
-    expect(training).toHaveAttribute('title', 'Entraînement');
+    fireEvent.click(screen.getByRole('button', { name: t('nav.sidebar') }));
+    expect(screen.getByRole('button', { name: 'Entraînement' })).toBeInTheDocument();
   });
 
   it('le bouton de repli est avant la liste des onglets : Plus reste le dernier bouton', () => {
@@ -115,6 +114,6 @@ describe('TabRail : iPhone', () => {
   it('aucun bouton de repli sous 1 024 px', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     render(<TabRail items={items} settingsItem={settingsItem} activeId="today" onSelect={() => undefined} />);
-    expect(screen.queryByRole('button', { name: t('nav.collapse') })).toBeNull();
+    expect(screen.queryByRole('button', { name: t('nav.sidebar') })).toBeNull();
   });
 });

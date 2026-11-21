@@ -75,7 +75,6 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
         onClick={() => onSelect(item.id)}
         onKeyDown={(event) => handleKeyDown(event, index)}
         className="ct-tab-rail__tab"
-        {...(folded ? { title: t(item.labelKey) } : {})}
         data-active={active ? 'true' : undefined}
       >
         <TabIcon id={item.id} />
@@ -101,15 +100,15 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
             type="button"
             className="ct-tab-rail__toggle"
             aria-expanded={!collapsed}
-            aria-label={t(collapsed ? 'nav.expand' : 'nav.collapse')}
+            aria-label={t('nav.sidebar')}
             onClick={() => setCollapsed((now) => !now)}
           >
-            <span aria-hidden="true">{collapsed ? '›' : '‹'}</span>
+            <span aria-hidden="true">‹</span>
           </button>
         </div>
       ) : null}
       <div className="ct-tab-rail__list">{allItems.map((item, index) => renderTab(item, index))}</div>
-      {pc && !folded ? <div className="ct-tab-rail__footer">{footer}</div> : null}
+      {pc ? <div className="ct-tab-rail__footer">{footer}</div> : null}
     </nav>
   );
 }

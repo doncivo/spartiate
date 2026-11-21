@@ -31,7 +31,7 @@ export interface ChoiceDialogProps<Id extends string> {
  * `ConfirmDialog` : focus piégé et posé sur « Annuler » à l'ouverture, Échap annule, rendue dans `document.body`.
  *
  * @example
- * <ChoiceDialog title={t('tasks.seriesEditTitle', { title })} options={[{ id: 'occurrence', label: t('tasks.seriesScopeOccurrence') }]} onChoose={apply} onCancel={close} />
+ * <ChoiceDialog title={t('exemple.seriesEditTitle', { title })} options={[{ id: 'occurrence', label: t('exemple.seriesScopeOccurrence') }]} onChoose={apply} onCancel={close} />
  */
 export function ChoiceDialog<Id extends string>({ title, description, options, optionVariant = 'primary', cancelLabel, onChoose, onCancel }: ChoiceDialogProps<Id>) {
   const descriptionId = useId();
