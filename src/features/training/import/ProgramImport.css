@@ -60,3 +60,27 @@
 .ct-import__rejected-text {
   overflow-wrap: anywhere;
 }
+
+.ct-import__photo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ct-space-1);
+}
+
+.ct-import__photo-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.ct-import__photo:focus-within .ct-import__photo-button {
+  outline: 2px solid var(--ct-color-bronze);
+  outline-offset: 2px;
+}
+
+.ct-import__photo-button[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}

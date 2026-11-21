@@ -9,6 +9,7 @@ import { tImport } from '../../../i18n/programImportText';
 import { Button } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
+import { PhotoReader, type PhotoReaderProps } from './PhotoReader';
 import './ProgramImport.css';
 
 /**
@@ -24,6 +25,8 @@ export interface ProgramImportViewProps {
   readonly onClose: () => void;
   /** Routine créée : l'appelant rafraîchit la liste et ouvre l'éditeur avec le message. */
   readonly onCreated: (routineId: string, message: string) => Promise<void>;
+  /** IMPORT-029b : moteurs de lecture d'image (façade OCR) ; par défaut ceux de l'appareil. */
+  readonly ocr?: PhotoReaderProps['open'];
 }
 
 interface Pick {
@@ -40,7 +43,7 @@ function schemeText(exercise: ImportedExercise): string {
   return tImport(exercise.notes.some((n) => n.code === 'seconds') ? 'schemeSeconds' : 'scheme', { sets: exercise.sets, reps });
 }
 
-export function ProgramImportView({ data, access, ids, onClose, onCreated }: ProgramImportViewProps) {
+export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }: ProgramImportViewProps) {
   const [text, setText] = useState('');
   const [parsed, setParsed] = useState<ProgramImport | null>(null);
   const [name, setName] = useState('');
@@ -180,6 +183,11 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated }: Pro
             <span className="ct-training__label">{tImport('textLabel')}</span>
             <textarea className="ct-training__input ct-import__text" rows={12} value={text} placeholder={tImport('textPlaceholder')} spellCheck={false} onChange={(e) => setText(e.target.value)} />
           </label>
+          <PhotoReader
+            {...(ocr ? { open: ocr } : {})}
+            onLines={(lines) => setText((current) => (current.trim() === '' ? lines.join('\n') : `${current.replace(/\s+$/, '')}\n${lines.join('\n')}`))}
+            onStatus={setMessage}
+          />
           <p className="ct-training__muted">{tImport('privacy')}</p>
           <div className="ct-training__actions">
             <Button onClick={analyze}>{tImport('analyze')}</Button>

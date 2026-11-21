@@ -70,7 +70,9 @@ describe('IMPORT-029b : photo ou capture lue par l’OCR natif', () => {
     for (const name of ['Squat à la barre', 'Presse à cuisses', 'Fente bulgare']) {
       expect(within(screen.getByRole('group', { name: tImport('exerciseGroup', { name }) })).getByText(tImport('levelSure'))).toBeTruthy();
     }
-    expect(screen.queryByRole('region', { name: /./ })).toBeNull();
+    // Aucune ligne non reconnue.
+    const rejectedPrefix = tImport('rejectedTitle', { n: '' }).trim();
+    expect(screen.queryByRole('heading', { name: (name) => name.startsWith(rejectedPrefix) })).toBeNull();
   });
 
   it('lecture qui échoue : raison dite, texte inchangé', async () => {
