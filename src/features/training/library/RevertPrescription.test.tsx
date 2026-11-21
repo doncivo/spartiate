@@ -4,7 +4,10 @@ import { createHlcClock } from '../../../domain/hlc';
 import { prescribe } from '../../../domain/training/prescribe';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
+import { tProgression } from '../../../i18n/progressionText';
 import { formatExerciseLoad, tTraining } from '../../../i18n/trainingText';
+import type { LiveActivity } from '../../../platform/liveActivity';
+import type { TimerNotifier } from '../../../platform/notifications/timerNotification';
 import { input, session } from '../../../../tests/fixtures/training/progression';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
@@ -19,6 +22,8 @@ const DEVICE = '60000000-0000-4000-8000-0000000002b6' as DeviceId;
 const u = (n: number): string => `2b4c6d8e-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const NAME = 'Développé couché à la barre';
 let db: TestDb;
+const notifier: TimerNotifier = { permission: async () => 'granted', requestPermission: async () => 'granted', isPending: async () => false, schedule: async () => true, cancel: async () => undefined };
+const liveActivity: LiveActivity = { isAvailable: async () => ({ available: false }) as never, start: async () => ({ started: false }) as never, end: async () => ({ ended: true, count: 0 }) };
 const base = prescribe(input({ history: [session(3, 60, [10, 10, 10])] }));
 const decisionCount = async (): Promise<number> => (await db.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM recommendation_decision'))[0]?.n ?? 0;
 
@@ -83,5 +88,26 @@ describe('MOTEUR-0281b : fiche, retour à la prescription précédente', () => {
     const region = await openSheet();
     expect(await within(region).findByText(tTraining('revertNone'))).toBeInTheDocument();
     expect(within(region).queryByRole('button', { name: tTraining('revertButton') })).toBeNull();
+  });
+
+  it('B3 après le retour, la séance suivante propose les valeurs reprises avec la phrase du retour', async () => {
+    await seed([60, 62.5]);
+    const region = await openSheet();
+    fireEvent.click(await within(region).findByRole('button', { name: tTraining('revertButton') }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: tTraining('revertConfirm') }));
+    await within(region).findByText(tTraining('revertDone'));
+    cleanup();
+    db.clock.advance(86_400_000);
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: u(9), name: 'C' });
+    await r.addExercise(u(9), { exerciseId: 'bench-press-barbell', exerciseName: NAME, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data })}>
+        <TrainingScreen session={{ os: 'other', notifier, liveActivity }} />
+      </AppContainerProvider>,
+    );
+    const proposal = await within(await screen.findByRole('region', { name: NAME })).findByRole('group', { name: tProgression('title') });
+    expect(await within(proposal).findByText(tProgression('explainRevert'))).toBeInTheDocument();
   });
 });

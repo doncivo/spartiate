@@ -4,7 +4,6 @@ import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
 import type { SetKind } from '../../../domain/training/session';
 import { isProgressionExerciseId, progressionId } from '../../../domain/sync/naturalIds';
 import { recalibrationKept } from '../../../domain/training/decision';
-import { isRevertPrescription } from '../../../domain/training/revertPrescription';
 import { DIFFICULTIES, type Difficulty, type ExerciseSession, type HistorySet, type Prescription } from '../../../domain/training/types';
 import { isIsoDateTime, type IsoDateTime } from '../../../domain/types';
 import type { SqlExecutor, SqlRow } from '../../driver';
@@ -106,8 +105,9 @@ function rowToDecision(row: DecisionRow, report?: DecisionReadReporter): Recomme
     loadKg: row.chosen_load_kg,
     reps: reps as number[],
     decidedAt: row.decided_at as IsoDateTime,
-    // MOTEUR-0281b : décision de retour (raison `revert-previous` de la prescription tracée).
-    ...(isRevertPrescription(prescription) ? { revert: true } : {}),
+    // MOTEUR-0281b : décision de retour (raison `revert-previous` de la prescription tracée ; lue ici sans importer le module du retour, qui
+    // resterait sinon un bloc partagé de plus, référencé par le départ).
+    ...(prescription.reasons.includes('revert-previous') ? { revert: true } : {}),
     ...readSyncMeta(row),
   };
 }

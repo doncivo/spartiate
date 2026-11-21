@@ -15,10 +15,9 @@ import {
   timedSession,
 } from '../../../tests/fixtures/training/progression';
 import { progressionFr } from '../../i18n/fr.progression';
-import { ballastLoads, timeStepSec } from './bodyweightProgression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG, ENGINE_VERSION, REASON_ORDER } from './config';
 import { constraintAlerts, explainPrescription, explanationNotes } from './explain';
-import { prescribe } from './prescribe';
+import { ballastLoads, prescribe, timeStepSec } from './prescribe';
 import type { RecoverySnapshot } from './types';
 
 /**
