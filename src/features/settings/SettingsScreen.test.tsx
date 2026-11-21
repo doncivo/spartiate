@@ -9,6 +9,8 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer, type AppContainer } from '../app/container';
 import { createFakeAuthenticator, guardAuthenticator } from '../../platform/biometric';
+import { t } from '../../i18n';
+import { resetAppLockStore, useAppLockStore } from '../security/appLockStore';
 import { SettingsScreen } from './SettingsScreen';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000007');
@@ -95,7 +97,7 @@ describe('SettingsScreen (T-06)', () => {
     expect(document.querySelector('.ct-settings__rule')).toBeNull();
   });
 
-  it('finitions 0.1.2 (a) — D-37 : la ligne « Verrouillage Face ID » reste masquée même quand l’iPhone sait authentifier', async () => {
+  it('IOS-029a C-a1 — verrou activable sur l’iPhone (décision d’Ali du 20/11, levée de D-37) : ligne visible, désactivée par défaut', async () => {
     const withAuth = createAppContainer({
       clock: db.clock,
       hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
@@ -103,11 +105,44 @@ describe('SettingsScreen (T-06)', () => {
       authenticator: guardAuthenticator(createFakeAuthenticator()),
     });
     expect(withAuth.authenticator.supported).toBe(true);
+    expect((globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow).toBeUndefined();
     renderScreen(withAuth);
-    await screen.findByRole('heading', { level: 1, name: 'Plus' });
-    expect(screen.queryByText(/Verrouillage/)).toBeNull();
-    expect(screen.queryByRole('switch')).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'IPHONE' })).toBeNull();
+    const lockSwitch = await screen.findByRole('switch', { name: t('security.settings.rowFaceId') });
+    expect(lockSwitch.getAttribute('aria-checked')).toBe('false');
+    expect(screen.getByText(t('security.settings.fallback'))).toBeTruthy();
+  });
+
+  it('IOS-029a C-a4 — sans authentification prise en charge (PC, navigateur), aucune ligne de verrou', async () => {
+    renderScreen(container);
+    await screen.findByRole('heading', { level: 1 });
+    expect(container.authenticator.supported).toBe(false);
+    expect(screen.queryByText(t('security.settings.rowFaceId'))).toBeNull();
+    expect(screen.queryByText(t('security.settings.fallback'))).toBeNull();
+  });
+
+  it('IOS-029a C-a2 — activer : l’authentification est demandée ; refus → interrupteur inchangé, « Le verrouillage n’a pas été activé »', async () => {
+    const enable = vi.fn(() => {
+      useAppLockStore.setState({ enabled: false, settingsMessage: { main: 'notEnabled', detail: 'unsupported', code: 'user-cancel' } });
+      return Promise.resolve();
+    });
+    const noop = (): Promise<void> => Promise.resolve();
+    useAppLockStore.setState({ actions: { unlock: noop, enable, disable: noop, disableWithoutPasscode: noop, requestAutoUnlock: () => undefined } });
+    const withAuth = createAppContainer({
+      clock: db.clock,
+      hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
+      data: db.data,
+      authenticator: guardAuthenticator(createFakeAuthenticator()),
+    });
+    try {
+      renderScreen(withAuth);
+      const lockSwitch = await screen.findByRole('switch', { name: t('security.settings.rowFaceId') });
+      fireEvent.click(lockSwitch);
+      expect(enable).toHaveBeenCalledTimes(1);
+      expect((await screen.findByRole('alert')).textContent).toContain(t('security.settings.notEnabled'));
+      expect(lockSwitch.getAttribute('aria-checked')).toBe('false');
+    } finally {
+      resetAppLockStore();
+    }
   });
 
   it('carte profil sans valeur saisie : texte neutre, jamais de valeur inventée ; un appui ouvre Profil et poids', async () => {
