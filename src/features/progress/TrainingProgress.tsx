@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { DEFAULT_PROGRESS_CONFIG } from '../../domain/training/config';
-import { trailingWeeks, weeklyMuscleVolume, type WeeklyVolume } from '../../domain/training/progressStats';
+import { constancy, monthCalendar, trailingWeeks, weeklyMuscleVolume, type Constancy, type MonthCalendar, type WeeklyVolume } from '../../domain/training/progressStats';
+import { weekdayOrder, type FirstWeekday } from '../../domain/week';
 import type { MuscleWeight } from '../../domain/training/types';
 import type { IsoDateTime, LocalDate } from '../../domain/types';
 import { getFirstWeekday } from '../../i18n/formatPrefs';
@@ -12,6 +13,8 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
 import { localDayOf } from '../training/cycle/currentCycle';
 import { readTrainingData } from '../training/trainingState';
+import { CONSTANCY_TABLES, readConstancy, type ConstancyData } from './constancyData';
+import { StreakLines } from './TodayStreak';
 import './TrainingProgress.css';
 
 /**
@@ -20,11 +23,15 @@ import './TrainingProgress.css';
  * aucune dépendance de plus pour huit barres). Bloc chargé à la demande avec son catalogue de textes (jamais dans le départ).
  */
 
-const READ_TABLES = ['workout', 'workout_set', 'exercise'] as const;
+const READ_TABLES = [...new Set(['workout', 'workout_set', 'exercise', ...CONSTANCY_TABLES])];
 
 interface Loaded {
   readonly volume: WeeklyVolume;
   readonly muscleName: (id: string) => string;
+  readonly constancy: ConstancyData;
+  readonly streak: Constancy;
+  readonly calendar: MonthCalendar;
+  readonly firstWeekday: FirstWeekday;
 }
 type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | ({ readonly status: 'ready' } & Loaded);
 
@@ -37,7 +44,7 @@ const localMidnightIso = (day: LocalDate): IsoDateTime => {
 async function load(access: ReturnType<typeof useAppContainer>['data'], today: LocalDate): Promise<Loaded> {
   const first = getFirstWeekday();
   const weeks = trailingWeeks(today, DEFAULT_PROGRESS_CONFIG.volumeWeeks, first);
-  const [training, workouts] = await Promise.all([readTrainingData(access), (await access.repos.workouts()).closedSince(localMidnightIso(weeks[0] ?? today))]);
+  const [training, workouts, constancyData] = await Promise.all([readTrainingData(access), (await access.repos.workouts()).closedSince(localMidnightIso(weeks[0] ?? today)), readConstancy(access, today)]);
   const muscles = new Map<string, readonly MuscleWeight[]>();
   for (const x of [...training.content.catalog.list(), ...training.allCustoms]) muscles.set(x.id, x.muscles);
   const names = new Map(training.content.muscles.map((m) => [m.id, m.nameFr]));
@@ -47,7 +54,14 @@ async function load(access: ReturnType<typeof useAppContainer>['data'], today: L
     today,
     firstWeekday: first,
   });
-  return { volume, muscleName: (id) => names.get(id) ?? id };
+  return {
+    volume,
+    muscleName: (id) => names.get(id) ?? id,
+    constancy: constancyData,
+    streak: constancy({ ...constancyData, today, firstWeekday: first }),
+    calendar: monthCalendar({ today, days: constancyData.days, pauses: constancyData.pauses, firstWeekday: first }),
+    firstWeekday: first,
+  };
 }
 
 function VolumeBars({ perWeek, label }: { readonly perWeek: readonly number[]; readonly label: string }) {
@@ -63,7 +77,61 @@ function VolumeBars({ perWeek, label }: { readonly perWeek: readonly number[]; r
   );
 }
 
-function Volume({ volume, muscleName }: Loaded) {
+const DAY_LONG = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+const MONTH = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const WEEKDAY_SHORT = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', timeZone: 'UTC' });
+const utcOf = (day: string): Date => new Date(`${day}T00:00:00.000Z`);
+/** Lundi 2 novembre 2026 + (jour ISO − 1) : nom court du jour de semaine. */
+const weekdayShort = (iso: number): string => WEEKDAY_SHORT.format(utcOf(`2026-11-0${String(iso + 1)}`));
+
+function dayLabel(cell: NonNullable<MonthCalendar['cells'][number]>): string {
+  const date = DAY_LONG.format(utcOf(cell.date));
+  const base =
+    cell.sessions > 0
+      ? tPlural(tTrainingProgress, cell.sessions, 'calendarDayOne', 'calendarDay', { date })
+      : cell.paused
+        ? tTrainingProgress('calendarDayPaused', { date })
+        : tTrainingProgress('calendarDayNone', { date });
+  return cell.today ? `${base} ${tTrainingProgress('calendarToday')}` : base;
+}
+
+function ConstancyCard({ constancy: data, streak, calendar, firstWeekday }: Loaded) {
+  const month = MONTH.format(utcOf(`${calendar.month}-01`));
+  return (
+    <section className="ct-today__card ct-tprogress ct-flat" aria-labelledby="ct-tprogress-constancy">
+      <h2 id="ct-tprogress-constancy" className="ct-today__eyebrow ct-section-title">
+        {tTrainingProgress('constancyTitle')}
+      </h2>
+      <StreakLines result={streak} sessions={data.days.length} />
+      <p className="ct-today__muted ct-tprogress__lead">{data.target === null ? tTrainingProgress('streakRuleDefault') : tTrainingProgress('streakRuleProgram', { target: data.target.perWeek })}</p>
+      <h3 className="ct-today__muted ct-tprogress__lead">{tTrainingProgress('calendarTitle', { month })}</h3>
+      <div className="ct-tprogress__calendar" aria-hidden="true">
+        {weekdayOrder(firstWeekday).map((w) => (
+          <span key={w} className="ct-tprogress__weekday">
+            {weekdayShort(w)}
+          </span>
+        ))}
+      </div>
+      <ul className="ct-tprogress__calendar">
+        {calendar.cells.map((cell, i) =>
+          cell === null ? (
+            <li key={`blank-${String(i)}`} aria-hidden="true" />
+          ) : (
+            <li
+              key={cell.date}
+              aria-label={dayLabel(cell)}
+              className={['ct-tprogress__day', cell.sessions > 0 ? 'ct-tprogress__day--done' : '', cell.paused ? 'ct-tprogress__day--paused' : '', cell.today ? 'ct-tprogress__day--today' : ''].filter(Boolean).join(' ')}
+            >
+              <span aria-hidden="true">{String(Number(cell.date.slice(8)))}</span>
+            </li>
+          ),
+        )}
+      </ul>
+    </section>
+  );
+}
+
+function Volume({ volume, muscleName }: Pick<Loaded, 'volume' | 'muscleName'>) {
   const weeks = volume.weekStarts.length;
   return (
     <section className="ct-today__card ct-tprogress ct-flat" aria-labelledby="ct-tprogress-volume">
@@ -142,5 +210,10 @@ export function TrainingProgress() {
       </section>
     );
   }
-  return <Volume volume={state.volume} muscleName={state.muscleName} />;
+  return (
+    <>
+      <ConstancyCard {...state} />
+      <Volume volume={state.volume} muscleName={state.muscleName} />
+    </>
+  );
 }

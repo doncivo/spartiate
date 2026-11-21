@@ -1,6 +1,10 @@
+import { addDays, daysInMonth, makeLocalDate, parseLocalDate } from '../localDate';
 import type { LocalDate } from '../types';
-import { addWeeks, weekStartOf, DEFAULT_FIRST_WEEKDAY, type FirstWeekday } from '../week';
+import { addWeeks, daysSinceWeekStart, weekStartOf, DEFAULT_FIRST_WEEKDAY, type FirstWeekday } from '../week';
 import { DEFAULT_PROGRESS_CONFIG, type ProgressConfig } from './config';
+import type { MesocyclePause } from './mesocycle';
+import { isPausedOn } from './programPause';
+import { routineTrainingDays, type ProgramDayLike } from './programDay';
 import type { SetKind } from './session';
 import type { MuscleWeight } from './types';
 
@@ -93,4 +97,107 @@ export function weeklyMuscleVolume(input: VolumeInput): WeeklyVolume {
     .filter((m) => m.total > 0)
     .sort((a, b) => b.total - a.total || (a.muscleId < b.muscleId ? -1 : a.muscleId > b.muscleId ? 1 : 0));
   return { weekStarts, muscles, unknownSets };
+}
+
+// --- Constance (PROGRES-b, § 17.1, § 12.6) ---------------------------------------------------------------------------------------------
+
+/** Objectif hebdomadaire du programme suivi, à partir de la semaine de `since` (début du cycle). */
+export interface WeeklyTarget {
+  readonly perWeek: number;
+  readonly since: LocalDate;
+}
+
+/**
+ * Séances prévues par semaine d'une routine suivie : jours de la semaine rattachés (PROG-04), sinon jours garnis ; `null` si aucun jour
+ * garni (aucun objectif).
+ */
+export function programWeeklyTarget(days: readonly ProgramDayLike[]): number | null {
+  const weekdays = routineTrainingDays(days);
+  if (weekdays !== null) return weekdays.length;
+  const filled = days.filter((d) => d.exercises.length > 0).length;
+  return filled === 0 ? null : filled;
+}
+
+export interface ConstancyInput {
+  /** Jour local du début de chaque séance close (une entrée par séance). */
+  readonly days: readonly LocalDate[];
+  readonly today: LocalDate;
+  /** `null` : aucun programme suivi. */
+  readonly target: WeeklyTarget | null;
+  /** Pauses du programme suivi (§ 12.6). */
+  readonly pauses: readonly MesocyclePause[];
+  readonly firstWeekday?: FirstWeekday;
+  readonly config?: ProgressConfig;
+}
+
+export interface Constancy {
+  /** Semaines consécutives atteignant l'objectif (semaine en cours comprise si déjà atteinte). */
+  readonly streakWeeks: number;
+  readonly thisWeek: { readonly done: number; readonly target: number };
+}
+
+/** Objectif de la semaine commençant à `weekStart` : celui du programme dès la semaine de son début, sinon l'objectif par défaut. */
+export function weeklyTargetFor(weekStart: LocalDate, target: WeeklyTarget | null, first: FirstWeekday, config: ProgressConfig = DEFAULT_PROGRESS_CONFIG): number {
+  return target !== null && weekStart >= weekStartOf(target.since, first) ? target.perWeek : config.defaultWeeklyTarget;
+}
+
+const weekHasPause = (weekStart: LocalDate, pauses: readonly MesocyclePause[]): boolean => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).some((day) => isPausedOn(pauses, day));
+
+function countByWeek(days: readonly LocalDate[], first: FirstWeekday): Map<LocalDate, number> {
+  const counts = new Map<LocalDate, number>();
+  for (const day of days) {
+    const start = weekStartOf(day, first);
+    counts.set(start, (counts.get(start) ?? 0) + 1);
+  }
+  return counts;
+}
+
+/**
+ * Streak (§ 17.1) en semaines, en remontant depuis la semaine passée : une semaine atteint l'objectif → comptée ; non atteinte avec un jour
+ * de pause → gelée (ni comptée ni cassante, § 12.6) ; sinon la série s'arrête. La semaine en cours s'ajoute si l'objectif est déjà atteint
+ * et ne casse jamais la série.
+ */
+export function constancy(input: ConstancyInput): Constancy {
+  const config = input.config ?? DEFAULT_PROGRESS_CONFIG;
+  const first = input.firstWeekday ?? DEFAULT_FIRST_WEEKDAY;
+  const counts = countByWeek(input.days, first);
+  const current = weekStartOf(input.today, first);
+  const thisWeek = { done: counts.get(current) ?? 0, target: weeklyTargetFor(current, input.target, first, config) };
+  const starts = [...input.days, ...input.pauses.map((p) => p.from)].map((day) => weekStartOf(day, first));
+  const earliest = starts.reduce<LocalDate | null>((min, w) => (min === null || w < min ? w : min), null);
+  let streak = thisWeek.done >= thisWeek.target ? 1 : 0;
+  for (let week = addWeeks(current, -1); earliest !== null && week >= earliest; week = addWeeks(week, -1)) {
+    if ((counts.get(week) ?? 0) >= weeklyTargetFor(week, input.target, first, config)) streak += 1;
+    else if (!weekHasPause(week, input.pauses)) break;
+  }
+  return { streakWeeks: streak, thisWeek };
+}
+
+export interface CalendarDay {
+  readonly date: LocalDate;
+  readonly sessions: number;
+  readonly paused: boolean;
+  readonly today: boolean;
+}
+
+export interface MonthCalendar {
+  /** `AAAA-MM`. */
+  readonly month: string;
+  /** Cases de la grille, semaine par semaine ; `null` : case vide avant le 1er. */
+  readonly cells: readonly (CalendarDay | null)[];
+}
+
+/** Calendrier du mois de `today` (§ 17.1) : séances par jour, jours en pause, jour courant ; grille au début de semaine réglé. */
+export function monthCalendar(input: { readonly today: LocalDate; readonly days: readonly LocalDate[]; readonly pauses: readonly MesocyclePause[]; readonly firstWeekday?: FirstWeekday }): MonthCalendar {
+  const { year, month } = parseLocalDate(input.today);
+  const firstDay = makeLocalDate(year, month, 1);
+  const lead = daysSinceWeekStart(firstDay, input.firstWeekday ?? DEFAULT_FIRST_WEEKDAY);
+  const perDay = new Map<LocalDate, number>();
+  for (const day of input.days) perDay.set(day, (perDay.get(day) ?? 0) + 1);
+  const cells: (CalendarDay | null)[] = Array.from({ length: lead }, () => null);
+  for (let i = 0; i < daysInMonth(year, month); i += 1) {
+    const date = addDays(firstDay, i);
+    cells.push({ date, sessions: perDay.get(date) ?? 0, paused: isPausedOn(input.pauses, date), today: date === input.today });
+  }
+  return { month: firstDay.slice(0, 7), cells };
 }

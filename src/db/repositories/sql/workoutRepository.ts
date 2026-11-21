@@ -450,6 +450,11 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return rows.map((row) => ({ ...rowToWorkout(row), sets: (byWorkout.get(row.id) ?? []).map(rowToSet) }));
     },
 
+    async closedStarts() {
+      const rows = await db.select<{ readonly started_at: string }>('SELECT started_at FROM workout WHERE ended_at IS NOT NULL AND deleted_at IS NULL ORDER BY started_at, id');
+      return rows.map((r) => r.started_at as IsoDateTime);
+    },
+
     async addExercise(workoutId, input) {
       await requireOpen(workoutId);
       const count = input.sets ?? 1;

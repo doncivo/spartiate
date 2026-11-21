@@ -96,6 +96,8 @@ export interface WorkoutRepository {
   listClosed(limit?: number): Promise<readonly Workout[]>;
   /** PROGRES-a (Progrès) : séances closes non supprimées commencées à partir de `fromIso` (compris), avec leurs séries vivantes ; début croissant. Lecture seule. */
   closedSince(fromIso: IsoDateTime): Promise<readonly WorkoutWithSets[]>;
+  /** PROGRES-b (constance) : début de chaque séance close non supprimée, du plus ancien au plus récent ; une colonne, lecture seule. */
+  closedStarts(): Promise<readonly IsoDateTime[]>;
   /** Ajoute un exercice en fin de séance ; déjà présent : `'conflict'`. Retourne la séance. */
   addExercise(workoutId: string, input: AddExerciseInput): Promise<WorkoutWithSets>;
   /** Supprime (logiquement) toutes les séries de l'exercice ; positions renumérotées. Retourne la séance. */

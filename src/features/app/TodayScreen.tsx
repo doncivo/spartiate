@@ -21,6 +21,8 @@ import './TodayScreen.css';
  * lazyScreens.tsx : Aujourd'hui est lui-même chargé à la demande, ainsi l'import dynamique et ses dépendances n'entrent pas dans le départ.
  */
 const TodayPcSide = lazyScreen<TodayPcSideProps>(() => import('./TodayPcSide').then((m) => ({ default: m.TodayPcSide })), 'todaypcside', { onDemand: true });
+/** PROGRES-b (§ 18.2) : carte « Constance » (streak), bloc à la demande déclaré ici comme TodayPcSide : rien n'entre dans le départ. */
+const TodayStreak = lazyScreen<object>(() => import('../progress/TodayStreak').then((m) => ({ default: m.TodayStreak })), undefined, { onDemand: true });
 
 
 const CHART_POINTS = 6;
@@ -201,6 +203,7 @@ export function TodayScreen() {
           <div className="ct-today__col">
             <RecoveryToday />
             <TodaySessionCard />
+            <TodayStreak />
             <SupplementsTodayCard />
           </div>
           <aside className="ct-today__col">
@@ -260,6 +263,7 @@ export function TodayScreen() {
         </>
       ) : null}
       <TodaySessionCard />
+      <TodayStreak />
       <NutritionRemainingCard />
       <SupplementsTodayCard />
       {weights.length > 0 ? <WeightCard weights={weights} nowMs={nowMs} showActions={false} /> : null}

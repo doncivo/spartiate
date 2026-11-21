@@ -64,8 +64,8 @@ describe('Constance', () => {
     const card = await screen.findByRole('region', { name: tTrainingProgress('constancyTitle') });
     expect(within(card).getByText(tTrainingProgress('streak', { n: 3 }))).toBeInTheDocument();
     expect(within(card).getByText(tTrainingProgress('streakRuleDefault'))).toBeInTheDocument();
-    expect(within(card).getByText(tTrainingProgress('weekDone', { n: 0, target: 1 }))).toBeInTheDocument();
-    expect(within(card).getByRole('listitem', { name: tTrainingProgress('calendarDay', { date: '10 novembre', n: 1 }) })).toBeInTheDocument();
+    expect(within(card).getByText(tTrainingProgress('weekDoneOne', { n: 0, target: 1 }))).toBeInTheDocument();
+    expect(within(card).getByRole('listitem', { name: tTrainingProgress('calendarDayOne', { date: '10 novembre', n: 1 }) })).toBeInTheDocument();
     expect(within(card).getByRole('listitem', { name: tTrainingProgress('calendarDayNone', { date: '12 novembre' }) })).toBeInTheDocument();
   });
 
