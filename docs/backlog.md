@@ -172,7 +172,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | fait (DOC-PRIV, PR #156) |
 | C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | fait (A11Y) |
 | C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | fait (A11Y ; interrupteur éteint clair porté à 3,80:1, consigne d'Ali du 21/11) |
-| C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | reporté (0.28.1, D-372) |
+| C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | fait (COQUILLE-PC-c, 0.28.1, D-400 ; constat d'Ali H-19a à faire) |
 | C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | fait (FIX-COQUILLE) |
 | C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | fait (FIX-COQUILLE) |
 | C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | fait (FIX-COQUILLE) |
@@ -251,7 +251,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-189 | audit Claude 0.27.0 | important — progression au poids du corps et chronométrée absente ; retour à une prescription antérieure absent | fait (MOTEUR-0281, 0.28.1, D-383 à D-388 ; reportés : BL-111, BL-112) |
 | C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | fait en partie (SESS-01, 0.28.1, D-376 à D-382 ; reportés : BL-108, BL-110) |
 | C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | fait en partie (PROGRES, 0.28.1, D-389 à D-394 ; restent records en séance § 17.1 a, BL-114 à BL-116) |
-| C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | à faire (lot 0.28.0) |
+| C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | fait en partie (COQUILLE-PC, 0.28.1, D-398, D-399 ; badge du minuteur BL-118, appui long § 18.1 c) |
 | C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (lot 0.28.0) |
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | fait en partie (NUTRI, 0.28.1 : imputation et assiette, D-395, D-396 ; reste de C-194 à faire) |
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | à faire (lot 0.28.0) |
@@ -283,6 +283,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | à trancher par Ali |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.28.x) |
 | BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.28.x) |
+| BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.28.x) |
+| BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | à examiner par Ali |
 
 ## 3. Audit Codex 0.26.0
 
@@ -386,11 +388,11 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 17.1 c | PRD § 17.1 | partiel — constance : streak et calendrier absents (C-191) | fait (PROGRES-b, D-391) |
 | § 17.1 d | PRD § 17.1 | absent — tendances de récupération sur 30 jours (C-191) | fait (PROGRES-c, D-393) |
 | § 17.1 e | PRD § 17.1 | partiel — graphiques Recharts < 300 ms : recharts déclaré, jamais importé (C-167) | à faire (lot 0.28.0) |
-| § 18.1 a | PRD § 18.1 | partiel — barre latérale PC non rétractable (C-192) | à faire (lot 0.28.0) |
+| § 18.1 a | PRD § 18.1 | partiel — barre latérale PC non rétractable (C-192) | fait (COQUILLE-PC-b, D-399) |
 | § 18.1 b | PRD § 18.1 | partiel — Ctrl+1…5 présents, Ctrl+K absent (C-135) | à faire (lot 0.28.0) |
 | § 18.1 c | PRD § 18.1 | partiel — swipe et appui long absents, haptique seule (C-192) | à faire (lot 0.28.0) |
-| § 18.1 d | PRD § 18.1 | absent — clic droit et double-clic (C-192) | à faire (lot 0.28.0) |
-| § 18.1 e | PRD § 18.1 | partiel — minuteur PC sans badge dans le titre (C-192) | à faire (lot 0.28.0) |
+| § 18.1 d | PRD § 18.1 | absent — clic droit et double-clic (C-192) | fait (COQUILLE-PC-a, D-398) |
+| § 18.1 e | PRD § 18.1 | partiel — minuteur PC sans badge dans le titre (C-192) | à faire (BL-118, 0.28.x) |
 | § 18.2 a | PRD § 18.2 | partiel — Aujourd'hui : streak absent (C-191) | fait (PROGRES-b, carte Constance, D-391) |
 | § 18.2 b | PRD § 18.2 | partiel — Progrès : graphiques, records, bilans (C-191) | à faire (lot 0.28.0) |
 | § 18.2 c | PRD § 18.2 | partiel — Plus : « À propos et licences » (C-119) | à faire (lot 0.28.0) |
@@ -400,8 +402,8 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 18.4 b | PRD § 18.4 | partiel — icône d'app non générée par script depuis `spartiate.svg` (C-194) | à faire (lot 0.28.0) |
 | § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | à faire (lot 0.28.0) |
 | § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à faire (lot 0.28.0) |
-| § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | à faire (lot 0.28.0) |
-| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | à faire (lot 0.28.0) |
+| § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | fait (COQUILLE-PC-c, D-400 ; constat d'Ali H-19a) |
+| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | à examiner (D-401, BL-119) |
 | § 18.6 c | PRD § 18.6 | partiel — équivalent clavier (C-068, C-121, C-122) | à faire (lot 0.28.0) |
 | § 19.1 a | PRD § 19.1 | partiel — notification-actions : aucune notification de check-in (C-194) | à faire (lot 0.28.0) |
 | § 19.1 b | PRD § 19.1 | partiel — privacy-shield activable (C-159) | à faire (lot 0.28.0) |

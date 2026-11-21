@@ -36,8 +36,8 @@ export interface ButtonProps {
  * Styles des maquettes Ajout.html (« Enregistrer ») et Detail.html (« Reporter »).
  *
  * @example
- * <Button onClick={onSave}>{t('tasks.save')}</Button>
- * <Button variant="secondary" onClick={onPostpone}>{t('tasks.postpone')}</Button>
+ * <Button onClick={onSave}>{t('exemple.save')}</Button>
+ * <Button variant="secondary" onClick={onPostpone}>{t('exemple.postpone')}</Button>
  */
 export function Button({ children, onClick, variant = 'primary', disabled, fullWidth, type = 'button', pressed, haspopup, expanded, ariaLabel, ariaDisabled, ariaBusy, describedBy, className }: ButtonProps) {
   return (

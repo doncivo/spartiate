@@ -396,6 +396,14 @@ html {
   color-scheme: light dark;
 }
 
+/* COQUILLE-PC-c (§ 18.6, D-372, H-19a UNVERIFIED) : Dynamic Type. WebKit iOS reconnaît cette valeur et fournit la taille du texte choisie
+   dans Réglages (le rem suit alors ce réglage, jusqu'à « Très grand ») ; WebView2 (PC) l'ignore : html garde 100 %. */
+@supports (font: -apple-system-body) {
+  html {
+    font: -apple-system-body;
+  }
+}
+
 body {
   margin: 0;
   background: var(--ct-color-bg);
@@ -404,6 +412,7 @@ body {
   font-weight: var(--ct-font-weight-regular);
   font-size: var(--ct-font-size-text);
   line-height: 1.4;
+  overflow-wrap: anywhere; /* texte agrandi : un mot long passe à la ligne au lieu de déborder à 440 px */
   -webkit-font-smoothing: antialiased;
 }
 

@@ -173,3 +173,58 @@
 .ct-tab-rail__footer {
   margin-top: auto;
 }
+
+/* COQUILLE-PC-b : barre latérale repliée (icônes seules, 64 px) ; le bouton de repli reste atteignable au clavier. */
+.ct-tab-rail__toggle {
+  margin-left: auto;
+  width: var(--ct-hit-target-min);
+  height: var(--ct-hit-target-min);
+  border: 0;
+  border-radius: var(--ct-radius-md);
+  background: transparent;
+  color: var(--ct-color-nav-text);
+  font-size: 1.25rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ct-tab-rail__toggle:focus-visible {
+  outline: 2px solid var(--ct-color-nav-accent);
+  outline-offset: -2px;
+}
+
+.ct-tab-rail[data-collapsed='true'] {
+  width: 64px;
+  padding-inline: 8px;
+}
+
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__brand {
+  flex-direction: column;
+  padding-inline: 0;
+}
+
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__toggle {
+  margin-left: 0;
+  transform: scaleX(-1);
+}
+
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__name,
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__label,
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__hint {
+  /* Hors de l'écran mais lu : le nom accessible de l'onglet reste son libellé. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__tab {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Repliée : la carte de l'appareil est masquée (CSS, et non retirée du rendu, pour tenir le bundle de départ). */
+.ct-tab-rail[data-collapsed='true'] .ct-tab-rail__footer {
+  display: none;
+}
