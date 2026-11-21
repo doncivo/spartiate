@@ -102,7 +102,6 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
             className="ct-tab-rail__toggle"
             aria-expanded={!collapsed}
             aria-label={t(collapsed ? 'nav.expand' : 'nav.collapse')}
-            title={t(collapsed ? 'nav.expand' : 'nav.collapse')}
             onClick={() => setCollapsed((now) => !now)}
           >
             <span aria-hidden="true">{collapsed ? '›' : '‹'}</span>
