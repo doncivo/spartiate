@@ -2,8 +2,11 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { compareEpochs, type EpochId } from '../../../src/domain/sync/format';
 import { setEpochSwitchTestHooks, type SwitchStep } from '../../../src/sync/epochSwitch';
 import { armCrash } from '../../sim/syncCrash';
-import { syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { B_ID, backupOf, C_ID, closeAll, restoreBackup, setupRoom, type Room } from './reset/resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-01, QA : positions locales après un remplacement ou « Appliquer partout » (aucun accusé {époque, 0, 0} sur un appareil qui n'a rien
@@ -156,7 +159,7 @@ async function converge(s: Scene, observe: (label: string) => Promise<void>): Pr
 async function expectConverged(s: Scene, label: string): Promise<void> {
   const expected = await taskSnapshot(s.a);
   for (const d of [s.b, s.c]) expect(await taskSnapshot(d), `${label} : ${d.name} identique à A`).toEqual(expected);
-  const titles = (await s.a.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+  const titles = (await s.a.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
   expect(titles, `${label} : écritures d'après la restauration et de C hors ligne`).toEqual(expect.arrayContaining(['A tardive', 'C hors ligne, jamais publiée']));
   for (const d of room.devices) {
     expect(await d.data.repos.sync.outboxCount(), `${label} : file de ${d.name}`).toBe(0);

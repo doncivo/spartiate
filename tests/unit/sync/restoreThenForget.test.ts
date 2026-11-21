@@ -3,8 +3,11 @@ import { compareEpochs, epochId, type EpochId } from '../../../src/domain/sync/f
 import type { DeviceId } from '../../../src/domain/types';
 import type { RestoreMarker } from '../../../src/platform/sync/types';
 import { mirrorDeviceFolder, propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { B_ID as RESET_B, C_ID as RESET_C, closeAll, reassociate, settle as resetSettle, setupRoom, type Room } from './reset/resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-01 (dettes, revue de Y-11) : restauration « Appliquer partout » puis oubli. Le mode `replace` du changement d'époque et
@@ -177,7 +180,7 @@ describe('Y-TECH-01 : « Appliquer partout » puis oubli', () => {
   });
 });
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const position = (ack: Ack | undefined): string | null => (ack === undefined ? null : `${ack.epoch}/${ack.segment}/${ack.record}`);
 
 /**

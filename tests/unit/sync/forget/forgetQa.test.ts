@@ -5,7 +5,10 @@ import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { FORGET_META, readForgetStatus } from '../../../../src/sync/forget';
 import { armCrash } from '../../../sim/syncCrash';
 import { mirrorDeviceFolder, propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10, QA (critères 7 à 17, 20) : scénarios à deux, trois et quatre appareils simulés (base SQLite Wasm, vrai service, plateforme
@@ -50,7 +53,7 @@ async function settle(list: readonly SimDevice[], rounds = 3): Promise<void> {
   }
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry ORDER BY food_name')).map((r) => r.title);
 const meta = async (d: SimDevice, key: string): Promise<unknown> => {
   const raw = await d.data.repos.sync.getMeta(key);
   return raw === null ? null : (JSON.parse(raw) as unknown);

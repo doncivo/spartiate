@@ -3,8 +3,11 @@ import type { DeviceId, Hlc } from '../../../../src/domain/types';
 import { META } from '../../../../src/sync/meta';
 import { RESET_META } from '../../../../src/sync/reset';
 import { propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { A_ID, B_ID, C_ID, DAY, backupOf, closeAll, meta, reassociate, recoveryOf, restoreBackup, setupRoom, settle, titles, type Room } from './resetKit';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11, décision de l'architecte (ADR 0011 §18 points 14 à 18) côté moteur et simulation : oubli pendant la transition (rattrapage,
@@ -312,7 +315,7 @@ describe('§18 point 18 : simulations complémentaires', () => {
     for (const x of room.devices) x.clock.advance(31 * DAY);
     // Purge, puis horizon de purge publié par chacun (règle 4).
     await settle(room.devices, 2);
-    for (const x of room.devices) expect((await x.driver.select('SELECT id FROM task WHERE id = ?', [gone.id])).length, x.name).toBe(0);
+    for (const x of room.devices) expect((await x.driver.select('SELECT id FROM meal_entry WHERE id = ?', [gone.id])).length, x.name).toBe(0);
     // A réinitialise (dossier de A seul) ; B restaure une sauvegarde d'avant la purge et applique partout sans avoir vu l'annonce.
     expect((await a.service.resetSync()).kind).toBe('started');
     await restoreBackup(b, copy);
@@ -332,7 +335,7 @@ describe('§18 point 18 : simulations complémentaires', () => {
     syncFolders(room.devices);
     await settle(room.devices, 4);
     expect(a.service.status().reset?.step).toBe('done');
-    for (const x of room.devices) expect((await x.driver.select('SELECT id FROM task WHERE id = ?', [gone.id])).length, `${x.name} : purgée, jamais renée`).toBe(0);
+    for (const x of room.devices) expect((await x.driver.select('SELECT id FROM meal_entry WHERE id = ?', [gone.id])).length, `${x.name} : purgée, jamais renée`).toBe(0);
     expect(await taskSnapshot(b)).toEqual(await taskSnapshot(a));
     expect(await titles(a)).toEqual(['B avant']);
   });

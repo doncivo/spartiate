@@ -4,7 +4,10 @@ import { SyncPlatformError } from '../../../src/platform/sync/types';
 import { readResetStatus, storedDeviceStatuses } from '../../../src/sync';
 import { META, readJson } from '../../../src/sync/meta';
 import { propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02, QA de fin d'ordre 4 : scénarios croisés sur les trous impossibles à combler (ADR 0011 §5.5) : relances répétées,
@@ -39,7 +42,7 @@ function refuseNextAppend(d: SimDevice): void {
 const resumes = (d: SimDevice, from = 0): number => d.logger.entries.slice(from).filter((e) => e.event === 'resumed-from-snapshot').length;
 const statusOf = (d: SimDevice, of: string): string | undefined => d.service.status().devices.find((x) => x.deviceId === of)?.status;
 const rowOf = async (d: SimDevice, of: string): Promise<string | undefined> => (await d.data.repos.sync.getStates()).find((r) => r.deviceId === of)?.status;
-const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const epochOf = (d: SimDevice): EpochId => [...(d.folder.devices.get(d.id)?.epochs.keys() ?? [])].at(-1) as EpochId;
 const dropFirstSegment = (a: SimDevice, b: SimDevice): void => propagate(a.folder, b.folder, a.id, { drop: [`${epochOf(a)}/j-00000001.spj`] });
 

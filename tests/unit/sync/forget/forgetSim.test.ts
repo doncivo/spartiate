@@ -6,7 +6,10 @@ import type { StateFileCopy } from '../../../../src/platform/sync/memory';
 import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { FORGET_META } from '../../../../src/sync/forget';
 import { mirrorDeviceFolder, propagate } from '../../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10 critères 8, 9, 10, 13, 15, 16 et 17 (ADR 0011 §14.2) par simulation : appareils complets (base SQLite Wasm, vrai service, plateforme
@@ -53,7 +56,7 @@ async function settle(list: readonly SimDevice[], rounds = 3): Promise<void> {
   }
 }
 
-const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task ORDER BY title')).map((r) => r.title);
+const titles = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry ORDER BY food_name')).map((r) => r.title);
 const meta = async (d: SimDevice, key: string): Promise<unknown> => {
   const raw = await d.data.repos.sync.getMeta(key);
   return raw === null ? null : (JSON.parse(raw) as unknown);
@@ -155,7 +158,7 @@ describe('effets chez tous les appareils (critère 10)', () => {
     await settle([a, b]);
     a.clock.advance(31 * DAY);
     await settle([a, b]);
-    const rows = async (): Promise<number> => (await a.driver.select('SELECT id FROM task WHERE id = ?', [task.id])).length;
+    const rows = async (): Promise<number> => (await a.driver.select('SELECT id FROM meal_entry WHERE id = ?', [task.id])).length;
     expect(await rows()).toBe(1);
     expect(await a.service.forgetDevice(x.id as DeviceId)).toEqual({ kind: 'done' });
     await settle([a, b]);
@@ -274,8 +277,8 @@ describe('appareil oublié qui revient (critères 16 et 17)', () => {
     await settle([a, b, x]);
     for (const d of [a, b, x]) expect(await titles(d), d.name).toEqual(['X avant', 'X en file', 'X ignorée']);
     // Les écritures de X au-delà de la coupure arrivent par le journal du nouvel identifiant, rattachées à lui ; l'ancien reste oublié.
-    const clock = await a.driver.select<{ hlc: string }>("SELECT hlc FROM sync_field_clock WHERE table_name = 'task' AND row_id = ? AND field = 'title'", [ignored.id]);
-    const rowHlc = await a.driver.select<{ hlc: string }>('SELECT hlc FROM task WHERE id = ?', [queued.id]);
+    const clock = await a.driver.select<{ hlc: string }>("SELECT hlc FROM sync_field_clock WHERE table_name = 'meal_entry' AND row_id = ? AND field = 'food_name'", [ignored.id]);
+    const rowHlc = await a.driver.select<{ hlc: string }>('SELECT hlc FROM meal_entry WHERE id = ?', [queued.id]);
     expect([...clock, ...rowHlc].every((r) => hlcDevice(r.hlc as never) === newId)).toBe(true);
     const journalOf = (id: string): string => JSON.stringify([...(a.folder.devices.get(id)?.epochs.values() ?? [])].flatMap((e) => [...e.segments.values()].flatMap((s) => s.lines.map((l) => l.text))));
     expect(journalOf(newId)).toContain(queued.id);

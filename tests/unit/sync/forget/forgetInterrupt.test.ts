@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { DeviceId } from '../../../../src/domain/types';
 import { FORGET_META } from '../../../../src/sync/forget';
 import { armCrash } from '../../../sim/syncCrash';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10 critère 14 (ADR 0011 §14.2, §9 règle 1) : un oubli interrompu à **chaque** écriture du scénario (intention du moteur, déclaration
@@ -59,7 +62,7 @@ async function outcome(a: SimDevice, x: SimDevice): Promise<Outcome> {
     declared: a.platform.testing.forgottenDeclarations().map((d) => d.deviceId),
     published: (state.forgotten ?? []).map((f) => f.deviceId),
     xFolderOnA: a.folder.devices.has(x.id),
-    titles: (await a.driver.select<{ title: string }>('SELECT title FROM task ORDER BY title')).map((r) => r.title),
+    titles: (await a.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry ORDER BY food_name')).map((r) => r.title),
     failure: await a.data.repos.sync.getMeta(FORGET_META.failure),
     publishPending: await a.data.repos.sync.getMeta(FORGET_META.publish),
     forgetStatus: a.service.status().forget ?? null,

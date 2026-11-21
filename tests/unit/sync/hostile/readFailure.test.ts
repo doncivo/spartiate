@@ -7,7 +7,10 @@ import { t } from '../../../../src/i18n';
 import { SYNC_ERROR_CODES, SyncPlatformError, type SyncErrorCode, type SyncStatus } from '../../../../src/platform/sync/types';
 import type { SyncDeps } from '../../../../src/sync/deps';
 import { readDevice, type ReadStatus } from '../../../../src/sync/reader';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-FIX-03 (B3 de docs/archive/circletasks/audit-1.0.md, ADR 0011 §31) : une lecture de journal en échec n'est jamais muette. Critères 2 à 12 de la fiche
@@ -133,7 +136,7 @@ describe('Y-FIX-03 : lecture passagère en échec (io), critères 2 à 6', () =>
     expect(eventsSince(b, mark2)).toContain('snapshot-written');
     // Critère 5 (suite) : appliqué une seule fois.
     expect((await b.task(late.id))?.title).toBe('Tâche PC 2');
-    const titles = (await b.driver.select<{ title: string }>('SELECT title FROM task')).map((row) => row.title).filter((title) => title === 'Tâche PC 2');
+    const titles = (await b.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry')).map((row) => row.title).filter((title) => title === 'Tâche PC 2');
     expect(titles).toEqual(['Tâche PC 2']);
     expect(await rowOf(b, a.id)).toMatchObject({ cursorSegment: (await rowOf(a, a.id))?.headSegment, cursorRecord: (await rowOf(a, a.id))?.headRecord });
   });
