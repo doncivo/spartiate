@@ -70,7 +70,7 @@
   gap: var(--ct-space-2);
   min-height: 44px;
   padding: 0 var(--ct-space-4);
-  border: 1.5px solid var(--ct-color-border-strong);
+  border: 1.5px solid var(--ct-color-control-border);
   border-radius: var(--ct-radius-pill);
   background: var(--ct-color-surface);
   color: var(--ct-color-text);
@@ -99,7 +99,7 @@
 .ct-logs__clear:focus-visible,
 .ct-logs__filter:focus-visible,
 .ct-logs__back:focus-visible {
-  outline: 2px solid var(--ct-color-accent);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 

@@ -2,18 +2,33 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.28.0
+
+Aucune migration : ta base reste au schéma 20. Mets à jour le PC et l'iPhone le même jour, comme d'habitude.
+
+- **Journaux** : aucune mesure corporelle (poids, fréquence cardiaque, sommeil, VFC…) ne passe plus en clair dans le journal technique, quelle que soit sa forme d'écriture. Sur l'iPhone, la base et les sauvegardes sont exclues de la sauvegarde iCloud de l'appareil (à constater, H-38).
+- **Export et import** : une archive jusqu'à 24 Mio s'importe ; l'archive garde l'horizon de remise à zéro.
+- **Saisie** : un nombre mal écrit (« 12,5,3 », « 8 kg ») est refusé au lieu d'être tronqué ; les repas et les pesées ont des bornes plausibles (l'import Renpho n'est pas concerné).
+- **Programme et récupération** : une séance commencée avant minuit compte pour son jour de départ ; un échec d'enregistrement d'un jour de routine ne laisse rien à moitié fait. Corrections du plancher de charge et des règles de récupération.
+- **Sauvegardes** : une sauvegarde, une restauration ou une mise de côté ne peut plus se lancer pendant une autre (« Une autre opération est en cours… réessaie dans un instant. Rien n'a été modifié. ») ; l'échange de base ne remplace jamais une base présente ; la sauvegarde de secours n'est jamais purgée.
+- **Démarrage** : l'app ne se relance plus d'elle-même pendant une étape de la base ; l'attente d'une étape lente passe à 2 minutes avec un message adapté.
+- **Accessibilité** : un anneau de focus bleu bien visible dans les deux thèmes ; bordures des champs plus contrastées ; l'interrupteur éteint du thème clair est plus foncé (contraste 3,80:1 au lieu de 2,04:1).
+- **Publication** : une version ne se publie que si la suite de tests est verte sur son commit.
+
+Après la mise à jour : regarde l'écran Plus en thème clair (interrupteurs éteints, anneau de focus au clavier sur le PC).
+
 ## 0.27.0
 
 **Mets à jour le PC et l'iPhone le même jour.** La base passe au schéma 20 (migration additive, rien n'est effacé). Une ligne créée par un appareil resté en 0.26.0 est gardée de côté puis reprise dès que les deux appareils sont en 0.27.0.
 
 - **Cible nutritionnelle** : une cible prévue pour une date future n'est plus jamais masquée par une décision prise avant cette date. Ça vaut pour un check-in d'une semaine passée, une décision venue de l'autre appareil, ou l'onboarding fait juste avant un import. Une cible importée compte comme une décision prise le jour de l'import. Une décision prise à sa date ou après passe toujours devant. La confirmation « Elle passera devant la cible prévue… » disparaît, puisque ce n'est plus vrai. En Fusionner, une cible prévue plus tard est désormais importée.
 - **Stratégie** : la cible en vigueur dit pourquoi elle s'applique (« En vigueur depuis le 16 novembre · décidée le 14 novembre »). Aujourd'hui et Stratégie affichent la même cible.
-- **Check-in** : « Accepter » le jour du check-in garde la cible de repos que tu as enregistrée le matin même.
+- **Check-in** : « Accepter » au check-in du lundi garde la cible de repos que tu as enregistrée le matin même.
 - **Séance du jour** : chaque jour de routine peut porter un jour de la semaine (Entraînement › routine › jour › « Jour de la semaine »). Une fois les jours rattachés, Aujourd'hui propose la séance du jour (« Jeudi — Poussée » le jeudi). Un jour sans séance affiche « Repos », avec la prochaine séance ; une séance manquée est sautée, pas décalée ; « Autre séance… » reste possible. Sans jour rattaché, rien ne change. À l'import d'une archive, un jour nommé « Lundi — … », « Mardi — … » est rattaché tout seul. Les jours d'entraînement proposés pour la cible des jours de repos suivent ces jours.
 - **Cycle** : la durée proposée au lancement reprend ton dernier réglage (onboarding, cycle précédent ou archive), au lieu de 5 semaines. En semaine 1, sans séance close, changer la durée propose de l'appliquer tout de suite au cycle en cours.
 - **Corrections** : les rappels de compléments ne se replanifient plus après la fermeture de l'écran. Les voiles et les ombres utilisent les couleurs du thème (aucun changement visible).
 
-Après la mise à jour : dans Entraînement › ta routine, rattache chaque jour à son jour de la semaine (l'import ne l'a pas fait pour la routine déjà présente), puis vérifie la cible du jour dans Nutrition › Stratégie.
+Après la mise à jour : dans Entraînement › ta routine, rattache chaque jour à son jour de la semaine (la mise à jour ne rattache pas les jours d'une routine déjà présente ; un import le fait), puis vérifie la cible du jour dans Nutrition › Stratégie.
 
 ## 0.26.0
 

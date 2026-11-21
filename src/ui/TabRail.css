@@ -72,7 +72,8 @@
   max-width: 100%;
   white-space: nowrap;
   /* Planche : 10 px. Jamais coupé ni suivi de points de suspension (« Aujourd'hui », « Entraînement » tiennent dans 88 px). */
-  font-size: 10px;
+  /* A11Y (C-113) : en rem pour suivre Dynamic Type, plafonné à 12 px pour que les cinq libellés tiennent dans la barre (la barre d'onglets d'iOS ne grandit pas non plus). */
+  font-size: min(0.625rem, 12px);
 }
 
 .ct-tab-rail[data-layout='mobile'] .ct-tab-rail__hint {
@@ -107,7 +108,7 @@
   justify-content: center;
   font-family: var(--ct-font-title);
   font-weight: var(--ct-font-weight-semibold);
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 .ct-tab-rail__name {

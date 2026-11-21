@@ -194,7 +194,7 @@
 .ct-training__back:focus-visible,
 .ct-training__link:focus-visible,
 .ct-training__icon-button:focus-visible {
-  outline: 2px solid var(--ct-color-select-ring);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -400,7 +400,7 @@
 }
 
 .ct-training__drag-handle:focus-visible {
-  outline: 2px solid var(--ct-color-select-ring);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
   color: var(--ct-color-text);
 }

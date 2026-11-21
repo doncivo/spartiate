@@ -26,10 +26,11 @@ describe('barre d’onglets iPhone (f)', () => {
   });
 
   it('corps de 10 px comme la planche : « Entraînement » et « Aujourd’hui » tiennent dans une cellule de 88 px', () => {
-    expect(label).toMatch(/font-size:\s*10px/);
-    // 5 onglets dans 440 px : 88 px par cellule. Le libellé le plus long (12 caractères) à 10 px reste sous ~66 px.
+    // A11Y (C-113) : 10 px en rem (Dynamic Type), plafonné à 12 px.
+    expect(label).toMatch(/font-size:\s*min\(0\.625rem,\s*12px\)/);
+    // 5 onglets dans 440 px : 88 px par cellule. Le libellé le plus long (12 caractères) reste sous ~80 px même au plafond de 12 px.
     const cell = 440 / 5;
-    expect(12 * 10 * 0.55).toBeLessThan(cell);
+    expect(12 * 12 * 0.55).toBeLessThan(cell);
   });
 });
 

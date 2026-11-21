@@ -35,7 +35,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | BL-008 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | 95 exercices sur 196 sans image, dont 8 de la routine en cours ; chercher d'autres sources à licence vérifiée | à faire (lot 0.28.0) |
 | BL-009 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Lisibilité des images réduites (640 px, gris) en thèmes clair et sombre, à constater par Ali | à faire (lot 0.28.0) |
 | BL-010 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Auteur par image non affiché : image de gainage reportée pour cette raison | à faire (lot 0.28.0) |
-| BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | à faire (lot 0.28.0) |
+| BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | fait (NETTOYAGE, 0.28.1, D-375) |
 | BL-012 | rapport de lot 0.21 (docs/I6-07.md) | Image inversée en thème sombre : fond noir au lieu de la teinte de la carte, à constater par Ali | à faire (lot 0.28.0) |
 | BL-013 | rapport de lot 0.26.0 (docs/PROG-03.md) | Glisser-déposer PC (WebView2) : lâcher sur un champ, Alt+↑/↓, annonce du Narrateur, à constater par Ali | à faire (lot 0.28.0) |
 | BL-014 | rapport de lot 0.25.0 (docs/FIX-0241.md) | Séance active à la largeur d'usage du PC, hors test géométrique : à constater par Ali | à faire (lot 0.28.0) |
@@ -170,9 +170,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-108 | audit Claude 0.27.0 | important — « Repartir de zéro » : la liste effacée omet compléments, prises, cardio et tracés GPS | fait (FIX-EXPORT) |
 | C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | fait (FIX-EXPORT, D-334, horizon dans le manifeste) |
 | C-110 | audit Claude 0.27.0 | important — textes qui conseillent de réinstaller l'app sur l'iPhone (perte de données) | fait (DOC-PRIV, PR #156) |
-| C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | à faire (lot 0.28.0) |
-| C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | à faire (lot 0.28.0) |
-| C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | à faire (lot 0.28.0) |
+| C-111 | audit Claude 0.27.0 | important — anneau de focus sous 3:1 en thème sombre (thème par défaut) | fait (A11Y) |
+| C-112 | audit Claude 0.27.0 | mineur — contrastes de composants sous 3:1 (WCAG 1.4.11) | fait (A11Y ; interrupteur éteint clair porté à 3,80:1, consigne d'Ali du 21/11) |
+| C-113 | audit Claude 0.27.0 | important — Dynamic Type « très grand texte » (§ 18.6) non branché sur iPhone | reporté (0.28.1, D-372) |
 | C-114 | audit Claude 0.27.0 | important — écran blanc définitif : aucune frontière d'erreur racine ni autour de « Démarrage bloqué » | fait (FIX-COQUILLE) |
 | C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | fait (FIX-COQUILLE) |
 | C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | fait (FIX-COQUILLE) |
@@ -196,8 +196,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-134 | audit Claude 0.27.0 | à vérifier (D-36) — « code absent des captures d'écran » sans ligne UNVERIFIED ; couleurs d'appairage mal justifiées | à faire (lot 0.28.0) |
 | C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à faire (lot 0.28.0) |
 | C-136 | audit Claude 0.27.0 | important — export importable seulement sous 2 Mo | fait (FIX-EXPORT) ; mesure d’une base synthétique de 12 mois à faire |
-| C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | à faire (lot 0.28.0) |
-| C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | à faire (lot 0.28.0) |
+| C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | fait (SAUV-RUST) |
+| C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | fait (SAUV-RUST) |
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (lot 0.28.0) |
 | C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | fait (FIX-CONFID-IOS) |
 | C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | à faire (lot 0.28.0) |
@@ -272,6 +272,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-105 | revue TESTS-FIGES | mineur — `eightWeeks.test.ts` : « lissée ≠ brute » à cibler sur une semaine et une valeur ; test de déterminisme de `testsFiges.test.ts` peu probant ; garde avant `readPrefs` (`SupplementsView.tsx`) sans cas | reporté (S) |
 | BL-106 | TESTS-FIGES (D-365) | important — après un changement de salle, une charge d'historique hors de la grille de la nouvelle salle (ou au-dessus du maximum du matériel) est prescrite telle quelle en échelle de répétitions ; à trancher par Ali (arrondi à la grille, plafond du matériel) | à trancher par Ali |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu'aucun réglage n'est publié |
+| BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | à faire (S) |
 
 ## 3. Audit Codex 0.26.0
 
