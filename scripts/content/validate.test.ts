@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { encodePngGray } from './png-reduce.mjs';
-import { ALLOWED_MEDIA_LICENSES, MEDIA_MAX_BYTES, MEDIA_SOURCES, MEDIA_TOTAL_MAX_BYTES, PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
+import { ALLOWED_MEDIA_LICENSES, MEDIA_MAX_BYTES, PICTOGRAM_MAX_BYTES, MEDIA_SOURCES, MEDIA_TOTAL_MAX_BYTES, PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
 
 const ROOT = resolve(__dirname, '..', '..');
 const CONTENT = resolve(ROOT, 'content');
@@ -658,6 +658,51 @@ describe('contenu réel : normes et clés du Strength Score (STR-01)', () => {
     expect(standards['source']).toMatchObject({ name: 'FitnessVolt Strength Standards', url: 'https://fitnessvolt.com/strength-standards/', consultedOn: '2026-11-16' });
   });
   it('le contenu réel passe le validateur avec les normes', () => {
+    expect(real.errors).toEqual([]);
+  });
+});
+
+// MEDIA-03c : pictogrammes SVG (D-413). Chaque règle a un cas rouge ; le contenu réel les passe.
+describe('validateContent : pictogrammes SVG', () => {
+  const GOOD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" fill="none" stroke="currentColor"><path d="M0 0L9 9" stroke-width="3" style="stroke:var(--ct-color-bronze)"/></svg>\n';
+  const withSvg = (text: string, file = 'ex-a.svg') => ({ ...bundle(), pictograms: [{ file, text }] });
+  const errorsOf = (text: string, file?: string) => run(withSvg(text, file)).join('\n');
+
+  it('accepte un SVG inerte, aux couleurs de la charte', () => {
+    expect(run(withSvg(GOOD))).toEqual([]);
+  });
+  it('refuse un fichier sans exercice', () => {
+    expect(errorsOf(GOOD, 'inconnu.svg')).toMatch(/pictogramme sans exercice/);
+  });
+  it('refuse le pictogramme d’un exercice qui a une photo (la photo est prioritaire)', () => {
+    const b = withSvg(GOOD);
+    b['exercises'].exercises[0].media = { images: ['ex-a-1.jpg'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0001-tension.png' };
+    expect(run(b, { ...OPTS, mediaDir: null }).join('\n')).toMatch(/qui a une photo/);
+  });
+  it('refuse un fichier trop lourd', () => {
+    expect(errorsOf(GOOD.replace('</svg>', `<!-- ${'x'.repeat(PICTOGRAM_MAX_BYTES)} --></svg>`))).toMatch(/pictogramme trop lourd/);
+  });
+  it('refuse ce qui n’est pas un SVG avec viewBox', () => {
+    expect(errorsOf('<div></div>')).toMatch(/SVG attendu avec un viewBox/);
+    expect(errorsOf(GOOD.replace('viewBox="0 0 220 120"', ''))).toMatch(/SVG attendu avec un viewBox/);
+  });
+  it.each([
+    ['un script', '<script>alert(1)</script>', /script interdit/],
+    ['un attribut on*', '<path d="M0 0" onload="x()"/>', /on\*\) interdit/],
+    ['un lien href', '<a href="#x"><path d="M0 0"/></a>', /lien \(href\) interdit/],
+    ['un foreignObject', '<foreignObject></foreignObject>', /foreignObject interdit/],
+    ['une feuille de style', '<style>path{fill:red}</style>', /élément interdit/],
+    ['une image', '<image/>', /élément interdit/],
+    ['une adresse externe', '<path d="M0 0" data-x="https://exemple.test/x"/>', /adresse externe interdite/],
+    ['une couleur hexadécimale', '<path d="M0 0" stroke="#ff0000"/>', /couleur en dur interdite : #ff0000/],
+    ['un nom de couleur', '<path d="M0 0" fill="red"/>', /couleur en dur interdite : red/],
+    ['une couleur en dur dans style', '<path d="M0 0" style="stroke:#8e6530"/>', /style non admis/],
+    ['un style autre que fill ou stroke', '<path d="M0 0" style="filter:blur(2px)"/>', /style non admis/],
+  ])('refuse %s', (_label, fragment, pattern) => {
+    expect(errorsOf(GOOD.replace('</svg>', `${fragment}</svg>`))).toMatch(pattern);
+  });
+  it('le contenu réel : un pictogramme par exercice sans photo, tous valides', () => {
+    const real = validateContentDir(CONTENT);
     expect(real.errors).toEqual([]);
   });
 });
