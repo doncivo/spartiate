@@ -7,7 +7,7 @@ import { TEMPLATE } from './pictograms/skeleton.mjs';
 import { SPECS, TRIAL_IDS } from './pictograms/specs.mjs';
 
 const ROOT = resolve(__dirname, '..', '..');
-const exercises = (JSON.parse(readFileSync(resolve(ROOT, 'content/exercises/exercises.json'), 'utf8')) as { exercises: Array<{ id: string; muscles: unknown[] }> }).exercises;
+const exercises = (JSON.parse(readFileSync(resolve(ROOT, 'content/exercises/exercises.json'), 'utf8')) as { exercises: Array<{ id: string; muscles: unknown[]; media: { images: string[] } }> }).exercises;
 const byId = new Map(exercises.map((e) => [e.id, e]));
 const render = (id: string): string => {
   const ex = byId.get(id);
@@ -35,5 +35,26 @@ describe('pictogrammes : gabarit et essais (MEDIA-03a)', () => {
 
   it.each(TRIAL_IDS)('%s : le fichier de la proposition est celui que le script produit', (id) => {
     expect(readFileSync(resolve(ROOT, 'docs/maquettes/propositions/pictogrammes', `${id}.svg`), 'utf8')).toBe(render(id));
+  });
+});
+
+// MEDIA-03b : tous les exercices sans photo ont leur pictogramme, produit par le script (D-51), les huit de la routine d'abord.
+const noPhoto = exercises.filter((e) => e.media.images.length === 0).map((e) => e.id);
+const ROUTINE_EIGHT = ['cable-crunch', 'overhead-triceps-extension-cable', 'split-squat-bulgarian', 'hip-thrust-barbell', 'hanging-leg-raise', 'chest-supported-row-machine', 'face-pull', 'lateral-raise-cable'];
+
+describe('pictogrammes : exercices sans photo (MEDIA-03b)', () => {
+  it('chaque exercice sans photo a une description, et seulement eux', () => {
+    expect(noPhoto.length).toBeGreaterThan(0);
+    expect(Object.keys(SPECS).sort()).toEqual([...noPhoto].sort());
+  });
+
+  it('les huit exercices de la routine d’Ali sont servis', () => {
+    for (const id of ROUTINE_EIGHT) expect(Object.keys(SPECS)).toContain(id);
+  });
+
+  it.each(noPhoto)('%s : le fichier du dossier de contenu est celui que le script produit, sans couleur en dur', (id) => {
+    const file = readFileSync(resolve(ROOT, 'content/exercises/pictograms', `${id}.svg`), 'utf8');
+    expect(file).toBe(render(id));
+    expect(file).not.toMatch(/#[0-9a-fA-F]{3,8}\b|<script|href|foreignObject/);
   });
 });
