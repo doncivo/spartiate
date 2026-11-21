@@ -95,3 +95,7 @@ bilan (le brief demande texte ou Markdown) ; aucun fournisseur d'IA (D-294).
 ## Budget
 
 M à L annoncé ; consommé dans l'enveloppe L (environ 200 k).
+
+## Relecture à froid (code-reviewer, agent distinct)
+
+Verdict initial : à corriger (un bloquant). Une semaine sans pesée dont la dernière pesée tombe la veille du lundi donnait « 0 kg sur la semaine » (fenêtres de `reviewRateKg`, copie de weeklyRate.ts, qui se recouvrent) : variation citée seulement entre deux pesées distinctes (rouge b44494de, vert 0647b196) ; le même défaut du check-in est porté en BL-124. Mineurs consignés : tendance de fin de semaine possiblement issue d'une pesée de la semaine précédente (règle des 7 jours héritée) ; repère de cycle d'une semaine passée tiré de l'état actuel (D-417) ; `revokeObjectURL` au tick suivant à vérifier sur l'iPhone si la feuille de partage est refusée. Numéros : D-416 à D-418, BL-124, BL-125.
