@@ -36,6 +36,8 @@ import type { TrainingData } from '../trainingState';
 import type { RestReport, RestTimerController } from './restTimer';
 import type { RedDayState } from './redDayState';
 import { SessionStrip } from './SessionStrip';
+import { DeclaredFatigueBar } from './DeclaredFatigueBar';
+import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
@@ -104,6 +106,30 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [grouping, setGrouping] = useState(false);
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
   const [replacing, setReplacing] = useState<string | null>(null);
+  /** SESS-01d : fatigue déclarée pour CETTE séance (réglage local), lue au montage ; illisible : aucune. */
+  const [fatigueOf, setFatigueOf] = useState<{ readonly workoutId: string; readonly level: DeclaredFatigue | null } | null>(null);
+  const declaredFatigue = fatigueOf !== null && fatigueOf.workoutId === workout.id ? fatigueOf.level : null;
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.declaredFatigue').then(
+      (raw) => {
+        if (alive) setFatigueOf({ workoutId: workout.id, level: parseDeclaredFatigue(raw, workout.id) });
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access, workout.id]);
+  async function declareFatigue(level: DeclaredFatigue | null): Promise<void> {
+    setError(null);
+    try {
+      await access.repos.settings.set('training.declaredFatigue', { v: 1, workoutId: workout.id, level });
+      if (live.current) setFatigueOf({ workoutId: workout.id, level });
+    } catch {
+      if (live.current) setError(tSession('fatigueError'));
+    }
+  }
   /** SESS-01c : exercice dont le calculateur de disques est ouvert. */
   const [platesFor, setPlatesFor] = useState<string | null>(null);
   /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage ; illisible : aucun. */
@@ -496,6 +522,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </div>
       </header>
 
+      <DeclaredFatigueBar level={declaredFatigue} busy={busy} onChange={(level) => void declareFatigue(level)} />
+
       {error && (
         <p className="ct-training__error" role="alert">
           {error}
@@ -555,7 +583,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               </Suspense>
             )}
             <Suspense fallback={null}>
-              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} />
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} declaredFatigue={declaredFatigue} />
             </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {

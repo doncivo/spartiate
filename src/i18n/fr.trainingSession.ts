@@ -63,5 +63,13 @@ export const trainingSessionFr = {
   platesBarOnly: 'Barre seule',
   platesRemainder: 'Charge atteignable : {loaded} kg (reste {rest} kg impossible avec ces disques).',
   platesBelowBar: 'Charge inférieure au poids de la barre.',
+  // SESS-01d — fatigue déclarée
+  fatigueLabel: 'Fatigue déclarée (facultatif)',
+  fatigueFresh: 'Frais',
+  fatigueNormal: 'Normal',
+  fatigueTired: 'Fatigué',
+  fatigueHint: 'Facultatif. « Fatigué » : aucune hausse de charge aujourd’hui.',
+  fatigueTiredHint: '« Fatigué » : les propositions qui montaient restent à la charge de la dernière fois.',
+  fatigueError: 'Fatigue déclarée non enregistrée.',
   platesStandard: 'Jeu de disques standard : aucun disque déclaré dans le profil de matériel.',
 } as const;

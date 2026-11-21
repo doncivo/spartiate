@@ -531,3 +531,14 @@
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-md);
 }
+
+/* SESS-01d : fatigue déclarée au démarrage. */
+.ct-session__fatigue-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+}
+.ct-session__chip[aria-pressed='true'] {
+  border-color: var(--ct-color-accent);
+  font-weight: 600;
+}

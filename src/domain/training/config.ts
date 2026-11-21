@@ -169,6 +169,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'snap-extra-rep',
   'gain-capped',
   'unsupported-metric',
+  'declared-fatigue',
 ];
 
 export const PRESCRIPTION_HEADLINES: readonly PrescriptionHeadline[] = [

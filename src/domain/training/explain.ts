@@ -34,7 +34,9 @@ export type ExplanationKey =
   | 'assistDecreaseUnknownStep'
   | 'extraRepAssistMin'
   | 'inactivityAssistHeld'
-  | 'recoveryLowAssistHeld';
+  | 'recoveryLowAssistHeld'
+  // SESS-01d : fatigue déclarée, aucune hausse ce jour-là.
+  | 'declaredFatigue';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -55,6 +57,7 @@ export function confidenceBand(confidence: number): ConfidenceBand {
 }
 
 export function explainPrescription(p: Prescription): Explanation {
+  if (p.reasons.includes('declared-fatigue') && p.loadKg !== null) return { key: 'declaredFatigue', params: { load: p.loadKg } };
   const set = (p.ladderSetIndex ?? 0) + 1;
   switch (p.headline) {
     case 'to-enter':
