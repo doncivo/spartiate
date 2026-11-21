@@ -63,6 +63,9 @@ export const trainingSessionFr = {
   platesBarOnly: 'Barre seule',
   platesRemainder: 'Charge atteignable : {loaded} kg (reste {rest} kg impossible avec ces disques).',
   platesBelowBar: 'Charge inférieure au poids de la barre.',
+  // SESS-01f — Live Activity étendue
+  restLiveNext: '{rest} · ensuite : {name}, {load}',
+  restLiveNextNoLoad: '{rest} · ensuite : {name}',
   // SESS-01d — fatigue déclarée
   fatigueLabel: 'Fatigue déclarée (facultatif)',
   fatigueFresh: 'Frais',

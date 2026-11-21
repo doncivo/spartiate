@@ -28,7 +28,7 @@ import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
 import { logFailure } from '../../../platform/desktop/log';
 import type { Haptics } from '../../../platform/haptics';
-import { formatClock, formatRest, tTraining } from '../../../i18n/trainingText';
+import { formatClock, formatExerciseLoad, formatRest, tTraining } from '../../../i18n/trainingText';
 import { tSession } from '../../../i18n/trainingSessionText';
 import { Button, ConfirmDialog } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
@@ -267,9 +267,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     if (live.current) onWorkout(fresh);
   }, [access, workout.id, onWorkout]);
 
-  async function startRest(seconds: number): Promise<void> {
+  async function startRest(seconds: number, label?: string): Promise<void> {
     try {
-      const report = await timer.start(seconds);
+      const report = await timer.start(seconds, label);
       if (!live.current) return;
       setNow(clock.nowMs());
       setRestDone(false);
@@ -292,7 +292,27 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     // I6-03 : dans un groupe, repos entre exercices (nul = aucun) puis repos de fin de tour (cible des séries) ; hors groupe, repos de l'exercice.
     const inCircuit = restAfterCircuitSet(workout.sets, set.id);
     const seconds = inCircuit?.phase === 'between' ? inCircuit.seconds : restSecondsFor(set, restSetting, exercise?.defaultRestSec ?? null);
-    if (seconds !== null) await startRest(seconds);
+    if (seconds === null) return;
+    // SESS-01f : la Live Activity annonce la série suivante (exercice et charge saisie ou cible), relue en base après la validation.
+    let label: string | undefined;
+    if (os === 'ios') {
+      try {
+        const fresh = await (await access.repos.workouts()).get(workout.id);
+        const nextId = fresh === null ? null : (resumeState(fresh, clock.nowMs())?.nextSetId ?? null);
+        const next = fresh?.sets.find((s) => s.id === nextId);
+        if (next !== undefined) {
+          const kg = next.loadKg ?? next.targetLoadKg;
+          const held = heldFor(exerciseOf(next.exerciseId), data.active);
+          label =
+            kg === null
+              ? tSession('restLiveNextNoLoad', { rest: tTraining('restLiveLabel'), name: next.exerciseName })
+              : tSession('restLiveNext', { rest: tTraining('restLiveLabel'), name: next.exerciseName, load: formatExerciseLoad(kg, held) });
+        }
+      } catch {
+        // Lecture impossible : libellé par défaut (« Repos »), le repos démarre quand même.
+      }
+    }
+    await startRest(seconds, label);
   }
 
   async function addExercise(exercise: Exercise): Promise<void> {
