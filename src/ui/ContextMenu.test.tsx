@@ -115,3 +115,46 @@ describe('menu contextuel (PC)', () => {
     expect(onActivate).not.toHaveBeenCalled();
   });
 });
+
+/** Revue à froid de COQUILLE-PC : zone non focalisable (ligne `<li>` portant ses boutons), double-clic parti d'un bouton de la ligne. */
+function ListRow(props: { items: readonly ContextMenuItem[]; onActivate: () => void; onButton: () => void }) {
+  return (
+    <ul>
+      <ContextMenuZone items={props.items} menuLabel={MENU_LABEL} onActivate={props.onActivate}>
+        {(bind) => (
+          <li data-testid="li" {...bind}>
+            <span>{'Ligne'}</span>
+            <button type="button" onClick={props.onButton}>
+              {'Corriger'}
+            </button>
+          </li>
+        )}
+      </ContextMenuZone>
+    </ul>
+  );
+}
+
+describe('menu contextuel (PC) : ligne non focalisable', () => {
+  it('Maj+F10 depuis un bouton de la ligne, puis Échap : le focus revient à ce bouton', () => {
+    viewport(1280);
+    const { items } = makeItems();
+    render(<ListRow items={items} onActivate={vi.fn()} onButton={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Corriger' });
+    button.focus();
+    fireEvent.keyDown(button, { key: 'F10', shiftKey: true });
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('un double-clic parti d’un bouton de la ligne ne déclenche pas l’action principale', () => {
+    viewport(1280);
+    const { items } = makeItems();
+    const onActivate = vi.fn();
+    render(<ListRow items={items} onActivate={onActivate} onButton={vi.fn()} />);
+    fireEvent.doubleClick(screen.getByRole('button', { name: 'Corriger' }));
+    expect(onActivate).not.toHaveBeenCalled();
+    fireEvent.doubleClick(screen.getByText('Ligne'));
+    expect(onActivate).toHaveBeenCalledTimes(1);
+  });
+});
