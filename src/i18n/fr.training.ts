@@ -17,6 +17,8 @@ export const trainingFr = {
   edit: 'Modifier',
   /** COQUILLE-PC-a (§ 18.1) : menu contextuel PC d'une ligne de liste. */
   openItem: 'Ouvrir',
+  /** Revue COQUILLE-PC : la liste sert aussi de sélecteur (routine, séance, remplacement). */
+  chooseItem: 'Choisir',
   rowActions: 'Actions de {name}',
   saveError: 'Enregistrement impossible. Réessaie.',
 

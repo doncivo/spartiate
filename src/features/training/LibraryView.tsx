@@ -139,7 +139,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
             return (
               <li key={exercise.id}>
                 <ContextMenuZone
-                  items={[{ id: 'open', label: tTraining('openItem'), onSelect: () => onSelect(exercise) }]}
+                  items={[{ id: 'open', label: tTraining(mode === 'library' ? 'openItem' : 'chooseItem'), onSelect: () => onSelect(exercise) }]}
                   menuLabel={tTraining('rowActions', { name: exercise.nameFr })}
                   onActivate={() => onSelect(exercise)}
                 >

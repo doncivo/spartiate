@@ -15,7 +15,7 @@ export interface ContextMenuItem {
 export interface ContextMenuBind {
   onContextMenu?: (event: MouseEvent<HTMLElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLElement>) => void;
-  onDoubleClick?: () => void;
+  onDoubleClick?: (event: MouseEvent<HTMLElement>) => void;
 }
 
 export interface ContextMenuZoneProps {
@@ -60,6 +60,12 @@ export function ContextMenuZone({ items, menuLabel, onActivate, children }: Cont
     };
   }, [opened]);
 
+  // Revue : une ligne non focalisable (`<li>` portant ses boutons) rend le focus à l'élément d'où le menu est parti.
+  const originOf = (zone: HTMLElement): HTMLElement => {
+    const active = document.activeElement;
+    return active instanceof HTMLElement && zone.contains(active) ? active : zone;
+  };
+
   const close = (restore: boolean) => {
     const origin = opened?.origin;
     setOpened(null);
@@ -70,15 +76,24 @@ export function ContextMenuZone({ items, menuLabel, onActivate, children }: Cont
     ? {
         onContextMenu: (event) => {
           event.preventDefault();
-          setOpened({ x: event.clientX, y: event.clientY, origin: event.currentTarget });
+          setOpened({ x: event.clientX, y: event.clientY, origin: originOf(event.currentTarget) });
         },
         onKeyDown: (event) => {
           if (event.key !== 'ContextMenu' && !(event.key === 'F10' && event.shiftKey)) return;
           event.preventDefault();
           const rect = event.currentTarget.getBoundingClientRect();
-          setOpened({ x: rect.left + 16, y: rect.top + Math.min(rect.height, 32), origin: event.currentTarget });
+          setOpened({ x: rect.left + 16, y: rect.top + Math.min(rect.height, 32), origin: originOf(event.currentTarget) });
         },
-        ...(onActivate ? { onDoubleClick: onActivate } : {}),
+        ...(onActivate
+          ? {
+              onDoubleClick: (event) => {
+                // Revue : un double-clic parti d'un bouton de la ligne (Supprimer…) n'est pas l'action principale.
+                const control = (event.target as Element).closest('button, a, input, select, textarea');
+                if (control !== null && control !== event.currentTarget) return;
+                onActivate();
+              },
+            }
+          : {}),
       }
     : {};
 
@@ -110,7 +125,7 @@ export function ContextMenuZone({ items, menuLabel, onActivate, children }: Cont
               role="menu"
               aria-label={menuLabel}
               className="ct-context-menu"
-              style={{ left: Math.max(0, Math.min(opened.x, window.innerWidth - 220)), top: Math.max(0, Math.min(opened.y, window.innerHeight - 8 - items.length * 44)) }}
+              style={{ left: Math.max(0, Math.min(opened.x, window.innerWidth - 280)), top: Math.max(0, Math.min(opened.y, window.innerHeight - 8 - items.length * 44)) }}
               onKeyDown={onMenuKeyDown}
             >
               {items.map((item) => (
