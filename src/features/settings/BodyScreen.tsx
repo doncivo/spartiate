@@ -1,5 +1,5 @@
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   EXPERIENCES,
   GOALS,
@@ -25,6 +25,9 @@ import { useAppStore } from '../app/appStore';
 import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
 import './BodyScreen.css';
+
+/** BLESSURES-a : section chargée à la demande avec ses textes et le catalogue des muscles (hors du départ). */
+const InjuriesSection = lazy(() => import('./injuries/InjuriesSection').then((m) => ({ default: m.InjuriesSection })));
 
 const SEX_KEY = { male: 'sexMale', female: 'sexFemale' } as const satisfies Record<Sex, BodyTextKey>;
 const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const satisfies Record<BodyGoal, BodyTextKey>;
@@ -293,6 +296,9 @@ export function BodyScreen() {
             </Button>
           </section>
         </div>
+        <Suspense fallback={null}>
+          <InjuriesSection />
+        </Suspense>
       </div>
     </div>
   );

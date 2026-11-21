@@ -1,0 +1,17 @@
+.ct-injuries { display: flex; flex-direction: column; gap: var(--ct-space-2); }
+.ct-injuries__chips { display: flex; flex-wrap: wrap; gap: var(--ct-space-1); }
+.ct-injuries__chip {
+  min-height: 44px;
+  padding: 0 var(--ct-space-2);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  font: inherit;
+  cursor: pointer;
+}
+.ct-injuries__chip[aria-pressed='true'] { border-color: var(--ct-color-bronze); font-weight: 600; }
+.ct-injuries__chip[aria-pressed='true']::before { content: '\2713\00a0'; }
+.ct-injuries__answers { display: flex; flex-wrap: wrap; gap: var(--ct-space-2); }
+.ct-injuries__answers > button { min-height: 44px; min-width: 44px; }
+.ct-injuries__row { display: flex; justify-content: space-between; align-items: center; gap: var(--ct-space-2); min-height: 44px; border-bottom: 1px solid var(--ct-color-border); }

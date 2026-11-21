@@ -4,6 +4,8 @@ import { createHlcClock } from '../../../domain/hlc';
 import { parseInjuries } from '../../../domain/training/injuries';
 import type { DeviceId } from '../../../domain/types';
 import { tInjuries } from '../../../i18n/injuriesText';
+import { tTraining } from '../../../i18n/trainingText';
+import { PATTERN_KEY } from '../../training/labels';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
@@ -20,6 +22,12 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
         <InjuriesSection />
       </AppContainerProvider>,
     );
+  };
+  /** Le catalogue des muscles se charge à la demande : attendre ses options. */
+  const muscleSelect = async (): Promise<HTMLElement> => {
+    const select = await screen.findByLabelText(tInjuries('muscle'));
+    await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
+    return select;
   };
   const stored = async () => parseInjuries(await db.data.repos.settings.get('training.injuries'));
 
@@ -39,8 +47,8 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
 
   it('déclare une gêne (muscle, pattern, note), la liste active et la persiste en réglage local', async () => {
     open();
-    fireEvent.change(await screen.findByLabelText(tInjuries('muscle')), { target: { value: 'chest' } });
-    fireEvent.click(screen.getByRole('button', { name: tInjuries('painToggle', { pattern: 'Poussée verticale' }) }));
+    fireEvent.change(await muscleSelect(), { target: { value: 'chest' } });
+    fireEvent.click(screen.getByRole('button', { name: tInjuries('painToggle', { pattern: tTraining(PATTERN_KEY['push-vertical']) }) }));
     fireEvent.change(screen.getByLabelText(tInjuries('note')), { target: { value: 'pectoral gauche' } });
     fireEvent.click(screen.getByRole('button', { name: tInjuries('save') }));
     await waitFor(async () => expect((await stored()).items).toHaveLength(1));
@@ -58,7 +66,7 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
 
   it('marque une gêne guérie : elle passe dans les gênes passées', async () => {
     open();
-    fireEvent.change(await screen.findByLabelText(tInjuries('muscle')), { target: { value: 'chest' } });
+    fireEvent.change(await muscleSelect(), { target: { value: 'chest' } });
     fireEvent.click(screen.getByRole('button', { name: tInjuries('save') }));
     const active = await screen.findByRole('list', { name: tInjuries('activeTitle') });
     fireEvent.click(within(active).getByRole('button', { name: tInjuries('markHealed') }));
