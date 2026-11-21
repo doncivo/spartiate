@@ -72,9 +72,9 @@ function normalize(id: string): string {
   if (!/^[a-zA-Z]:[\\/]|^\//.test(clean)) return clean;
   const rel = relative(root, clean).replace(/\\/g, '/');
   // Worktree (point 3.4 du lot 0.28.0) : `node_modules` y est une jonction vers celui du dépôt principal et Vite rend le chemin réel
-  // (`../../node_modules/react/…`). Seul un chemin hors du dépôt QUI PASSE PAR un `node_modules` est ramené à `node_modules/…` ; tout
-  // autre chemin hors du dépôt garde ses `../` et reste refusé par la liste blanche.
-  return rel.startsWith('../') ? rel.replace(/^(\.\.\/)+(?:[^/]+\/)*?node_modules\//, 'node_modules/') : rel;
+  // (`../../node_modules/react/…`). Seul un chemin fait de `../` puis `node_modules/` (la jonction) est ramené à `node_modules/…` ;
+  // tout autre chemin hors du dépôt (`../autre/node_modules/…` compris) garde ses `../` et reste refusé par la liste blanche.
+  return rel.replace(/^(\.\.\/)+node_modules\//, 'node_modules/');
 }
 
 function allowed(module: string): boolean {
@@ -142,6 +142,16 @@ function reachableFrom(outDir: string, chunks: ReadonlyMap<string, ChunkInfo>, p
 function violations(modules: readonly string[]): string[] {
   return [...modules.filter((module) => !allowed(module)), ...modules.filter((module) => FORBIDDEN.some((pattern) => pattern.test(module)))];
 }
+
+describe('normalize : chemins vus depuis un worktree (NETTOYAGE, revue)', () => {
+  it('ramène la jonction node_modules, garde tout autre chemin hors du dépôt hors liste', () => {
+    expect(normalize(resolve(root, '..', '..', 'node_modules', 'react', 'index.js'))).toBe('node_modules/react/index.js');
+    expect(normalize(resolve(root, '..', '..', 'src', 'x.ts'))).toBe('../../src/x.ts');
+    const other = normalize(resolve(root, '..', 'autre', 'node_modules', 'react', 'index.js'));
+    expect(other).toBe('../autre/node_modules/react/index.js');
+    expect(allowed(other)).toBe(false);
+  });
+});
 
 describe('bundle de la fenêtre pairing (pairing.html)', () => {
   let outDir = '';

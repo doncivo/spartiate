@@ -34,3 +34,7 @@ La vérification que `node_modules` de ces worktrees est une jonction (et non un
 ## BL-011 : sources d'images réduites (point 3.3)
 
 - Rouge : 3581fedd (3 tests rouges : provenance incomplète, champs de réduction sur une source non réduite, PNG invalide ou trop haut). Vert : commit suivant, `validateReduction` dans scripts/content/validate-content.mjs ; contenu réel validé (14 médias réduits). D-375.
+
+## Passe code-reviewer (à froid, agent distinct) : approuvé, suggestions appliquées
+
+Approuvé sans point bloquant. Suggestions appliquées : `normalize` ne ramène plus que `../…/node_modules/` fait seulement de `../` (un `../autre/node_modules/x` reste refusé), test dédié ajouté ; boucle sur les trois champs de réduction pour une source non réduite ; un seul dossier temporaire pour le cas CRC. Parseur PNG et CRC jugés exacts. Critère 3 (worktrees) : reporté à Ali, accepté par le product-owner (aucune suppression sans vérifier la jonction).

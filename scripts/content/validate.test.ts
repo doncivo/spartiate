@@ -388,15 +388,18 @@ describe('validateContent : médias d’exercice (I6-07)', () => {
   });
 
   it('refuse un média non réduit qui porte des champs de réduction', () => {
-    const { b, dir, registry } = withMedia();
-    registry['files'][0].transform = 'gris-8-bits-hauteur-640';
-    expect(runMedia(b, dir)).toMatch(/champs de réduction sur une source non réduite/);
+    for (const [field, value] of [['transform', 'gris-8-bits-hauteur-640'], ['originBytes', 4096], ['originSha256', 'a'.repeat(64)]] as const) {
+      const { b, dir, registry } = withMedia();
+      registry['files'][0][field] = value;
+      expect(runMedia(b, dir), field).toMatch(/champs de réduction sur une source non réduite/);
+    }
   });
 
   it('refuse un média réduit dont un CRC de bloc est faux, qui n’est pas un PNG gris 8 bits ou qui dépasse la hauteur', () => {
     const bad = Buffer.from(reducedPng(2));
     bad[bad.length - 1] ^= 0xff; // CRC du bloc IEND
-    expect(runMedia(withReduced(bad).b, withReduced(bad).dir)).toMatch(/média réduit : PNG invalide \(CRC/);
+    const crc = withReduced(bad);
+    expect(runMedia(crc.b, crc.dir)).toMatch(/média réduit : PNG invalide \(CRC/);
     const notPng = withReduced(PNG);
     expect(runMedia(notPng.b, notPng.dir)).toMatch(/média réduit : PNG invalide/);
     const tall = withReduced(reducedPng(641));
