@@ -18,7 +18,7 @@ Décisions citées : D-200 (OCR natif conservé pour l'import de programme), D-4
 - **C-6 (création)** Quand Ali confirme, alors une routine Libre est créée en une transaction par `trainingRoutines().create` (tables existantes, aucune migration), noms figés de la bibliothèque, repos lu sinon repos par défaut de l'exercice ; elle s'ouvre dans l'éditeur ordinaire, synchronisée comme toute routine.
 - **C-7 (entrée)** Entraînement › Routines porte « Importer un programme » ; l'écran est un bloc à la demande avec son catalogue `fr.programImport`, hors du départ (assertion du test de bundle), bundle de départ jamais augmenté.
 - **C-8 (photo, IMPORT-029b)** Étant donné l'iPhone (Vision) ou le PC (Windows.Media.Ocr), même façade `src/platform/ocr`, quand Ali choisit une photo ou une capture, alors les lignes lues remplissent le texte (modifiable) puis passent par le même analyseur ; moteur absent (navigateur) : « Lecture d'image disponible sur iPhone et sur PC » ; échec de lecture : raison dite, texte inchangé. L'image n'est jamais enregistrée. PDF : aucune voie sans dépendance nouvelle, reporté et dit.
-- **C-9 (hypothèse)** La qualité de l'OCR sur un programme réel est l'hypothèse H-40 (PRD § 26.2) et une ligne UNVERIFIED de `docs/capability-matrix.md`, à constater par Ali.
+- **C-9 (hypothèse)** La qualité de l'OCR sur un programme réel est l'hypothèse H-40 (registre provisoire de docs/decisions.md, chapitre 26 du PRD figé) et une ligne UNVERIFIED de `docs/capability-matrix.md`, à constater par Ali.
 
 Hors périmètre : fournisseur d'IA (D-410), Hevy / Strong (D-415), PDF (aucune voie existante), création d'un exercice personnalisé depuis l'import (le sélecteur existant suffit), prescription des charges (aucune charge importée : la charge de départ reste saisie par Ali, D-72).
 
@@ -59,3 +59,7 @@ Revue (code-reviewer) : un échec après l'écriture (ouverture de l'éditeur) n
 **Constats d'Ali à faire** : (1) coller dans Entraînement › Routines › Importer un programme le bloc produit par Claude avec la consigne du guide, vérifier l'aperçu, créer la routine, la retrouver sur l'autre appareil après synchro ; (2) sur l'iPhone puis sur le PC, « Lire une photo ou une capture » sur la photo d'un programme papier et sur une capture d'écran : part des exercices lus sans retouche, lignes « non reconnues » (H-40).
 
 **Écarts au brief** : H-n non inscrite au PRD § 26.2 (chapitre figé par test ; registre provisoire dans `docs/decisions.md`, que ce groupe n'écrit pas) ; PDF reporté ; « disponible sur iPhone » devenu « disponible sur iPhone et sur PC » (le PC a son OCR natif) ; pas d'e2e (CI seulement) ; budget L tenu.
+
+## Relecture à froid (code-reviewer, agent distinct)
+
+Verdict initial : à corriger (deux importants). Corrigés (rouge 39c11ee8, vert 2937c2bb) : la création est fermée pour de bon après l'écriture (une ouverture de l'éditeur en échec ne permettait plus une seconde routine) ; un bloc JSON très profond est refusé avec sa raison (`safeJson`) et l'analyse ne peut plus échouer en silence ; ligne de plus de 500 caractères refusée « trop longue » (expressions quadratiques sur de longues suites d'espaces), texte borné à 50 000 caractères ; « Jour 1 » vide suivi de « Jour 2 » reste une séance. Consignés : « 3 x 30 s » écrit en répétitions (guide, BL-127) ; H-40 au registre provisoire. Numéros : D-419 à D-423, H-40, BL-126 à BL-128.

@@ -200,7 +200,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | fait (SAUV-RUST) |
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (lot 0.28.0) |
 | C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | fait (FIX-CONFID-IOS) |
-| C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | à faire (lot 0.28.0) |
+| C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | fait en partie (IMPORT-029b : l'OCR sert à l'import de programme, D-423 ; dictée sans usage, D-415) |
 | C-142 | audit Claude 0.27.0 | à vérifier — `vault_ios.rs` : course sur le cache de la clé (dépend de la sérialisation par SyncCore) | à faire (lot 0.28.0) |
 | C-143 | audit Claude 0.27.0 | mineur — marqueur de démarrage illisible traité comme absent ; marqueur définitif écrit sans vérifier le jeton | à faire (lot 0.28.0) |
 | C-144 | audit Claude 0.27.0 | mineur — `db_diagnostics` renvoie des chemins absolus (ADR 0009) ; dates de sauvegarde mal validées | à faire (lot 0.28.0) |
@@ -291,6 +291,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart proposé, à trancher par Ali |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | à faire (nutrition, 0.29.x) |
 | BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | à trancher par Ali |
+| BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à faire (0.29.x, sans dépendance nouvelle) |
+| BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | à faire (0.29.x) |
+| BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | à faire (0.29.x) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -446,7 +449,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
 | § 17.3 | PRD § 17.3 | absent — bilans avec repli sur gabarit (aucun fournisseur IA, D-294) | fait (BILAN-029, 0.29.0, D-416 à D-418 ; recommandation BL-125) |
-| § 17.4 | PRD § 17.4 | absent — import de programme vers une routine Libre (C-141, C-191) | lot prévu 0.29.0 |
+| § 17.4 | PRD § 17.4 | absent — import de programme vers une routine Libre (C-141, C-191) | fait (IMPORT-029, 0.29.0, D-419 à D-423 ; PDF BL-126) |
 | I6-08 | rapport de lot 0.27.0 (docs/I6-08.md) | Fiche d'import de programme (texte, PDF, capture ; aperçu et confirmation), taille L, non exécutée | lot prévu 0.29.0 |
 | BL-050 | demande d'Ali (lot 0.29.0) | Objectif de pas quotidien (dépend du format de `pas.csv`, H-25) | lot prévu 0.29.0 |
 | BL-051 | demande d'Ali (lot 0.29.0) | Zone 2 (cardio), périmètre à fixer dans la fiche du lot | lot prévu 0.29.0 |

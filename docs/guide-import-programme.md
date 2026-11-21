@@ -84,3 +84,9 @@ Chaque nom est comparé aux exercices de la bibliothèque (embarqués et personn
 - **à choisir** (score < 0,5) : sélecteur de la bibliothèque.
 
 « Créer la routine » attend que chaque exercice ait le sien (ou soit retiré de l'import).
+
+## Limites connues
+
+- Un exercice tenu (« Gainage 3 x 30 s ») est reconnu et noté « secondes » dans l'aperçu, mais la routine l'enregistre en répétitions tant qu'elle ne porte pas de durée : corrige la ligne dans l'éditeur après la création.
+- Une ligne de plus de 500 caractères est refusée « trop longue » ; le texte collé est limité à 50 000 caractères.
+- Le PDF n'est pas lu : fais une capture de la page.
