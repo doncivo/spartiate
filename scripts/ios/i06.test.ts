@@ -251,9 +251,9 @@ describe('critère 19 : gel de non-régression après SPA-006', () => {
   });
 
   it('plugins et capabilities : HealthKit (SPA-006), live-activity (SPA-007) et geolocation (I6-06, plugin officiel, sans dossier local) s’ajoutent', () => {
-    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['files', 'folder-bookmark', 'haptics', 'healthkit', 'live-activity', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
+    expect(readdirSync(join(root, 'src-tauri', 'plugins')).filter((d) => d !== 'README.md').sort()).toEqual(['apple-intelligence', 'files', 'folder-bookmark', 'haptics', 'healthkit', 'live-activity', 'notification-actions', 'privacy-shield', 'speech', 'vision']);
     expect(readdirSync(join(root, 'src-tauri', 'capabilities')).sort()).toEqual([
-      'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'geolocation-ios.json', 'haptics-ios.json', 'health-files-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'off.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
+      'apple-intelligence-ios.json', 'backups-ios.json', 'backups.json', 'biometric-ios.json', 'capture-ios.json', 'default.json', 'desktop.json', 'export-ios.json', 'export.json', 'geolocation-ios.json', 'haptics-ios.json', 'health-files-ios.json', 'healthkit-ios.json', 'import.json', 'live-activity-ios.json', 'logs-ios.json', 'logs.json', 'notifications-ios.json', 'ocr.json', 'off.json', 'privacy-shield-ios.json', 'signing-ios.json', 'sync-ios.json', 'sync-pairing.json', 'sync.json',
     ]);
     // `getVersion` est couvert par core:default (aucune permission ajoutée).
     expect(read('src-tauri/capabilities/default.json')).toContain('"core:default"');

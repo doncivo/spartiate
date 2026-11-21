@@ -48,7 +48,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | BL-021 | rapport de lot 0.21.0 (docs/I6-06.md) | Constats d'Ali : cardio saisi sur PC puis reçu, refus de la localisation, Exertion avec cardio | à faire (lot 0.28.0) |
 | BL-022 | rapport de lot 0.17.1 (docs/FIX-0171.md) | Suggestions laissées : cible comparée au centième, confirmation groupée sur Résultat (D-124 (4)) | reporté : non bloquant, révisable par Ali |
 | I6-09 | rapport de lot 0.21.0 (docs/I6-09.md) | GPS en arrière-plan ou écran verrouillé (`UIBackgroundModes`), tracé et rétention | reporté : décision d'Ali requise |
-| I6-10 | rapport de lot 0.20 (docs/I6-10.md) | Verrou local de l'app, conditionnel à Q-6 et H-17 | reporté : décision d'Ali (Q-6) |
+| I6-10 | rapport de lot 0.20 (docs/I6-10.md) | Verrou local de l'app, conditionnel à Q-6 et H-17 | fait (IOS-029a, 0.29.0, D-432, D-433 ; constat d'Ali H-17) |
 | FIX-0244 (reste) | rapport de lot 0.26.0 (docs/LOT-0.27.0.md) | Décision reçue par la synchro qui masque une cible future ; lecture des cibles futures hors transaction | fait (PR #150) |
 | AUDIT-USAGE | rapport de lot 0.27.0 (docs/AUDIT-USAGE.md) | Sept écarts U-2, U-3, U-5, U-6, U-7, U-9, U-12 des parcours réels | fait (PR #150, #151, #152) |
 
@@ -294,6 +294,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à faire (0.29.x, sans dépendance nouvelle) |
 | BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | à faire (0.29.x) |
 | BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | à faire (0.29.x) |
+| BL-129 | IOS-029 (D-434) | Textes d'usage caméra et micro de Info.ios.plist hérités de CircleTasks (« tâches ») | à faire (0.29.x) |
+| BL-130 | IOS-029 (D-436) | build-ios : relever la version du SDK et vérifier le lien faible de FoundationModels (`otool -l`) | à faire (0.29.x, ci-release) |
+| BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | à trancher par Ali |
 
 ## 3. Audit Codex 0.26.0
 

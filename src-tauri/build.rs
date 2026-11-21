@@ -94,6 +94,8 @@ fn main() {
             "live_activity_status",
             "live_activity_start",
             "live_activity_end",
+            // Essai Apple Intelligence (IOS-029b) : iPhone uniquement (capability apple-intelligence-ios.json).
+            "apple_intelligence_probe",
         ]),
     ))
     .expect("échec de la configuration de la compilation Tauri");

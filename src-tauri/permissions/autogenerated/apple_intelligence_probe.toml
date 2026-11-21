@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-apple-intelligence-probe"
+description = "Enables the apple_intelligence_probe command without any pre-configured scope."
+commands.allow = ["apple_intelligence_probe"]
+
+[[permission]]
+identifier = "deny-apple-intelligence-probe"
+description = "Denies the apple_intelligence_probe command without any pre-configured scope."
+commands.deny = ["apple_intelligence_probe"]

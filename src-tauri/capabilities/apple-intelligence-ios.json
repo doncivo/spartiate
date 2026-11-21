@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "apple-intelligence-ios",
+  "description": "iPhone uniquement : essai du modèle local d'Apple avec un texte synthétique fixe (IOS-029b). Liste exacte fixée par tests/desktop/config.rs.",
+  "windows": [
+    "main"
+  ],
+  "platforms": [
+    "iOS"
+  ],
+  "permissions": [
+    "allow-apple-intelligence-probe"
+  ]
+}

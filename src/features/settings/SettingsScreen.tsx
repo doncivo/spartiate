@@ -31,7 +31,7 @@ function formatLocalTime(isoUtc: string, timeZone: string | null): string {
 /**
  * Onglet « Plus » (planches docs/maquettes/i0/iPhone-Plus et PC-Plus). iPhone : titre, carte « Profil et poids », puis quatre groupes en
  * cartes sous des titres en capitales discrètes : DONNÉES (synchronisation, sauvegardes, export et import), IPHONE (signature SideStore,
- * le verrouillage Face ID reste masqué, D-37), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
+ * verrouillage Face ID activable, IOS-029a), PRÉFÉRENCES (thème, début de semaine et format de l'heure vers Apparence, fuseau horaire, démarrage avec Windows)
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
@@ -43,9 +43,9 @@ export function SettingsScreen() {
 function SettingsScreenMobile() {
   const container = useAppContainer();
   const hasHealthRow = container.platform.runtime === 'tauri' && container.platform.os === 'ios';
-  // D-37 : code conservé, entrée masquée, activation différée. La ligne n'apparaît que si un test pose `__ctShowAppLockRow` (même procédé que
-  // `__ctBiometricFake`) ; l'app livrée ne le pose jamais.
-  const showLockRow = container.authenticator.supported && (globalThis as { __ctShowAppLockRow?: boolean }).__ctShowAppLockRow === true;
+  // IOS-029a (décision d'Ali du 20/11, levée de D-37 pour l'iPhone) : verrou activable, désactivé par défaut ; ligne absente si
+  // l'authentification n'est pas prise en charge (PC, navigateur).
+  const showLockRow = container.authenticator.supported;
   const [healthBlocked, setHealthBlocked] = useState(false);
   /** Dernier import Raccourcis (le plus récent des fichiers lus), affiché quand Santé n'est pas accessible. */
   const [lastShortcutImport, setLastShortcutImport] = useState<string | null>(null);
