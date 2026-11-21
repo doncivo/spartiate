@@ -8,6 +8,7 @@ import { tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { PATTERN_KEY } from '../../training/labels';
+import { replanInjuryReminders } from './replan';
 import '../BodyScreen.css';
 import './Injuries.css';
 
@@ -57,6 +58,7 @@ export function InjuriesSection() {
       try {
         await settings.set('training.injuries', next);
         setValue(next);
+        replanInjuryReminders(container);
         return true;
       } catch {
         setMessage({ kind: 'error', text: tInjuries('errorSave') });

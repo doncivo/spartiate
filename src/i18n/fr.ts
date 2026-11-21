@@ -113,8 +113,6 @@ export const fr = {
   tasks: {
     newTask: 'Nouvelle tâche',
     save: 'Enregistrer',
-    complete: 'Terminer : {title}',
-    reopen: 'Rouvrir : {title}',
     postpone: 'Reporter',
     deleteConfirmTitle: 'Supprimer « {title} » ?',
     deleteConfirm: 'Supprimer',
@@ -122,11 +120,6 @@ export const fr = {
     seriesEditTitle: 'Modifier « {title} » ?',
   },
   reminders: {
-    more: 'Plus…',
-    editTitle: 'Rappels',
-    saveError: 'Impossible d’enregistrer les rappels.',
-    sectionTitle: 'RAPPELS',
-    recaps: 'Récapitulatifs',
     status: remindersStatusFr,
   },
   notifications: notificationsFr,

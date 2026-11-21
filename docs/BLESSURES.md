@@ -20,9 +20,13 @@ Réglage LOCAL `training.injuries` (`{ v: 1, items }`), jamais synchronisé, jam
 - Given aucune réponse, Then rien ne change (la gêne reste active, l'évitement continue).
 - iPhone seulement : une notification locale neutre (nature `injury`, texte sans mention de gêne, écran verrouillé) à 09:00 le jour d'échéance (ou le jour même si l'échéance est passée et 09:00 pas encore atteint) ; une par jour, plafond partagé des 64 ; le PC n'en envoie aucune (planificateur vide).
 
+## Montage et mesure
+
+La carte de check-in est montée par le bloc à la demande des Compléments d'Aujourd'hui (`SupplementsTodayCard`, chargement dynamique de `InjuryCheckinCard`) : aucun point d'entrée de plus dans le départ (un premier montage par `lazyScreens` coûtait +146 octets normalisés : 193 956 sur main, 194 102). Le rappel est replanifié par `supplementWake` (même file de passages). Évitement des propositions : `GeneratedSession` seulement ; le remplacement d'exercice en séance active (`ReplaceExercise`) n'applique pas encore les gênes (reporté).
+
 ## Preuves
 
-Tests : `src/domain/training/injuries.test.ts`, `src/domain/injuryNotificationPlan.test.ts`, `src/features/notifications/injuryNotifications.test.ts`, `src/features/settings/injuries/InjuriesSection.test.tsx`, `src/features/settings/injuries/InjuryCheckinCard.test.tsx`, bundle (mesure avant / après).
+Tests : `src/domain/training/injuries.test.ts`, `src/domain/injuryNotificationPlan.test.ts`, `src/features/notifications/injuryNotifications.test.ts`, `src/features/settings/injuries/InjuriesSection.test.tsx`, `src/features/settings/injuries/InjuryCheckinCard.test.tsx`, bundle (mesure avant / après : main 193 956, branche 193 937 octets normalisés).
 
 ## Décisions proposées (numéros à donner par l'appelant)
 
