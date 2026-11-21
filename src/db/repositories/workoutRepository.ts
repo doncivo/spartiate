@@ -38,6 +38,16 @@ export interface AddExerciseInput {
   readonly targetRestSec?: number | null;
 }
 
+/** SESS-01a : exercice de remplacement des séries à faire (`replaceExercise`). */
+export interface ReplaceExerciseInput {
+  readonly exerciseId: string;
+  readonly exerciseName: string;
+  /** Charge cible par unité écrite sur chaque série reprise (estimation de la règle de conversion) ; null : aucune. */
+  readonly targetLoadKg: number | null;
+  /** Type des séries reprises ; défaut : inchangé (`timed` pour un exercice chronométré, `work` sinon : à l'appelant). */
+  readonly setKind?: 'work' | 'timed';
+}
+
 export interface GroupExercisesInput {
   readonly exerciseIds: readonly string[];
   readonly rounds?: number;
@@ -87,6 +97,19 @@ export interface WorkoutRepository {
   addExercise(workoutId: string, input: AddExerciseInput): Promise<WorkoutWithSets>;
   /** Supprime (logiquement) toutes les séries de l'exercice ; positions renumérotées. Retourne la séance. */
   removeExercise(workoutId: string, exerciseId: string): Promise<WorkoutWithSets>;
+  /**
+   * SESS-01a (§ 13.2 « Remplacer ») : les séries À FAIRE de `fromExerciseId` dans la séance OUVERTE passent à l'exercice donné, à la même
+   * position, avec le même type, la même plage, le même repos et le même groupe ; la saisie et le ressenti sont effacés, la charge cible est
+   * celle de l'appelant. Séries validées : gardées à l'exercice d'origine. Échauffements à faire : retirés (rampe de l'ancien exercice).
+   * Séance absente ou exercice absent : `'not-found'` ; close, saisie hors bornes ou aucune série à faire : `'invalid'` ; nouvel
+   * exercice déjà présent : `'conflict'`. Plusieurs écritures : à appeler dans `DataAccess.transaction`.
+   */
+  replaceExercise(workoutId: string, fromExerciseId: string, input: ReplaceExerciseInput): Promise<WorkoutWithSets>;
+  /**
+   * SESS-01b (vignettes, « Sauter ») : positions des séries de la séance OUVERTE dans l'ordre donné (`order` : exactement les séries vivantes,
+   * sans doublon, sinon `'invalid'` et rien n'est écrit). Close : `'invalid'` ; absente : `'not-found'`. Ne réécrit que les lignes qui changent.
+   */
+  reorderSets(workoutId: string, order: readonly string[]): Promise<WorkoutWithSets>;
   /**
    * I6-03 (§ 13.8) : relie au moins deux exercices de la séance OUVERTE en un groupe (superset, triset, circuit : un seul mécanisme). `rounds` : nombre de
    * tours (par défaut le plus grand nombre de séries de travail des exercices) ; séries manquantes ajoutées, séries à faire en trop retirées, jamais une

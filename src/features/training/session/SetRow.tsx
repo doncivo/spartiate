@@ -1,4 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
+import { isFailureSet, setKindChoiceOf, type SetKindChoice } from '../../../domain/training/failureSet';
+import { tSession } from '../../../i18n/trainingSessionText';
 import { Check, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
@@ -80,7 +82,8 @@ export interface SetRowProps {
   readonly checkEntry?: (entry: SetEntry, kind: SetKind) => Promise<OutlierAsk | null>;
   readonly onValidate: (entry: SetEntry) => void;
   readonly onUnvalidate: () => void;
-  readonly onKind: (kind: SetKind) => void;
+  /** SESS-01c : `failure` = série de travail à RIR 0 (`setKindPatch`). */
+  readonly onKind: (kind: SetKindChoice) => void;
   readonly onRemove: () => void;
 }
 
@@ -244,7 +247,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       {set.done ? (
         <div className="ct-session__set-body">
           <span className="ct-session__done-value ct-session__num">{doneText(set, held)}</span>
-          {set.rir !== null ? <span className="ct-session__muted">{tTraining('sessionDoneRir', { n: set.rir })}</span> : null}
+          {isFailureSet(set) ? <span className="ct-session__muted">{tSession('failureDone')}</span> : set.rir !== null ? <span className="ct-session__muted">{tTraining('sessionDoneRir', { n: set.rir })}</span> : null}
           <button type="button" className="ct-training__link" disabled={busy} onClick={onUnvalidate}>
             {tTraining('sessionUnvalidate')}
           </button>
@@ -266,8 +269,9 @@ export function SetRow({ set, number, current = false, loads = null, held = null
           <div className="ct-session__set-actions">
             <label className="ct-session__field ct-session__field--kind">
               <span className="ct-training__label">{tTraining('sessionSetKind')}</span>
-              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={set.setKind} disabled={busy} onChange={(e) => onKind(e.target.value as SetKind)}>
+              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={setKindChoiceOf(set)} disabled={busy} onChange={(e) => onKind(e.target.value as SetKindChoice)}>
                 <option value={timed && set.setKind === 'timed' ? 'timed' : 'work'}>{tTraining(timed && set.setKind === 'timed' ? 'kindTimed' : 'kindWork')}</option>
+                {!timed && <option value="failure">{tSession('kindFailure')}</option>}
                 <option value="warmup">{tTraining('kindWarmup')}</option>
                 <option value="drop">{tTraining('kindDrop')}</option>
                 <option value="partial">{tTraining('kindPartial')}</option>

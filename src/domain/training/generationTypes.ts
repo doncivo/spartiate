@@ -39,6 +39,8 @@ export interface GenerationProgram {
   readonly priorities: readonly string[];
   /** Patterns douloureux : aucun exercice de ce pattern n'est proposé. */
   readonly painfulPatterns: readonly ExercisePattern[];
+  /** SESS-01b : exercices écartés par Ali (« ne plus proposer ») : jamais gardés ni substituts ; absent : aucun. */
+  readonly excludedExerciseIds?: readonly string[];
   /** Jours de la routine source (lecture seule), dans n'importe quel ordre : triés par `dayOrder`. */
   readonly days: readonly RoutineDaySpec[];
   /** Instant d'origine des rotations (création de la routine). */
@@ -103,7 +105,8 @@ export type GenerationIssueCode =
   | 'home-profile-required'
   | 'budget-invalid';
 
-export type OmissionReason = 'unknown-exercise' | 'equipment' | 'pain' | 'time-budget';
+/** SESS-01b : `excluded` = exercice écarté par Ali (« ne plus proposer »). */
+export type OmissionReason = 'unknown-exercise' | 'equipment' | 'pain' | 'excluded' | 'time-budget';
 
 export type GenerationWarning = 'duplicate-in-routine' | 'off-split-in-routine' | 'over-budget' | 'under-budget';
 
@@ -117,7 +120,7 @@ export interface GeneratedExercise {
   readonly sourcePosition: number;
   readonly origin: GeneratedOrigin;
   /** Substitution : motif de l'exercice remplacé. */
-  readonly substitutionReason: 'equipment' | 'pain' | null;
+  readonly substitutionReason: 'equipment' | 'pain' | 'excluded' | null;
   readonly kind: ExerciseKind;
   readonly metric: ExerciseMetric;
   readonly pattern: ExercisePattern;

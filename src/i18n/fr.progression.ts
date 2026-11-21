@@ -25,6 +25,7 @@ export const progressionFr = {
   explainUnsupported: 'Pas de charge proposée pour ce type d’exercice : saisis tes valeurs.',
   explainDecision: 'Ta dernière décision : {load}, reprise telle quelle.',
   explainIncrease: '+{delta} kg : {sets} × {reps} atteint la dernière fois.',
+  explainDeclaredFatigue: 'Charge maintenue à {load} : « Fatigué » déclaré au démarrage, aucune hausse aujourd’hui.',
   explainIncreasePair: '+{delta} kg par haltère : {sets} × {reps} atteint la dernière fois.',
   explainIncreaseUnknownStep: '+{delta} kg (cran supposé, matériel à vérifier) : {sets} × {reps} atteint la dernière fois.',
   explainIncreaseUnknownStepPair: '+{delta} kg par haltère (cran supposé, matériel à vérifier) : {sets} × {reps} atteint la dernière fois.',
@@ -58,6 +59,7 @@ export const progressionFr = {
   explainRedDayNoLoad: 'Journée rouge : mêmes valeurs que la dernière fois, aucune hausse ; estimation, pas un avis médical.',
   explainDecisionNoLoad: 'Ta dernière décision, reprise telle quelle.',
   // MOTEUR-0281b (§ 11.5).
+  explainDeclaredFatigueNoLoad: 'Mêmes valeurs que la dernière fois : « Fatigué » déclaré au démarrage, aucun lest ajouté aujourd’hui.',
   explainRevert: 'Retour à la prescription précédente, demandé depuis la fiche de l’exercice.',
   valueBodyweight: 'Poids du corps × {reps}',
   valueBallast: 'Lest {load} × {reps}',

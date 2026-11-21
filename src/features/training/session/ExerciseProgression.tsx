@@ -2,6 +2,9 @@ import { tPlural } from '../../../i18n/plural';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { confidenceBand, confidencePercent, constraintAlerts, explainOption, explainPrescription, explanationNotes, isUnloaded, type ExplanationKey, type OptionKey } from '../../../domain/training/explain';
 import { prescribe } from '../../../domain/training/prescribe';
+import { holdForDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
+import { isAssistedEquipment } from '../../../domain/training/assisted';
+import { loadGrid } from '../../../domain/training/loadGrid';
 import { prescriptionInputOf } from '../../../domain/training/prescriptionInput';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
@@ -59,6 +62,8 @@ export interface ExerciseProgressionProps {
    * `'loading'` : choix encore en lecture, la proposition attend. Absent : null.
    */
   readonly recovery?: RecoverySnapshot | null | 'loading';
+  /** SESS-01d : fatigue déclarée au démarrage ; « Fatigué » : aucune hausse de charge (`holdForDeclaredFatigue`). Absent : aucune. */
+  readonly declaredFatigue?: DeclaredFatigue | null;
   readonly clock: { nowMs(): number };
   /** Séance relue après une écriture (la base fait foi). */
   readonly onChanged: () => Promise<void>;
@@ -124,6 +129,8 @@ const EXPLAIN_KEYS: Readonly<Record<ExplanationKey, ProgressionTextKey>> = {
   redDayNoLoad: 'explainRedDayNoLoad',
   decisionNoLoad: 'explainDecisionNoLoad',
   revert: 'explainRevert',
+  declaredFatigue: 'explainDeclaredFatigue',
+  declaredFatigueNoLoad: 'explainDeclaredFatigueNoLoad',
 };
 /** ERGO-02b : phrase d'un écart en kg pour deux haltères (« +2 kg par haltère »), l'écart du moteur étant celui d'un haltère (D-261). */
 const PAIR_KEYS: Partial<Record<ProgressionTextKey, ProgressionTextKey>> = {
@@ -184,7 +191,7 @@ function valueText(metric: Prescription['metric'], loadKg: number, values: reado
 /** Rampe : « 25 kg × 8 · 37,5 kg × 5 · 50 kg × 2 ». */
 const rampText = (ramp: readonly WarmupSet[], held: Held): string => ramp.map((s) => tProgression('warmupStep', { load: loadText(s.loadKg, held), reps: s.reps })).join(tProgression('warmupJoin'));
 
-export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf, recovery = null }: ExerciseProgressionProps) {
+export function ExerciseProgression({ access, workout, exerciseId, sets, exercise, equipment, clock, onChanged, warmup = false, positionRank: liveRank = 1, musclesOf, recovery = null, declaredFatigue = null }: ExerciseProgressionProps) {
   // La proposition ne change pas pendant la séance : le rang est celui du premier rendu (retirer un exercice ne la fait pas remonter).
   const [positionRank] = useState(liveRank);
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -256,7 +263,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
   const prescription = useMemo((): Prescription | null => {
     if (load.status !== 'ready' || recovery === 'loading') return null;
     // Entrée partagée avec l'aperçu de la carte « Séance du jour » (FIX-0223) : la séance et la carte voient la même proposition.
-    return prescribe(
+    const proposed = prescribe(
       prescriptionInputOf({
         exerciseId,
         exercise,
@@ -271,8 +278,10 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         positionRank,
       }),
     );
+    // SESS-01d : « Fatigué » déclaré, une hausse prévue reste à la charge de référence (arrondie au matériel actif).
+    return holdForDeclaredFatigue(proposed, declaredFatigue, { assisted: isAssistedEquipment(exercise?.equipment), loads: exercise === undefined ? null : (loadGrid(exercise.equipment, equipment)?.loads ?? null) });
     // L'instant de calcul est celui du chargement : la proposition ne change pas pendant la séance.
-  }, [load, exerciseId, exercise, equipment, target, deload, positionRank, recovery]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [load, exerciseId, exercise, equipment, target, deload, positionRank, recovery, declaredFatigue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (ownDecision !== null && decided.current) {

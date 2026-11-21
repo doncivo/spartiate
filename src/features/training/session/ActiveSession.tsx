@@ -1,5 +1,5 @@
 import { tPlural } from '../../../i18n/plural';
-import { Fragment, Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
   REST_CHOICES_SEC,
@@ -13,11 +13,14 @@ import {
   type Exercise,
   type ExerciseBlock,
   type SetEntry,
-  type SetKind,
   type WorkoutSet,
   type WorkoutWithSets,
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
+import { parseExcludedExercises, withExcluded } from '../../../domain/training/exclusions';
+import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
+import { setKindPatch, type SetKindChoice } from '../../../domain/training/failureSet';
+import { implementOf } from '../../../domain/training/replacement';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
 import { loadGrid } from '../../../domain/training/loadGrid';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
@@ -25,12 +28,16 @@ import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
 import { logFailure } from '../../../platform/desktop/log';
 import type { Haptics } from '../../../platform/haptics';
-import { formatClock, formatRest, tTraining } from '../../../i18n/trainingText';
+import { formatClock, formatExerciseLoad, formatRest, tTraining } from '../../../i18n/trainingText';
+import { tSession } from '../../../i18n/trainingSessionText';
 import { Button, ConfirmDialog } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
 import type { RestReport, RestTimerController } from './restTimer';
 import type { RedDayState } from './redDayState';
+import { SessionStrip } from './SessionStrip';
+import { DeclaredFatigueBar } from './DeclaredFatigueBar';
+import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
@@ -52,6 +59,12 @@ const ExerciseProgression = lazy(() => import('./ExerciseProgression').then((m) 
 /** I6-03 : circuits (en-tête d'un groupe, formulaire « Grouper en circuit »), bloc à la demande avec son catalogue de textes. */
 const CircuitHeader = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitHeader })));
 const CircuitForm = lazy(() => import('./CircuitUi').then((m) => ({ default: m.CircuitForm })));
+/** SESS-01a : feuille « Remplacer l'exercice », bloc à la demande (règle de conversion et catalogue chargés avec elle). */
+const ReplaceExercise = lazy(() => import('./ReplaceExercise').then((m) => ({ default: m.ReplaceExercise })));
+/** SESS-01c : image (bloc des médias), notes et calculateur de disques, à la demande. */
+const ExerciseMedia = lazy(() => import('../media/ExerciseMedia'));
+const ExerciseNotes = lazy(() => import('./ExerciseExtras').then((m) => ({ default: m.ExerciseNotes })));
+const PlateCalculator = lazy(() => import('./ExerciseExtras').then((m) => ({ default: m.PlateCalculator })));
 const RedDayBanner = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RedDayBanner })));
 const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
@@ -77,6 +90,13 @@ export interface ActiveSessionProps {
   readonly onClosed: (closed: ClosedWorkout) => void;
 }
 
+/** SESS-01c : charge proposée au calculateur : celle de la série en cours (saisie, sinon cible), sinon la dernière faite. */
+const plateStart = (sets: readonly WorkoutSet[]): number | null => {
+  const work = sets.filter((s) => s.setKind !== 'warmup');
+  const next = work.find((s) => !s.done);
+  return next?.loadKg ?? next?.targetLoadKg ?? work.filter((s) => s.done).at(-1)?.loadKg ?? null;
+};
+
 const isTimedExercise = (exercise: Exercise | undefined, set: WorkoutSet): boolean => set.setKind === 'timed' || exercise?.metric === 'time';
 
 export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, onWorkout, onRestSetting, onClosed }: ActiveSessionProps) {
@@ -84,8 +104,55 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [grouping, setGrouping] = useState(false);
+  /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
+  const [replacing, setReplacing] = useState<string | null>(null);
+  /** SESS-01d : fatigue déclarée pour CETTE séance (réglage local), lue au montage ; illisible : aucune. */
+  const [fatigueOf, setFatigueOf] = useState<{ readonly workoutId: string; readonly level: DeclaredFatigue | null } | null>(null);
+  const declaredFatigue = fatigueOf !== null && fatigueOf.workoutId === workout.id ? fatigueOf.level : null;
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.declaredFatigue').then(
+      (raw) => {
+        if (alive) setFatigueOf({ workoutId: workout.id, level: parseDeclaredFatigue(raw, workout.id) });
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access, workout.id]);
+  async function declareFatigue(level: DeclaredFatigue | null): Promise<void> {
+    setError(null);
+    try {
+      await access.repos.settings.set('training.declaredFatigue', { v: 1, workoutId: workout.id, level });
+      if (live.current) setFatigueOf({ workoutId: workout.id, level });
+    } catch {
+      if (live.current) setError(tSession('fatigueError'));
+    }
+  }
+  /** SESS-01c : exercice dont le calculateur de disques est ouvert. */
+  const [platesFor, setPlatesFor] = useState<string | null>(null);
+  /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage ; illisible : aucun. */
+  const [excludedIds, setExcludedIds] = useState<readonly string[]>([]);
+  const excluded = useMemo(() => new Set(excludedIds), [excludedIds]);
+  useEffect(() => {
+    let alive = true;
+    access.repos.settings.get('training.excludedExercises').then(
+      (raw) => {
+        if (alive) setExcludedIds(parseExcludedExercises(raw));
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access]);
   const [confirm, setConfirm] = useState<
-    { readonly kind: 'abandon' } | { readonly kind: 'finish'; readonly pending: number } | { readonly kind: 'exercise'; readonly block: ExerciseBlock } | null
+    | { readonly kind: 'abandon' }
+    | { readonly kind: 'finish'; readonly pending: number }
+    | { readonly kind: 'exercise'; readonly block: ExerciseBlock }
+    | { readonly kind: 'exclude'; readonly block: ExerciseBlock }
+    | null
   >(null);
   const [rest, setRest] = useState<RestView | null>(null);
   const [restDone, setRestDone] = useState(false);
@@ -200,9 +267,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     if (live.current) onWorkout(fresh);
   }, [access, workout.id, onWorkout]);
 
-  async function startRest(seconds: number): Promise<void> {
+  async function startRest(seconds: number, label?: string): Promise<void> {
     try {
-      const report = await timer.start(seconds);
+      const report = await timer.start(seconds, label);
       if (!live.current) return;
       setNow(clock.nowMs());
       setRestDone(false);
@@ -225,7 +292,27 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     // I6-03 : dans un groupe, repos entre exercices (nul = aucun) puis repos de fin de tour (cible des séries) ; hors groupe, repos de l'exercice.
     const inCircuit = restAfterCircuitSet(workout.sets, set.id);
     const seconds = inCircuit?.phase === 'between' ? inCircuit.seconds : restSecondsFor(set, restSetting, exercise?.defaultRestSec ?? null);
-    if (seconds !== null) await startRest(seconds);
+    if (seconds === null) return;
+    // SESS-01f : la Live Activity annonce la série suivante (exercice et charge saisie ou cible), relue en base après la validation.
+    let label: string | undefined;
+    if (os === 'ios') {
+      try {
+        const fresh = await (await access.repos.workouts()).get(workout.id);
+        const nextId = fresh === null ? null : (resumeState(fresh, clock.nowMs())?.nextSetId ?? null);
+        const next = fresh?.sets.find((s) => s.id === nextId);
+        if (next !== undefined) {
+          const kg = next.loadKg ?? next.targetLoadKg;
+          const held = heldFor(exerciseOf(next.exerciseId), data.active);
+          label =
+            kg === null
+              ? tSession('restLiveNextNoLoad', { rest: tTraining('restLiveLabel'), name: next.exerciseName })
+              : tSession('restLiveNext', { rest: tTraining('restLiveLabel'), name: next.exerciseName, load: formatExerciseLoad(kg, held) });
+        }
+      } catch {
+        // Lecture impossible : libellé par défaut (« Repos »), le repos démarre quand même.
+      }
+    }
+    await startRest(seconds, label);
   }
 
   async function addExercise(exercise: Exercise): Promise<void> {
@@ -343,6 +430,58 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // comprises : règle `resumeState`, § 13.7) ; elle est le bloc central.
   const currentSetId = resumeState(workout, now)?.nextSetId ?? null;
   const currentBlock = blocks.findIndex((b) => b.sets.some((s) => s.id === currentSetId));
+  // SESS-01b : vignettes (un exercice libre ou un groupe par unité), « Sauter » sur l'exercice en cours.
+  const units = sessionUnits(workout.sets);
+  const currentUnit = units.find((u) => currentSetId !== null && u.setIds.includes(currentSetId))?.key ?? null;
+  const nameOfUnit = (unit: SessionUnit): string => unit.exerciseIds.map((id) => blocks.find((b) => b.exerciseId === id)?.exerciseName ?? id).join(tSession('stripJoin'));
+  const showUnit = (unit: SessionUnit): void => {
+    const first = unit.exerciseIds[0];
+    const region = first === undefined ? null : document.getElementById(`ct-session-block-${first}`);
+    region?.scrollIntoView?.({ block: 'start' });
+    region?.focus();
+  };
+  const reorder = (order: string[] | null): void => {
+    if (order !== null) void write((repo) => repo.reorderSets(workout.id, order));
+  };
+  async function exclude(block: ExerciseBlock): Promise<void> {
+    setConfirm(null);
+    const next = withExcluded(excludedIds, block.exerciseId, true);
+    const ok = await write(async (repo) => {
+      await repo.removeExercise(workout.id, block.exerciseId);
+    });
+    if (!ok) return;
+    try {
+      await access.repos.settings.set('training.excludedExercises', next);
+      if (live.current) setExcludedIds(next.ids);
+    } catch {
+      if (live.current) setError(tSession('excludeError'));
+    }
+  }
+
+  const replacingBlock = replacing === null ? undefined : blocks.find((b) => b.exerciseId === replacing);
+  if (replacingBlock !== undefined) {
+    return (
+      <Suspense fallback={null}>
+        <ReplaceExercise
+          data={data}
+          access={access}
+          workout={workout}
+          block={replacingBlock}
+          excluded={excluded}
+          onRestore={async (id) => {
+            const next = withExcluded(excludedIds, id, false);
+            await access.repos.settings.set('training.excludedExercises', next);
+            if (live.current) setExcludedIds(next.ids);
+          }}
+          onCancel={() => setReplacing(null)}
+          onDone={() => {
+            setReplacing(null);
+            void reload().catch(() => setError(tTraining('sessionWriteError')));
+          }}
+        />
+      </Suspense>
+    );
+  }
 
   if (picking) {
     const onKey = (event: KeyboardEvent<HTMLElement>): void => {
@@ -403,6 +542,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </div>
       </header>
 
+      <DeclaredFatigueBar level={declaredFatigue} busy={busy} onChange={(level) => void declareFatigue(level)} />
+
       {error && (
         <p className="ct-training__error" role="alert">
           {error}
@@ -420,9 +561,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </Suspense>
       )}
 
+      <SessionStrip units={units} nameOf={nameOfUnit} currentKey={currentUnit} busy={busy} onMove={(key, to) => reorder(moveUnitOrder(workout.sets, key, to))} onShow={showUnit} />
+
       {blocks.length === 0 && <p className="ct-session__muted">{tTraining('sessionNoExercise')}</p>}
 
-      {blocks.map((block) => {
+      {blocks.map((block, blockIndex) => {
         const exercise = exerciseOf(block.exerciseId);
         // Repos affiché : celui de la première série de travail (une rampe d'échauffement n'a pas de repos programmé).
         const first = block.sets.find((s) => s.setKind !== 'warmup') ?? block.sets[0];
@@ -441,7 +584,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <CircuitHeader circuit={circuit} workout={workout} busy={busy} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
             </Suspense>
           )}
-          <section className="ct-session__block" role="region" aria-label={block.exerciseName}>
+          <section className="ct-session__block" role="region" aria-label={block.exerciseName} id={`ct-session-block-${block.exerciseId}`} tabIndex={-1}>
             <div className="ct-session__block-head">
               <h3 className="ct-session__block-title">{block.exerciseName}</h3>
               <p className="ct-session__muted">
@@ -451,8 +594,16 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                   : tPlural(tTraining, work, 'sessionExerciseMetaOne', 'sessionExerciseMeta', { rest: formatRest(restSec) })}
               </p>
             </div>
+            {exercise !== undefined && (
+              <Suspense fallback={null}>
+                <div className="ct-session__extras">
+                  {exercise.media !== null && <ExerciseMedia exercise={exercise} />}
+                  <ExerciseNotes exercise={exercise} />
+                </div>
+              </Suspense>
+            )}
             <Suspense fallback={null}>
-              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} />
+              <ExerciseProgression access={access} workout={workout} exerciseId={block.exerciseId} sets={block.sets} exercise={exercise} equipment={data.active} clock={clock} onChanged={reload} warmup={warmupIds.has(block.exerciseId)} positionRank={positionRankOf.get(block.exerciseId) ?? 1} musclesOf={musclesOf} recovery={redDay === null ? 'loading' : redDay.snapshot} declaredFatigue={declaredFatigue} />
             </Suspense>
             <ol className="ct-session__sets">
               {block.sets.map((set) => {
@@ -471,7 +622,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
-                    onKind={(kind: SetKind) => void write((repo) => repo.updateSet(set.id, { setKind: kind }))}
+                    onKind={(kind: SetKindChoice) => void write((repo) => repo.updateSet(set.id, setKindPatch(kind, set)))}
                     onRemove={() => void write((repo) => repo.removeSet(set.id))}
                   />
                 );
@@ -481,10 +632,33 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <Button variant="secondary" disabled={busy} onClick={() => void write((repo) => repo.addSet(workout.id, block.exerciseId, { setKind: block.sets.at(-1)?.setKind === 'timed' ? 'timed' : 'work' }))}>
                 {tTraining('sessionAddSet')}
               </Button>
+              {block.sets.some((s) => !s.done && s.setKind !== 'warmup') && (
+                <Button variant="secondary" disabled={busy} onClick={() => setReplacing(block.exerciseId)}>
+                  {tSession('replace')}
+                </Button>
+              )}
+              {blockIndex === currentBlock && skipUnitOrder(workout.sets, block.exerciseId) !== null && (
+                <Button variant="secondary" disabled={busy} onClick={() => reorder(skipUnitOrder(workout.sets, block.exerciseId))}>
+                  {tSession('skip')}
+                </Button>
+              )}
               <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exercise', block })}>
                 {tTraining('sessionRemoveExercise')}
               </Button>
+              <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exclude', block })}>
+                {tSession('removeExclude')}
+              </Button>
+              {exercise !== undefined && exercise.metric === 'load-reps' && implementOf(exercise) === 'barbell' && (
+                <Button variant="secondary" expanded={platesFor === block.exerciseId} onClick={() => setPlatesFor(platesFor === block.exerciseId ? null : block.exerciseId)}>
+                  {tSession(platesFor === block.exerciseId ? 'platesClose' : 'plates')}
+                </Button>
+              )}
             </div>
+            {exercise !== undefined && platesFor === block.exerciseId && (
+              <Suspense fallback={null}>
+                <PlateCalculator exercise={exercise} profile={data.active} initialKg={plateStart(block.sets)} />
+              </Suspense>
+            )}
           </section>
           </Fragment>
         );
@@ -575,6 +749,15 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           cancelLabel={tTraining('sessionFinishContinue')}
           onCancel={() => setConfirm(null)}
           onConfirm={() => void finish()}
+        />
+      )}
+      {confirm?.kind === 'exclude' && (
+        <ConfirmDialog
+          title={tSession('removeExcludeTitle', { name: confirm.block.exerciseName })}
+          description={tSession('removeExcludeHint')}
+          confirmLabel={tSession('removeExcludeConfirm')}
+          onCancel={() => setConfirm(null)}
+          onConfirm={() => void exclude(confirm.block)}
         />
       )}
       {confirm?.kind === 'exercise' && (

@@ -32,7 +32,7 @@ interface Slot {
   readonly source: Exercise;
   chosen: Exercise;
   origin: GeneratedOrigin;
-  readonly substitutionReason: 'equipment' | 'pain' | null;
+  readonly substitutionReason: 'equipment' | 'pain' | 'excluded' | null;
   sets: number;
   setsRemoved: number;
   readonly warnings: ('duplicate-in-routine' | 'off-split-in-routine')[];
@@ -116,12 +116,13 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   const groups = rules.usesSplit ? dayGroups(program.split, input.day, program.customDays, config) : [];
   const groupSet = new Set(groups);
   const pain = new Set<string>(program.painfulPatterns);
+  const excludedIds = new Set<string>(program.excludedExerciseIds ?? []);
   const priorities = new Set(program.priorities);
   const byId = new Map(input.library.exercises.map((e) => [e.id, e]));
   const sortedLibrary = [...input.library.exercises].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const groupOf = (e: Exercise): string | null =>
     e.origin === 'embedded' && e.group !== undefined ? e.group : (input.library.groupOfMuscle.get(primaryMuscle(e.muscles) ?? '') ?? null);
-  const usable = (e: Exercise): boolean => !pain.has(e.pattern) && isExerciseCompatible(e, equipment);
+  const usable = (e: Exercise): boolean => !excludedIds.has(e.id) && !pain.has(e.pattern) && isExerciseCompatible(e, equipment);
   const inDay = (e: Exercise): boolean => !rules.usesSplit || groupSet.has(groupOf(e) ?? '');
 
   /** Candidats dans l'ordre : alternatives du contenu, puis même pattern, puis même type, puis le reste (identifiant croissant). */
@@ -143,7 +144,7 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   const lines = [...day.exercises].sort((a, b) => a.position - b.position);
   const slots: Slot[] = [];
   const omitted: OmittedExercise[] = [];
-  const pending: { line: RoutineExerciseSpec; exercise: Exercise; reason: 'equipment' | 'pain' }[] = [];
+  const pending: { line: RoutineExerciseSpec; exercise: Exercise; reason: 'equipment' | 'pain' | 'excluded' }[] = [];
   const omit = (line: RoutineExerciseSpec, reason: OmissionReason, suggestionId: string | null, exercise: Exercise | null): void => {
     omitted.push({ exerciseId: exercise?.id ?? line.exerciseId, exerciseName: exercise?.nameFr ?? line.exerciseName, sourcePosition: line.position, reason, suggestionId });
   };
@@ -155,7 +156,7 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
       continue;
     }
     if (!usable(exercise)) {
-      pending.push({ line, exercise, reason: pain.has(exercise.pattern) ? 'pain' : 'equipment' });
+      pending.push({ line, exercise, reason: excludedIds.has(exercise.id) ? 'excluded' : pain.has(exercise.pattern) ? 'pain' : 'equipment' });
       continue;
     }
     const warnings: Slot['warnings'] = [];

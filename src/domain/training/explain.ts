@@ -48,7 +48,11 @@ export type ExplanationKey =
   | 'redDayNoLoad'
   | 'decisionNoLoad'
   // MOTEUR-0281b : retour à la prescription précédente, demandé depuis la fiche.
-  | 'revert';
+  | 'revert'
+  // SESS-01d : fatigue déclarée, aucune hausse ce jour-là.
+  | 'declaredFatigue'
+  // MOTEUR-0281a × SESS-01d : poids du corps sans lest, le lest prévu n'est pas ajouté.
+  | 'declaredFatigueNoLoad';
 
 export interface Explanation {
   readonly key: ExplanationKey;
@@ -72,6 +76,7 @@ export function confidenceBand(confidence: number): ConfidenceBand {
 export const isUnloaded = (p: Prescription): boolean => p.metric === 'bodyweight-reps' || p.metric === 'time';
 
 export function explainPrescription(p: Prescription): Explanation {
+  if (p.reasons.includes('declared-fatigue') && p.loadKg !== null) return isUnloaded(p) && p.loadKg === 0 ? { key: 'declaredFatigueNoLoad', params: {} } : { key: 'declaredFatigue', params: { load: p.loadKg } };
   const set = (p.ladderSetIndex ?? 0) + 1;
   const unloaded = isUnloaded(p);
   const refValues = p.reference?.reps ?? [];
