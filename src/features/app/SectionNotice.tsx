@@ -1,3 +1,5 @@
+import type { FirstWeekday } from '../../domain/week';
+import { getFirstWeekday } from '../../i18n/formatPrefs';
 import { tSections, type SectionsTextKey } from '../../i18n/sectionsText';
 import './SectionNotice.css';
 import { BodyProgress, CardioProgress, lazyScreen, RecoveryProgress } from './lazyScreens';
@@ -9,7 +11,7 @@ import { TodayScreen } from './TodayScreen';
  */
 const StrengthScore = lazyScreen<object>(() => import('../strength/StrengthScore').then((m) => ({ default: m.StrengthScore })), undefined, { onDemand: true });
 /** PROGRES (§ 17.1) : Progrès › Entraînement (volume, constance, adhérence), bloc à part chargé avec son catalogue de textes ; rien dans le départ. */
-const TrainingProgress = lazyScreen<object>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TrainingProgress })), undefined, { onDemand: true });
+const TrainingProgress = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TrainingProgress })), undefined, { onDemand: true });
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
 
@@ -38,7 +40,7 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
         </>
       )}
       {tab === 'progress' ? <RecoveryProgress /> : null}
-      {tab === 'progress' ? <TrainingProgress /> : null}
+      {tab === 'progress' ? <TrainingProgress firstWeekday={getFirstWeekday()} /> : null}
       {tab === 'progress' ? <StrengthScore /> : null}
       {tab === 'progress' ? <BodyProgress /> : null}
       {/* I6-06 : séances cardio des quatre dernières semaines. */}

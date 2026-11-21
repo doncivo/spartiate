@@ -1,6 +1,5 @@
 import { addDays } from '../localDate';
 import type { LocalDate } from '../types';
-import { RECOVERY_CONFIG } from './config';
 
 /**
  * Progrès › Récupération : tendances sur 30 jours (PROGRES-c, § 17.1, lues depuis `recovery_day`). Règle pure, sans horloge ; aucune
@@ -76,13 +75,4 @@ export function recoveryTrends(days: readonly TrendDay[], today: LocalDate, wind
     }),
   ) as Record<TrendMetric, TrendSeries>;
   return { days: window, series };
-}
-
-export type RecoveryZoneTier = 'high' | 'mid' | 'low';
-
-/** Palier de Recovery qui fixe la zone cible d'Exertion (§ 16.3 : ≥ 66 / 34–65 / ≤ 33) ; `null` sans score. */
-export function recoveryZoneTier(score: number | null): RecoveryZoneTier | null {
-  if (score === null || !Number.isFinite(score)) return null;
-  const z = RECOVERY_CONFIG.zones;
-  return score >= z.high.from ? 'high' : score >= z.mid.from ? 'mid' : 'low';
 }

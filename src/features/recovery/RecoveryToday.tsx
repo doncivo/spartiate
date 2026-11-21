@@ -1,7 +1,7 @@
 import { isSingular, tPlural } from '../../i18n/plural';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { unusualValues, type RecoveryExplanationKey, type UnusualValues } from '../../domain/recovery';
+import { recoveryZoneTier, unusualValues, type RecoveryExplanationKey, type RecoveryZoneTier, type UnusualValues } from '../../domain/recovery';
 import type { LocalDate } from '../../domain/types';
 import type { FactorEntry, RecoveryDayRecord, RecoveryFactorRecord } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
@@ -13,7 +13,6 @@ import { useNavigationStore } from '../app/navigation';
 import { useSyncedData } from '../sync/remoteChanges';
 import { FactorJournalCard } from './FactorJournalCard';
 import { UnusualValuesCard } from './UnusualValuesCard';
-import { recoveryZoneTier, type RecoveryZoneTier } from '../../domain/recovery/trends';
 import { contributorTone, exertionDial, formatDuration, formatScore, recoveryDial, ringFraction, sleepDial, stalenessOf, stepsSummary, type StepsSummary } from './display';
 import './RecoveryToday.css';
 

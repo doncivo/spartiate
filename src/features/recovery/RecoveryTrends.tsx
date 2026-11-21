@@ -6,14 +6,19 @@ import { tPlural } from '../../i18n/plural';
 import { tRecoveryFactors, type RecoveryFactorsTextKey } from '../../i18n/recoveryFactorsText';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
-import { formatDuration } from './display';
-import './RecoveryToday.css';
 
 /**
  * Progrès › Récupération : tendances sur 30 jours (PROGRES-c, § 17.1), lues depuis `recovery_day` (repository), calcul dans le domaine
  * (`recoveryTrends`). Une courbe SVG par mesure (Recharts non importé, C-167 : quatre courbes simples), `role="img"` et étiquette textuelle
  * (moyennes, min, max) ; jours mesurés écrits. Aucune donnée ne quitte l'appareil. Lecture impossible : rien (la carte des facteurs le dit).
  */
+
+/** Durée « 7 h 00 » (règle de display.ts recopiée : l'importer partageait un bloc et allongeait la liste de préchargement du départ). */
+function formatDuration(minutes: number): string {
+  const total = Math.round(minutes);
+  if (total < 60) return `${String(total)} min`;
+  return `${String(Math.floor(total / 60))} h ${String(total % 60).padStart(2, '0')}`;
+}
 
 const NAME: Readonly<Record<TrendMetric, RecoveryFactorsTextKey>> = { recovery: 'trend_recovery', hrv: 'trend_hrv', restingHr: 'trend_restingHr', sleep: 'trend_sleep' };
 

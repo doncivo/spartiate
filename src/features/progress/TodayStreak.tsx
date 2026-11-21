@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { constancy, type Constancy } from '../../domain/training/progressStats';
-import { getFirstWeekday } from '../../i18n/formatPrefs';
+import type { FirstWeekday } from '../../domain/week';
 import { tPlural } from '../../i18n/plural';
 import { tTrainingProgress } from '../../i18n/trainingProgressText';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -27,7 +27,8 @@ export function StreakLines({ result, sessions }: { readonly result: Constancy; 
   );
 }
 
-export function TodayStreak() {
+/** `firstWeekday` : réglage « Début de semaine », lu par Aujourd'hui (le lire ici scinderait un bloc du départ, mesure du bundle). */
+export function TodayStreak({ firstWeekday = 'monday' }: { readonly firstWeekday?: FirstWeekday }) {
   const { data, clock } = useAppContainer();
   const synced = useSyncedData(CONSTANCY_TABLES);
   const today = todayLocal(clock);
@@ -35,9 +36,9 @@ export function TodayStreak() {
 
   useEffect(() => {
     let live = true;
-    readConstancy(data, today).then(
+    readConstancy(data).then(
       (c) => {
-        if (live) setLoad({ status: 'ready', result: constancy({ ...c, today, firstWeekday: getFirstWeekday() }), sessions: c.days.length });
+        if (live) setLoad({ status: 'ready', result: constancy({ ...c, today, firstWeekday }), sessions: c.days.length });
       },
       () => {
         if (live) setLoad({ status: 'failed' });
@@ -46,7 +47,7 @@ export function TodayStreak() {
     return () => {
       live = false;
     };
-  }, [data, today, synced]);
+  }, [data, today, synced, firstWeekday]);
 
   if (load.status !== 'ready') return null;
   return (

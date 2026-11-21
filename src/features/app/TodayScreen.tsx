@@ -5,6 +5,8 @@ import { todayLocal } from '../../domain/clock';
 import type { BodyWeight, Profile } from '../../domain/bodyProfile';
 import { isTrendLearning } from '../../domain/nutrition/trendLearning';
 import { formatDetailDate, formatStamp } from '../../i18n/format';
+import { getFirstWeekday } from '../../i18n/formatPrefs';
+import type { FirstWeekday } from '../../domain/week';
 import { formatKg } from '../../i18n/bodyText';
 import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
 import { Button, Icon, useLayout } from '../../ui';
@@ -22,7 +24,7 @@ import './TodayScreen.css';
  */
 const TodayPcSide = lazyScreen<TodayPcSideProps>(() => import('./TodayPcSide').then((m) => ({ default: m.TodayPcSide })), 'todaypcside', { onDemand: true });
 /** PROGRES-b (§ 18.2) : carte « Constance » (streak), bloc à la demande déclaré ici comme TodayPcSide : rien n'entre dans le départ. */
-const TodayStreak = lazyScreen<object>(() => import('../progress/TodayStreak').then((m) => ({ default: m.TodayStreak })), undefined, { onDemand: true });
+const TodayStreak = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TodayStreak })), undefined, { onDemand: true });
 
 
 const CHART_POINTS = 6;
@@ -203,7 +205,7 @@ export function TodayScreen() {
           <div className="ct-today__col">
             <RecoveryToday />
             <TodaySessionCard />
-            <TodayStreak />
+            <TodayStreak firstWeekday={getFirstWeekday()} />
             <SupplementsTodayCard />
           </div>
           <aside className="ct-today__col">
@@ -263,7 +265,7 @@ export function TodayScreen() {
         </>
       ) : null}
       <TodaySessionCard />
-      <TodayStreak />
+      <TodayStreak firstWeekday={getFirstWeekday()} />
       <NutritionRemainingCard />
       <SupplementsTodayCard />
       {weights.length > 0 ? <WeightCard weights={weights} nowMs={nowMs} showActions={false} /> : null}

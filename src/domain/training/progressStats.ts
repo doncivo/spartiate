@@ -1,9 +1,8 @@
-import { addDays, daysInMonth, makeLocalDate, parseLocalDate } from '../localDate';
+import { addDays, weekdayOf } from '../localDate';
 import type { LocalDate } from '../types';
-import { addWeeks, daysSinceWeekStart, weekStartOf, DEFAULT_FIRST_WEEKDAY, type FirstWeekday } from '../week';
+import type { FirstWeekday } from '../week';
 import { DEFAULT_PROGRESS_CONFIG, type ProgressConfig } from './config';
 import type { MesocyclePause } from './mesocycle';
-import { isPausedOn } from './programPause';
 import { routineTrainingDays, type ProgramDayLike } from './programDay';
 import type { SetKind } from './session';
 import type { MuscleWeight } from './types';
@@ -51,6 +50,23 @@ export interface VolumeInput {
   readonly weeks?: number;
   readonly config?: ProgressConfig;
 }
+
+/*
+ * Début de semaine calculé ici (règle de week.ts recopiée, localDate importé directement) : importer week.ts depuis ce bloc à la demande
+ * scindait des blocs du départ (week.ts hors du bloc format, localDate hors du bloc d'entrée ; même piège qu'ERGO-02b, mesure du bundle).
+ */
+const DEFAULT_FIRST_WEEKDAY: FirstWeekday = 'monday';
+const FIRST_ISO: Readonly<Record<FirstWeekday, number>> = { monday: 1, saturday: 6, sunday: 7 };
+const daysFromWeekStart = (weekday: number, first: FirstWeekday): number => (weekday - FIRST_ISO[first] + 7) % 7;
+const weekStartOf = (date: LocalDate, first: FirstWeekday): LocalDate => addDays(date, -daysFromWeekStart(weekdayOf(date), first));
+const addWeeks = (weekStart: LocalDate, count: number): LocalDate => addDays(weekStart, count * 7);
+const daysSinceWeekStart = (date: LocalDate, first: FirstWeekday): number => daysFromWeekStart(weekdayOf(date), first);
+
+/**
+ * Le jour est-il dans une pause (`from` compris, `to` exclu ou pause en cours) ? Règle d'`isPausedOn` (programPause.ts) recopiée : l'importer
+ * sortait programPause dans un bloc partagé listé au préchargement du départ (mesure du bundle). Équivalence gardée par progressStats.qa.test.ts.
+ */
+export const pausedOn = (pauses: readonly MesocyclePause[], date: LocalDate): boolean => pauses.some((p) => p.from <= date && (p.to === null || date < p.to));
 
 const tenth = (n: number): number => Math.round(n * 10) / 10;
 
@@ -141,7 +157,7 @@ export function weeklyTargetFor(weekStart: LocalDate, target: WeeklyTarget | nul
   return target !== null && weekStart >= weekStartOf(target.since, first) ? target.perWeek : config.defaultWeeklyTarget;
 }
 
-const weekHasPause = (weekStart: LocalDate, pauses: readonly MesocyclePause[]): boolean => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).some((day) => isPausedOn(pauses, day));
+const weekHasPause = (weekStart: LocalDate, pauses: readonly MesocyclePause[]): boolean => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).some((day) => pausedOn(pauses, day));
 
 function countByWeek(days: readonly LocalDate[], first: FirstWeekday): Map<LocalDate, number> {
   const counts = new Map<LocalDate, number>();
@@ -189,15 +205,17 @@ export interface MonthCalendar {
 
 /** Calendrier du mois de `today` (§ 17.1) : séances par jour, jours en pause, jour courant ; grille au début de semaine réglé. */
 export function monthCalendar(input: { readonly today: LocalDate; readonly days: readonly LocalDate[]; readonly pauses: readonly MesocyclePause[]; readonly firstWeekday?: FirstWeekday }): MonthCalendar {
-  const { year, month } = parseLocalDate(input.today);
-  const firstDay = makeLocalDate(year, month, 1);
+  const [year, month] = input.today.split('-').map(Number) as [number, number];
+  // Premier du mois et nombre de jours sans parseLocalDate, daysInMonth ni makeLocalDate : importés ici, ils entraient dans le bloc d'entrée (mesure du bundle).
+  const firstDay = `${input.today.slice(0, 7)}-01` as LocalDate;
+  const monthDays = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const lead = daysSinceWeekStart(firstDay, input.firstWeekday ?? DEFAULT_FIRST_WEEKDAY);
   const perDay = new Map<LocalDate, number>();
   for (const day of input.days) perDay.set(day, (perDay.get(day) ?? 0) + 1);
   const cells: (CalendarDay | null)[] = Array.from({ length: lead }, () => null);
-  for (let i = 0; i < daysInMonth(year, month); i += 1) {
+  for (let i = 0; i < monthDays; i += 1) {
     const date = addDays(firstDay, i);
-    cells.push({ date, sessions: perDay.get(date) ?? 0, paused: isPausedOn(input.pauses, date), today: date === input.today });
+    cells.push({ date, sessions: perDay.get(date) ?? 0, paused: pausedOn(input.pauses, date), today: date === input.today });
   }
   return { month: firstDay.slice(0, 7), cells };
 }
