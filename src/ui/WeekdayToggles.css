@@ -11,7 +11,7 @@
   min-height: var(--ct-hit-target-min);
   flex: 0 1 var(--ct-hit-target-min);
   border-radius: 50%;
-  border: 1.5px solid var(--ct-routine-ring, var(--ct-color-border-strong));
+  border: 1.5px solid var(--ct-routine-ring, var(--ct-color-control-border));
   background: var(--ct-color-surface);
   color: var(--ct-routine-ring-text, var(--ct-color-text));
   font-family: var(--ct-font-text);
@@ -28,6 +28,6 @@
 }
 
 .ct-weekday-toggles__day:focus-visible {
-  outline: 2px solid var(--ct-color-accent);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }

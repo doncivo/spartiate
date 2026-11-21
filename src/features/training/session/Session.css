@@ -120,7 +120,7 @@
 }
 
 .ct-session__step:focus-visible {
-  outline: 2px solid var(--ct-color-accent);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -297,7 +297,7 @@
 
 .ct-session__input:focus-visible,
 .ct-session__validate:focus-visible {
-  outline: 2px solid var(--ct-color-bronze);
+  outline: 2px solid var(--ct-color-focus-ring);
   outline-offset: 2px;
 }
 

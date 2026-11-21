@@ -369,7 +369,7 @@ La nutrition se saisit dans Spartiate (décision d’Ali du 15/11, D-293). Ne cr
 - Une ligne au stade inconnu (sommeil) est ignorée : vérifie le libellé du stade dans la section B.1.
 - Une valeur écrite avec un espace de milliers (ex. `8 200`) est rejetée : vérifie que `pas.csv` contient `8200`.
 - Un fichier très long (plus de 10 000 lignes) n’est lu que jusqu’à cette limite. Sur 30 jours, un fichier de pas peut l’atteindre.
-- Plus → Logs : les échecs d’import y sont notés (`shortcut-import-failed`, `body-import-failed`), sans aucune valeur de mesure.
+- Plus › Journaux : les échecs d’import y sont notés (`shortcut-import-failed`, `body-import-failed`), sans aucune valeur de mesure.
 - Partie C : « valeur hors limites » = la valeur sort des bornes plausibles de son fichier (voir C.2 à C.11), la ligne n’est pas importée ; « date sans fuseau horaire » : vérifie le format `yyyy-MM-dd'T'HH:mm:ssZZZZZ`.
 - Partie C : un jour sans énergie n’écrit rien dans le journal ; un jour où tu as saisi un repas garde ton journal (C.12).
 - Partie C : Spartiate ne lit que les quatorze noms exacts (les quatre de la partie B et les dix de la partie C, nutrition facultative comprise) ; `Poids.csv`, `poids.csv.txt` ou `masse_grasse.csv` sont ignorés.
