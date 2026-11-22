@@ -187,7 +187,16 @@ const recoveryCut = (p: Prescription): number => percent(1 - p.activeConfig.lowR
 // Contraintes (I2-02) : une alerte par contrainte active hors raison principale, une phrase par choix facultatif.
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-export type ConstraintAlertKey = 'alertFatigue' | 'alertStall' | 'alertInactivity' | 'alertDeload' | 'alertRecoveryLow' | 'alertRecoveryLowSet' | 'alertRedDay';
+export type ConstraintAlertKey =
+  | 'alertFatigue'
+  | 'alertStall'
+  | 'alertInactivity'
+  | 'alertInactivityAssistHeld'
+  | 'alertDeload'
+  | 'alertRecoveryLow'
+  | 'alertRecoveryLowSet'
+  | 'alertRecoveryAssistHeld'
+  | 'alertRedDay';
 export type OptionKey = 'optionFatigueLoad' | 'optionFatigueReps' | 'optionStallVariant' | 'optionStallRange' | 'optionStallMiniDeload';
 
 /** Contraintes dans l'ordre de `REASON_ORDER`, avec la raison principale qu'elles portent quand elles réduisent. */
@@ -205,6 +214,10 @@ export function constraintAlerts(p: Prescription): { readonly key: ConstraintAle
   if (isUnloaded(p)) return [];
   return ALERTS.filter((a) => p.reasons.includes(a.reason) && a.headline !== p.headline).map((a) => {
     if (a.key === 'alertStall') return { key: a.key, params: { sessions: p.activeConfig.stallSessions } };
+    // BL-091 (FIX-ASSIST) : assistance maintenue, aucune « charge réduite de x % » : la contrainte est dite sans pourcentage.
+    const held = p.reasons.includes('assistance-held');
+    if (a.key === 'alertInactivity' && held) return { key: 'alertInactivityAssistHeld', params: {} };
+    if (a.key === 'alertRecoveryLow' && held) return { key: 'alertRecoveryAssistHeld', params: {} };
     if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };
     if (a.key === 'alertRecoveryLow' && p.reasons.includes('recovery-red-day')) return { key: 'alertRedDay', params: { cut: recoveryCut(p) } };
     if (a.key === 'alertRecoveryLow') return { key: p.reasons.includes('recovery-set-removed') ? 'alertRecoveryLowSet' : a.key, params: { cut: recoveryCut(p) } };

@@ -90,6 +90,8 @@ export const progressionFr = {
   alertInactivity: 'Pause de 3 semaines ou plus : charge réduite de {cut} %.',
   alertDeload: 'Deload : séries réduites de moitié, hors statistiques.',
   alertRecoveryLow: 'Récupération basse : charge réduite de {cut} %.',
+  alertRecoveryAssistHeld: 'Récupération basse : assistance maintenue (la réduire alourdirait l’exercice).',
+  alertInactivityAssistHeld: 'Pause de 3 semaines ou plus : assistance maintenue (la réduire alourdirait l’exercice).',
   alertRecoveryLowSet: 'Récupération basse : charge réduite de {cut} % et une série de moins (exercice d’isolation).',
   alertRedDay: 'Journée rouge acceptée : charges −{cut} % en plus, aucune hausse aujourd’hui ; estimation, pas un avis médical.',
   alertsLabel: 'Alertes',
