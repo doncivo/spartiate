@@ -65,8 +65,8 @@ describe('PROG-04 : dépôt', () => {
 });
 
 describe('PROG-04 : export et import', () => {
-  it(`export sv ${String(EXPORT_SV)} (= 20) : le jour de la semaine part et revient tel quel`, async () => {
-    expect(EXPORT_SV).toBe(20);
+  it(`export sv ${String(EXPORT_SV)} (≥ 20) : le jour de la semaine part et revient tel quel`, async () => {
+    expect(EXPORT_SV).toBeGreaterThanOrEqual(20); // SYNC-0291 : schéma 21 ; l'archive de ce test reste au schéma 20.
     const a = await open(A);
     await a.data.transaction(async (r) => (await r.trainingRoutines()).create(program([1, 2, 4, null, 6])));
     const b = await open(B);

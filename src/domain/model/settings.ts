@@ -135,7 +135,7 @@ export interface SettingsValues {
   'training.cycleSession': unknown;
   /** I5-02 point 2.2 : choix d'Ali devant la journée rouge de la séance en cours (valeur BRUTE lue par `parseRedDayChoice`, src/features/training/session/redDayState.ts) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
   'training.redDay': unknown;
-  /** SESS-01b : exercices écartés (« Retirer, ne plus proposer »), valeur BRUTE lue par `parseExcludedExercises` ({ v: 1, ids }) ; locale, jamais synchronisée (décision proposée). */
+  /** SESS-01b : exercices écartés (« Retirer, ne plus proposer »), valeur BRUTE lue par `parseExcludedExercises` ({ v: 1, ids }) ; locale. SYNC-0291 (D-465) : lue une seule fois pour la reprise dans la table publiée `exercise_exclusion`, puis remise à null. */
   'training.excludedExercises': unknown;
   /** BLESSURES : gênes déclarées et check-ins (valeur BRUTE lue par `parseInjuries`, { v: 1, items }) ; donnée de santé : locale, jamais synchronisée ni exportée. */
   'training.injuries': unknown;

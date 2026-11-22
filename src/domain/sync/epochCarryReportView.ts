@@ -79,6 +79,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   supplement_intake: { label: 'date', kind: 'supplementIntake' },
   // I6-06 : séance cardio (libellé : le début).
   cardio_session: { label: 'started_at', kind: 'cardioSession' },
+  // SYNC-0291 : exercice écarté (libellé : l'identifiant de l'exercice).
+  exercise_exclusion: { label: 'exercise_id', kind: 'exerciseExclusion' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

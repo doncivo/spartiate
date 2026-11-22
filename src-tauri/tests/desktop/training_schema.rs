@@ -76,8 +76,18 @@ fn error_code(path: &Path) -> &'static str {
 
 /// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
 const CARDIO_VERSION: u32 = 18;
-/// PROG-04 : version de la migration 0020 (jour de la semaine des jours de routine), la dernière du registre.
-const LATEST_VERSION: u32 = 20;
+/// SYNC-0291 : version de la migration 0021 (exercices écartés et gênes publiés), la dernière du registre.
+const LATEST_VERSION: u32 = 21;
+
+/// SYNC-0291 : les déclencheurs de capture des exercices écartés n'existent qu'à partir de la version 21.
+#[test]
+fn sync0291_the_exclusion_triggers_exist_only_from_version_21() {
+    for suffix in ["ai", "au"] {
+        let name = format!("sync_exercise_exclusion_{suffix}");
+        assert_eq!(trigger_body_for(&name, "exercise_exclusion", LATEST_VERSION - 1), None);
+        assert!(trigger_body_for(&name, "exercise_exclusion", LATEST_VERSION).is_some());
+    }
+}
 
 #[test]
 fn prog01_the_app_schema_version_is_the_latest_migration_after_the_cardio_one() {

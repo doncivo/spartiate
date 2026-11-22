@@ -107,7 +107,8 @@ export type SyncReportTable =
   | 'food_favorite'
   | 'supplement'
   | 'supplement_intake'
-  | 'cardio_session';
+  | 'cardio_session'
+  | 'exercise_exclusion';
 
 /** Compteurs seulement (jamais le contenu d'une ligne) : bilan de l'export des journaux. */
 export interface SyncDiagnostics {

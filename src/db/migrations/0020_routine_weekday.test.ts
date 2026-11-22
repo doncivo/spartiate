@@ -28,7 +28,7 @@ const outbox = async (db: SqlDriver): Promise<string[]> => (await db.select<{ fi
 
 describe('migration 0020 : routine_weekday (PROG-04)', () => {
   it('registre : 0001 à 0020 ; version 20, nom routine_weekday', () => {
-    expect(migrations.map((m) => m.version)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
+    expect(migrations.slice(0, 20).map((m) => m.version)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
     expect(migrations[19]).toBe(migration0020RoutineWeekday);
     expect(migration0020RoutineWeekday.name).toBe('routine_weekday');
   });

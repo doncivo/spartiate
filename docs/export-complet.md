@@ -517,3 +517,12 @@ Séances cardio saisies (I6-06, schéma 18), écrites sur l’un ou l’autre ap
 | `rpe` | int | 1 à 10 | non | ressenti de la séance |
 | `source` | enum | — | non | `manual` (saisie) ou `gps` (suivi GPS de l’iPhone) |
 | `notes` | text | — | non |  |
+
+### `csv/exercise_exclusion.csv`
+
+Exercices écartés (« Retirer, ne plus proposer », SYNC-0291, schéma 21), écrits sur l’un ou l’autre appareil ; une ligne par exercice écarté, jamais proposé en remplacement ni par la génération.
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non | « exclusion », une barre verticale, puis `exercise_id` |
+| `exercise_id` | text | — | non | identifiant de l’exercice embarqué, ou `id` de `exercise.csv` |

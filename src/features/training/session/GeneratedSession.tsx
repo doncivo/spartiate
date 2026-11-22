@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { parseExcludedExercises } from '../../../domain/training/exclusions';
+import { loadExcludedExercises } from '../exclusionsStore';
 import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
 import {
@@ -95,13 +95,13 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access, now]);
-  /** SESS-01b : exercices écartés (réglage local) ; illisible : aucun. */
+  /** SESS-01b : exercices écartés (table publiée, SYNC-0291) ; illisible : aucun. */
   const [excluded, setExcluded] = useState<readonly string[]>([]);
   useEffect(() => {
     let alive = true;
-    access.repos.settings.get('training.excludedExercises').then(
-      (raw) => {
-        if (alive) setExcluded(parseExcludedExercises(raw));
+    loadExcludedExercises(access.repos).then(
+      (ids) => {
+        if (alive) setExcluded(ids);
       },
       () => undefined,
     );

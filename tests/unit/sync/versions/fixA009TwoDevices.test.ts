@@ -9,6 +9,7 @@ import { applyEverywhere, backupOf } from '../epochCarryKit';
  * au jeudi (`routine_day.weekday` = 4) et pose une cible nutritionnelle avec les colonnes de la migration 19. B, resté au schéma 19 (ou 18),
  * reçoit ces lignes par l'INSTANTANÉ de A (association, remplacement d'époque) : les colonnes qu'il ne connaît pas encore sont gardées dans
  * `sync_unknown` et réintégrées quand B passe au schéma 20, sans conflit parasite. Témoin : même scénario par le journal. Données synthétiques.
+ * SYNC-0291 : A est fixé au schéma 20 (`v20`, 0.29.0) depuis que la production est au schéma 21 ; B monte à la dernière version.
  */
 const A_ID = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa20';
 const B_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb19';
@@ -59,7 +60,7 @@ const snapshotCount = (d: SimDevice): number => [...(d.folder.devices.get(d.id)?
 
 /** A (20) seul écrit, puis publie un instantané (une semaine plus tard) qui porte ses lignes ; B (`schema`) rejoint ENSUITE, par cet instantané. */
 async function joinBySnapshot(schema: SimSchema): Promise<{ a: SimDevice; b: SimDevice }> {
-  const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+  const a = await createSimDevice(A_ID, { name: 'PC', schema: 'v20' });
   devices = [a];
   await setupFirst(a);
   await a.cycle();
@@ -107,7 +108,7 @@ describe('FIX-A009 : colonnes inconnues d’une table connue reçues par instant
   });
 
   it('témoin journal : B (19) associé avant les écritures reçoit par le journal ; jeudi réintégré en 20', async () => {
-    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'v20' });
     const b = await createSimDevice(B_ID, { name: 'iPhone', schema: 'v19', clock: createManualClock(a.clock.nowMs()) });
     devices = [a, b];
     await setupFirst(a);
@@ -125,7 +126,7 @@ describe('FIX-A009 : colonnes inconnues d’une table connue reçues par instant
   });
 
   it('remplacement d’époque : A (20) restaure et choisit « Appliquer partout », B (19) remplace par l’instantané : jeudi gardé, réintégré en 20', async () => {
-    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'v20' });
     const b = await createSimDevice(B_ID, { name: 'iPhone', schema: 'v19', clock: a.clock });
     devices = [a, b];
     await setupFirst(a);

@@ -64,6 +64,9 @@ export const RESET_TABLES: Readonly<Record<string, ResetFate>> = {
   supplement: 'wiped', // I6-05 : compléments et prises de l'utilisateur.
   supplement_intake: 'wiped',
   cardio_session: 'wiped',
+  // SYNC-0291 (D-466) : GARDÉE pour l'utilisateur (esprit de D-377). Mécanisme : effacée par l'horizon comme toute table publiée, puis les écartés
+  // vivants de l'appareil qui efface sont réinsérés APRÈS l'horizon (`resetAllData`, src/sync/dataReset.ts) : protocole inchangé.
+  exercise_exclusion: 'kept',
   // Locales.
   progress_photo_file: 'wiped',
   cardio_track: 'wiped',
@@ -140,7 +143,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'training.cycleSession': 'wiped',
   'training.redDay': 'wiped',
   'training.declaredFatigue': 'wiped',
-  'training.excludedExercises': 'kept', // SESS-01b : préférence d'Ali sur cet appareil, comme le repos par défaut.
+  'training.excludedExercises': 'kept', // SESS-01b : reliquat de la reprise dans `exercise_exclusion` (SYNC-0291, D-465), gardé comme les écartés.
   'training.injuries': 'wiped', // BLESSURES : donnée de santé de cet appareil.
   'nutrition.prefs': 'wiped',
   'nutrition.favorites': 'wiped',

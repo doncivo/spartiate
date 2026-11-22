@@ -68,7 +68,7 @@ describe('(a) écarté sur un appareil, écarté sur l’autre', () => {
 });
 
 describe('(b) conflits hors ligne', () => {
-  it('même exercice écarté des deux côtés : une seule ligne ; écarté d’un côté, remis plus tard de l’autre : remis partout ; même conflict_log des deux côtés', async () => {
+  it('même exercice écarté des deux côtés : une seule ligne ; remis d’un côté, écarté de nouveau plus tard de l’autre : écarté partout ; même conflict_log des deux côtés', async () => {
     const [pc, iphone] = await pcAndIphone();
     await writeExcluded(pc.data.repos, 'row-cable', true);
     iphone.clock.advance(500);
@@ -77,6 +77,8 @@ describe('(b) conflits hors ligne', () => {
     for (const d of [pc, iphone]) expect(await rows(d)).toEqual([{ id: 'exclusion|row-cable', exercise_id: 'row-cable', gone: 0 }]);
     await writeExcluded(pc.data.repos, 'row-cable', false);
     await writeExcluded(pc.data.repos, 'lunge-dumbbell', true);
+    // L'iPhone (hors ligne) remet puis écarte de nouveau, plus tard que la remise du PC : sa dernière écriture gagne.
+    await writeExcluded(iphone.data.repos, 'row-cable', false);
     iphone.clock.advance(5_000);
     await writeExcluded(iphone.data.repos, 'row-cable', true);
     await roundTrip();

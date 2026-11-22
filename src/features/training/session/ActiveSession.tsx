@@ -17,7 +17,8 @@ import {
   type WorkoutWithSets,
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
-import { parseExcludedExercises, withExcluded } from '../../../domain/training/exclusions';
+import { withExcluded } from '../../../domain/training/exclusions';
+import { loadExcludedExercises, writeExcluded } from '../exclusionsStore';
 import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
 import { setKindPatch, type SetKindChoice } from '../../../domain/training/failureSet';
 import { implementOf } from '../../../domain/training/replacement';
@@ -132,14 +133,14 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   }
   /** SESS-01c : exercice dont le calculateur de disques est ouvert. */
   const [platesFor, setPlatesFor] = useState<string | null>(null);
-  /** SESS-01b : exercices écartés (« ne plus proposer »), réglage local relu au montage ; illisible : aucun. */
+  /** SESS-01b : exercices écartés (« ne plus proposer »), table publiée relue au montage (SYNC-0291, D-447) ; illisible : aucun. */
   const [excludedIds, setExcludedIds] = useState<readonly string[]>([]);
   const excluded = useMemo(() => new Set(excludedIds), [excludedIds]);
   useEffect(() => {
     let alive = true;
-    access.repos.settings.get('training.excludedExercises').then(
-      (raw) => {
-        if (alive) setExcludedIds(parseExcludedExercises(raw));
+    loadExcludedExercises(access.repos).then(
+      (ids) => {
+        if (alive) setExcludedIds(ids);
       },
       () => undefined,
     );
@@ -451,7 +452,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     });
     if (!ok) return;
     try {
-      await access.repos.settings.set('training.excludedExercises', next);
+      await writeExcluded(access.repos, block.exerciseId, true);
       if (live.current) setExcludedIds(next.ids);
     } catch {
       if (live.current) setError(tSession('excludeError'));
@@ -470,7 +471,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           excluded={excluded}
           onRestore={async (id) => {
             const next = withExcluded(excludedIds, id, false);
-            await access.repos.settings.set('training.excludedExercises', next);
+            await writeExcluded(access.repos, id, false);
             if (live.current) setExcludedIds(next.ids);
           }}
           onCancel={() => setReplacing(null)}

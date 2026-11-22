@@ -19,8 +19,9 @@ describe('confirmation : le mot EFFACER, rien d’autre (D-182)', () => {
 });
 
 describe('sort des tables et des réglages (D-181)', () => {
-  it('toute table publiée est effacée, sauf data_reset (gardée : c’est l’horizon)', () => {
-    for (const t of SYNC_CATALOGUE.tables) expect(RESET_TABLES[t.name], t.name).toBe(t.name === DATA_RESET_TABLE ? 'kept' : 'wiped');
+  // SYNC-0291 (D-466) : les exercices écartés sont gardés (réinsérés après l'horizon par l'appareil qui efface) ; toute autre table publiée est effacée.
+  it('toute table publiée est effacée, sauf data_reset (gardée : c’est l’horizon) et exercise_exclusion (gardée, D-466)', () => {
+    for (const t of SYNC_CATALOGUE.tables) expect(RESET_TABLES[t.name], t.name).toBe(t.name === DATA_RESET_TABLE || t.name === 'exercise_exclusion' ? 'kept' : 'wiped');
   });
 
   it('réglages, technique de synchro et registre des migrations gardés ; données locales effacées', () => {

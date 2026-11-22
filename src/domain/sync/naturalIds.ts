@@ -191,6 +191,25 @@ export function isFavoriteId(id: string): boolean {
 }
 
 /** Identifiant attendu d'une ligne de ces valeurs, ou null si `ref` manque ou est illisible. */
+/**
+ * SYNC-0291 (BL-109, D-463) : exercice écarté (« ne plus proposer »), un par exercice, `exclusion|<exercice>` ; exercice = identifiant embarqué ou UUID
+ * d'un exercice personnalisé, sans `|`, au plus 118 caractères (`exclusion|` + 118 = 128 = `MAX_SYNC_ID_LENGTH`). Le CHECK de la migration 0021
+ * porte la même forme.
+ */
+export const EXCLUSION_EXERCISE_ID_MAX = 118;
+const EXCLUSION_PREFIX = 'exclusion|';
+export const isExclusionExerciseId = (exerciseId: string): boolean => exerciseId.length >= 1 && exerciseId.length <= EXCLUSION_EXERCISE_ID_MAX && !exerciseId.includes('|');
+export function exclusionId(exerciseId: string): string {
+  return `${EXCLUSION_PREFIX}${exerciseId}`;
+}
+export function isExclusionId(id: string): boolean {
+  return id.startsWith(EXCLUSION_PREFIX) && isExclusionExerciseId(id.slice(EXCLUSION_PREFIX.length));
+}
+export function expectedExclusionId(row: ReadonlyMap<string, unknown>): string | null {
+  const exercise = row.get('exercise_id');
+  return typeof exercise === 'string' && isExclusionExerciseId(exercise) ? exclusionId(exercise) : null;
+}
+
 export function expectedFavoriteId(row: ReadonlyMap<string, unknown>): string | null {
   const ref = row.get('ref');
   return typeof ref === 'string' && isFavoriteRef(ref) ? favoriteId(ref) : null;

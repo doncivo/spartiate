@@ -53,7 +53,7 @@ describe('export / import des compléments (I6-05)', () => {
   it('tables exportées en dernier, depuis le schéma courant, écrites par les deux appareils, présentes dans l’export complet', () => {
     expect(SV).toBe(17);
     expect(EXPORT_SV).toBe(migrations.length);
-    expect(TRAINING_EXPORT_TABLES.slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session en dernier.
+    expect(TRAINING_EXPORT_TABLES.slice(0, TRAINING_EXPORT_TABLES.indexOf('cardio_session') + 1).slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session en dernier. // SYNC-0291 : positions comptées jusqu’à cardio_session (tables de la 0021 ensuite).
     expect(TABLE_SINCE_SV.supplement).toBe(SV);
     expect(TABLE_SINCE_SV.supplement_intake).toBe(SV);
     for (const t of ['supplement', 'supplement_intake']) {

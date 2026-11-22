@@ -8,7 +8,7 @@ import { createSimDevice, pair, setupFirst, syncFolders, V18_CATALOGUE, type Sim
 /**
  * FIX-A009, passe qa-test : cas limites de la conservation des colonnes inconnues d'une table connue reçues par instantané. Lecteur réel au
  * schéma 18 (SQLite du banc, `nutrition_target` sans les colonnes de la 0019), vrai `mergeSnapshot`, instantanés synthétiques ; puis deux
- * appareils pour une ligne supprimée. Données synthétiques (D-292).
+ * appareils pour une ligne supprimée. Données synthétiques (D-292). SYNC-0291 : l'écrivain est fixé au schéma 20 (`v20`, 0.29.0).
  */
 const WRITER = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa20' as DeviceId;
 const READER = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb18';
@@ -91,7 +91,7 @@ describe('FIX-A009, qa-test : cas limites', () => {
   });
 
   it.each(['journal', 'snapshot'] as const)('colonne inconnue d’une ligne supprimée (deleted_at), reçue par %s : gardée, gardée comme par le journal, ligne jamais ressuscitée', async (route) => {
-    const a = await createSimDevice(WRITER, { name: 'PC', schema: 'i0' });
+    const a = await createSimDevice(WRITER, { name: 'PC', schema: 'v20' });
     const b = await createSimDevice(READER, { name: 'iPhone', schema: 'v18', clock: a.clock });
     devices = [a, b];
     await setupFirst(a);

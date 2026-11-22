@@ -18,6 +18,7 @@ export const dataResetFr = {
   keptSettings: 'Tes réglages de cet appareil : apparence, notifications, raccourcis, verrouillage',
   keptSync: 'L’appairage et la clé de synchro',
   keptContent: 'Le contenu fourni avec l’app : la bibliothèque d’exercices embarquée, les programmes de départ, la table Ciqual (tes exercices perso sont effacés)',
+  keptExclusions: 'Les exercices que tu as écartés (« ne plus proposer ») : ils restent écartés, ici et sur tes autres appareils',
   keptHealth: 'Le dossier Santé d’iCloud Drive n’est pas touché : le prochain import relira les fichiers présents.',
   bothDevices: 'S’applique à tes deux appareils : l’autre appareil efface aussi dès sa prochaine synchro, même s’il est hors ligne maintenant.',
   irreversible: 'C’est irréversible : aucune archive n’est faite avant, et les sauvegardes d’avant ne pourront plus être restaurées.',

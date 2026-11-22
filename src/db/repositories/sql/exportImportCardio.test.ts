@@ -53,7 +53,7 @@ describe('export / import des séances cardio (I6-06)', () => {
   it('table exportée en dernier, depuis le schéma 18, écrite par les deux appareils ; le tracé jamais exporté', () => {
     expect(EXPORT_SV).toBeGreaterThanOrEqual(18);
     expect(SV).toBe(18); // PROG-01 : le schéma 19 n'ajoute aucune table (colonnes seulement).
-    expect(TRAINING_EXPORT_TABLES.at(-1)).toBe('cardio_session');
+    expect(TRAINING_EXPORT_TABLES.slice(0, TRAINING_EXPORT_TABLES.indexOf('cardio_session') + 1).at(-1)).toBe('cardio_session'); // SYNC-0291 : positions comptées jusqu’à cardio_session (tables de la 0021 ensuite).
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('cardio_session')).toBe(false);
     expect(FULL_EXPORT_TABLES).toContain('cardio_session');
     expect(FULL_EXPORT_TABLES as readonly string[]).not.toContain('cardio_track');

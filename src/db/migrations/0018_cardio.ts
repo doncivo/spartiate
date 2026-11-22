@@ -37,8 +37,8 @@ const fieldCapture = (table: string, column: string): string[] => {
   ];
 };
 
-/** Modèle de la 0017 : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` au rétablissement). */
-function captureTriggers(table: string, columns: readonly string[]): string[] {
+/** Modèle de la 0017 : un `_ai` (ligne entière) et un `_au` (champ par champ, `base_hlc`, `'+'` au rétablissement). SYNC-0291 : exporté pour la 0021 (même gabarit, aucune instruction de la 0018 changée). */
+export function captureTriggers(table: string, columns: readonly string[]): string[] {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
   return [
     `CREATE TRIGGER sync_${table}_ai AFTER INSERT ON ${table}

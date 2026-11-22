@@ -8,11 +8,16 @@ import { guarded } from './guarded';
 import type { SyncLogger } from './log';
 import { META } from './meta';
 
+/** SYNC-0291 (D-466) : table des exercices écartés, republiés après l'horizon par l'appareil qui efface. */
+const EXCLUSION_TABLE = 'exercise_exclusion';
+
 /**
  * RESET-01 (D-180 à D-186 ; ADR 0011, avenant 36) : « Repartir de zéro » et sa propagation.
  *
  * - `resetAllData` (appareil qui efface) : une transaction ; refus si une séance est en cours ; ligne `data_reset` posée HORS garde (capturée par la
  *   file d'envoi : c'est elle qui part vers les autres appareils), puis effacement SOUS garde (rien de l'effacement ne repart) et horizon mémorisé.
+ * - SYNC-0291 (D-466) : les exercices écartés de l'appareil qui efface sont relus AVANT l'effacement et réinsérés APRÈS, hors garde, dans la même
+ *   transaction : tampons postérieurs à l'horizon, captés par la file d'envoi (ils survivent partout ; protocole de l'horizon inchangé).
  * - `enforceDataReset` (chaque cycle, avant la publication) : un horizon plus récent que le dernier effacement fait ici (ligne reçue par un journal, un
  *   instantané ou une réintégration après mise à jour) déclenche le même effacement. Idempotent, rejouable après un arrêt.
  * - Filtre (`apply.ts`, `snapshot.ts`) : un champ antérieur à l'horizon n'est jamais appliqué (`isBeforeReset`).
@@ -72,10 +77,12 @@ export async function resetAllData(data: DataAccess, catalogue: SyncCatalogue, l
   const outcome = await data.transaction(async (repos): Promise<ResetOutcome> => {
     const repo = await repos.dataReset();
     if (await repo.hasOpenWorkout()) return { kind: 'refused', reason: 'session-open' };
+    const kept = catalogue.table(EXCLUSION_TABLE) ? await (await repos.exerciseExclusions()).list() : [];
     const horizon = await repo.record();
     await repos.sync.setGuard();
     const counts = await wipeTo(repos, horizon, hlcMs(horizon));
     await repos.sync.clearGuard();
+    if (kept.length > 0) await (await repos.exerciseExclusions()).importLocal(kept);
     return { kind: 'done', horizon, counts };
   });
   if (outcome.kind === 'done') logCounts(logger, 'local', outcome.counts);

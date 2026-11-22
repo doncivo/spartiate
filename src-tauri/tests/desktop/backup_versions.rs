@@ -72,6 +72,7 @@ fn make_db(path: &Path, version: u32, bodies_version: u32) {
         "supplement_intake",
         "cardio_session",
         "cardio_track",
+        "exercise_exclusion",
         "search_index_doc",
     ] {
         conn.execute_batch(&format!(

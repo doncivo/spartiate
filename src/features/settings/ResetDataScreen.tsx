@@ -11,7 +11,7 @@ import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
 
 const WIPED: readonly DataResetTextKey[] = ['wipedProfile', 'wipedTraining', 'wipedSupplements', 'wipedCardio', 'wipedNutrition', 'wipedBody', 'wipedRecovery', 'wipedTechnical'];
-const KEPT: readonly DataResetTextKey[] = ['keptSettings', 'keptSync', 'keptContent', 'keptHealth'];
+const KEPT: readonly DataResetTextKey[] = ['keptSettings', 'keptSync', 'keptContent', 'keptExclusions', 'keptHealth'];
 
 type Message = { readonly kind: 'ok' | 'error'; readonly key: DataResetTextKey };
 
