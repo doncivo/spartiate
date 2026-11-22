@@ -125,7 +125,7 @@ const firstReadable = (rows: readonly DecisionRow[], report?: DecisionReadReport
  * « Modifier » à une charge plus haute n'est pas un deload : la séance reste dans les statistiques). Refus, JSON illisible ou prescription
  * 0.3.1 (sans champ `deload`) : pas un deload, jamais d'échec.
  */
-function isRetainedDeload(row: { readonly prescription: string; readonly accepted: number; readonly chosen_load_kg: number | null }): boolean {
+export function isRetainedDeload(row: { readonly prescription: string; readonly accepted: number; readonly chosen_load_kg: number | null }): boolean {
   if (row.chosen_load_kg === null) return false;
   try {
     const p = JSON.parse(row.prescription) as { deload?: unknown; loadKg?: unknown } | null;
@@ -170,7 +170,7 @@ function targetRirOf(prescription: string): number | null {
 }
 
 /** MOTEUR-0281b : prescription tracée d'une décision de retour (illisible : non). */
-function isRevertRow(prescription: string): boolean {
+export function isRevertRow(prescription: string): boolean {
   const p = parseOrNull(prescription) as { reasons?: unknown } | null | undefined;
   return typeof p === 'object' && p !== null && Array.isArray(p.reasons) && p.reasons.includes('revert-previous');
 }

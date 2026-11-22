@@ -17,6 +17,7 @@ import {
   routineDiff,
   summarizeWorkout,
   type WorkoutSummary,
+  type PastSessionMeta,
   isAssistedEquipment,
   CATALOG_ASSISTED_IDS,
   validateSetBounds,
@@ -40,6 +41,7 @@ import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { RestTimer, WorkoutRepository } from '../workoutRepository';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
+import { isRetainedDeload, isRevertRow } from './progressionRepository';
 import { createTrainingRoutineRepository } from './trainingRoutineRepository';
 
 interface WorkoutRow extends SqlRow, SyncRow {
@@ -376,9 +378,34 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     }
     return { assisted, bodyweighted };
   };
+  /**
+   * BL-092 : fin réelle (`ended_at`) des séances closes de `history` et exercices où une décharge a été retenue (dernière décision de
+   * l'exercice dans la séance, hors décision de retour ; même règle que le moteur, progressionRepository) : une décharge ne confirme pas une
+   * aberrante au résumé de fin (D-323 (2)).
+   */
+  const pastMetaFor = async (history: readonly WorkoutSet[]): Promise<Map<string, PastSessionMeta>> => {
+    const ids = [...new Set(history.map((s) => s.workoutId))];
+    const meta = new Map<string, { endedAt: IsoDateTime; deloadExercises: Set<string> }>();
+    for (let i = 0; i < ids.length; i += 400) {
+      const part = ids.slice(i, i + 400);
+      const marks = part.map(() => '?').join(', ');
+      const ended = await db.select<{ id: string; ended_at: string } & SqlRow>(`SELECT id, ended_at FROM workout WHERE id IN (${marks}) AND ended_at IS NOT NULL`, part);
+      for (const row of ended) meta.set(row.id, { endedAt: row.ended_at as IsoDateTime, deloadExercises: new Set() });
+      const decided = await db.select<{ workout_id: string; exercise_id: string; prescription: string; accepted: number; chosen_load_kg: number | null } & SqlRow>(
+        `SELECT workout_id, exercise_id, prescription, accepted, chosen_load_kg FROM recommendation_decision
+         WHERE deleted_at IS NULL AND workout_id IN (${marks}) ORDER BY workout_id, exercise_id, decided_at, id`,
+        part,
+      );
+      const latest = new Map<string, (typeof decided)[number]>();
+      for (const row of decided) if (!isRevertRow(row.prescription)) latest.set(`${row.workout_id} ${row.exercise_id}`, row);
+      for (const row of latest.values()) if (isRetainedDeload(row)) meta.get(row.workout_id)?.deloadExercises.add(row.exercise_id);
+    }
+    return meta;
+  };
   const summaryOf = async (workout: WorkoutWithSets): Promise<WorkoutSummary> => {
     const { assisted, bodyweighted } = await traitsFor(workout);
-    return summarizeWorkout(workout, await historyFor(workout), assisted, bodyweighted);
+    const history = await historyFor(workout);
+    return summarizeWorkout(workout, history, assisted, bodyweighted, await pastMetaFor(history));
   };
   /** Jour de routine d'origine (non supprimé), ou null. */
   const dayOf = async (workout: WorkoutWithSets): Promise<RoutineDay | null> => {

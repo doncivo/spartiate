@@ -384,7 +384,7 @@ pub fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
         return Ok(());
     }
     let mut builder = tauri::WebviewWindowBuilder::from_config(app, &config)?;
-    // SPA-009 : la fenêtre tient dans la zone de travail du moniteur courant (curseur, sinon écran principal), minimum 1 024 × 700 jamais
+    // SPA-009 : la fenêtre tient dans la zone de travail du moniteur courant (curseur, sinon écran principal), minimum 800 × 360 (D-459) jamais
     // abaissé. Zone trop petite : la configuration d'origine est gardée et la limite est consignée au journal technique.
     if let Some(work) = current_work_area(app) {
         match crate::window_fit::fit_window(
