@@ -284,7 +284,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.29.x, nutrition et récupération, M) |
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.29.x, coquille, iOS et qualité, S) |
-| BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | décidé par Ali (D-450) ; à faire (0.29.1, coquille) |
+| BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | fait (COQUILLE-0291, PR #198, D-450, D-459 ; restes BL-136) |
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | décidé par Ali (D-447) ; à faire (0.29.1, données et synchro) |
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.29.x, séance et moteur, S) |
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.29.x, données et synchro, M) |
@@ -420,7 +420,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | à faire (0.29.x, CI, M) |
 | § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à trancher par Ali : PRD § 18 contradictoire : 1 024 px (tableau, useLayout) contre « ≥ 900 px » (maquettes) ; C-135, C-188 |
 | § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | fait (COQUILLE-PC-c, D-400 ; constat d'Ali H-19a) |
-| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | décidé par Ali (D-450, BL-119) ; à faire (0.29.1) |
+| § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | fait (COQUILLE-0291, PR #198, D-459) |
 | § 18.6 c | PRD § 18.6 | partiel — équivalent clavier (C-068, C-121, C-122) | fait en partie ; reste : focus après Entrée en séance fait (D-356, #170) ; restent C-121, C-122 et le focus du journal des facteurs (C-068) (0.29.x, coquille, iOS et qualité, M) |
 | § 19.1 a | PRD § 19.1 | partiel — notification-actions : aucune notification de check-in (C-194) | fait en partie ; reste : rappel de check-in des gênes livré (BLESSURES-b, injuryNotifications.ts, #182) ; notification du check-in nutrition absente (0.29.x, nutrition et récupération, S) |
 | § 19.1 b | PRD § 19.1 | partiel — privacy-shield activable (C-159) | à faire (0.29.x, coquille, iOS et qualité, S) |
