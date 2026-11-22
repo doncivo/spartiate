@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
-import { CHECKIN_ANSWERS, dueCheckins, parseInjuries, recordCheckin, type CheckinAnswer, type InjuriesValue } from '../../../domain/training/injuries';
+import { CHECKIN_ANSWERS, dueCheckins, recordCheckin, type CheckinAnswer, type InjuriesValue } from '../../../domain/training/injuries';
 import { tInjuries, type InjuriesTextKey } from '../../../i18n/injuriesText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { useSyncedData } from '../../sync/remoteChanges';
+import { loadInjuries, saveInjuries } from './injuriesStore';
+
+/** Relecture 1 (point 1) : la carte se relit quand un lot appliqué touche les gênes. */
+const SYNCED_TABLES = ['injury'] as const;
 import { replanInjuryReminders } from './replan';
 import './Injuries.css';
 
@@ -16,31 +21,32 @@ const ANSWER_KEY = { better: 'answerBetter', same: 'answerSame', worse: 'answerW
  */
 export function InjuryCheckinCard() {
   const container = useAppContainer();
-  const { settings } = container.data.repos;
+  const repos = container.data.repos;
   const today = todayLocal(container.clock);
   const [value, setValue] = useState<InjuriesValue | null>(null);
   const [worse, setWorse] = useState(false);
   const [failed, setFailed] = useState(false);
+  const synced = useSyncedData(SYNCED_TABLES);
 
   useEffect(() => {
     let live = true;
-    void settings.get('training.injuries').then(
-      (raw) => {
-        if (live) setValue(parseInjuries(raw));
+    void loadInjuries(repos).then(
+      (read) => {
+        if (live) setValue(read);
       },
       () => undefined,
     );
     return () => {
       live = false;
     };
-  }, [settings]);
+  }, [repos, synced]);
 
   const answer = useCallback(
     async (id: string, choice: CheckinAnswer): Promise<void> => {
       if (value === null) return;
       try {
         const next = recordCheckin(value, id, choice, today);
-        await settings.set('training.injuries', next);
+        await saveInjuries(repos, value, next);
         setValue(next);
         setFailed(false);
         setWorse(choice === 'worse');
@@ -49,7 +55,7 @@ export function InjuryCheckinCard() {
         setFailed(true);
       }
     },
-    [value, today, settings, container],
+    [value, today, repos, container],
   );
 
   const due = value === null ? [] : dueCheckins(value, today);

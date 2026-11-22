@@ -22,6 +22,8 @@ import {
 import type { ThemeChoice } from '../model/settings';
 import { isPhotoFileName, isStoredMeasurementKind, isStoredMeasurementValue } from '../bodyProgress/measurements';
 import { toFavorite } from '../nutrition/favorites';
+import { exclusionId, isExclusionExerciseId } from '../../domain/sync/naturalIds';
+import { injuryFromColumns } from '../training/injuries';
 import { toCardioKind, validateCardioSession, type CardioSessionInput } from '../cardio/session';
 import { parseSupplementTimes, validateSupplementDraft } from '../nutrition/supplements';
 import { isId, isIsoDateTime, isLocalDate, isLocalTime } from '../types';
@@ -33,7 +35,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 20;
+export const EXPORT_SV = 21;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -68,7 +70,7 @@ export interface ExportWeight {
  * profil de progression et décisions d'Ali, difficulté des séries. I3-02 (schéma 7) : cycles d'entraînement. I4-02 (schéma 8) : fiches alimentaires, portions, journal et cibles de nutrition (valeurs inconnues conservées nulles). I4-07 (schéma 9) : journée déclarée, recettes et ingrédients (une archive plus ancienne, sans ces clés, n'en supprime jamais, même en « remplacer »).
  * I5-01 (schéma 10) : RÉSUMÉS de récupération (`recovery_day`, `muscle_recovery`) ; les échantillons importés (`recovery_sample`) et l'état
  * d'import (`recovery_import_state`) ne sont jamais exportés : ils se relisent depuis les fichiers Raccourcis. FIX-0181 (schéma 15) : favoris de la
- * recherche d'aliments (`food_favorite`), écrits par les deux appareils ; l'ancien réglage local `nutrition.favorites` n'a jamais été exporté. I6-05 (schéma 17) : compléments et prises (`supplement`, `supplement_intake`), écrits par les deux appareils.
+ * recherche d'aliments (`food_favorite`), écrits par les deux appareils ; l'ancien réglage local `nutrition.favorites` n'a jamais été exporté. I6-05 (schéma 17) : compléments et prises (`supplement`, `supplement_intake`), écrits par les deux appareils. SYNC-0291 (schéma 21) : exercices écartés (`exercise_exclusion`) et gênes (`injury`) ; les anciens réglages locaux `training.excludedExercises` et `training.injuries` n'ont jamais été exportés.
  */
 /** I6-06 : une ligne de séance cardio respecte-t-elle les bornes du domaine (le début n'est jamais refusé comme futur à l'import) ? */
 function cardioRowOk(v: Readonly<Record<string, unknown>>): boolean {
@@ -89,7 +91,7 @@ function cardioRowOk(v: Readonly<Record<string, unknown>>): boolean {
   return validateCardioSession(input, '9999-12-31T23:59:59.999Z').length === 0;
 }
 
-export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo', 'food_favorite', 'supplement', 'supplement_intake', 'cardio_session'] as const;
+export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine', 'routine_day', 'routine_exercise', 'workout', 'workout_set', 'progression_profile', 'recommendation_decision', 'mesocycle', 'food', 'food_portion', 'meal_entry', 'nutrition_target', 'day_completeness', 'recipe', 'recipe_ingredient', 'recovery_day', 'muscle_recovery', 'recovery_factor', 'measurement', 'progress_photo', 'food_favorite', 'supplement', 'supplement_intake', 'cardio_session', 'exercise_exclusion', 'injury'] as const;
 /**
  * Colonnes ajoutées après la première version exportée de leur table : absentes d'une archive plus ancienne (0.3.0 : `workout_set` sans
  * `difficulty` ; schéma 12 : sans `circuit_id` ni `circuit_rest_sec` ; schéma 13 : `routine_exercise` sans ces deux colonnes, I6-03b), lues comme nulles et notées `absent` (FIX-0171 : la valeur locale d'une
@@ -136,6 +138,9 @@ export const TABLE_SINCE_SV: Readonly<Partial<Record<TrainingTable, number>>> = 
   supplement: 17,
   supplement_intake: 17,
   cardio_session: 18,
+  // SYNC-0291 (D-467) : exercices écartés publiés au schéma 21 ; une archive 0.29.0 (sv 20) ne les a jamais vus.
+  exercise_exclusion: 21,
+  injury: 21,
 };
 
 /**
@@ -446,6 +451,12 @@ function rowBoundsOk(table: TrainingTable, id: string, v: Readonly<Record<string
     case 'supplement_intake':
       // Même forme que l'identifiant naturel de la synchro (`intake|<UUID>|<date>|<HH:mm>`), vérifiée ici avec les types du domaine.
       return typeof v['supplement_id'] === 'string' && isId(v['supplement_id']) && typeof v['date'] === 'string' && isLocalDate(v['date']) && typeof v['moment'] === 'string' && isLocalTime(v['moment']) && id === `intake|${v['supplement_id']}|${v['date']}|${v['moment']}`;
+    case 'injury':
+      // SYNC-0291 (D-464) : identifiant UUID et lecture STRICTE du domaine (aucun motif ni réponse écarté, aucune cible vide).
+      return isId(id) && injuryFromColumns(id, v, true) !== null;
+    case 'exercise_exclusion':
+      // SYNC-0291 (D-463) : CHECK de la migration 0021 (identifiant naturel exclusion|<exercice>, sans « | »).
+      return typeof v['exercise_id'] === 'string' && isExclusionExerciseId(v['exercise_id']) && id === exclusionId(v['exercise_id']);
     case 'food_favorite':
       // FIX-0181 (D-171) : CHECK de la migration 0015 (identifiant naturel) et cohérence provenance / référence du domaine (`toFavorite`).
       return id === `favorite|${String(v['ref'])}` && toFavorite(v['source'], v['ref']) !== null;

@@ -52,8 +52,8 @@ const apply = async (db: TestDb, incoming: ExportData, mode: 'merge' | 'replace'
 
 describe('export / import des recettes et de la journée déclarée (I4-07)', () => {
   it('trois tables exportées après la nutrition et avant la récupération (I5-01), recette avant ingrédient ; schéma 9 puis 10', () => {
-    expect(TRAINING_EXPORT_TABLES.slice(-12, -9)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']);
-    expect(EXPORT_SV).toBe(20); // PROG-04 : schéma 20 ; PROG-01 : schéma 19 ; FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
+    expect(TRAINING_EXPORT_TABLES.slice(0, TRAINING_EXPORT_TABLES.indexOf('cardio_session') + 1).slice(-12, -9)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']); // SYNC-0291 : positions comptées jusqu’à cardio_session (tables de la 0021 ensuite).
+    expect(EXPORT_SV).toBe(21); // SYNC-0291 : schéma 21 ; PROG-04 : schéma 20 ; PROG-01 : schéma 19 ; FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
   });
 
   it('aller-retour : mêmes données (hash canonique), inconnus conservés nuls, publiées comme toute écriture', async () => {
@@ -108,9 +108,9 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     expect(await canonicalHash(await read(db))).toBe(before);
   });
 
-  it('archive d’un schéma plus récent (21) : refusée, rien n’est écrit', async () => {
+  it('archive d’un schéma plus récent (22) : refusée, rien n’est écrit', async () => {
     const db = await open(A);
-    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: 21 });
+    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: 22 });
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toBeInstanceOf(ArchiveError);
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toMatchObject({ code: 'future-version' });
   });

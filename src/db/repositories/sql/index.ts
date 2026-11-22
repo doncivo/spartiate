@@ -75,6 +75,10 @@ export const createSqlRepositoriesFor = (catalogue: SyncCatalogue, options: Repo
   recoveryFactors: () => import('./recoveryFactorRepository').then((m) => signalingWrites(m.createRecoveryFactorRepository(executor, stamper), ['save', 'clear'])),
   // FIX-0181 : favoris publiés, à la demande ; écrits par les deux appareils (aucune règle de lecteur).
   foodFavorites: () => import('./foodFavoriteRepository').then((m) => signalingWrites(m.createFoodFavoriteRepository(executor, stamper), ['add', 'remove', 'importLocal'])),
+  // SYNC-0291 : exercices écartés publiés, à la demande ; écrits par les deux appareils (aucune règle de lecteur).
+  exerciseExclusions: () => import('./exerciseExclusionRepository').then((m) => signalingWrites(m.createExerciseExclusionRepository(executor, stamper), ['setExcluded', 'importLocal'])),
+  // SYNC-0291 : gênes publiées, à la demande ; écrites par les deux appareils (aucune règle de lecteur).
+  injuries: () => import('./injuryRepository').then((m) => signalingWrites(m.createInjuryRepository(executor, stamper), ['save', 'importLocal'])),
   // I6-05 : compléments et prises publiés, à la demande ; écrits par les deux appareils (aucune règle de lecteur).
   supplements: () => import('./supplementRepository').then((m) => signalingWrites(m.createSupplementRepository(executor, stamper), ['create', 'update', 'remove', 'setTaken'])),
   // I6-02 : mensurations et photos de progression, à la demande ; publiées (fiche seulement), écrites par les deux appareils.

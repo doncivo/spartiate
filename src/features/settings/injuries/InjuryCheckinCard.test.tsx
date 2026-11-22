@@ -1,13 +1,14 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
-import { declareInjury, parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
+import { declareInjury, type InjuriesValue } from '../../../domain/training/injuries';
 import type { DeviceId, LocalDate } from '../../../domain/types';
 import { tInjuries } from '../../../i18n/injuriesText';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { readFileSync } from 'node:fs';
+import { announceLocalChanges } from '../../sync/remoteChanges';
 import { InjuryCheckinCard } from './InjuryCheckinCard';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c5' as DeviceId;
@@ -19,7 +20,8 @@ describe('Carte « Où en est ta gêne ? » (BLESSURES-b)', () => {
     if (!r.ok) throw new Error(r.issue);
     await db.data.repos.settings.set('training.injuries', r.value);
   };
-  const stored = async (): Promise<InjuriesValue> => parseInjuries(await db.data.repos.settings.get('training.injuries'));
+  // SYNC-0291 (D-447) : la gêne posée dans l'ancien réglage local est reprise dans la table publiée `injury` à la première lecture.
+  const stored = async (): Promise<InjuriesValue> => (await db.data.repos.injuries()).read();
   const open = () => {
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
     return render(
@@ -40,7 +42,7 @@ describe('Carte « Où en est ta gêne ? » (BLESSURES-b)', () => {
   it("rien avant l'échéance (13 jours) ni sans gêne", async () => {
     await seed('2026-11-07');
     const { container } = open();
-    await waitFor(() => expect(db.data.repos.settings.get('training.injuries')).resolves.toBeTruthy());
+    await waitFor(async () => expect((await stored()).items).toHaveLength(1));
     expect(container.textContent).toBe('');
   });
 
@@ -79,5 +81,17 @@ describe('Carte « Où en est ta gêne ? » (BLESSURES-b)', () => {
     const source = readFileSync('src/features/settings/injuries/InjuryCheckinCard.tsx', 'utf8');
     expect(source).not.toContain('BodyScreen.css');
     expect(source).toContain("import './Injuries.css'");
+  });
+
+  it('relecture 1, point 1 : la carte se relit quand un lot de « injury » est appliqué (guérie ailleurs : la carte disparaît)', async () => {
+    await seed('2026-11-06');
+    open();
+    expect(await screen.findByText(tInjuries('checkinTitle'))).toBeTruthy();
+    const current = await stored();
+    const [first] = current.items;
+    if (!first) throw new Error('gêne absente');
+    await (await db.data.repos.injuries()).save({ ...first, status: 'healed', healedOn: '2026-11-20' as LocalDate }, first);
+    announceLocalChanges(['injury']);
+    await waitFor(() => expect(screen.queryByText(tInjuries('checkinTitle'))).toBeNull());
   });
 });

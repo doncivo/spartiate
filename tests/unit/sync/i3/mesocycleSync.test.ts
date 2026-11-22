@@ -61,7 +61,7 @@ const cycleOf = async (d: SimDevice) => (await d.data.repos.mesocycles()).get(M1
 
 describe('catalogue de production : mesocycle (I3-02)', () => {
   it('juste avant les tables de nutrition (I4-02), sans parent, UUID ; colonnes et listes fermées', () => {
-    expect(SYNC_TABLE_ORDER.at(-18)).toBe('mesocycle'); // FIX-0181 : food_favorite ; RESET-01 : data_reset en dernier.
+    expect(SYNC_TABLE_ORDER.slice(0, SYNC_TABLE_ORDER.indexOf('cardio_session') + 1).at(-18)).toBe('mesocycle'); // FIX-0181 : food_favorite ; RESET-01 : data_reset en dernier. // SYNC-0291 : comptée jusqu’à cardio_session (tables de la 0021 ensuite).
     const t = SYNC_CATALOGUE.table('mesocycle');
     if (!t) throw new Error('mesocycle');
     expect(t.idKind).toBe('uuid');

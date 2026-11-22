@@ -61,8 +61,8 @@ const intakeRows = (d: SimDevice) => d.driver.select('SELECT id, deleted_at IS N
 
 describe('(a) catalogue : supplement et supplement_intake', () => {
   it('dernières de l’ordre, sans parent publié ni colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session ensuite.
-    expect(SYNC_CATALOGUE.tables.map((t) => t.name).slice(-3, -1)).toEqual(['supplement', 'supplement_intake']);
+    expect(SYNC_TABLE_ORDER.slice(0, SYNC_TABLE_ORDER.indexOf('cardio_session') + 1).slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // I6-06 : cardio_session ensuite. // SYNC-0291 : comptée jusqu’à cardio_session (tables de la 0021 ensuite).
+    expect(SYNC_CATALOGUE.tables.map((t) => t.name).slice(0, SYNC_TABLE_ORDER.indexOf('cardio_session') + 1).slice(-3, -1)).toEqual(['supplement', 'supplement_intake']); // SYNC-0291 : comptée jusqu’à cardio_session (tables de la 0021 ensuite).
     for (const name of ['supplement', 'supplement_intake']) {
       const t = SYNC_CATALOGUE.table(name);
       expect(t?.parents).toEqual([]);

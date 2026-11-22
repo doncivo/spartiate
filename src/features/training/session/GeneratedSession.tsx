@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
-import { parseExcludedExercises } from '../../../domain/training/exclusions';
+import { loadExcludedExercises } from '../exclusionsStore';
 import { generationWeekOf } from '../../../domain/training/mesocycle';
 import { generateSession } from '../../../domain/training/generateSession';
 import {
@@ -23,7 +23,8 @@ import { formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { loadCurrentCycle, localDayOf, type CurrentCycle } from '../cycle/currentCycle';
-import { injuryAvoidance, parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
+import { injuryAvoidance, type InjuriesValue } from '../../../domain/training/injuries';
+import { loadInjuries } from '../../settings/injuries/injuriesStore';
 import { groupLabel, PATTERN_KEY } from '../labels';
 import type { TrainingData } from '../trainingState';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor, startGeneratedSession, type GenerationSettings } from './generationInput';
@@ -95,13 +96,13 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access, now]);
-  /** SESS-01b : exercices écartés (réglage local) ; illisible : aucun. */
+  /** SESS-01b : exercices écartés (table publiée, SYNC-0291) ; illisible : aucun. */
   const [excluded, setExcluded] = useState<readonly string[]>([]);
   useEffect(() => {
     let alive = true;
-    access.repos.settings.get('training.excludedExercises').then(
-      (raw) => {
-        if (alive) setExcluded(parseExcludedExercises(raw));
+    loadExcludedExercises(access.repos).then(
+      (ids) => {
+        if (alive) setExcluded(ids);
       },
       () => undefined,
     );
@@ -109,13 +110,13 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access]);
-  /** BLESSURES-a : gênes déclarées (réglage local) ; leurs patterns et muscles sont évités en plus des choix de l'écran. Illisible : aucune. */
+  /** BLESSURES-a : gênes déclarées (table publiée, SYNC-0291) ; leurs patterns et muscles sont évités en plus des choix de l'écran. Illisible : aucune. */
   const [injuries, setInjuries] = useState<InjuriesValue>({ v: 1, items: [] });
   useEffect(() => {
     let alive = true;
-    access.repos.settings.get('training.injuries').then(
-      (raw) => {
-        if (alive) setInjuries(parseInjuries(raw));
+    loadInjuries(access.repos).then(
+      (read) => {
+        if (alive) setInjuries(read);
       },
       () => undefined,
     );

@@ -14,6 +14,7 @@ import { MAX_SYNC_ID_LENGTH } from './limits';
 import { SYNC_TABLE_ORDER } from './format';
 import {
   expectedDayCompletenessId,
+  expectedExclusionId,
   expectedFavoriteId,
   expectedIntakeId,
   expectedMuscleRecoveryId,
@@ -23,6 +24,7 @@ import {
   expectedRecoveryFactorId,
   expectedWeightId,
   isDayCompletenessId,
+  isExclusionId,
   isFavoriteId,
   isIntakeId,
   isMuscleRecoveryId,
@@ -816,7 +818,41 @@ const CARDIO_SESSION_TABLE = table(
   { titleSource: { kind: 'none' } },
 );
 
-/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05 + I6-06) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
+/**
+ * Catalogue SYNC-0291 (BL-109, D-447, D-463 ; migration 0021, schéma 21) : `exercise_exclusion`, exercices écartés (« ne plus proposer »), écrits par les
+ * DEUX appareils. Identifiant naturel `exclusion|<exercice>` : le même exercice écarté des deux côtés donne une ligne ; écarter = ligne vivante, remettre
+ * = suppression logique ; fusion champ par champ par HLC, dernière écriture gagne. `exercise_id` est une référence LOGIQUE (P-09), hors de `parents`.
+ * Journal des conflits : seule la suppression (écarté d'un côté, remis de l'autre) y est visible.
+ */
+const EXERCISE_EXCLUSION_TABLE = table(
+  'exercise_exclusion',
+  [c('exercise_id', 'text', false, { max: 118, conflictVisible: false }), createdAt, deletedAt],
+  { idKind: 'natural', natural: { is: isExclusionId, expected: (row) => expectedExclusionId(row) }, titleSource: { kind: 'own', column: 'exercise_id' } },
+);
+
+/**
+ * Catalogue SYNC-0291 (BL-120, D-447, D-464 ; migration 0021, schéma 21) : `injury`, gênes déclarées, écrites par les DEUX appareils, identifiant UUID.
+ * Motifs douloureux et réponses au check-in en JSON (validés par le domaine à la lecture : ligne illisible non affichée, jamais effacée). Fusion champ
+ * par champ par HLC, dernière écriture gagne (deux réponses données hors ligne des deux côtés : la plus récente reste). Donnée de santé : AUCUNE
+ * colonne au journal des conflits, suppression comprise (D-402 : jamais journalisée). Aucune contrainte croisée entre colonnes.
+ */
+const INJURY_TABLE = table(
+  'injury',
+  [
+    c('muscle_id', 'text', true, { max: 64, conflictVisible: false }),
+    c('patterns', 'json', false, { max: 1_024, conflictVisible: false }),
+    c('started_on', 'date', false, hidden),
+    c('note', 'text', true, { max: 140, conflictVisible: false }),
+    c('status', 'enum', false, { values: ['active', 'healed'], conflictVisible: false }),
+    c('healed_on', 'date', true, hidden),
+    c('checkins', 'json', false, hidden),
+    createdAt,
+    c('deleted_at', 'datetime', true, hidden),
+  ],
+  { titleSource: { kind: 'none' } },
+);
+
+/** Catalogue de production (I0 + I1-01 + I1-03 + I2-01 + I3-02 + I4-02 + I4-07 + I5-01 + I6-01 + I6-02 + FIX-0181 + RESET-01 + I6-05 + I6-06 + SYNC-0291) : l'ordre est `SYNC_TABLE_ORDER`. `settings` n'est pas publié (D-55). */
 export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
   tables: [
     PROFILE_TABLE,
@@ -848,6 +884,8 @@ export const SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
     SUPPLEMENT_TABLE,
     SUPPLEMENT_INTAKE_TABLE,
     CARDIO_SESSION_TABLE,
+    EXERCISE_EXCLUSION_TABLE,
+    INJURY_TABLE,
   ],
   order: SYNC_TABLE_ORDER,
 });

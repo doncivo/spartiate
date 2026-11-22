@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { declareInjury, type InjuriesValue } from '../../domain/training/injuries';
+import { declareInjury, parseInjuries, type InjuriesValue } from '../../domain/training/injuries';
 import type { LocalDate } from '../../domain/types';
 import { injuryNotificationsFr } from '../../i18n/fr.injuryNotifications';
 import { createFakeNotificationScheduler, createUnavailableNotificationScheduler, type FakeNotificationScheduler, type NotificationScheduler } from '../../platform/notifications';
@@ -19,7 +19,8 @@ function setup(scheduler: NotificationScheduler = createFakeNotificationSchedule
   const service = createInjuryNotificationService({
     scheduler,
     clock: { nowMs: () => NOW_MS, zone: () => ZONE },
-    settings: { get: (async () => value) as InjuryNotificationDeps['settings']['get'] },
+    // SYNC-0291 (D-447) : les gênes viennent de la table publiée (lecture injectée), plus du réglage local.
+    injuries: (async () => parseInjuries(value)) as InjuryNotificationDeps['injuries'],
     log: (code) => logs.push(code),
   });
   return { service, logs, scheduler };

@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { todayLocal } from '../../../domain/clock';
 import { EXERCISE_PATTERNS, type ExercisePattern } from '../../../domain/training';
-import { declareInjury, markHealed, parseInjuries, type InjuriesValue, type Injury } from '../../../domain/training/injuries';
+import { declareInjury, markHealed, type InjuriesValue, type Injury } from '../../../domain/training/injuries';
 import { formatDayLabel } from '../../../i18n/format';
 import { tInjuries } from '../../../i18n/injuriesText';
 import { tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { PATTERN_KEY } from '../../training/labels';
+import { useSyncedData } from '../../sync/remoteChanges';
+import { loadInjuries, saveInjuries } from './injuriesStore';
+
+/** Relecture 1 (point 1) : la section se relit quand un lot appliqué touche les gênes. */
+const SYNCED_TABLES = ['injury'] as const;
 import { replanInjuryReminders } from './replan';
 import '../BodyScreen.css';
 import './Injuries.css';
@@ -21,13 +26,14 @@ const EMPTY: InjuriesValue = { v: 1, items: [] };
 
 /**
  * Profil › Blessures (BLESSURES-a) : déclarer une gêne (muscle du contenu, mouvements douloureux, date, note), la marquer guérie, lister les
- * actives et les passées. Données de santé : réglage local `training.injuries`, jamais synchronisé ni exporté. Bloc chargé à la demande avec ses
+ * actives et les passées. Données de santé : table publiée `injury` (SYNC-0291, D-447), communes au PC et à l'iPhone, jamais journalisées. Bloc chargé à la demande avec ses
  * textes et le catalogue des muscles.
  */
 export function InjuriesSection() {
   const container = useAppContainer();
-  const { settings } = container.data.repos;
+  const repos = container.data.repos;
   const today = todayLocal(container.clock);
+  const synced = useSyncedData(SYNCED_TABLES);
   const [value, setValue] = useState<InjuriesValue>(EMPTY);
   const [muscles, setMuscles] = useState<readonly MuscleOption[]>([]);
   const [muscleId, setMuscleId] = useState('');
@@ -38,9 +44,9 @@ export function InjuriesSection() {
 
   useEffect(() => {
     let live = true;
-    void settings.get('training.injuries').then(
-      (raw) => {
-        if (live) setValue(parseInjuries(raw));
+    void loadInjuries(repos).then(
+      (read) => {
+        if (live) setValue(read);
       },
       () => undefined,
     );
@@ -56,12 +62,12 @@ export function InjuriesSection() {
     return () => {
       live = false;
     };
-  }, [settings]);
+  }, [repos, synced]);
 
   const persist = useCallback(
     async (next: InjuriesValue): Promise<boolean> => {
       try {
-        await settings.set('training.injuries', next);
+        await saveInjuries(repos, value, next);
         setValue(next);
         replanInjuryReminders(container);
         return true;
@@ -70,7 +76,7 @@ export function InjuriesSection() {
         return false;
       }
     },
-    [settings, container],
+    [repos, value, container],
   );
 
   async function save(): Promise<void> {

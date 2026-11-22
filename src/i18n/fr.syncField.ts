@@ -278,4 +278,6 @@ export const syncFieldFr = {
   supplement_intake: { deleted_at: 'suppression' },
   // I6-06 : séance cardio ; la FC moyenne (donnée corporelle) est masquée du journal des conflits.
   cardio_session: { kind: 'type', started_at: 'début', duration_sec: 'durée', distance_m: 'distance', rpe: 'ressenti', source: 'origine', notes: 'notes', deleted_at: 'suppression' },
+  // SYNC-0291 : exercice écarté ; seule la remise (suppression logique) figure au journal des conflits.
+  exercise_exclusion: { deleted_at: 'remise' },
 } as const;

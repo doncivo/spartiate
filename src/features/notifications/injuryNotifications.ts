@@ -1,7 +1,6 @@
 import { planInjuryNotifications } from '../../domain/injuryNotificationPlan';
 import { localDateTimeAt } from '../../domain/notificationInstant';
-import { activeInjuries, parseInjuries } from '../../domain/training/injuries';
-import type { SettingsRepository } from '../../db/repositories/settingsRepository';
+import { activeInjuries, type InjuriesValue } from '../../domain/training/injuries';
 import { NOTIFICATION_LIMIT, NotificationSchedulerError, type NotificationClock, type NotificationFailure, type NotificationRequest, type NotificationScheduler } from '../../platform/notifications';
 import { createSerialQueue } from './supplementNotifications';
 
@@ -21,7 +20,8 @@ export interface InjuryNotificationResult {
 export interface InjuryNotificationDeps {
   readonly scheduler: NotificationScheduler;
   readonly clock: NotificationClock;
-  readonly settings: Pick<SettingsRepository, 'get'>;
+  /** SYNC-0291 (D-447) : gênes de la table publiée `injury` (reçues de l'autre appareil comprises), reprise du réglage local faite par le lecteur. */
+  readonly injuries: () => Promise<InjuriesValue>;
   readonly log: (code: string) => void;
   /** File partagée des passages de planification (défaut : file propre). */
   readonly serial?: <T>(task: () => Promise<T>) => Promise<T>;
@@ -43,7 +43,7 @@ export function createInjuryNotificationService(deps: InjuryNotificationDeps): I
       const pending = await scheduler.pending();
       const others = pending.filter((request) => !isOurs(request));
       const hasOurs = pending.length !== others.length;
-      const injuries = parseInjuries(await deps.settings.get('training.injuries'));
+      const injuries = await deps.injuries();
       const any = activeInjuries(injuries).length > 0;
       if (!any && !hasOurs) return { status: 'off', planned: 0 };
       if ((await scheduler.permission()) !== 'granted') {

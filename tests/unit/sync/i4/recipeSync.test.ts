@@ -74,7 +74,7 @@ const count = async (d: SimDevice, table: string): Promise<number> => Number((aw
 
 describe('catalogue de production : recettes et journée complète (I4-07)', () => {
   it('trois tables juste avant la récupération (I5-01), recette avant ingrédient ; seul l’ingrédient a un parent ; aucune colonne locale', () => {
-    expect(SYNC_TABLE_ORDER.slice(-13, -10)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']); // RESET-01 : data_reset en dernier.
+    expect(SYNC_TABLE_ORDER.slice(0, SYNC_TABLE_ORDER.indexOf('cardio_session') + 1).slice(-13, -10)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']); // RESET-01 : data_reset en dernier. // SYNC-0291 : comptée jusqu’à cardio_session (tables de la 0021 ensuite).
     for (const name of ['day_completeness', 'recipe', 'recipe_ingredient']) {
       const t = SYNC_CATALOGUE.table(name);
       if (!t) throw new Error(name);

@@ -6,8 +6,6 @@ export const notificationsFr = {
   untitled: 'Sans titre',
   recap: {
     more: 'et {n} autres',
-    morningTitle: 'Récapitulatif du matin',
-    eveningTitle: 'Récapitulatif du soir',
     generic: 'Ouvre Spartiate pour voir ta journée',
   },
   focusEnd: {
@@ -24,30 +22,12 @@ export const notificationsFr = {
 export const remindersStatusFr = {
   sectionTitle: 'État des rappels',
   pcInfo: 'Les rappels sont envoyés par l’iPhone',
-  neverPlanned: 'Aucune planification pour l’instant',
-  allowExplain: 'Spartiate envoie tes rappels et tes récapitulatifs par des notifications sur cet iPhone.',
   allow: 'Autoriser',
   allowLabel: 'Autoriser les notifications',
-  allowButton: 'Autoriser les notifications',
+  allowExplain: 'Spartiate envoie tes rappels et tes récapitulatifs par des notifications sur cet iPhone.',
   permissionDenied: 'Les notifications sont refusées : les rappels ne sonneront pas. Autorise-les dans Réglages > Notifications > Spartiate sur l’iPhone.',
-  permissionUndetermined: 'Autorise les notifications pour recevoir tes rappels',
   unavailable: 'Les notifications ne sont pas disponibles sur cet iPhone',
-  planFailed: 'Les rappels n’ont pas pu être planifiés',
-  planFailedAt: 'Dernier essai à {time} · {code}',
-  planFailedPartial: '{scheduled} planifiés, {cancelled} annulés, {kept} conservés',
-  planFailedStale: '{n} rappel conservé à l’ancienne heure : la nouvelle notification n’a pas pu être posée',
-  planFailedStalePlural: '{n} rappels conservés à l’ancienne heure : les nouvelles notifications n’ont pas pu être posées',
-  focusEndFailed: 'La notification de fin de session n’a pas pu être planifiée',
-  zoneUnknown: 'Fuseau de l’appareil illisible : rappels calculés avec le décalage actuel',
-  zoneChanged: 'Fuseau modifié : rappels recalculés à {time}',
-  ledgerRebuilt: 'Registre des rappels reconstruit à {time}',
-  zoneLimit: 'Après un changement de fuseau, ouvre Spartiate : les rappels sont recalculés à l’ouverture.',
   // N-07 : avertissement du PC (le PC n'envoie aucune notification, il avertit seulement).
-  warnStale: 'L’iPhone ne s’est pas synchronisé depuis plus de 2 h : ce rappel pourrait ne pas sonner à l’heure',
-  warnNoIphone: 'Aucun iPhone associé : ce rappel ne sonnera pas',
-  summaryStaleOne: 'L’iPhone ne s’est pas synchronisé depuis plus de 2 h : 1 rappel dans les 2 prochaines heures pourrait ne pas sonner à l’heure',
-  summaryStaleMany: 'L’iPhone ne s’est pas synchronisé depuis plus de 2 h : {n} rappels dans les 2 prochaines heures pourraient ne pas sonner à l’heure',
-  summaryNoIphoneOne: 'Aucun iPhone associé : 1 rappel dans les 2 prochaines heures ne sonnera pas',
   reason: {
     'duplicate-id': 'Identifiant en double',
     'over-limit': 'Plus de 64 notifications',
@@ -60,13 +40,6 @@ export const remindersStatusFr = {
     'zone-unknown': 'Fuseau illisible',
   },
   // N-03 : actions « Fait » et « +15 min » des notifications.
-  actionFailed: 'Une action de notification n’a pas pu être appliquée',
-  actionsUnavailable: 'Les boutons « Fait » et « +15 min » sont indisponibles',
-  actionsPending: 'Actions en attente : {n} (nouvel essai à l’ouverture)',
-  actionsDropped: 'Actions écartées (file pleine) : {n}',
-  actionsLost: 'Actions non enregistrées : {n}',
-  actionsDismiss: 'Ignorer',
-  actionsDismissLabel: 'Ignorer les actions de notification en échec',
   actionsReason: {
     'delegate-lost': 'gestionnaire des notifications repris',
     'delegate-late': 'gestionnaire posé après le lancement : action à froid perdue possible',
@@ -74,6 +47,4 @@ export const remindersStatusFr = {
     'source-failed': 'fichier des actions illisible',
     'queue-write-failed': 'actions reçues non enregistrées',
   },
-  warnReadFailed: 'Les rappels proches n’ont pas pu être vérifiés : l’avertissement de synchro est indisponible',
-  summaryNoIphoneMany: 'Aucun iPhone associé : {n} rappels dans les 2 prochaines heures ne sonneront pas',
 } as const;
