@@ -85,6 +85,7 @@ export const progressionFr = {
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
   notePosition: 'Charge réduite de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
   noteGridToVerify: 'Charges calculées sur du matériel à vérifier en salle (profil de matériel).',
+  noteReferenceOffGrid: 'La charge de ta dernière séance ({loadKg} kg) n’est pas dans le matériel de ce profil (autre salle ou maximum dépassé) : vérifie qu’elle existe ici, sinon modifie la charge.',
   alertFatigue: 'Fatigue : plus de 20 % de répétitions en moins qu’à la dernière séance à cette charge.',
   alertStall: '{sessions} séances sans progrès : trois pistes ci-dessous, aucune n’est imposée.',
   alertInactivity: 'Pause de 3 semaines ou plus : charge réduite de {cut} %.',

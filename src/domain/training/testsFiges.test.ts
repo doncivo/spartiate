@@ -60,7 +60,7 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     expect(b.reasons).toContain('top-reached');
   });
 
-  it('BL-106 (D-465) : charge d’historique hors de la grille de la salle courante, prescription inchangée mais signalée', () => {
+  it('BL-106 (D-471) : charge d’historique hors de la grille de la salle courante, prescription inchangée mais signalée', () => {
     const b = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
     expect(b.loadKg).toBe(44);
     expect(b.reasons).toContain('reference-off-grid');

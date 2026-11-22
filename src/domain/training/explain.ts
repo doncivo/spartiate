@@ -157,7 +157,14 @@ export function explainPrescription(p: Prescription): Explanation {
   }
 }
 
-export type ExplanationNoteKey = 'notePartialIgnored' | 'noteOutlierHeld' | 'noteGridToVerify' | 'notePosition' | 'noteBodyweightUnknown' | 'noteAssistanceHeld';
+export type ExplanationNoteKey =
+  | 'notePartialIgnored'
+  | 'noteOutlierHeld'
+  | 'noteGridToVerify'
+  | 'noteReferenceOffGrid'
+  | 'notePosition'
+  | 'noteBodyweightUnknown'
+  | 'noteAssistanceHeld';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -170,6 +177,7 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // FIX-ABERR (C-005) : séance aberrante non confirmée, référence plafonnée à la séance d'avant.
   if (p.reasons.includes('outlier-excluded')) notes.push({ key: 'noteOutlierHeld', params: { ratio: percent(p.activeConfig.outlierRatio) } });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
+  if (p.reasons.includes('reference-off-grid') && p.reference !== null) notes.push({ key: 'noteReferenceOffGrid', params: { loadKg: p.reference.loadKg } });
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).

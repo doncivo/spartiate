@@ -169,6 +169,7 @@ export const REASON_ORDER: readonly ReasonCode[] = [
   'assistance-held',
   'increment-unknown',
   'grid-to-verify',
+  'reference-off-grid',
   'equipment-max',
   'assistance-min',
   'snap-extra-rep',
