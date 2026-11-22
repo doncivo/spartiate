@@ -84,12 +84,7 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
   const trendStart = addDays(today, -(TREND_WINDOW_DAYS - 1));
   const perDay = targetForDay(snapshot);
   const dayKcal = (date: Day): number | null => (target === null ? null : perDay === undefined ? target.kcal : perDay(date).kcal);
-  const completeDates = days.filter((d) => d.usableForTdee && d.kcal !== null && d.date >= weekStart && d.date <= reference).map((d) => d.date);
-  const compareKcal = (): number | null => {
-    if (target === null) return null;
-    if (perDay === undefined) return target.kcal;
-    return completeDates.length === 0 ? null : Math.round(completeDates.reduce((sum, date) => sum + perDay(date).kcal, 0) / completeDates.length);
-  };
+  const balance = weeklyBalance(days, weighIns, target, reference, targetForDay(snapshot));
   const known = weighIns.filter((w) => w.date <= today);
   const imputedKcal = imputeKcalDays({ days, startDate: weekStart, endDate: reference });
   const imputedWeightToday = imputeWeightDays({ weighIns: known, startDate: today, endDate: today }).days[0] ?? null;
@@ -97,7 +92,7 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
     imputedKcal,
     imputedWeightToday,
     // PROG-01 (D-272) : avec une cible de repos, chaque jour est comparé à la cible de son type.
-    balance: weeklyBalance(days, weighIns, target, reference, targetForDay(snapshot)),
+    balance,
     slope: weeklyTrendSlope(trend, reference),
     bars: days.filter((d) => d.date >= weekStart && d.date <= reference).map((d) => ({ date: d.date, state: d.state, kcal: d.kcal, targetKcal: dayKcal(d.date) })),
     trendPoints: trend.filter((p) => p.date >= trendStart && p.date <= today),
@@ -107,6 +102,7 @@ export function dashboardModel(snapshot: NutritionSnapshot): DashboardModel {
     lastWeighIn: known.at(-1) ?? null,
     confidence: tdeeConfidence(tdee),
     todayTarget: snapshot.target === null ? null : dayTargetFor(snapshot.target.target, snapshot.target.restPlan ?? null, today, snapshot.strengthDays ?? new Set()).target,
-    compareKcal: compareKcal(),
+    // BL-101 : la cible comparée vient de la règle du domaine (weeklyBalance), plus recalculée ici.
+    compareKcal: balance.targetKcal,
   };
 }
