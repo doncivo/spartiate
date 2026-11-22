@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, FITNESS_PARK_ANTONY, input, set, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import type { IsoDateTime } from '../types';
+import { explanationNotes } from './explain';
 import { prescribe } from './prescribe';
 import type { ExerciseSession } from './types';
 
@@ -57,6 +58,27 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     expect(a.reference?.loadKg).toBe(44);
     expect(b.reference?.loadKg).toBe(44);
     expect(b.reasons).toContain('top-reached');
+  });
+
+  it('BL-106 (D-471) : charge d’historique hors de la grille de la salle courante, prescription inchangée mais signalée', () => {
+    const b = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
+    expect(b.loadKg).toBe(44);
+    expect(b.reasons).toContain('reference-off-grid');
+    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 44 } });
+    const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: FITNESS_PARK_ANTONY }));
+    expect(a.reasons).not.toContain('reference-off-grid');
+    // Au-dessus du maximum du matériel de la salle : signalée de même.
+    const heavy = prescribe(input({ exercise: CURL, history: history(55, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
+    expect(heavy.reasons).toContain('reference-off-grid');
+    // Revue : proposition déjà ramenée sur un cran de la grille (haut de plage atteint : 45 kg en salle B) : rien à vérifier, aucune note.
+    const up = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_B }));
+    expect(up.loadKg).toBe(45);
+    expect(up.reasons).not.toContain('reference-off-grid');
+    // Revue 2 : contrainte active qui laisse la charge à la référence (fatigue : maintien) : signalée aussi.
+    const tired = prescribe(input({ exercise: CURL, history: [session(6, 44, [10, 10, 10]), session(3, 44, [7, 7, 7])], target: target(8, 10), equipment: SALLE_B }));
+    expect(tired.headline).toBe('fatigue');
+    expect(tired.loadKg).toBe(44);
+    expect(tired.reasons).toContain('reference-off-grid');
   });
 
   it('sans profil de matériel : la charge monte d’un incrément estimé (46,5) et la raison « incrément inconnu » est dite', () => {
