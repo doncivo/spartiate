@@ -18,6 +18,12 @@ describe('weeklyRateKg', () => {
     expect(weeklyRateKg([tp('2026-10-30', 82), tp('2026-11-01', 81.8), tp('2026-11-07', 81.4)], weekEnd)).toBe(-0.4);
   });
 
+  it('BL-124 : une même pesée aux deux extrémités (fenêtres qui se recouvrent la veille de la semaine) : null, jamais une variation de 0 kg inventée', () => {
+    // Seule pesée de la quinzaine le 01/11 : point de fin (au plus tard le 08, au plus tôt le 01) et point de début (au plus tard le 01).
+    expect(weeklyRateKg([tp('2026-11-01', 81.8)], weekEnd)).toBeNull();
+    expect(weeklyRateKg([tp('2026-10-28', 82), tp('2026-11-01', 81.8)], weekEnd)).toBeNull();
+  });
+
   it('sans point récent à chaque extrémité : null, jamais 0', () => {
     expect(weeklyRateKg([tp('2026-10-01', 82), tp('2026-11-08', 81)], weekEnd)).toBeNull();
     expect(weeklyRateKg([], weekEnd)).toBeNull();
