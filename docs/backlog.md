@@ -300,6 +300,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | constat d'Ali à faire (docs/constats-ali.md) |
 | BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | à faire (0.29.x, données et synchro, L) |
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | fait en partie ; reste : cargo audit déjà en CI (tests.yml:233-260, depuis K-01 ; D-446 erroné) ; reste minimatch via eslint 10.15 et typescript-eslint 8.73 (minimatch 10.2.6 au lock) (0.29.x, CI, S) |
+| BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à trancher par Ali |
 
 ## 3. Audit Codex 0.26.0
 
