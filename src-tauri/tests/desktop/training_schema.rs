@@ -79,13 +79,15 @@ const CARDIO_VERSION: u32 = 18;
 /// SYNC-0291 : version de la migration 0021 (exercices écartés et gênes publiés), la dernière du registre.
 const LATEST_VERSION: u32 = 21;
 
-/// SYNC-0291 : les déclencheurs de capture des exercices écartés n'existent qu'à partir de la version 21.
+/// SYNC-0291 : les déclencheurs de capture des exercices écartés et des gênes n'existent qu'à partir de la version 21.
 #[test]
-fn sync0291_the_exclusion_triggers_exist_only_from_version_21() {
-    for suffix in ["ai", "au"] {
-        let name = format!("sync_exercise_exclusion_{suffix}");
-        assert_eq!(trigger_body_for(&name, "exercise_exclusion", LATEST_VERSION - 1), None);
-        assert!(trigger_body_for(&name, "exercise_exclusion", LATEST_VERSION).is_some());
+fn sync0291_the_exclusion_and_injury_triggers_exist_only_from_version_21() {
+    for table in ["exercise_exclusion", "injury"] {
+        for suffix in ["ai", "au"] {
+            let name = format!("sync_{table}_{suffix}");
+            assert_eq!(trigger_body_for(&name, table, LATEST_VERSION - 1), None);
+            assert!(trigger_body_for(&name, table, LATEST_VERSION).is_some());
+        }
     }
 }
 

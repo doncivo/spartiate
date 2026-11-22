@@ -72,7 +72,7 @@ describe('InjuryRepository', () => {
   it('importLocal : insère les gênes sans ligne, garde l’ordre, UUID neuf pour un ancien identifiant, idempotent par identifiant', async () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     await (await repo()).save(declared(U(1), { note: 'déjà là' }));
-    const legacy = [declared(U(1), { note: 'ancienne' }), declared('g1', { note: 'ancienne g1' }), declared(U(3), { muscleId: 'quads', patterns: [] })];
+    const legacy = [declared(U(1), { note: 'ancienne' }), declared('g1', { note: 'ancienne g1' }), declared(U(3), { muscleId: 'quads', patterns: [], note: null })];
     expect(await (await repo()).importLocal(legacy)).toBe(2);
     const items = (await (await repo()).read()).items;
     expect(items.map((i) => i.note)).toEqual(['déjà là', 'ancienne g1', null]);

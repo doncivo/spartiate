@@ -50,6 +50,7 @@ const KIND_KEYS = {
   supplement_intake: 'sync.version.kinds.supplementIntake',
   cardio_session: 'sync.version.kinds.cardioSession',
   exercise_exclusion: 'sync.version.kinds.exerciseExclusion',
+  injury: 'sync.version.kinds.injury',
 } as const;
 
 /** Types d'éléments d'un échec (« tâches, événements »), d'après les tables du catalogue. */

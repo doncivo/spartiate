@@ -74,7 +74,8 @@ export function injuryNotificationsFor(container: AppContainer): InjuryNotificat
   const service = createInjuryNotificationService({
     scheduler: container.notifications,
     clock: container.notificationClock,
-    settings: container.data.repos.settings,
+    // SYNC-0291 : gênes de la table publiée, chargées à la demande avec la reprise du réglage local.
+    injuries: () => import('../settings/injuries/injuriesStore').then((m) => m.loadInjuries(container.data.repos)),
     log: (code) => logFailure('notifications', code),
     serial: queueFor(container),
   });

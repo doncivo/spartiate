@@ -54,6 +54,8 @@ const KEYWORD: Readonly<Record<string, RegExp>> = {
   supplement: /compléments/i,
   supplement_intake: /prises/i,
   cardio_session: /séances de cardio/i,
+  // SYNC-0291 : gênes déclarées (table publiée injury), effacées.
+  injury: /gênes déclarées/i,
   progress_photo_file: /photos/i,
   cardio_track: /tracés GPS/i,
   recovery_sample: /échantillons/i,

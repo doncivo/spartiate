@@ -67,6 +67,7 @@ export const RESET_TABLES: Readonly<Record<string, ResetFate>> = {
   // SYNC-0291 (D-466) : GARDÉE pour l'utilisateur (esprit de D-377). Mécanisme : effacée par l'horizon comme toute table publiée, puis les écartés
   // vivants de l'appareil qui efface sont réinsérés APRÈS l'horizon (`resetAllData`, src/sync/dataReset.ts) : protocole inchangé.
   exercise_exclusion: 'kept',
+  injury: 'wiped', // SYNC-0291 (D-466) : donnée de santé, effacée partout.
   // Locales.
   progress_photo_file: 'wiped',
   cardio_track: 'wiped',
@@ -144,7 +145,7 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'training.redDay': 'wiped',
   'training.declaredFatigue': 'wiped',
   'training.excludedExercises': 'kept', // SESS-01b : reliquat de la reprise dans `exercise_exclusion` (SYNC-0291, D-465), gardé comme les écartés.
-  'training.injuries': 'wiped', // BLESSURES : donnée de santé de cet appareil.
+  'training.injuries': 'wiped', // BLESSURES : donnée de santé ; reliquat de la reprise dans `injury` (SYNC-0291, D-465).
   'nutrition.prefs': 'wiped',
   'nutrition.favorites': 'wiped',
   'recovery.notificationPrefs': 'kept',

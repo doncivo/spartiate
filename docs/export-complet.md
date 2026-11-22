@@ -526,3 +526,18 @@ Exercices écartés (« Retirer, ne plus proposer », SYNC-0291, schéma 21), é
 | --- | --- | --- | --- | --- |
 | `id` | text | — | non | « exclusion », une barre verticale, puis `exercise_id` |
 | `exercise_id` | text | — | non | identifiant de l’exercice embarqué, ou `id` de `exercise.csv` |
+
+### `csv/injury.csv`
+
+Gênes déclarées (Profil › Blessures, SYNC-0291, schéma 21), écrites sur l’un ou l’autre appareil. Donnée de santé : à garder pour soi. `patterns` : liste JSON des mouvements douloureux ; `checkins` : liste JSON des réponses au point d’étape (`on` : date, `answer` : `better`, `same`, `worse` ou `healed`).
+
+| Colonne | Type | Unité | NULL possible | Remarque |
+| --- | --- | --- | --- | --- |
+| `id` | text | — | non |  |
+| `muscle_id` | text | — | oui | muscle du contenu embarqué ; vide : seuls des mouvements sont déclarés |
+| `patterns` | json | — | non |  |
+| `started_on` | date | — | non | début de la gêne |
+| `note` | text | — | oui |  |
+| `status` | enum | — | non | `active` ou `healed` (guérie) |
+| `healed_on` | date | — | oui | jour de la guérison |
+| `checkins` | json | — | non |  |

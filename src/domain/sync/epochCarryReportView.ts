@@ -81,6 +81,8 @@ export const CARRY_REPORT_TABLES: { readonly [K in SyncTableName]: { readonly la
   cardio_session: { label: 'started_at', kind: 'cardioSession' },
   // SYNC-0291 : exercice écarté (libellé : l'identifiant de l'exercice).
   exercise_exclusion: { label: 'exercise_id', kind: 'exerciseExclusion' },
+  // SYNC-0291 : gêne déclarée (aucun libellé : donnée de santé, ni muscle ni note au compte rendu).
+  injury: { label: null, kind: 'injury' },
 };
 
 export const carryReportTableEntry = (table: string): { readonly label: string | null; readonly kind: string } | undefined =>

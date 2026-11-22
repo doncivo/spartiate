@@ -24,6 +24,7 @@ import type { RecoverySampleRepository } from './recoverySampleRepository';
 import type { RecoveryFactorRepository } from './recoveryFactorRepository';
 import type { FoodFavoriteRepository } from './foodFavoriteRepository';
 import type { ExerciseExclusionRepository } from './exerciseExclusionRepository';
+import type { InjuryRepository } from './injuryRepository';
 import type { DataResetRepository } from './dataResetRepository';
 import type { SupplementRepository } from './supplementRepository';
 import type { CardioRepository } from './cardioRepository';
@@ -83,6 +84,8 @@ export interface Repositories {
   readonly foodFavorites: () => Promise<FoodFavoriteRepository>;
   /** SYNC-0291 (D-463) : exercices écartés (« ne plus proposer », publiés, écrits par les deux appareils), chargés à la demande. */
   readonly exerciseExclusions: () => Promise<ExerciseExclusionRepository>;
+  /** SYNC-0291 (D-464) : gênes déclarées (publiées, écrites par les deux appareils), chargées à la demande. */
+  readonly injuries: () => Promise<InjuryRepository>;
   /** I6-05 (D-210) : compléments et prises (publiés, écrits par les deux appareils), chargés à la demande. */
   readonly supplements: () => Promise<SupplementRepository>;
   /** I6-02 : mensurations (publiées, écrites par les deux appareils), chargées à la demande. */

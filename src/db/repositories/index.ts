@@ -41,6 +41,7 @@ export type * from './recoveryFactorRepository';
 export type * from './bodyProgressRepository';
 export type * from './foodFavoriteRepository';
 export type * from './exerciseExclusionRepository';
+export type * from './injuryRepository';
 export type * from './cardioRepository';
 export type * from './dataResetRepository';
 export type * from './supplementRepository';

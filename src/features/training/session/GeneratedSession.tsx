@@ -23,7 +23,8 @@ import { formatRest, tTraining } from '../../../i18n/trainingText';
 import { Button, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { loadCurrentCycle, localDayOf, type CurrentCycle } from '../cycle/currentCycle';
-import { injuryAvoidance, parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
+import { injuryAvoidance, type InjuriesValue } from '../../../domain/training/injuries';
+import { loadInjuries } from '../../settings/injuries/injuriesStore';
 import { groupLabel, PATTERN_KEY } from '../labels';
 import type { TrainingData } from '../trainingState';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor, startGeneratedSession, type GenerationSettings } from './generationInput';
@@ -109,13 +110,13 @@ export function GeneratedSession({ access, data, routines, onStarted, onClose }:
       alive = false;
     };
   }, [access]);
-  /** BLESSURES-a : gênes déclarées (réglage local) ; leurs patterns et muscles sont évités en plus des choix de l'écran. Illisible : aucune. */
+  /** BLESSURES-a : gênes déclarées (table publiée, SYNC-0291) ; leurs patterns et muscles sont évités en plus des choix de l'écran. Illisible : aucune. */
   const [injuries, setInjuries] = useState<InjuriesValue>({ v: 1, items: [] });
   useEffect(() => {
     let alive = true;
-    access.repos.settings.get('training.injuries').then(
-      (raw) => {
-        if (alive) setInjuries(parseInjuries(raw));
+    loadInjuries(access.repos).then(
+      (read) => {
+        if (alive) setInjuries(read);
       },
       () => undefined,
     );

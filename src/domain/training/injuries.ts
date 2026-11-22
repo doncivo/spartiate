@@ -3,8 +3,8 @@ import { isLocalDate, type LocalDate } from '../types';
 import { EXERCISE_PATTERNS, type ExercisePattern, type MuscleWeight } from './types';
 
 /**
- * Gênes déclarées (BLESSURES, § 10.1 étape 6, § 11.4) : règles pures. Valeur du réglage LOCAL `training.injuries` (`{ v: 1, items }`), lue
- * prudemment. Effet : ÉVITER des mouvements dans les propositions, jamais une promesse de prévention ; la douleur n'entre dans aucun calcul de
+ * Gênes déclarées (BLESSURES, § 10.1 étape 6, § 11.4) : règles pures. SYNC-0291 (D-447) : une gêne = une ligne de la table publiée `injury` ;
+ * l'ancien réglage LOCAL `training.injuries` (`{ v: 1, items }`) n'est plus lu que pour la reprise, prudemment. Effet : ÉVITER des mouvements dans les propositions, jamais une promesse de prévention ; la douleur n'entre dans aucun calcul de
  * charge ni de volume (aucune fonction ici ne produit une montée).
  */
 export const INJURY_CHECKIN_DAYS = 14;
@@ -54,7 +54,8 @@ const isAnswer = (a: unknown): a is CheckinAnswer => typeof a === 'string' && (C
 const isDate = (s: unknown): s is LocalDate => typeof s === 'string' && isLocalDate(s);
 const uniquePatterns = (patterns: readonly ExercisePattern[]): ExercisePattern[] => EXERCISE_PATTERNS.filter((p) => patterns.includes(p));
 
-function parseInjury(raw: unknown): Injury | null {
+/** Une gêne lue prudemment (SYNC-0291 : partagée par la lecture des lignes publiées et la reprise du réglage local) ; illisible : null. */
+export function parseInjury(raw: unknown): Injury | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const r = raw as Record<string, unknown>;
   const { id, muscleId, patterns, startedOn, note, status, healedOn, checkins } = r;
@@ -147,4 +148,51 @@ export function injuryAvoidance(value: InjuriesValue, exercises: readonly Avoida
   const muscles = new Set(active.flatMap((i) => (i.muscleId === null ? [] : [i.muscleId])));
   const exerciseIds = exercises.filter((e) => e.muscles.some((m) => muscles.has(m.id) && m.weight >= INJURY_MUSCLE_MIN_WEIGHT)).map((e) => e.id).sort();
   return { patterns, exerciseIds };
+}
+
+/**
+ * SYNC-0291 (BL-120, D-464) : colonnes publiées d'une gêne (table `injury`) : les motifs et les réponses sont du JSON. `injuryToColumns` écrit la forme
+ * stockée ; `injuryFromColumns` la relit avec `parseInjury` (ligne illisible : null, jamais effacée) ; `strict` (import d'archive) refuse aussi une
+ * ligne dont un motif ou une réponse serait écarté à la lecture.
+ */
+export interface InjuryColumns {
+  readonly muscle_id: string | null;
+  readonly patterns: string;
+  readonly started_on: string;
+  readonly note: string | null;
+  readonly status: string;
+  readonly healed_on: string | null;
+  readonly checkins: string;
+}
+
+export function injuryToColumns(injury: Injury): InjuryColumns {
+  return {
+    muscle_id: injury.muscleId,
+    patterns: JSON.stringify(injury.patterns),
+    started_on: injury.startedOn,
+    note: injury.note,
+    status: injury.status,
+    healed_on: injury.healedOn,
+    checkins: JSON.stringify(injury.checkins.map((c) => ({ on: c.on, answer: c.answer }))),
+  };
+}
+
+const parseJsonArray = (text: unknown): unknown[] | null => {
+  if (typeof text !== 'string') return null;
+  try {
+    const value: unknown = JSON.parse(text);
+    return Array.isArray(value) ? value : null;
+  } catch {
+    return null;
+  }
+};
+
+export function injuryFromColumns(id: string, row: Readonly<Record<string, unknown>>, strict = false): Injury | null {
+  const patterns = parseJsonArray(row['patterns']);
+  const checkins = parseJsonArray(row['checkins']);
+  if (patterns === null || checkins === null) return null;
+  const injury = parseInjury({ id, muscleId: row['muscle_id'], patterns, startedOn: row['started_on'], note: row['note'], status: row['status'], healedOn: row['healed_on'], checkins });
+  if (injury === null || !strict) return injury;
+  const same = JSON.stringify(injuryToColumns(injury)) === JSON.stringify({ muscle_id: row['muscle_id'], patterns: row['patterns'], started_on: row['started_on'], note: row['note'], status: row['status'], healed_on: row['healed_on'], checkins: row['checkins'] });
+  return same ? injury : null;
 }

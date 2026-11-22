@@ -137,7 +137,7 @@ export interface SettingsValues {
   'training.redDay': unknown;
   /** SESS-01b : exercices écartés (« Retirer, ne plus proposer »), valeur BRUTE lue par `parseExcludedExercises` ({ v: 1, ids }) ; locale. SYNC-0291 (D-465) : lue une seule fois pour la reprise dans la table publiée `exercise_exclusion`, puis remise à null. */
   'training.excludedExercises': unknown;
-  /** BLESSURES : gênes déclarées et check-ins (valeur BRUTE lue par `parseInjuries`, { v: 1, items }) ; donnée de santé : locale, jamais synchronisée ni exportée. */
+  /** BLESSURES : gênes déclarées et check-ins (valeur BRUTE lue par `parseInjuries`, { v: 1, items }) ; locale. SYNC-0291 (D-465) : lue une seule fois pour la reprise dans la table publiée `injury`, puis remise à null. */
   'training.injuries': unknown;
   /** SESS-01d : fatigue déclarée au démarrage de la séance ouverte (valeur BRUTE lue par `parseDeclaredFatigue`, { v: 1, workoutId, level }) ; ne vaut que pour cette séance. Locale, jamais synchronisée. */
   'training.declaredFatigue': unknown;

@@ -6,7 +6,7 @@ export const dataResetFr = {
   title: 'Repartir de zéro',
   intro: 'Efface toutes tes données pour commencer l’usage réel avec une app comme neuve.',
   wipedTitle: 'Ce qui est effacé',
-  wipedProfile: 'Profil, objectifs et onboarding',
+  wipedProfile: 'Profil, objectifs, gênes déclarées et onboarding',
   wipedTraining: 'Exercices perso, programmes, routines, profils de matériel, séances et séries, progression et décisions, cycles',
   wipedSupplements: 'Compléments et prises',
   wipedCardio: 'Séances de cardio et tracés GPS',

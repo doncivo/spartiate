@@ -95,5 +95,6 @@ export const syncCarryReportFr = {
   kindSupplementIntake: 'Prise de complément',
   kindCardioSession: 'Séance cardio',
   kindExerciseExclusion: 'Exercice écarté',
+  kindInjury: 'Gêne déclarée',
   kindOther: 'Autre élément',
 } as const;
