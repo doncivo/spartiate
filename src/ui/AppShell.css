@@ -50,6 +50,13 @@
   padding: 28px 40px;
 }
 
+/* BL-119 (D-450) : PC sous 1 024 px CSS (zoom Windows de 150 %) : disposition PC gardée, marges resserrées à la largeur effective. */
+@media (max-width: 1023.98px) {
+  .ct-app-shell[data-layout='pc'] .ct-app-shell__main {
+    padding: 20px 24px;
+  }
+}
+
 .ct-app-shell__fab-slot {
   position: absolute;
   right: calc(20px + var(--ct-safe-area-right));
