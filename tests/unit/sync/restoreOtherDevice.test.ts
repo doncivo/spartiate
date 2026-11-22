@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { RestoreMarker } from '../../../src/platform/sync/types';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-04, partie B (revue, B1) : restaurer la copie faite par un AUTRE appareil. Le Rust (`carry_device_identity`, testé dans
@@ -59,22 +62,22 @@ function carryIdentity(other: Copy, live: Copy, current: string, old: string, va
   if (known) Object.assign(known, { is_self: 1, epoch: null, cursor_segment: 0, cursor_record: 0, ack_hlc: null, status: 'active' });
   else table('sync_state').push({ device_id: current, is_self: 1, platform: 'windows', status: 'active' });
   // File d'envoi ré-signée (tâches : clé `id`).
-  for (const entry of table('sync_outbox').filter((e) => e['table_name'] === 'task')) {
-    const row = table('task').find((r) => r['id'] === entry['row_id']);
+  for (const entry of table('sync_outbox').filter((e) => e['table_name'] === 'meal_entry')) {
+    const row = table('meal_entry').find((r) => r['id'] === entry['row_id']);
     if (!row) continue;
-    const clocks = table('sync_field_clock').filter((c) => c['table_name'] === 'task' && c['row_id'] === entry['row_id']);
+    const clocks = table('sync_field_clock').filter((c) => c['table_name'] === 'meal_entry' && c['row_id'] === entry['row_id']);
     const whole = entry['field'] === '*' || entry['field'] === '+';
     for (const clock of clocks) if ((whole || clock['field'] === entry['field']) && signedBy(clock['hlc'], old)) clock['hlc'] = restamp(String(clock['hlc']), current);
     if (signedBy(row['hlc'], old)) {
-      if (!whole && !clocks.some((c) => c['field'] === '*')) table('sync_field_clock').push({ table_name: 'task', row_id: String(entry['row_id']), field: '*', hlc: String(row['hlc']), base_hlc: null });
+      if (!whole && !clocks.some((c) => c['field'] === '*')) table('sync_field_clock').push({ table_name: 'meal_entry', row_id: String(entry['row_id']), field: '*', hlc: String(row['hlc']), base_hlc: null });
       row['hlc'] = restamp(String(row['hlc']), current);
       row['device_id'] = current;
     }
   }
   // Chaque ligne de la file devient « ligne entière » (+) : republiée avec un rang neuf, hlc d’origine gardés.
   if (variant !== 'no-plus') {
-    const rows = [...new Set(table('sync_outbox').filter((e) => e['table_name'] === 'task').map((e) => String(e['row_id'])))];
-    out.set('sync_outbox', [...table('sync_outbox').filter((e) => e['table_name'] !== 'task'), ...rows.map((id, i) => ({ seq: 100_000 + i, table_name: 'task', row_id: id, field: '+' }))]);
+    const rows = [...new Set(table('sync_outbox').filter((e) => e['table_name'] === 'meal_entry').map((e) => String(e['row_id'])))];
+    out.set('sync_outbox', [...table('sync_outbox').filter((e) => e['table_name'] !== 'meal_entry'), ...rows.map((id, i) => ({ seq: 100_000 + i, table_name: 'meal_entry', row_id: id, field: '+' }))]);
   }
   // État de publication : celui de la base en place (sauf les numéros de file, remis à zéro).
   const meta = table('sync_meta').filter((r) => !IDENTITY_META.includes(String(r['key'])));
@@ -163,7 +166,7 @@ describe.each<[RestoreOption, boolean]>([['keep-synced', false], ['apply-everywh
     expect(a.logger.entries.filter((e) => e.event === 'restart-required')).toEqual([]);
     // Publié sous l’identité courante : le dossier de A reçoit ses fichiers, jamais ceux de l’autre appareil.
     expect(a.folder.fileNames(CURRENT).length).toBeGreaterThan(0);
-    const reached = await p.driver.select<{ title: string }>('SELECT title FROM task WHERE title = ?', [unpublishedTitle]);
+    const reached = await p.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE food_name = ?', [unpublishedTitle]);
     expect(reached).toHaveLength(1);
     expect(await taskSnapshot(a)).toEqual(await taskSnapshot(p));
   });
@@ -172,6 +175,6 @@ describe.each<[RestoreOption, boolean]>([['keep-synced', false], ['apply-everywh
 describe('preuve de détection : les entrées « ligne entière » sont nécessaires', () => {
   it.each<[RestoreOption]>([['keep-synced']])('sans les entrées « ligne entière » (%s), l’appareil courant ayant publié après : l’écriture n’est pas reçue par le troisième', async (option) => {
     const { p, unpublishedTitle } = await scenario('no-plus', option, true);
-    expect(await p.driver.select('SELECT title FROM task WHERE title = ?', [unpublishedTitle])).toHaveLength(0);
+    expect(await p.driver.select('SELECT food_name AS title FROM meal_entry WHERE food_name = ?', [unpublishedTitle])).toHaveLength(0);
   });
 });

@@ -2,7 +2,10 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import type { TaskId } from '../../../src/domain/types';
 import { propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Propriétés du moteur complet (ADR 0011, section 12 ; Y-02 critère 7, Y-05 critère 3, Y-09 critère 9) : deux appareils, écritures
@@ -32,11 +35,14 @@ const stepArb: fc.Arbitrary<Step> = fc.oneof(
   fc.record({ kind: fc.constant<'tick'>('tick'), ms: fc.integer({ min: 1, max: 5_000 }) }),
 );
 
+/** CLEAN-03 : colonne des entrées simulées (`meal_entry`) pour un champ de tâche du scénario. */
+const COLUMN: Readonly<Record<string, string>> = { title: 'food_name', note: 'food_id', deleted_at: 'deleted_at' };
+
 /** Valeur et horloge d'un champ dans une base. */
 async function fieldState(device: SimDevice, task: TaskId, field: string): Promise<{ value: unknown; hlc: string }> {
   const rows = await device.driver.select<{ v: string | number | null; hlc: string }>(
-    `SELECT ${field} AS v, COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'task' AND row_id = t.id AND field = ?), (SELECT hlc FROM sync_field_clock WHERE table_name = 'task' AND row_id = t.id AND field = '*'), t.hlc) AS hlc FROM task t WHERE id = ?`,
-    [field, task],
+    `SELECT ${COLUMN[field] ?? field} AS v, COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'meal_entry' AND row_id = t.id AND field = ?), (SELECT hlc FROM sync_field_clock WHERE table_name = 'meal_entry' AND row_id = t.id AND field = '*'), t.hlc) AS hlc FROM meal_entry t WHERE id = ?`,
+    [COLUMN[field] ?? field, task],
   );
   return { value: rows[0]?.v, hlc: rows[0]?.hlc ?? '' };
 }
@@ -91,7 +97,7 @@ describe('propriétés du moteur à deux appareils (fast-check)', () => {
                 await d.deleteTask(task);
                 writes.push({ task, field: 'deleted_at', ...(await fieldState(d, task, 'deleted_at')) });
               } else if (step.kind === 'restore' && current.deletedAt !== null) {
-                await d.data.repos.tasks.restore([task]);
+                await d.restoreTask(task);
                 writes.push({ task, field: 'deleted_at', ...(await fieldState(d, task, 'deleted_at')) });
               }
             }

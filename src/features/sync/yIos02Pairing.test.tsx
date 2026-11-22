@@ -8,7 +8,7 @@ import type { DeviceAck, EpochId } from '../../domain/sync/format';
 import { asEntityId, type DeviceId, type Hlc, type IsoDateTime } from '../../domain/types';
 import { DbError } from '../../db/driver';
 import type { DataAccess } from '../../db/repositories';
-import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { createManualClock } from '../../domain/clock';
 import { isPermanentSyncError } from '../../domain/sync/errorFamily';
 import { SYNC_ERROR_CODES } from '../../domain/sync/format';
@@ -26,7 +26,11 @@ import { startSyncIntegration } from './startSync';
 import { SyncDetailsScreen } from './SyncDetailsScreen';
 import { SyncSettingsSection } from './SyncSettingsSection';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
+import { selectSimSchema } from '../../../tests/sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const PHONE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000c1');
 const PC = '70000000-0000-4000-8000-00000000000a' as DeviceId;
@@ -42,7 +46,7 @@ const START_NEW = 'Commencer une nouvelle synchronisation sur cet iPhone';
 let db: TestDb;
 
 beforeEach(async () => {
-  db = await openTestDb(PHONE, NOW);
+  db = await openBaseDb(PHONE, NOW);
 });
 
 afterEach(async () => {
@@ -94,7 +98,7 @@ function lockedData(): DataAccess {
 }
 
 function realContainer(platform: MemorySyncPlatform, os: 'ios' | 'windows', data: DataAccess = db.data): AppContainer {
-  const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+  const service = createSyncService({ catalogue: SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: os, sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
   return createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), data: db.data, sync: service, syncPlatform: platform, platform: { runtime: 'tauri', os: os === 'ios' ? 'ios' : 'windows' } });
 }
 
@@ -352,7 +356,7 @@ describe('io : passagère, espacée après 3 échecs consécutifs, jamais arrêt
     let failing = true;
     const scan = pc.scan.bind(pc);
     const flaky: SyncPlatform = { ...pc, scan: (r) => (failing ? Promise.reject(new SyncPlatformError('io')) : scan(r)) };
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform: flaky, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'windows', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE, data: db.data, platform: flaky, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'windows', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     const line = (): string => statusLine(service.status(), db.clock.nowMs());
     const GENERIC = 'La synchronisation a échoué : nouvel essai au prochain cycle';
     await service.syncNow('timer');

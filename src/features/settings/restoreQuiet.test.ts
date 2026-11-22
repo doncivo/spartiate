@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
-import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { isRestoreQuiet, quietWorkSettled, setRestoreQuiet, trackQuietWork } from '../../platform/quiet';
 import { createMemorySyncPlatform } from '../../platform/sync';
 import { createMemorySyncLogger, createSyncService } from '../../sync';
 import { createAppContainer } from '../app/container';
 import { quiesceForRestore } from './restoreQuiesce';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fe');
 
@@ -15,7 +15,7 @@ const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000fe');
 describe('mise au calme au niveau des services', () => {
   let db: TestDb;
   beforeEach(async () => {
-    db = await openTestDb(DEVICE, '2026-10-08T08:00:00.000Z');
+    db = await openBaseDb(DEVICE, '2026-10-08T08:00:00.000Z');
   });
   afterEach(async () => {
     setRestoreQuiet(false);
@@ -25,7 +25,7 @@ describe('mise au calme au niveau des services', () => {
 
   it('syncNow refusé pendant le calme, d’où que vienne la demande (zone de notification, minuteur d’association, manuel)', async () => {
     const logger = createMemorySyncLogger();
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform: createMemorySyncPlatform(), hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 1, appVersion: '0.2.3', logger });
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE, data: db.data, platform: createMemorySyncPlatform(), hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 1, appVersion: '0.2.3', logger });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, sync: service });
     const handle = await quiesceForRestore(container, 50);
     expect(typeof handle).toBe('object');
