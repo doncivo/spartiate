@@ -43,6 +43,11 @@ export interface WeeklyBalance {
   readonly averageKcal: number | null;
   /** Moyenne moins cible ; `null` sans moyenne ou sans cible. */
   readonly deltaKcal: number | null;
+  /**
+   * BL-101 : cible comparée à la moyenne : la cible, ou (cible de repos, `targetFor`) la moyenne des cibles des jours complets, arrondie ;
+   * `null` sans cible, ou avec une cible par jour et aucun jour complet.
+   */
+  readonly targetKcal: number | null;
 }
 
 /** `targetFor` (PROG-01, D-272) : cible du jour selon son type ; l'écart compare alors la moyenne mangée à la moyenne des cibles des mêmes jours. */
@@ -54,7 +59,9 @@ export function weeklyBalance(days: readonly DayTotals[], weighIns: readonly Wei
   const weighInDays = new Set(weighIns.filter((w) => Number.isFinite(w.kg) && w.kg > 0 && inWindow(w.date)).map((w) => w.date)).size;
   const total = [...complete.values()].reduce((sum, v) => sum + v, 0);
   const averageKcal = complete.size === 0 ? null : Math.round(total / complete.size);
+  const targetKcal = target === null ? null : targetFor === undefined ? target.kcal : complete.size === 0 ? null : Math.round([...complete.keys()].reduce((sum, d) => sum + targetFor(d).kcal, 0) / complete.size);
   return {
+    targetKcal,
     endDate,
     windowDays: 7,
     completeDays: complete.size,

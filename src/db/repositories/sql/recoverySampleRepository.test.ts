@@ -144,4 +144,17 @@ describe('RecoverySampleRepository', () => {
     expect(rows.map((s) => [s.value, s.importedAt])).toEqual([[9000, '2026-11-10T08:00:00.000Z'], [100, T1], [5, '2026-11-10T08:00:00.000Z']]);
     await expect(r.upsertTotals([hrv(day(7), 50)], T1)).rejects.toThrow();
   });
+
+  it('BL-102 : writeStepTotals écrit les totaux et le jour partiel en une transaction (tout ou rien par fichier)', async () => {
+    db = await openBaseDb(DEVICE);
+    const r = await repo();
+    const total = (d: number, v: number): RecoverySampleInput => steps(day(d, 12), day(d, 12), v);
+    expect(await r.writeStepTotals([total(8, 4000), total(9, 5000)], [total(7, 1200)], T1)).toEqual({ added: 3, duplicates: 0, updated: 0 });
+    // Jour partiel déjà présent : jamais réécrit ; total plus récent : remplacé.
+    expect(await r.writeStepTotals([total(9, 6000)], [total(7, 9999)], T1)).toEqual({ added: 0, duplicates: 1, updated: 1 });
+    // Une ligne invalide dans le jour partiel : rien n'est écrit, pas même les totaux valides.
+    await expect(r.writeStepTotals([total(10, 3000)], [steps(day(6, 12), day(6, 12), -1)], T1)).rejects.toThrow();
+    const rows = await r.listWindow('pas', day(1), day(30));
+    expect(rows.map((x) => x.value)).toEqual([1200, 4000, 6000]);
+  });
 });

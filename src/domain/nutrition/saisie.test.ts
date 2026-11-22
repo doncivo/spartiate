@@ -55,7 +55,8 @@ describe('C-034 : Quick Add borné sur les macros', () => {
   });
   it('plafond de 1 000 g par macro : 1 000 accepté (4 000 kcal annoncées), 1 001 refusé', () => {
     expect(validateMealEntry(quick(5000, 1000, null, null))).toEqual([]);
-    expect(validateMealEntry(quick(5000, 1001, null, null))).toContain('value-invalid');
+    // BL-103 : motif propre « macro-too-large » (était « value-invalid »), le refus est inchangé.
+    expect(validateMealEntry(quick(5000, 1001, null, null))).toContain('macro-too-large');
   });
   it('4P + 4G + 9L ≤ 1,25 × kcal + 20 : 600 kcal avec 30/20/70 (4×30+4×70+9×20 = 580) accepté', () => {
     expect(validateMealEntry(quick(600, 30, 20, 70))).toEqual([]);

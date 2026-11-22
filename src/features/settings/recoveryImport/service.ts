@@ -167,10 +167,8 @@ interface Parsed {
 async function writeSteps(samples: RecoverySampleRepository, inputs: readonly RecoverySampleInput[], partialStart: string | null, at: string): Promise<UpsertTotalsResult> {
   const partial = inputs.filter((s) => s.startAt === partialStart);
   const rest = inputs.filter((s) => s.startAt !== partialStart);
-  const upserted = await samples.upsertTotals(rest, at);
-  if (partial.length === 0) return upserted;
-  const inserted = await samples.insertMany(partial, at);
-  return { added: upserted.added + inserted.added, duplicates: upserted.duplicates + inserted.duplicates, updated: upserted.updated };
+  // BL-102 : totaux et jour partiel en une transaction (tout ou rien par fichier).
+  return samples.writeStepTotals(rest, partial, at);
 }
 
 function parseFile(type: RecoverySampleType, text: string, today: string, tz: string): Parsed {

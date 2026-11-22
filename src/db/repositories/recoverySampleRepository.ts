@@ -60,6 +60,11 @@ export interface RecoverySampleRepository {
    * (le total du jour grandit pendant la journée) ; une valeur identique est un doublon. Tout ou rien.
    */
   upsertTotals(samples: readonly RecoverySampleInput[], importedAt: string): Promise<UpsertTotalsResult>;
+  /**
+   * BL-102 : un fichier de pas en une transaction : totaux (`upsertTotals`) et jour partiel le plus ancien inséré s'il manque, jamais réécrit
+   * (`insertMany`) ; tout ou rien (une ligne invalide : rien n'est écrit).
+   */
+  writeStepTotals(totals: readonly RecoverySampleInput[], partial: readonly RecoverySampleInput[], importedAt: string): Promise<UpsertTotalsResult>;
   /** Échantillons d'un type qui chevauchent la fenêtre (bornes incluses), du plus ancien au plus récent. */
   listWindow(type: RecoverySampleType, from: string, to: string): Promise<readonly RecoverySample[]>;
   /** Supprime les échantillons terminés avant `now` moins `days` jours (120 par défaut) ; rend le nombre supprimé. */

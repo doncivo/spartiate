@@ -218,6 +218,10 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       upsertTotals: async () => {
         throw new Error('boom 4000');
       },
+      // BL-102 : le fichier de pas s'écrit par writeStepTotals (une transaction) ; même échec simulé.
+      writeStepTotals: async () => {
+        throw new Error('boom 4000');
+      },
       listWindow: (...args) => samples.listWindow(...args),
       purgeOlderThan: (...args) => samples.purgeOlderThan(...args),
       recordImport: (...args) => samples.recordImport(...args),

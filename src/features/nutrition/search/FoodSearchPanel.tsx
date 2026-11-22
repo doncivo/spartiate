@@ -615,6 +615,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
               ))}
             </ul>
           )}
+          {result.ciqualAttribution && visible.some((hit) => hit.provenance === 'ciqual') ? <p className="ct-nutrition__muted">{result.ciqualAttribution}</p> : null}
           <div className="ct-nutrition__actions">
             <Button
               variant="secondary"

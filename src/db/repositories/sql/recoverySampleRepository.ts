@@ -8,6 +8,7 @@ import {
   type RecoverySampleInput,
   type RecoverySampleRepository,
   type RecoverySampleType,
+  type UpsertTotalsResult,
 } from '../recoverySampleRepository';
 
 interface SampleRow extends SqlRow {
@@ -108,6 +109,17 @@ export function createRecoverySampleRepository(db: SqlExecutor): RecoverySampleR
       if (!isIsoDateTime(importedAt) || !samples.every((s) => s.type === 'pas' && validSample(s))) throw new RepositoryError('invalid', 'recovery_sample', String(samples.length));
       if (samples.length === 0) return { added: 0, duplicates: 0, updated: 0 };
       return (await atomic((inTx) => inTx.upsertTotals(samples, importedAt))) ?? upsertAll(samples, importedAt);
+    },
+
+    async writeStepTotals(totals, partial, importedAt) {
+      const all = [...totals, ...partial];
+      if (!isIsoDateTime(importedAt) || !all.every((s) => s.type === 'pas' && validSample(s))) throw new RepositoryError('invalid', 'recovery_sample', String(all.length));
+      const write = async (repoInTx: RecoverySampleRepository): Promise<UpsertTotalsResult> => {
+        const upserted = totals.length === 0 ? { added: 0, duplicates: 0, updated: 0 } : await repoInTx.upsertTotals(totals, importedAt);
+        const inserted = partial.length === 0 ? { added: 0, duplicates: 0 } : await repoInTx.insertMany(partial, importedAt);
+        return { added: upserted.added + inserted.added, duplicates: upserted.duplicates + inserted.duplicates, updated: upserted.updated };
+      };
+      return (await atomic(write)) ?? write(this);
     },
 
     async insertMany(samples, importedAt) {
