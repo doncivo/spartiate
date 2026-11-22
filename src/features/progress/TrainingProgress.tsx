@@ -71,6 +71,7 @@ async function load(access: ReturnType<typeof useAppContainer>['data'], today: L
   for (const x of [...catalog, ...customs]) muscles.set(x.id, x.muscles.map((m) => ({ id: m.id, weight: m.weight })));
   const names = new Map((musclesModule.default as { readonly muscles: readonly { readonly id: string; readonly nameFr: string }[] }).muscles.map((m) => [m.id, m.nameFr]));
   const closed = workouts.map((w) => ({ day: localDayOf(Date.parse(w.startedAt)), sets: w.sets }));
+  // Revue : la fenêtre lue (volumeWeeks, 8) couvre les 4 semaines complètes de l'adhérence ; garde dans progressStats.prescription.test.ts.
   const prescription = prescriptionAdherence({ workouts: closed, today, firstWeekday: first });
   const volume = weeklyMuscleVolume({
     workouts: closed,
@@ -174,9 +175,9 @@ function PrescriptionLines({ prescription: p }: Pick<Loaded, 'prescription'>) {
         <p className="ct-today__text">{tTrainingProgress('prescriptionNone')}</p>
       ) : (
         <>
-          <p className="ct-today__text">{tTrainingProgress('prescriptionSets', { percent: p.setsPercent, done: p.setsDone, proposed: p.setsProposed })}</p>
+          <p className="ct-today__text">{tPlural(tTrainingProgress, p.setsProposed, 'prescriptionSetsOne', 'prescriptionSets', { percent: p.setsPercent, done: p.setsDone, proposed: p.setsProposed })}</p>
           <p className="ct-today__text">
-            {p.loadsPercent === null ? tTrainingProgress('prescriptionNoLoads') : tTrainingProgress('prescriptionLoads', { percent: p.loadsPercent, held: p.loadsHeld, proposed: p.loadsProposed })}
+            {p.loadsPercent === null ? tTrainingProgress('prescriptionNoLoads') : tPlural(tTrainingProgress, p.loadsProposed, 'prescriptionLoadsOne', 'prescriptionLoads', { percent: p.loadsPercent, held: p.loadsHeld, proposed: p.loadsProposed })}
           </p>
           <p className="ct-today__muted ct-tprogress__lead">{tTrainingProgress('prescriptionRule')}</p>
         </>

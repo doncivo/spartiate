@@ -83,6 +83,10 @@ describe('prescriptionAdherence (BL-115, D-449, D-456)', () => {
     expect(prescriptionAdherence({ workouts: [{ day: d('2026-11-17'), sets: [set({})] }], today: TODAY })).toBeNull();
   });
 
+  it('revue : la fenêtre lue par Progrès (volumeWeeks) couvre les semaines complètes de l’adhérence', () => {
+    expect(DEFAULT_PROGRESS_CONFIG.volumeWeeks).toBeGreaterThan(DEFAULT_PROGRESS_CONFIG.adherenceWeeks);
+  });
+
   it('début de semaine réglé : la fenêtre suit le réglage', () => {
     // Semaine commençant le dimanche : le dimanche 15/11 appartient à la semaine en cours (15/11), exclue.
     const workouts = [{ day: d('2026-11-15'), sets: [set({})] }];

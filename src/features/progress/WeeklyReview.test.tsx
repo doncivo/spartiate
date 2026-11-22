@@ -87,7 +87,7 @@ describe('Progrès › Bilan de la semaine', () => {
     mount({ share });
     const card = await region();
     const list = await within(card).findByRole('list', { name: tWeeklyReview('recommendationsTitle') });
-    const line = within(list).getByText(/^Entraînement : Pectoraux à 2 cette semaine, sous la plage de 10 à 20 /);
+    const line = within(list).getByText(/^Entraînement : Pectoraux : volume de 2 sur la semaine du bilan, sous la plage de 10 à 20 /);
     expect(line.textContent).toContain(tWeeklyReview('ruleLabel', { rule: tWeeklyReview('ruleSetRange') }));
     fireEvent.click(within(card).getByRole('button', { name: tWeeklyReview('export') }));
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1));

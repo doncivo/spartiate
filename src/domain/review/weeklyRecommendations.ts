@@ -24,11 +24,13 @@ export const RECOMMENDATION_THEMES = ['training', 'nutrition', 'recovery'] as co
 export type RecommendationTheme = (typeof RECOMMENDATION_THEMES)[number];
 
 /** Règles nommées (texte et source dans le catalogue du bilan). */
-export type RecommendationRule = 'plannedSessions' | 'setRange' | 'completeDays' | 'targetGap' | 'sleepDuration';
+export type RecommendationRule = 'plannedSessions' | 'lightWeek' | 'setRange' | 'completeDays' | 'targetGap' | 'sleepDuration';
 
 export type RecommendationKind =
   | 'none'
   | 'trainingSessions'
+  | 'trainingLight'
+  | 'trainingDeload'
   | 'trainingVolumeHigh'
   | 'trainingVolumeLow'
   | 'trainingKeep'
@@ -71,10 +73,22 @@ function training(sentences: readonly ReviewSentence[]): Recommendation {
     return { theme: 'training', kind: 'trainingSessions', rule: 'plannedSessions', sources: [{ fact: 'sessions.done', value: done }, { fact: 'sessions.planned', value: planned }] };
   }
   if (done === 0) return none('training');
+  // Revue à froid : règle « semaine allégée » d'abord. En pause ou en décharge, un volume bas est voulu : jamais « ajoute des séries ».
+  const cycle = sentenceOf(sentences, 'cycle');
+  if (sessions.kind === 'sessionsPaused' || cycle?.kind === 'cycleDeload') {
+    const sources: RecommendationSource[] =
+      cycle?.kind === 'cycleDeload'
+        ? [
+            { fact: 'cycle.week', value: numberIn(cycle, 'cycle.week') ?? 0 },
+            { fact: 'cycle.total', value: numberIn(cycle, 'cycle.total') ?? 0 },
+          ]
+        : [{ fact: 'sessions.done', value: done }];
+    return { theme: 'training', kind: cycle?.kind === 'cycleDeload' ? 'trainingDeload' : 'trainingLight', rule: 'lightWeek', sources };
+  }
   // Règle « plage de séries » : le muscle le plus travaillé de la semaine (premier du volume) comparé à la plage (D-448).
   const volume = sentenceOf(sentences, 'volume');
-  const muscle = volume?.kind === 'volumeTop' ? volume.sources[0]?.value : undefined;
-  const sets = volume?.kind === 'volumeTop' ? volume.sources[1]?.value : undefined;
+  const muscle = volume?.kind === 'volumeTop' ? volume.sources.find((s) => s.fact === 'volume.muscle')?.value : undefined;
+  const sets = volume?.kind === 'volumeTop' ? volume.sources.find((s) => s.fact === 'volume.sets')?.value : undefined;
   if (typeof muscle !== 'string' || typeof sets !== 'number') return none('training');
   const { min, max } = RECOMMENDATION_CONFIG.setRange;
   const sources: RecommendationSource[] = [

@@ -36,9 +36,11 @@ export const trainingProgressFr = {
   adherenceNone: 'Aucun programme suivi : l’adhérence se calcule sur les séances prévues d’un programme.',
   adherenceWait: 'Aucune semaine complète à compter pour l’instant (programme commencé cette semaine ou en pause) : l’adhérence se calculera après une semaine complète.',
   prescriptionTitle: 'Prescriptions respectées',
+  prescriptionSetsOne: 'Séries faites : {percent} % ({done} sur {proposed} proposée)',
   prescriptionSets: 'Séries faites : {percent} % ({done} sur {proposed} proposées)',
+  prescriptionLoadsOne: 'Charges tenues : {percent} % ({held} sur {proposed} proposée)',
   prescriptionLoads: 'Charges tenues : {percent} % ({held} sur {proposed} proposées)',
   prescriptionNoLoads: 'Charges tenues : aucune charge proposée sur la période.',
-  prescriptionRule: 'Les 4 dernières semaines complètes : séries de travail et chronométrées proposées avec une cible par la séance ; une charge est tenue quand la série est validée à la charge proposée ou plus. Une série ajoutée sans cible ne compte pas.',
+  prescriptionRule: 'Les 4 dernières semaines complètes : séries de travail et chronométrées portant une cible ; une charge est tenue quand la série est validée à la charge proposée ou plus. Une série ajoutée en séance reprend la cible de la précédente et compte comme proposée ; une série retirée ne compte plus.',
   prescriptionNone: 'Aucune série proposée sur les 4 dernières semaines complètes : rien à mesurer pour l’instant.',
 } as const;

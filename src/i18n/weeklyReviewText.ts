@@ -159,6 +159,8 @@ export function reviewFileName(weekStart: LocalDate): string {
 const REC_THEME: Readonly<Record<RecommendationTheme, WeeklyReviewTextKey>> = { training: 'recThemeTraining', nutrition: 'recThemeNutrition', recovery: 'recThemeRecovery' };
 const REC_TEXT: Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyReviewTextKey>> = {
   trainingSessions: 'recTrainingSessions',
+  trainingLight: 'recTrainingLight',
+  trainingDeload: 'recTrainingDeload',
   trainingVolumeHigh: 'recTrainingVolumeHigh',
   trainingVolumeLow: 'recTrainingVolumeLow',
   trainingKeep: 'recTrainingKeep',
@@ -171,6 +173,7 @@ const REC_TEXT: Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyRevie
 };
 const REC_RULE: Readonly<Record<RecommendationRule, WeeklyReviewTextKey>> = {
   plannedSessions: 'rulePlannedSessions',
+  lightWeek: 'ruleLightWeek',
   setRange: 'ruleSetRange',
   completeDays: 'ruleCompleteDays',
   targetGap: 'ruleTargetGap',
@@ -210,6 +213,8 @@ export function recommendationText(rec: Recommendation, muscleName: (id: string)
     target: v('nutrition.targetKcal'),
     pct: v('nutrition.tolerancePct'),
     duration: v('sleep.meanMinutes'),
+    week: v('cycle.week'),
+    total: v('cycle.total'),
   });
   return tWeeklyReview('recLine', { theme, text });
 }

@@ -25,9 +25,13 @@ aucun fichier de synchro ; blocs à la demande seulement (Progrès › Entraîne
 - **D-456** (BL-115) : série proposée = série de travail ou chronométrée portant une cible (répétitions, durée ou charge) ; faite = validée ;
   charge proposée = cible de charge ; tenue = série validée à une charge au moins égale (aucune tolérance, les charges sont arrondies au
   matériel) ; séries ajoutées sans cible, échauffement, drop et partielle : non comptées ; 4 dernières semaines complètes, pauses
-  comprises (une séance de pause a ses prescriptions). Les répétitions ne sont pas jugées (le moteur s'en charge). Révisable par Ali.
+  comprises (une séance de pause a ses prescriptions). Les répétitions ne sont pas jugées (le moteur s'en charge). Limite dite à l'écran
+  (revue à froid) : une série ajoutée en séance reprend la cible de la précédente (`addSet`) et compte comme proposée ; une série retirée
+  disparaît à la clôture et ne compte plus ; les distinguer demanderait de marquer les séries ajoutées (colonne), à trancher : BL-135.
+  Révisable par Ali.
 - **D-457** (BL-125) : règles des recommandations, dans cet ordre, chacune avec sa source :
   - Entraînement : semaine non en pause sous l'objectif du programme suivi → « cale les séances manquantes » (règle « séances prévues ») ;
+    sinon semaine en pause ou de décharge → volume bas voulu, ni plage ni « ajoute des séries » (règle « semaine allégée », revue à froid) ;
     sinon muscle le plus travaillé de la semaine comparé à la plage de D-448 → au-dessus : retirer des séries ; en dessous : en ajouter ;
     dans la plage : garder le plan ; aucune séance close dans la semaine et aucun objectif manqué : aucune.
   - Nutrition : moins de 3 jours complets → compléter le journal ; sinon moyenne comparée à la cible calorique unique en vigueur, à 10 %
@@ -58,4 +62,12 @@ aucun fichier de synchro ; blocs à la demande seulement (Progrès › Entraîne
 
 ## Passe code-reviewer (à froid)
 
-À consigner après la relecture.
+Première relecture (agent code-reviewer distinct, lecture seule) : **à corriger**.
+1. Bloquant : semaine de pause ou de décharge, volume bas → « ajoute des séries ». Corrigé : règle « semaine allégée » avant la plage
+   (`trainingLight`, `trainingDeload`, règle `lightWeek`) ; rouge `1ef44803` → vert (commit suivant).
+2. Garde « aucun paramètre vide » inopérante (expression littérale). Corrigée : `/\{\w+\}/`, aucune source vide, aucun trou dans le texte.
+3. Séries ajoutées comptées comme proposées : dit dans la règle affichée et en D-456 ; à trancher (BL-135).
+4. Fiche non suivie ; D-448, D-449, D-452 absentes de docs/decisions.md : fiche commitée, décisions dans #196 (fusionnée avant celle-ci),
+   D-455 à D-457 reportées dans docs/decisions.md à la mise à jour avec main.
+Mineurs traités : « semaine du bilan » au lieu de « cette semaine », « volume de n », singulier de « proposée », sources lues par fait,
+garde `volumeWeeks > adherenceWeeks`.

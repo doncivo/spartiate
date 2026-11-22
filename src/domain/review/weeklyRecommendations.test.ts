@@ -74,12 +74,12 @@ describe('weeklyRecommendations (BL-125, D-452, D-457)', () => {
       expect(valueOf(r, 'range.min')).toBe(10);
     });
 
-    it('séances tenues et volume dans la plage : garder le plan ; semaine en pause : la règle des séances ne s’applique pas', () => {
+    it('séances tenues et volume dans la plage : garder le plan ; semaine en pause : règle « semaine allégée », ni séances ni plage', () => {
       const sessionDays = [d('2026-11-09'), d('2026-11-11'), d('2026-11-13')];
       const workouts = sessionDays.map((day) => ({ day, sets: [...work('bench', 5), ...work('squat', 4)] }));
       expect(byTheme(weeklyRecommendations({ ...base, sessionDays, workouts }, WEEK), 'training')).toMatchObject({ kind: 'trainingKeep', rule: 'setRange' });
       const paused = { ...base, pauses: [{ from: d('2026-11-09'), to: null, lightWeek: false }], sessionDays: [d('2026-11-10')], workouts: [{ day: d('2026-11-10'), sets: [...work('bench', 12), ...work('squat', 12)] }] };
-      expect(byTheme(weeklyRecommendations(paused, WEEK), 'training').kind).toBe('trainingKeep');
+      expect(byTheme(weeklyRecommendations(paused, WEEK), 'training').kind).toBe('trainingLight');
     });
 
     it('revue : semaine de pause ou de décharge, volume bas attendu : jamais « ajoute des séries » (règle « semaine allégée »)', () => {
@@ -87,7 +87,7 @@ describe('weeklyRecommendations (BL-125, D-452, D-457)', () => {
       const paused = byTheme(weeklyRecommendations({ ...base, ...low, pauses: [{ from: d('2026-11-09'), to: null, lightWeek: false }] }, WEEK), 'training');
       expect(paused).toMatchObject({ kind: 'trainingLight', rule: 'lightWeek' });
       const deload = byTheme(weeklyRecommendations({ ...base, ...low, target: null, cycleAt: () => ({ week: 5, total: 5, deload: true }) as never }, WEEK), 'training');
-      expect(deload).toMatchObject({ kind: 'trainingLight', rule: 'lightWeek' });
+      expect(deload).toMatchObject({ kind: 'trainingDeload', rule: 'lightWeek' });
       expect(deload.sources.find((x) => x.fact === 'cycle.week')?.value).toBe(5);
     });
 

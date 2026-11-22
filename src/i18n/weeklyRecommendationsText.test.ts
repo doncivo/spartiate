@@ -8,6 +8,8 @@ const muscleName = (id: string): string => (id === 'chest' ? 'Pectoraux' : id);
 const R = (r: Recommendation): Recommendation => r;
 const CASES: Recommendation[] = [
   R({ theme: 'training', kind: 'trainingSessions', rule: 'plannedSessions', sources: [{ fact: 'sessions.done', value: 1 }, { fact: 'sessions.planned', value: 3 }] }),
+  R({ theme: 'training', kind: 'trainingLight', rule: 'lightWeek', sources: [{ fact: 'sessions.done', value: 1 }] }),
+  R({ theme: 'training', kind: 'trainingDeload', rule: 'lightWeek', sources: [{ fact: 'cycle.week', value: 5 }, { fact: 'cycle.total', value: 5 }] }),
   ...(['trainingVolumeHigh', 'trainingVolumeLow', 'trainingKeep'] as const).map((kind) =>
     R({ theme: 'training', kind, rule: 'setRange', sources: [{ fact: 'volume.muscle', value: 'chest' }, { fact: 'volume.sets', value: 22.5 }, { fact: 'range.min', value: 10 }, { fact: 'range.max', value: 20 }] }),
   ),
@@ -34,14 +36,14 @@ describe('BL-125 : recommandations lisibles', () => {
   });
 
   it('textes attendus : séances, plage, sommeil en heures', () => {
-    expect(recommendationText(CASES[0] as Recommendation, muscleName)).toBe('Entraînement : séances faites : 1 sur 3 prévues ; cale les séances manquantes dans la semaine qui vient');
-    expect(recommendationText(CASES[1] as Recommendation, muscleName)).toBe('Entraînement : Pectoraux à 22,5 cette semaine, au-dessus de la plage de 10 à 20 ; retire quelques séries de ce muscle');
-    expect(recommendationText(CASES[4] as Recommendation, muscleName)).toBe('Nutrition : journal rempli sur 2 jours complets, il en faut 3 ; complète le journal avant de juger la moyenne');
-    expect(recommendationText(CASES[8] as Recommendation, muscleName)).toBe('Sommeil et récupération : sommeil moyen de 6 h 35, sous les 7 h 00 recommandées ; avance l’heure du coucher');
+    expect(recommendationText(CASES[0] as Recommendation, muscleName)).toBe('Entraînement : séances faites : 1 sur 3 prévues ; cale les séances manquantes dans la semaine suivante');
+    expect(recommendationText(CASES[3] as Recommendation, muscleName)).toBe('Entraînement : Pectoraux : volume de 22,5 sur la semaine du bilan, au-dessus de la plage de 10 à 20 ; retire quelques séries de ce muscle');
+    expect(recommendationText(CASES[6] as Recommendation, muscleName)).toBe('Nutrition : journal rempli sur 2 jours complets, il en faut 3 ; complète le journal avant de juger la moyenne');
+    expect(recommendationText(CASES[10] as Recommendation, muscleName)).toBe('Sommeil et récupération : sommeil moyen de 6 h 35, sous les 7 h 00 recommandées ; avance l’heure du coucher');
   });
 
   it('règle dite après le texte ; sans données, ni règle ni source', () => {
-    const rec = CASES[8] as Recommendation;
+    const rec = CASES[10] as Recommendation;
     expect(recommendationLine(rec, muscleName)).toBe(`${recommendationText(rec, muscleName)} · règle : ${tWeeklyReview('ruleSleepDuration')}`);
     expect(recommendationLine({ theme: 'nutrition', kind: 'none', rule: null, sources: [] }, muscleName)).toBe('Nutrition : aucune recommandation (pas assez de données)');
   });
