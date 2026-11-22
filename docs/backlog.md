@@ -301,6 +301,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | à faire (0.29.x, données et synchro, L) |
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | fait en partie ; reste : cargo audit déjà en CI (tests.yml:233-260, depuis K-01 ; D-446 erroné) ; reste minimatch via eslint 10.15 et typescript-eslint 8.73 (minimatch 10.2.6 au lock) (0.29.x, CI, S) |
 | BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à trancher par Ali |
+| BL-136 | COQUILLE-0291 (revue à froid, D-459) | PC sous 1 024 px CSS (zoom de 150 %) : Progrès › Corps en une colonne (grille de FIX-0241 dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) hors de l’e2e BL-119, projet e2e iphone sans agent utilisateur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
 
 ## 3. Audit Codex 0.26.0
 
