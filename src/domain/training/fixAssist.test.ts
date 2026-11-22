@@ -237,4 +237,10 @@ describe('BL-091 : alertes secondaires d’un assisté dont l’assistance est m
     expect(constraintAlerts({ ...p, headline: 'position' }).map((a) => a.key)).toEqual(['alertInactivityAssistHeld', 'alertRecoveryAssistHeld']);
     expect(constraintAlerts({ ...p, headline: 'position' }).every((a) => Object.keys(a.params).length === 0)).toBe(true);
   });
+
+  it('revue : journée rouge acceptée d’un assisté en alerte secondaire, la journée rouge reste dite (assistance maintenue)', () => {
+    const p = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(84, 30, [8, 8, 8])], recovery: redDaySnapshot(20, 'accepted', input().config) }));
+    expect(p.headline).toBe('inactivity');
+    expect(constraintAlerts(p).map((a) => a.key)).toEqual(['alertRedDayAssistHeld']);
+  });
 });

@@ -64,12 +64,16 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     const b = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
     expect(b.loadKg).toBe(44);
     expect(b.reasons).toContain('reference-off-grid');
-    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { loadKg: 44 } });
+    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 44 } });
     const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: FITNESS_PARK_ANTONY }));
     expect(a.reasons).not.toContain('reference-off-grid');
     // Au-dessus du maximum du matériel de la salle : signalée de même.
     const heavy = prescribe(input({ exercise: CURL, history: history(55, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
     expect(heavy.reasons).toContain('reference-off-grid');
+    // Revue : proposition déjà ramenée sur un cran de la grille (haut de plage atteint : 45 kg en salle B) : rien à vérifier, aucune note.
+    const up = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_B }));
+    expect(up.loadKg).toBe(45);
+    expect(up.reasons).not.toContain('reference-off-grid');
   });
 
   it('sans profil de matériel : la charge monte d’un incrément estimé (46,5) et la raison « incrément inconnu » est dite', () => {
