@@ -354,7 +354,7 @@
     },
     {
       "fichier": "src/db/migrations/0021_exclusion_injury.ts",
-      "story": "SYNC-0291",
+      "story": "LOT-29-SYNC0291",
       "raison": "Migration SYNC-0291 (tables publiées exercise_exclusion et injury, leurs quatre déclencheurs de capture produits par le gabarit importé de la 0018, déjà au départ) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0020. Les dépôts, la reprise des réglages locaux, les écrans de séance et de blessures et leurs textes restent hors du départ (import à la demande)."
     },
     {
