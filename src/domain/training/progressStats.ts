@@ -257,3 +257,87 @@ export function adherence(input: ConstancyInput): Adherence | null {
   }
   return weeks === 0 ? null : { percent: Math.round((done / planned) * 100), done, planned, weeks };
 }
+
+// --- Plage de séries (BL-114, D-448, D-455) --------------------------------------------------------------------------------------------
+
+export type VolumeRangeStatus = 'below' | 'within' | 'above';
+
+/**
+ * Séries de la dernière semaine COMPLÈTE d'un muscle (avant-dernière valeur de `perWeek`, la dernière étant la semaine en cours) comparées
+ * à la plage cible, bornes comprises ; `null` sans semaine complète dans la fenêtre (D-455).
+ */
+export function volumeRangeStatus(muscle: MuscleVolume, config: ProgressConfig = DEFAULT_PROGRESS_CONFIG): { readonly status: VolumeRangeStatus; readonly sets: number } | null {
+  if (muscle.perWeek.length < 2) return null;
+  const sets = muscle.perWeek[muscle.perWeek.length - 2] ?? 0;
+  const { min, max } = config.volumeRange;
+  return { status: sets < min ? 'below' : sets > max ? 'above' : 'within', sets };
+}
+
+// --- Adhérence aux prescriptions (BL-115, D-449, D-456) --------------------------------------------------------------------------------
+
+/** Série d'une séance close, réduite à ce que juge l'adhérence aux prescriptions (cible de durée d'une série chrono : `targetRepsMin`). */
+export interface PrescribedSet {
+  readonly setKind: SetKind;
+  readonly done: boolean;
+  readonly targetRepsMin: number | null;
+  readonly targetLoadKg: number | null;
+  readonly loadKg: number | null;
+}
+
+export interface PrescriptionAdherenceInput {
+  readonly workouts: readonly { readonly day: LocalDate; readonly sets: readonly PrescribedSet[] }[];
+  readonly today: LocalDate;
+  readonly firstWeekday?: FirstWeekday;
+  readonly config?: ProgressConfig;
+}
+
+export interface PrescriptionAdherence {
+  readonly setsDone: number;
+  readonly setsProposed: number;
+  readonly setsPercent: number;
+  readonly loadsHeld: number;
+  readonly loadsProposed: number;
+  /** `null` : aucune charge proposée dans la fenêtre. */
+  readonly loadsPercent: number | null;
+  readonly weeks: number;
+}
+
+/**
+ * Part des prescriptions respectées sur les `adherenceWeeks` dernières semaines complètes (D-456) : série proposée = série d'un type compté
+ * (`volumeSetKinds`) portant une cible (répétitions, durée ou charge) ; faite = validée. Charge proposée = cible de charge ; tenue = série
+ * validée à une charge au moins égale. Séries ajoutées sans cible : non proposées. `null` sans aucune série proposée (jamais 0 %).
+ */
+export function prescriptionAdherence(input: PrescriptionAdherenceInput): PrescriptionAdherence | null {
+  const config = input.config ?? DEFAULT_PROGRESS_CONFIG;
+  const first = input.firstWeekday ?? DEFAULT_FIRST_WEEKDAY;
+  const current = weekStartOf(input.today, first);
+  const oldest = addWeeks(current, -config.adherenceWeeks);
+  let setsDone = 0;
+  let setsProposed = 0;
+  let loadsHeld = 0;
+  let loadsProposed = 0;
+  for (const workout of input.workouts) {
+    const week = weekStartOf(workout.day, first);
+    if (week < oldest || week >= current) continue;
+    for (const set of workout.sets) {
+      if (!config.volumeSetKinds.includes(set.setKind)) continue;
+      if (set.targetRepsMin === null && set.targetLoadKg === null) continue;
+      setsProposed += 1;
+      if (set.done) setsDone += 1;
+      if (set.targetLoadKg !== null) {
+        loadsProposed += 1;
+        if (set.done && set.loadKg !== null && set.loadKg >= set.targetLoadKg) loadsHeld += 1;
+      }
+    }
+  }
+  if (setsProposed === 0) return null;
+  return {
+    setsDone,
+    setsProposed,
+    setsPercent: Math.round((setsDone / setsProposed) * 100),
+    loadsHeld,
+    loadsProposed,
+    loadsPercent: loadsProposed === 0 ? null : Math.round((loadsHeld / loadsProposed) * 100),
+    weeks: config.adherenceWeeks,
+  };
+}

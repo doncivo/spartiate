@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { addDays } from '../../domain/localDate';
+import { recommendationsOf } from '../../domain/review/weeklyRecommendations';
 import { weeklyReview } from '../../domain/review/weeklyReview';
 import type { FirstWeekday } from '../../domain/week';
-import { reviewFileName, reviewLine, reviewMarkdown, reviewWeekLabel, tWeeklyReview } from '../../i18n/weeklyReviewText';
+import { recommendationLine, reviewFileName, reviewLine, reviewMarkdown, reviewWeekLabel, tWeeklyReview } from '../../i18n/weeklyReviewText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -64,10 +65,12 @@ export function WeeklyReview({ firstWeekday = 'monday', share = shareReviewText 
     return start === undefined ? null : weeklyReview(state.data, start);
   }, [state, selected]);
 
+  const recommendations = useMemo(() => (review === null ? [] : recommendationsOf(review.sentences)), [review]);
+
   const onExport = async (): Promise<void> => {
     if (review === null || state.status !== 'ready') return;
     try {
-      setExportStatus(await share(reviewMarkdown(review, state.muscleName), reviewFileName(review.weekStart)));
+      setExportStatus(await share(reviewMarkdown(review, state.muscleName, recommendations), reviewFileName(review.weekStart)));
     } catch {
       setExportStatus('failed');
     }
@@ -103,6 +106,17 @@ export function WeeklyReview({ firstWeekday = 'monday', share = shareReviewText 
             {review.sentences.map((s) => (
               <li key={s.theme} className={s.kind === 'insufficient' ? 'ct-review__line ct-review__line--missing' : 'ct-review__line'}>
                 {reviewLine(s, state.muscleName)}
+              </li>
+            ))}
+          </ul>
+          <h3 id="ct-review-recommendations" className="ct-review__week-title">
+            {tWeeklyReview('recommendationsTitle')}
+          </h3>
+          <p className="ct-today__muted ct-review__lead">{tWeeklyReview('recommendationsLead')}</p>
+          <ul className="ct-review__list" aria-labelledby="ct-review-recommendations">
+            {recommendations.map((r) => (
+              <li key={r.theme} className={r.kind === 'none' ? 'ct-review__line ct-review__line--missing' : 'ct-review__line'}>
+                {recommendationLine(r, state.muscleName)}
               </li>
             ))}
           </ul>

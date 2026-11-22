@@ -334,6 +334,8 @@ export interface ProgressConfig {
   readonly adherenceWeeks: number;
   /** Objectif hebdomadaire hors programme suivi (ou avant son début). */
   readonly defaultWeeklyTarget: number;
+  /** BL-114 (D-448, décision d'Ali du 21/11) : plage cible de séries difficiles par muscle et par semaine, bornes comprises. */
+  readonly volumeRange: { readonly min: number; readonly max: number };
 }
 
 export const DEFAULT_PROGRESS_CONFIG: ProgressConfig = Object.freeze({
@@ -341,4 +343,5 @@ export const DEFAULT_PROGRESS_CONFIG: ProgressConfig = Object.freeze({
   volumeSetKinds: Object.freeze(['work', 'timed'] as const),
   adherenceWeeks: 4,
   defaultWeeklyTarget: 1,
+  volumeRange: Object.freeze({ min: 10, max: 20 }),
 });
