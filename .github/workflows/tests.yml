@@ -260,11 +260,11 @@ jobs:
       # tiré par sqlx-mysql jamais compilé, prouvé par l'étape « rsa jamais compilé »). Rapport illisible ou graphe vide : échec.
       - name: cargo audit
         run: |
-          set -uo pipefail
-          cargo audit --json --file src-tauri/Cargo.lock > "$RUNNER_TEMP/audit.json"
-          code=$?
+          set -euo pipefail
+          # Code non nul attendu dès qu'une alerte existe (même hors graphe livré) : la porte ci-dessous décide ; rapport absent = échec.
+          code=0
+          cargo audit --json --file src-tauri/Cargo.lock > "$RUNNER_TEMP/audit.json" || code=$?
           echo "cargo audit : code $code"
-          set -e
           cd src-tauri
           cargo tree --locked --target x86_64-pc-windows-msvc -e normal,build --prefix none > "$RUNNER_TEMP/tree-windows.txt"
           cargo tree --locked --target aarch64-apple-ios -e normal,build --prefix none > "$RUNNER_TEMP/tree-ios.txt"

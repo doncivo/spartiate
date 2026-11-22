@@ -1,3 +1,4 @@
+/* global console */
 // BL-134 (lot 0.29.1) : porte de `cargo audit` limitée au graphe livré.
 //   node scripts/release/cargo-audit-gate.mjs <rapport cargo audit --json> <cargo tree cible 1> [<cargo tree cible 2> …]
 // Bloque (code 1) si une alerte de sécurité touche une crate (nom ET version) compilée pour une cible livrée ; une alerte hors de ce
