@@ -38,8 +38,8 @@ Agents : product-owner, app-shell / desktop-tauri, qa-test, code-reviewer. Aucun
 
 Relecture 1 (agent code-reviewer distinct, lecture seule) : **à corriger**. (1, bloquant probable) le smoke Windows exigeait encore une zone cliente
 de 1 024 × 700 ; avec le minimum abaissé, la fenêtre tient dans la zone de travail du runner (1 024 × 768) et y serait plus petite :
-smoke aligné sur 800 × 360 et vérifie désormais  dans la vraie WebView2 (preuve de D-450 sur le binaire). Mineurs traités :
+smoke aligné sur 800 × 360 et vérifie désormais `data-layout="pc"` dans la vraie WebView2 (preuve de D-450 sur le binaire). Mineurs traités :
 commentaires « 1 024 × 700 » et « PC ≥ 1024 px » mis à jour. Mineurs consignés : Progrès › Corps sous 1 024 px en disposition PC passe en
 une colonne sans débordement (grille de FIX-0241 seulement dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) non couverts par l'e2e,
-projet e2e  sans agent utilisateur iPhone (sans effet en CI Linux) : BL-136. Contrôlés sans défaut : couches, iPhone et iPad, bundle (aucun
+projet e2e `iphone` sans agent utilisateur iPhone (sans effet en CI Linux) : BL-136. Contrôlés sans défaut : couches, iPhone et iPad, bundle (aucun
 module nouveau), isolement des tests jsdom, calculs des trois écrans.
