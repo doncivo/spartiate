@@ -124,6 +124,19 @@ describe('(c) reprise des réglages locaux des deux appareils (D-465)', () => {
 });
 
 describe('(d) « Repartir de zéro » (D-466)', () => {
+  it('contre-relecture : écarté repris d’un réglage partiellement lisible, remis, puis remise à zéro : toujours remis partout (jamais réinséré depuis le réglage)', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await pc.data.repos.settings.set('training.excludedExercises', { v: 1, ids: ['squat-barbell', 'a|b'] });
+    expect(await excluded(pc)).toEqual(['squat-barbell']);
+    await writeExcluded(pc.data.repos, 'squat-barbell', false);
+    await roundTrip();
+    pc.clock.advance(1_000);
+    expect((await resetAllData(pc.data, SYNC_CATALOGUE, createMemorySyncLogger())).kind).toBe('done');
+    expect(await excluded(pc)).toEqual([]);
+    await roundTrip();
+    for (const d of [pc, iphone]) expect(await excluded(d), d.id).toEqual([]);
+  });
+
   it('les écartés de l’appareil qui efface survivent, republiés après l’horizon, vus de l’autre appareil ; les pesées partent', async () => {
     const [pc, iphone] = await pcAndIphone();
     await writeExcluded(pc.data.repos, 'squat-barbell', true);

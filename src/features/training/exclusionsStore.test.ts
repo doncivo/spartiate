@@ -33,12 +33,15 @@ describe('exclusionsStore : reprise unique du réglage local (D-465)', () => {
     expect(await db.driver.select('SELECT 1 FROM exercise_exclusion')).toEqual([]);
   });
 
-  it('relecture 1, point 4 : identifiant hors des bornes de la table (« | », plus de 118 caractères) : les autres repris, le réglage GARDÉ', async () => {
+  it('relecture 1, point 4 (contre-relecture) : identifiant hors des bornes de la table : les autres repris, le réglage réécrit avec les SEULS non repris', async () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     const value = { v: 1, ids: ['squat-barbell', 'a|b', 'x'.repeat(119)] };
     await db.data.repos.settings.set('training.excludedExercises', value);
     expect(await loadExcludedExercises(db.data.repos)).toEqual(['squat-barbell']);
-    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual(value);
+    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual({ v: 1, ids: ['a|b', 'x'.repeat(119)] });
+    // Lecture suivante : rien de plus à reprendre, réglage inchangé.
+    expect(await loadExcludedExercises(db.data.repos)).toEqual(['squat-barbell']);
+    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual({ v: 1, ids: ['a|b', 'x'.repeat(119)] });
   });
 
   it('relecture 1, point 2 : deux lectures concurrentes au premier lancement : aucune n’échoue', async () => {

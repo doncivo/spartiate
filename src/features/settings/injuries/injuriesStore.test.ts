@@ -31,12 +31,12 @@ describe('injuriesStore (D-465)', () => {
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM injury')).toEqual([{ n: 1 }]);
   });
 
-  it('relecture 1, point 4 : gêne au muscle trop long (CHECK à 64) : les autres sont reprises, le réglage est GARDÉ, jamais d’échec de lecture', async () => {
+  it('relecture 1, point 4 : gêne au muscle trop long (CHECK à 64) : les autres sont reprises, le réglage réécrit avec la SEULE gêne non reprise, jamais d’échec de lecture', async () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     const good = one(U(7)).items[0];
     await db.data.repos.settings.set('training.injuries', { v: 1, items: [good, { ...good, id: U(8), muscleId: 'm'.repeat(65) }] });
     expect((await loadInjuries(db.data.repos)).items.map((i) => i.id)).toEqual([U(7)]);
-    expect(await db.data.repos.settings.get('training.injuries')).not.toBeNull();
+    expect(await db.data.repos.settings.get('training.injuries')).toEqual({ v: 1, items: [{ ...good, id: U(8), muscleId: 'm'.repeat(65) }] });
     expect((await loadInjuries(db.data.repos)).items.map((i) => i.id)).toEqual([U(7)]);
   });
 
