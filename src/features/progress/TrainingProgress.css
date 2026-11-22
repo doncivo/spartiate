@@ -30,7 +30,8 @@
   grid-template-columns: minmax(0, 1fr) 5rem;
   grid-template-areas:
     'name bars'
-    'value value';
+    'value value'
+    'range range';
   align-items: center;
   gap: var(--ct-space-1) var(--ct-space-3);
 }
@@ -59,6 +60,19 @@
   color: var(--ct-color-text-secondary);
   font-size: var(--ct-font-size-sm);
   font-variant-numeric: tabular-nums;
+}
+
+/* BL-114 : position dans la plage cible, dite par le texte ; hors plage en gras (jamais par la couleur seule). */
+.ct-tprogress__range {
+  grid-area: range;
+  color: var(--ct-color-text-secondary);
+  font-size: var(--ct-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.ct-tprogress__range--below,
+.ct-tprogress__range--above {
+  font-weight: 600;
 }
 
 .ct-tprogress__hero {
