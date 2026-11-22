@@ -165,9 +165,14 @@ Ces constats demandent les deux appareils : coche-les après avoir fait le geste
 
 ---
 
-## 0.29.1 (à compléter à la publication)
+## 0.29.1
 
-Constats déjà connus pour ce lot (non publié) :
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.1) :
+
+- [ ] **BL-109 (écartés communs)** — iPhone, Entraînement › séance › « Retirer, ne plus proposer » sur un exercice ; puis PC, générer une séance du même jour de routine → l'exercice n'est plus proposé ; « Remettre » sur le PC → il revient sur l'iPhone. Date : ____ Version : ____
+- [ ] **BL-120 (gênes communes)** — PC, Plus › Profil › Blessures, déclarer une gêne fictive ; iPhone, même écran → elle y est ; la marquer « guérie » sur l'iPhone → guérie sur le PC. Date : ____ Version : ____
+- [ ] **BL-119 (zoom 150 %)** — PC, Paramètres Windows › Affichage › Échelle 150 % ; rouvrir Spartiate → barre latérale à gauche (jamais la barre d'onglets du bas), aucune bande horizontale à faire défiler, fenêtre entière à l'écran. Date : ____ Version : ____
+- [ ] **Migration 21** — premier lancement après la mise à jour, sur chaque appareil → Plus › Journaux : aucune erreur de migration ; une sauvegarde « Avant mise à jour » existe ; tes anciens exercices écartés et tes gênes sont toujours là. Date : ____ Version : ____
 
 - [ ] **0.29.1 (Progrès › Entraînement)** — sous chaque muscle, la ligne « Semaine dernière : n, dans / sous / au-dessus de la plage cible » (plage de 10 à 20) correspond aux séries de la semaine passée. Date : ____ Version : ____
 - [ ] **0.29.1 (carte Adhérence)** — la carte Adhérence affiche « Prescriptions respectées » (séries faites, charges tenues). Date : ____ Version : ____
