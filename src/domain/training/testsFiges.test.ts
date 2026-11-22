@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, FITNESS_PARK_ANTONY, input, set, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import type { IsoDateTime } from '../types';
 import { explanationNotes } from './explain';
 import { prescribe } from './prescribe';
@@ -74,6 +74,11 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     const up = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_B }));
     expect(up.loadKg).toBe(45);
     expect(up.reasons).not.toContain('reference-off-grid');
+    // Revue 2 : contrainte active qui laisse la charge à la référence (fatigue : maintien) : signalée aussi.
+    const tired = prescribe(input({ exercise: CURL, history: [session(6, 44, [10, 10, 10]), session(3, 44, [7, 7, 7])], target: target(8, 10), equipment: SALLE_B }));
+    expect(tired.headline).toBe('fatigue');
+    expect(tired.loadKg).toBe(44);
+    expect(tired.reasons).toContain('reference-off-grid');
   });
 
   it('sans profil de matériel : la charge monte d’un incrément estimé (46,5) et la raison « incrément inconnu » est dite', () => {
