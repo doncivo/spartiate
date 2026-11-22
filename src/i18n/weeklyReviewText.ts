@@ -1,3 +1,4 @@
+import type { Recommendation, RecommendationKind, RecommendationRule, RecommendationSource, RecommendationTheme } from '../domain/review/weeklyRecommendations';
 import type { FactKey, ReviewSentence, ReviewSource, ReviewTheme, WeekReview } from '../domain/review/weeklyReview';
 import type { LocalDate } from '../domain/types';
 import { weeklyReviewFr } from './fr.weeklyReview';
@@ -153,7 +154,74 @@ export function reviewFileName(weekStart: LocalDate): string {
   return tWeeklyReview('fileName', { date: weekStart });
 }
 
-/** Fichier Markdown du bilan d'une semaine : titre, semaine, une ligne par phrase avec sa source, mention locale. */
-export function reviewMarkdown(review: WeekReview, muscleName: (id: string) => string): string {
-  return [`# ${tWeeklyReview('title')}`, '', `## ${reviewWeekLabel(review.weekStart, review.weekEnd)}`, '', ...review.sentences.map((s) => `- ${reviewLine(s, muscleName)}`), '', tWeeklyReview('exportFoot'), ''].join('\n');
+// --- Recommandations (BL-125, D-452, D-457) ---------------------------------------------------------------------------------------------
+
+const REC_THEME: Readonly<Record<RecommendationTheme, WeeklyReviewTextKey>> = { training: 'recThemeTraining', nutrition: 'recThemeNutrition', recovery: 'recThemeRecovery' };
+const REC_TEXT: Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyReviewTextKey>> = {
+  trainingSessions: 'recTrainingSessions',
+  trainingVolumeHigh: 'recTrainingVolumeHigh',
+  trainingVolumeLow: 'recTrainingVolumeLow',
+  trainingKeep: 'recTrainingKeep',
+  nutritionLog: 'recNutritionLog',
+  nutritionAbove: 'recNutritionAbove',
+  nutritionBelow: 'recNutritionBelow',
+  nutritionKeep: 'recNutritionKeep',
+  recoverySleep: 'recRecoverySleep',
+  recoveryKeep: 'recRecoveryKeep',
+};
+const REC_RULE: Readonly<Record<RecommendationRule, WeeklyReviewTextKey>> = {
+  plannedSessions: 'rulePlannedSessions',
+  setRange: 'ruleSetRange',
+  completeDays: 'ruleCompleteDays',
+  targetGap: 'ruleTargetGap',
+  sleepDuration: 'ruleSleepDuration',
+};
+
+/** Valeur d'une source de recommandation, mise en forme comme dans son texte. */
+function formatRecValue(source: RecommendationSource, muscleName: (id: string) => string): string {
+  if (source.fact === 'sleep.minMinutes' && typeof source.value === 'number') return duration(source.value);
+  if (source.fact === 'nutrition.completeDays' && typeof source.value === 'number') return tPlural(tWeeklyReview, source.value, 'daysCountOne', 'daysCount');
+  return formatValue(source as ReviewSource, muscleName);
+}
+
+/** Valeurs des sources d'une recommandation, mises en forme (vérification « aucun chiffre inventé »). */
+export function recommendationSourceValues(rec: Recommendation, muscleName: (id: string) => string): string[] {
+  return rec.sources.map((s) => formatRecValue(s, muscleName));
+}
+
+/** Texte d'une recommandation, thème compris, sans sa règle. */
+export function recommendationText(rec: Recommendation, muscleName: (id: string) => string): string {
+  const theme = tWeeklyReview(REC_THEME[rec.theme]);
+  if (rec.kind === 'none') return tWeeklyReview('recLine', { theme, text: tWeeklyReview('recNone') });
+  const v = (fact: RecommendationSource['fact']): string => {
+    const source = rec.sources.find((s) => s.fact === fact);
+    return source === undefined ? '' : formatRecValue(source, muscleName);
+  };
+  const min = rec.theme === 'nutrition' ? v('nutrition.minDays') : rec.theme === 'recovery' ? v('sleep.minMinutes') : v('range.min');
+  const text = tWeeklyReview(REC_TEXT[rec.kind], {
+    done: v('sessions.done'),
+    planned: v('sessions.planned'),
+    muscle: v('volume.muscle'),
+    sets: v('volume.sets'),
+    min,
+    max: v('range.max'),
+    days: v('nutrition.completeDays'),
+    kcal: v('nutrition.meanKcal'),
+    target: v('nutrition.targetKcal'),
+    pct: v('nutrition.tolerancePct'),
+    duration: v('sleep.meanMinutes'),
+  });
+  return tWeeklyReview('recLine', { theme, text });
+}
+
+/** Recommandation et sa règle lisible : « Nutrition : … · règle : … » ; sans règle (aucune donnée), le texte seul. */
+export function recommendationLine(rec: Recommendation, muscleName: (id: string) => string): string {
+  const text = recommendationText(rec, muscleName);
+  return rec.rule === null ? text : `${text} · ${tWeeklyReview('ruleLabel', { rule: tWeeklyReview(REC_RULE[rec.rule]) })}`;
+}
+
+/** Fichier Markdown du bilan d'une semaine : titre, semaine, une ligne par phrase avec sa source, recommandations, mention locale. */
+export function reviewMarkdown(review: WeekReview, muscleName: (id: string) => string, recommendations: readonly Recommendation[] = []): string {
+  const recs = recommendations.length === 0 ? [] : ['', `### ${tWeeklyReview('recommendationsTitle')}`, '', ...recommendations.map((r) => `- ${recommendationLine(r, muscleName)}`)];
+  return [`# ${tWeeklyReview('title')}`, '', `## ${reviewWeekLabel(review.weekStart, review.weekEnd)}`, '', ...review.sentences.map((s) => `- ${reviewLine(s, muscleName)}`), ...recs, '', tWeeklyReview('exportFoot'), ''].join('\n');
 }
