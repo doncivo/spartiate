@@ -1,7 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
-import { parseInjuries } from '../../../domain/training/injuries';
 import type { DeviceId } from '../../../domain/types';
 import { tInjuries } from '../../../i18n/injuriesText';
 import { tTraining } from '../../../i18n/trainingText';
@@ -29,7 +28,8 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
     await waitFor(() => expect(within(select).getAllByRole('option').length).toBeGreaterThan(1));
     return select;
   };
-  const stored = async () => parseInjuries(await db.data.repos.settings.get('training.injuries'));
+  // SYNC-0291 (D-447) : gênes dans la table publiée `injury`, plus dans le réglage local.
+  const stored = async () => (await db.data.repos.injuries()).read();
 
   beforeEach(async () => {
     db = await openBaseDb(DEVICE, '2026-11-20T08:00:00.000Z');
@@ -45,7 +45,7 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
     expect(screen.getByText(tInjuries('empty'))).toBeTruthy();
   });
 
-  it('déclare une gêne (muscle, pattern, note), la liste active et la persiste en réglage local', async () => {
+  it('déclare une gêne (muscle, pattern, note), la liste active et la persiste dans la table publiée', async () => {
     open();
     fireEvent.change(await muscleSelect(), { target: { value: 'chest' } });
     fireEvent.click(screen.getByRole('button', { name: tInjuries('painToggle', { pattern: tTraining(PATTERN_KEY['push-vertical']) }) }));
