@@ -22,7 +22,8 @@ export function weekTrendKg(trend: readonly TrendPoint[], weekEnd: LocalDate): n
 export function weeklyRateKg(trend: readonly TrendPoint[], weekEnd: LocalDate): number | null {
   const end = recentPoint(trend, weekEnd);
   const start = recentPoint(trend, addDays(weekEnd, -WEEK));
-  if (end === null || start === null) return null;
+  // BL-124 : les deux fenêtres se recouvrent la veille de la semaine ; une même pesée aux deux extrémités donnerait 0 kg inventé.
+  if (end === null || start === null || end.date === start.date) return null;
   const rate = Math.round((end.trend - start.trend) * 100) / 100;
   return rate === 0 ? 0 : rate;
 }
