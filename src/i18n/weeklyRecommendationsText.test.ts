@@ -24,7 +24,10 @@ describe('BL-125 : recommandations lisibles', () => {
   it('chaque nombre du texte vient d’une source (§ 17.3 : aucun chiffre inventé), aucun paramètre laissé vide', () => {
     for (const rec of CASES) {
       const text = recommendationText(rec, muscleName);
-      expect(text, rec.kind).not.toMatch(/{w+}/);
+      expect(text, rec.kind).not.toMatch(/\{\w+\}/);
+      // Revue : aucune source ne sort vide, aucun trou dans le texte (paramètre remplacé par une chaîne vide).
+      for (const value of recommendationSourceValues(rec, muscleName)) expect(value, rec.kind).not.toBe('');
+      expect(text, rec.kind).not.toMatch(/ {2}| ,|\(\)|[:;] *$/);
       const allowed = new Set(recommendationSourceValues(rec, muscleName).flatMap(numbersIn));
       for (const n of numbersIn(text)) expect(allowed.has(n), `${rec.kind} : ${n}`).toBe(true);
     }

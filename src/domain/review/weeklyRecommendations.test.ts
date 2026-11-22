@@ -82,6 +82,15 @@ describe('weeklyRecommendations (BL-125, D-452, D-457)', () => {
       expect(byTheme(weeklyRecommendations(paused, WEEK), 'training').kind).toBe('trainingKeep');
     });
 
+    it('revue : semaine de pause ou de décharge, volume bas attendu : jamais « ajoute des séries » (règle « semaine allégée »)', () => {
+      const low = { sessionDays: [d('2026-11-10')], workouts: [{ day: d('2026-11-10'), sets: work('bench', 6) }] };
+      const paused = byTheme(weeklyRecommendations({ ...base, ...low, pauses: [{ from: d('2026-11-09'), to: null, lightWeek: false }] }, WEEK), 'training');
+      expect(paused).toMatchObject({ kind: 'trainingLight', rule: 'lightWeek' });
+      const deload = byTheme(weeklyRecommendations({ ...base, ...low, target: null, cycleAt: () => ({ week: 5, total: 5, deload: true }) as never }, WEEK), 'training');
+      expect(deload).toMatchObject({ kind: 'trainingLight', rule: 'lightWeek' });
+      expect(deload.sources.find((x) => x.fact === 'cycle.week')?.value).toBe(5);
+    });
+
     it('aucune séance dans la semaine ni programme : aucune recommandation', () => {
       expect(byTheme(weeklyRecommendations({ ...EMPTY, sessionDays: [d('2026-11-02')] }, WEEK), 'training').kind).toBe('none');
     });
