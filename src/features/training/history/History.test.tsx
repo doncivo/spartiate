@@ -88,6 +88,45 @@ describe('journal des séances', () => {
     expect(list).not.toHaveTextContent('Ouverte');
   });
 
+  it('BL-090 : un assisté personnalisé (machine d’assistance), même supprimé, est hors volume comme au résumé de séance', async () => {
+    const CUSTOM = '7f3a1c2e-0000-4000-8000-0000000000b9';
+    const exercises = await db.data.repos.exercises();
+    await exercises.create({
+      id: CUSTOM,
+      nameFr: 'Tractions à la machine assistée',
+      aliasesEn: [],
+      muscles: [{ id: 'lats', weight: 1 }],
+      equipment: ['assisted-pull-up-machine'],
+      pattern: 'pull-vertical',
+      kind: 'compound',
+      metric: 'load-reps',
+      bodyweightFraction: null,
+      defaultRepRange: [8, 12],
+      defaultRestSec: 90,
+      instructions: { setup: 'Régler', execution: 'Tirer', mistakes: [] },
+      media: null,
+      strengthStandardKey: null,
+    });
+    await db.data.transaction(async (r) => {
+      const repo = await r.workouts();
+      const w = await repo.start({ source: 'empty', name: 'Dos' });
+      const next = await repo.addExercise(w.id, { exerciseId: CUSTOM, exerciseName: 'Tractions assistées', sets: 2 });
+      for (const set of next.sets) await repo.validateSet(set.id, { loadKg: 20, reps: 8 });
+      await repo.close(w.id);
+    });
+    openJournal();
+    const list = await screen.findByRole('list', { name: 'Séances terminées' });
+    const item = within(list).getByRole('listitem');
+    expect(item).toHaveTextContent('Dos');
+    expect(item).toHaveTextContent('2 séries');
+    expect(item).not.toHaveTextContent('320 kg');
+    cleanup();
+    await exercises.softDelete(CUSTOM);
+    openJournal();
+    const again = within(await screen.findByRole('list', { name: 'Séances terminées' })).getByRole('listitem');
+    expect(again).not.toHaveTextContent('320 kg');
+  });
+
   // ERGO-01b P5 (D-238) : le doublon « Journal des séances » de la carte Séance est retiré ; l'accès au journal passe par la section
   // « Journal » d'Entraînement (attente d'avant : bouton de la carte ; voir aussi src/features/ErgoP5.test.tsx).
   it('Entraînement mène au journal (section « Journal ») ; la carte Séance n’a plus de doublon', async () => {
