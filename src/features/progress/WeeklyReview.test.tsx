@@ -69,6 +69,33 @@ describe('Progrès › Bilan de la semaine', () => {
     expect(within(card).getByText(/source : séries de travail validées$/)).toBeInTheDocument();
   });
 
+  it('BL-125 : base vide, trois thèmes de recommandation sans recommandation (pas assez de données)', async () => {
+    db.clock.set(NOW);
+    mount();
+    const card = await region();
+    const list = await within(card).findByRole('list', { name: tWeeklyReview('recommendationsTitle') });
+    for (const theme of ['recThemeTraining', 'recThemeNutrition', 'recThemeRecovery'] as const) {
+      expect(within(list).getByText(tWeeklyReview('recLine', { theme: tWeeklyReview(theme), text: tWeeklyReview('recNone') }))).toBeInTheDocument();
+    }
+  });
+
+  it('BL-125 : séances de la semaine passée, recommandation d’entraînement avec sa règle ; exportée', async () => {
+    await sessionAt('2026-11-10T08:00:00.000Z');
+    await sessionAt('2026-11-12T08:00:00.000Z');
+    db.clock.set(NOW);
+    const share = vi.fn(async () => 'downloaded' as const);
+    mount({ share });
+    const card = await region();
+    const list = await within(card).findByRole('list', { name: tWeeklyReview('recommendationsTitle') });
+    const line = within(list).getByText(/^Entraînement : Pectoraux : volume de 2 sur la semaine du bilan, sous la plage de 10 à 20 /);
+    expect(line.textContent).toContain(tWeeklyReview('ruleLabel', { rule: tWeeklyReview('ruleSetRange') }));
+    fireEvent.click(within(card).getByRole('button', { name: tWeeklyReview('export') }));
+    await waitFor(() => expect(share).toHaveBeenCalledTimes(1));
+    const [text] = share.mock.calls[0] as unknown as [string, string];
+    expect(text).toContain(`### ${tWeeklyReview('recommendationsTitle')}`);
+    expect(text).toContain(`- ${line.textContent ?? ''}`);
+  });
+
   it('semaines précédentes : 6 boutons ≥ 44 pt ; en choisir une l’affiche', async () => {
     await sessionAt('2026-11-03T08:00:00.000Z');
     db.clock.set(NOW);
