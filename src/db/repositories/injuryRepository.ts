@@ -17,5 +17,5 @@ export interface InjuryRepository {
    * un ancien identifiant non UUID reçoit un UUID DÉTERMINISTE (`legacyInjuryId`). Une ligne existante n'est jamais touchée ; deux reprises
    * concurrentes ne se gênent pas (insertion sans effet sur une clé présente). Échec isolé par gêne. Rend les insertions et les échecs ; idempotente.
    */
-  importLocal(items: readonly Injury[]): Promise<{ readonly inserted: number; readonly failed: number }>;
+  importLocal(items: readonly Injury[]): Promise<{ readonly inserted: number; readonly failed: number; readonly failedIds: readonly string[] }>;
 }

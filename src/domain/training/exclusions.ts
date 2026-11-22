@@ -21,14 +21,17 @@ export function parseExcludedExercises(raw: unknown): readonly string[] {
 }
 
 /**
- * Relecture 1 (point 4) : l'ancien réglage est-il ENTIÈREMENT lisible (chaque identifiant distinct admis par la table) ? Sinon le lecteur le garde et
- * journalise un code, au lieu de le vider en perdant un écarté.
+ * Contre-relecture (D-469) : ce qui RESTE de l'ancien réglage après une reprise : les seuls éléments non repris (illisibles ici, ou dont l'insertion a
+ * échoué). null : tout est repris, le réglage est vidé. Un élément repris n'y reste jamais : une remise faite ensuite (suppression logique), puis une
+ * remise à zéro qui efface la ligne, ne peuvent pas le faire revenir depuis le réglage. Réglage illisible en entier : gardé tel quel.
  */
-export function legacyExclusionsComplete(raw: unknown): boolean {
-  if (typeof raw !== 'object' || raw === null) return false;
+export function legacyExclusionsResidue(raw: unknown, failedIds: readonly string[]): unknown {
+  if (typeof raw !== 'object' || raw === null) return raw ?? null;
   const value = raw as { readonly v?: unknown; readonly ids?: unknown };
-  if (value.v !== 1 || !Array.isArray(value.ids)) return false;
-  return new Set(value.ids).size === parseExcludedExercises(raw).length;
+  if (value.v !== 1 || !Array.isArray(value.ids)) return raw;
+  const failed = new Set(failedIds);
+  const rest = [...new Set(value.ids as unknown[])].filter((id) => !isExerciseId(id) || failed.has(id));
+  return rest.length === 0 ? null : { v: 1, ids: rest };
 }
 
 export function withExcluded(ids: readonly string[], id: string, excluded: boolean): ExcludedExercisesValue {

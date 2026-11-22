@@ -50,9 +50,11 @@ export function createExerciseExclusionRepository(db: SqlExecutor, stamper: Writ
     async importLocal(exerciseIds) {
       let inserted = 0;
       let failed = 0;
+      const failedIds: string[] = [];
       for (const exerciseId of new Set(exerciseIds)) {
         if (!isExclusionExerciseId(exerciseId)) {
           failed += 1;
+          failedIds.push(exerciseId);
           continue;
         }
         // Relecture 1 (points 2 et 4) : ligne existante jamais touchée, insertion sans effet sur une clé présente, échec isolé.
@@ -60,9 +62,10 @@ export function createExerciseExclusionRepository(db: SqlExecutor, stamper: Writ
           if (!(await read(exclusionId(exerciseId))) && (await insert(exerciseId))) inserted += 1;
         } catch {
           failed += 1;
+          failedIds.push(exerciseId);
         }
       }
-      return { inserted, failed };
+      return { inserted, failed, failedIds };
     },
   };
 }

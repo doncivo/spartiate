@@ -17,5 +17,5 @@ export interface ExerciseExclusionRepository {
    * inséré ; une ligne existante, vivante ou supprimée (par exemple remise ailleurs), n'est jamais touchée ; deux reprises concurrentes ne se gênent
    * pas. Échec isolé par identifiant (invalide ou refusé). Rend les insertions et les échecs ; idempotente.
    */
-  importLocal(exerciseIds: readonly string[]): Promise<{ readonly inserted: number; readonly failed: number }>;
+  importLocal(exerciseIds: readonly string[]): Promise<{ readonly inserted: number; readonly failed: number; readonly failedIds: readonly string[] }>;
 }

@@ -70,6 +70,7 @@ export function createInjuryRepository(db: SqlExecutor, stamper: WriteStamper): 
     async importLocal(items) {
       let inserted = 0;
       let failed = 0;
+      const failedIds: string[] = [];
       for (const item of items) {
         const injury = parseInjury(item);
         if (injury === null) {
@@ -81,9 +82,10 @@ export function createInjuryRepository(db: SqlExecutor, stamper: WriteStamper): 
           if (await insert(isId(injury.id) ? injury : { ...injury, id: legacyInjuryId(injury) })) inserted += 1;
         } catch {
           failed += 1;
+          failedIds.push(injury.id);
         }
       }
-      return { inserted, failed };
+      return { inserted, failed, failedIds };
     },
   };
 }

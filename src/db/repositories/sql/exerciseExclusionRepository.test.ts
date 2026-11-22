@@ -53,9 +53,9 @@ describe('ExerciseExclusionRepository', () => {
     await (await repo()).setExcluded('row-cable', true);
     await (await repo()).setExcluded('lunge-dumbbell', true);
     await (await repo()).setExcluded('lunge-dumbbell', false);
-    expect(await (await repo()).importLocal(['squat-barbell', 'row-cable', 'lunge-dumbbell', 'a|b', '', 'squat-barbell'])).toEqual({ inserted: 1, failed: 2 });
+    expect(await (await repo()).importLocal(['squat-barbell', 'row-cable', 'lunge-dumbbell', 'a|b', '', 'squat-barbell'])).toEqual({ inserted: 1, failed: 2, failedIds: ['a|b', ''] });
     expect(await (await repo()).list()).toEqual(['row-cable', 'squat-barbell']);
-    expect(await (await repo()).importLocal(['squat-barbell', 'row-cable'])).toEqual({ inserted: 0, failed: 0 });
+    expect(await (await repo()).importLocal(['squat-barbell', 'row-cable'])).toEqual({ inserted: 0, failed: 0, failedIds: [] });
   });
 
   it('relecture 1, point 2 : deux reprises concurrentes : aucune erreur, aucun doublon', async () => {

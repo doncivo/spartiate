@@ -244,13 +244,18 @@ export function legacyInjuryId(injury: Injury): string {
 }
 
 /**
- * Relecture 1 (point 4) : l'ancien réglage est-il ENTIÈREMENT lisible (chaque élément distinct devenu une gêne) ? Sinon le lecteur le garde et
- * journalise un code, au lieu de le vider en perdant une gêne illisible ici.
+ * Contre-relecture (D-469) : ce qui RESTE de l'ancien réglage après une reprise : les seules gênes non reprises (illisibles ici, ou dont l'insertion a
+ * échoué, `failedIds` = identifiants d'origine). null : tout est repris. Réglage illisible en entier : gardé tel quel.
  */
-export function legacyInjuriesComplete(raw: unknown): boolean {
-  if (typeof raw !== 'object' || raw === null) return false;
+export function legacyInjuriesResidue(raw: unknown, failedIds: readonly string[]): unknown {
+  if (typeof raw !== 'object' || raw === null) return raw ?? null;
   const value = raw as { readonly v?: unknown; readonly items?: unknown };
-  if (value.v !== 1 || !Array.isArray(value.items)) return false;
-  const ids = new Set(value.items.map((item: unknown) => (typeof item === 'object' && item !== null ? (item as { id?: unknown }).id : undefined)));
-  return !ids.has(undefined) && parseInjuries(raw).items.length === ids.size;
+  if (value.v !== 1 || !Array.isArray(value.items)) return raw;
+  const failed = new Set(failedIds);
+  const imported = new Set(parseInjuries(raw).items.map((i) => i.id).filter((id) => !failed.has(id)));
+  const rest = (value.items as unknown[]).filter((item) => {
+    const parsed = parseInjury(item);
+    return parsed === null || !imported.has(parsed.id);
+  });
+  return rest.length === 0 ? null : { v: 1, items: rest };
 }

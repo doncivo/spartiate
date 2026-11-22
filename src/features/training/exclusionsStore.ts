@@ -1,5 +1,5 @@
 import type { Repositories } from '../../db/repositories/dataAccess';
-import { legacyExclusionsComplete, parseExcludedExercises } from '../../domain/training/exclusions';
+import { legacyExclusionsResidue, parseExcludedExercises } from '../../domain/training/exclusions';
 import { logFailure } from '../../platform/desktop/log';
 
 type ExclusionDeps = Pick<Repositories, 'settings' | 'exerciseExclusions'>;
@@ -14,10 +14,13 @@ export async function loadExcludedExercises(repos: ExclusionDeps): Promise<reado
   const exclusions = await repos.exerciseExclusions();
   const legacy = await repos.settings.get('training.excludedExercises');
   if (legacy !== null && legacy !== undefined) {
-    const { failed } = await exclusions.importLocal(parseExcludedExercises(legacy));
-    // Relecture 1 (point 4) : le réglage n'est vidé que si TOUT ce qu'il portait est repris ; sinon il est gardé et un code est journalisé.
-    if (failed === 0 && legacyExclusionsComplete(legacy)) await repos.settings.set('training.excludedExercises', null);
-    else logFailure('training', 'exclusions-legacy-kept');
+    const { failedIds } = await exclusions.importLocal(parseExcludedExercises(legacy));
+    // Contre-relecture (D-469) : le réglage ne garde que les éléments NON repris (vidé si tout l'est) ; code journalisé une fois, à l'écriture du reste.
+    const rest = legacyExclusionsResidue(legacy, failedIds);
+    if (JSON.stringify(rest) !== JSON.stringify(legacy)) {
+      await repos.settings.set('training.excludedExercises', rest);
+      if (rest !== null) logFailure('training', 'exclusions-legacy-kept');
+    }
   }
   return exclusions.list();
 }

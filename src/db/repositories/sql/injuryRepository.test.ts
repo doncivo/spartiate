@@ -73,11 +73,11 @@ describe('InjuryRepository', () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     await (await repo()).save(declared(U(1), { note: 'déjà là' }));
     const legacy = [declared(U(1), { note: 'ancienne' }), declared('g1', { note: 'ancienne g1' }), declared(U(3), { muscleId: 'quads', patterns: [], note: null })];
-    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 2, failed: 0 });
+    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 2, failed: 0, failedIds: [] });
     const items = (await (await repo()).read()).items;
     expect(items.map((i) => i.note)).toEqual(['déjà là', 'ancienne g1', null]);
     expect(items[1]?.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 0, failed: 0 });
+    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 0, failed: 0, failedIds: [] });
   });
 
   it('relecture 1, point 2 : deux reprises concurrentes (carte et rappels au premier lancement) : aucune erreur, aucun doublon, ancien identifiant → même UUID', async () => {
