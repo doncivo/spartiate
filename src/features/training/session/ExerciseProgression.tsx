@@ -12,7 +12,7 @@ import { DURATION_MAX_SEC, type WorkoutSet, type WorkoutWithSets } from '../../.
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
-import { tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
+import { progressionNoteText, tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
@@ -396,7 +396,7 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     if (typeof params['load'] === 'number') params['load'] = loadText(params['load'], held);
     for (const key of ['delta', 'cut'] as const) if (typeof params[key] === 'number') params[key] = kg(params[key]);
     // I2-04 : précisions (séance partielle ignorée, matériel à vérifier) dans la même phrase, lues d'un trait.
-    const notes = explanationNotes(p).map((n) => tProgression(n.key, n.params));
+    const notes = explanationNotes(p).map((n) => progressionNoteText(n, held));
     const explainKey = EXPLAIN_KEYS[explanation.key];
     const sentenceKey = held === 2 && typeof explanation.params['delta'] === 'number' ? (PAIR_KEYS[explainKey] ?? explainKey) : explainKey;
     const sentence = [tProgression(sentenceKey, params), ...notes].join(' ');

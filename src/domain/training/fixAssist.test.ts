@@ -8,7 +8,7 @@ import { personalRecords, summarizeWorkout, tonnageKg } from './closure';
 import { ENGINE_VERSION } from './config';
 import { redDaySnapshot } from './redDay';
 import { sheetStats } from './exerciseSheet';
-import { explainPrescription, explanationNotes } from './explain';
+import { constraintAlerts, explainPrescription, explanationNotes } from './explain';
 import { prescribe } from './prescribe';
 import type { WorkoutSet, WorkoutWithSets } from './session';
 import type { ExerciseSession, ProgressionEquipment } from './types';
@@ -222,5 +222,25 @@ describe('FIX-ASSIST passe qa-test : cas limites', () => {
     const p = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(2, 30, [10, 10, 10], { difficulty: 'hard' })] }));
     expect(p.loadKg).toBe(30);
     expect(p.headline).toBe('hold-hard');
+  });
+});
+
+describe('BL-091 : alertes secondaires d’un assisté dont l’assistance est maintenue', () => {
+  it('inactivité et Recovery basse : aucune alerte « charge réduite de x % », l’assistance maintenue est dite', () => {
+    const p = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(84, 30, [8, 8, 8])], recovery: { recovery: null, sleepHours: 5, restingHrDelta: null } }));
+    expect(p.loadKg).toBe(30);
+    expect(p.headline).toBe('inactivity');
+    expect(p.reasons).toContain('assistance-held');
+    // Raison principale « inactivité » : la Recovery basse est l'alerte secondaire.
+    expect(constraintAlerts(p).map((a) => a.key)).toEqual(['alertRecoveryAssistHeld']);
+    // Inactivité en alerte secondaire (autre raison principale) : jamais « −x % ».
+    expect(constraintAlerts({ ...p, headline: 'position' }).map((a) => a.key)).toEqual(['alertInactivityAssistHeld', 'alertRecoveryAssistHeld']);
+    expect(constraintAlerts({ ...p, headline: 'position' }).every((a) => Object.keys(a.params).length === 0)).toBe(true);
+  });
+
+  it('revue : journée rouge acceptée d’un assisté en alerte secondaire, la journée rouge reste dite (assistance maintenue)', () => {
+    const p = prescribe(input({ exercise: ASSISTED, equipment: ASSIST_GYM, history: [session(84, 30, [8, 8, 8])], recovery: redDaySnapshot(20, 'accepted', input().config) }));
+    expect(p.headline).toBe('inactivity');
+    expect(constraintAlerts(p).map((a) => a.key)).toEqual(['alertRedDayAssistHeld']);
   });
 });

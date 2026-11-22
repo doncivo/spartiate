@@ -390,7 +390,8 @@ describe('cas limites (passe qa-test)', () => {
     const p = prescribe(input({ exercise: CURL, history: [session(3, 9, [10, 10, 10], { difficulty: 'easy' })], target: target(8, 12) }));
     expect(p.loadKg).toBe(9);
     expect(reps(p)).toEqual([11, 10, 10]);
-    expect(p.reasons).toEqual(['history-reference', 'rep-ladder']);
+    // BL-106 (D-471) : 9 kg absent de la grille du profil : prescription inchangée, signalée (« vérifie qu’elle existe ici »).
+    expect(p.reasons).toEqual(['history-reference', 'rep-ladder', 'reference-off-grid']);
   });
 
   it('séances terminées au même instant : départage stable par identifiant', () => {
