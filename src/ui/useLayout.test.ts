@@ -22,8 +22,7 @@ describe('layoutFor (BL-119)', () => {
   });
 
   it('setDesktopLayout(true) : le relevé courant reste PC sous 1 024 px', async () => {
-    vi.stubGlobal('innerWidth', 853);
-    vi.stubGlobal('matchMedia', (q: string) => ({ matches: false, media: q, addEventListener: () => undefined, removeEventListener: () => undefined }));
+    vi.stubGlobal('window', { innerWidth: 853, matchMedia: (q: string) => ({ matches: false, media: q, addEventListener: () => undefined, removeEventListener: () => undefined }) });
     const { currentLayout } = await import('./useLayout');
     expect(currentLayout()).toBe('mobile');
     setDesktopLayout(true);

@@ -139,12 +139,24 @@ fn restored_position_with_no_work_area_left_is_reported() {
 #[test]
 fn windows_zoom_150_percent_fits_the_three_screens_named_by_ali() {
     // BL-119 (D-450, D-459) : 1 280 × 720, 1 366 × 768 et 1 920 × 1 080 physiques à 150 %, barre des tâches de 72 px physiques.
-    for (w, h, expected_width) in [(1280_u32, 720_u32, 853.33 - FRAME_WIDTH), (1366, 768, 910.67 - FRAME_WIDTH), (1920, 1080, DEFAULT_WIDTH)] {
+    for (w, h, expected_width) in [
+        (1280_u32, 720_u32, 1280.0 / 1.5 - FRAME_WIDTH),
+        (1366, 768, 1366.0 / 1.5 - FRAME_WIDTH),
+        (1920, 1080, 1920.0 / 1.5 - FRAME_WIDTH),
+    ] {
         let work = logical_work_area((0, 0), (w, h - 72), 1.5);
         let Fit::Fits(rect) = fit_window(work, (DEFAULT_WIDTH, DEFAULT_HEIGHT)) else {
             panic!("{w} × {h} à 150 % doit contenir la fenêtre");
         };
-        assert!(close(rect.width, expected_width), "{w} × {h} : largeur {}", rect.width);
-        assert!(rect.height >= MIN_HEIGHT && rect.height + FRAME_HEIGHT <= work.height + 0.01, "{w} × {h} : hauteur {}", rect.height);
+        assert!(
+            close(rect.width, expected_width),
+            "{w} × {h} : largeur {}",
+            rect.width
+        );
+        assert!(
+            rect.height >= MIN_HEIGHT && rect.height + FRAME_HEIGHT <= work.height + 0.01,
+            "{w} × {h} : hauteur {}",
+            rect.height
+        );
     }
 }

@@ -2,14 +2,14 @@
 //!
 //! Calcul pur, en unités LOGIQUES (indépendantes de la mise à l'échelle DPI) : la zone de travail physique du moniteur (barre des tâches
 //! exclue) est convertie par `logical_work_area`, puis `fit_window` ajuste la taille voulue (1 440 × 900) pour qu'elle tienne, centrée,
-//! sans jamais passer sous le minimum 1 024 × 700. Si la zone utile est trop petite, le minimum n'est PAS abaissé : `Fit::TooSmall`
+//! sans jamais passer sous le minimum 800 × 360 (BL-119, D-459 : zoom Windows de 150 % sur un écran de 1 280 × 720). Si la zone utile est trop petite, le minimum n'est PAS abaissé : `Fit::TooSmall`
 //! signale la limite (journal technique) et la configuration d'origine est gardée, pour que l'utilisateur tranche.
 //! `clamp_into_work_areas` ramène dans un moniteur existant une position restaurée devenue hors écran (moniteur débranché).
 
 /// Largeur minimale de la fenêtre (contenu), en pixels logiques : `minWidth` de `tauri.windows.conf.json`.
-pub const MIN_WIDTH: f64 = 1024.0;
+pub const MIN_WIDTH: f64 = 800.0;
 /// Hauteur minimale de la fenêtre (contenu), en pixels logiques : `minHeight` de `tauri.windows.conf.json`.
-pub const MIN_HEIGHT: f64 = 700.0;
+pub const MIN_HEIGHT: f64 = 360.0;
 /// Taille initiale voulue (contenu), en pixels logiques.
 pub const DEFAULT_WIDTH: f64 = 1440.0;
 pub const DEFAULT_HEIGHT: f64 = 900.0;
