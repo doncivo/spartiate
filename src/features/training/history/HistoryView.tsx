@@ -2,6 +2,7 @@ import { tPlural } from '../../../i18n/plural';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { tonnageKg, workoutDurationSec, type Workout } from '../../../domain/training';
+import { CATALOG_ASSISTED_IDS, isAssistedEquipment } from '../../../domain/training/assisted';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { formatClock, formatDay, formatVolume, tTraining } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
@@ -34,11 +35,14 @@ type ListLoad = { readonly status: 'loading' } | { readonly status: 'error' } | 
 async function readList(access: DataAccess): Promise<Item[]> {
   const repo = await access.repos.workouts();
   const closed = await repo.listClosed(HISTORY_LIMIT);
+  // BL-090 : assistés hors volume comme au résumé de séance (FIX-ASSIST) : catalogue et personnalisés avec la machine, supprimés compris.
+  const customs = await (await access.repos.exercises()).list({ includeDeleted: true });
+  const assisted = new Set([...CATALOG_ASSISTED_IDS, ...customs.filter((c) => isAssistedEquipment(c.equipment)).map((c) => c.id)]);
   const full = await Promise.all(closed.map((w) => repo.getClosed(w.id)));
   return full.flatMap((w) =>
     w === null
       ? []
-      : [{ workout: w, durationSec: workoutDurationSec(w), sets: w.sets.filter((s) => s.done && s.setKind !== 'warmup').length, volumeKg: tonnageKg(w.sets) }],
+      : [{ workout: w, durationSec: workoutDurationSec(w), sets: w.sets.filter((s) => s.done && s.setKind !== 'warmup').length, volumeKg: tonnageKg(w.sets, assisted) }],
   );
 }
 
