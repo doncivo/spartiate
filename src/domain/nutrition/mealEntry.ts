@@ -37,6 +37,8 @@ export interface MealEntryDraft {
 }
 
 export type MealEntryIssue =
+  // BL-103 : macro au-delà de la borne de saisie du Quick Add (D-343), motif propre pour le message de l'écran.
+  | 'macro-too-large'
   | 'date-invalid'
   | 'time-invalid'
   | 'name-empty'
@@ -109,7 +111,7 @@ export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
     // Revue FIX-SAISIE-NUTRI : les bornes de D-343 visent la saisie d'Ali ; l'entrée « Renpho — total du jour » écrite par l'import Santé
     // (kcal d'un fichier, macros éventuellement gardées d'un jour partiel) n'y est pas soumise, sinon tout l'import échouerait.
     const imported = isRenphoDayEntry(draft);
-    if (!imported) for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('value-invalid');
+    if (!imported) for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('macro-too-large');
     if (!imported && known(draft.kcal) && (known(draft.proteinG) || known(draft.fatG) || known(draft.carbG))) {
       const fromMacros = 4 * (draft.proteinG ?? 0) + 9 * (draft.fatG ?? 0) + 4 * (draft.carbG ?? 0);
       if (fromMacros > draft.kcal * QUICK_ADD_ENERGY_MARGIN.ratio + QUICK_ADD_ENERGY_MARGIN.kcal) add('macros-exceed-energy');
