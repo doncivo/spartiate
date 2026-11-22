@@ -33,4 +33,11 @@ Reporté : BL-117 (taille M, go-tos et assiette en recette), test d'écran de la
 
 ## Passe code-reviewer (à froid)
 
-À consigner après la relecture.
+Relecture 1 (agent code-reviewer distinct, lecture seule) : **à corriger**, un point important. (1) BL-103 : l'exemption de l'entrée
+« Renpho — total du jour » (nom) laissait passer une macro de plus de 1 000 g saisie à l'écran sous ce nom, et une correction renommée
+était validée sous l'ancien nom puis refusée par le dépôt (« writeError ») : option `userEntry` de `validateMealEntry` (bornes toujours
+appliquées à la saisie d'Ali, exemption réservée à l'import Santé) et brouillon validé tel qu'il sera écrit ; rouge puis vert. Mineurs
+consignés : garde `distinct` du bilan devenue redondante (sans effet), retour arrière SQL de `writeStepTotals` non exercé par un échec en
+cours de transaction, attribution Ciqual absente des récents et favoris (requête vide), `ciqualAttribution` optionnel et nullable,
+`perDay as never` dans un test, écouteur `visibilitychange` non vérifié au démontage. Commits rouges de BL-124 et BL-107 : `03fb0fe1`,
+`95e67894`.
