@@ -14,7 +14,8 @@ export interface ExerciseExclusionRepository {
   setExcluded(exerciseId: string, excluded: boolean): Promise<void>;
   /**
    * Reprise UNIQUE des écartés locaux d'avant le schéma 21 (réglage `training.excludedExercises`, D-377) : chaque identifiant valide sans ligne est
-   * inséré ; une ligne existante, vivante ou supprimée (par exemple remise ailleurs), n'est jamais touchée. Rend le nombre d'insertions ; idempotente.
+   * inséré ; une ligne existante, vivante ou supprimée (par exemple remise ailleurs), n'est jamais touchée ; deux reprises concurrentes ne se gênent
+   * pas. Échec isolé par identifiant (invalide ou refusé). Rend les insertions et les échecs ; idempotente.
    */
-  importLocal(exerciseIds: readonly string[]): Promise<number>;
+  importLocal(exerciseIds: readonly string[]): Promise<{ readonly inserted: number; readonly failed: number }>;
 }

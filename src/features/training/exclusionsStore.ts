@@ -1,5 +1,6 @@
 import type { Repositories } from '../../db/repositories/dataAccess';
-import { parseExcludedExercises } from '../../domain/training/exclusions';
+import { legacyExclusionsComplete, parseExcludedExercises } from '../../domain/training/exclusions';
+import { logFailure } from '../../platform/desktop/log';
 
 type ExclusionDeps = Pick<Repositories, 'settings' | 'exerciseExclusions'>;
 
@@ -13,8 +14,10 @@ export async function loadExcludedExercises(repos: ExclusionDeps): Promise<reado
   const exclusions = await repos.exerciseExclusions();
   const legacy = await repos.settings.get('training.excludedExercises');
   if (legacy !== null && legacy !== undefined) {
-    await exclusions.importLocal(parseExcludedExercises(legacy));
-    await repos.settings.set('training.excludedExercises', null);
+    const { failed } = await exclusions.importLocal(parseExcludedExercises(legacy));
+    // Relecture 1 (point 4) : le réglage n'est vidé que si TOUT ce qu'il portait est repris ; sinon il est gardé et un code est journalisé.
+    if (failed === 0 && legacyExclusionsComplete(legacy)) await repos.settings.set('training.excludedExercises', null);
+    else logFailure('training', 'exclusions-legacy-kept');
   }
   return exclusions.list();
 }

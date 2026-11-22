@@ -16,9 +16,11 @@ interface ExclusionRow extends SqlRow {
  */
 export function createExerciseExclusionRepository(db: SqlExecutor, stamper: WriteStamper): ExerciseExclusionRepository {
   const read = async (id: string): Promise<ExclusionRow | undefined> => (await db.select<ExclusionRow>('SELECT id, exercise_id, deleted_at FROM exercise_exclusion WHERE id = ?', [id]))[0];
-  const insert = async (exerciseId: string): Promise<void> => {
+  /** Relecture 1 (point 2) : insertion sans effet sur une clé déjà présente (deux reprises concurrentes) ; rend vrai si la ligne a été créée. */
+  const insert = async (exerciseId: string): Promise<boolean> => {
     const stamp = stamper.next();
-    await db.execute('INSERT INTO exercise_exclusion (id, exercise_id, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?)', [exclusionId(exerciseId), exerciseId, stamp.at, stamp.at, stamp.deviceId, stamp.hlc]);
+    const done = await db.execute('INSERT INTO exercise_exclusion (id, exercise_id, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO NOTHING', [exclusionId(exerciseId), exerciseId, stamp.at, stamp.at, stamp.deviceId, stamp.hlc]);
+    return done.rowsAffected > 0;
   };
 
   return {
@@ -31,7 +33,10 @@ export function createExerciseExclusionRepository(db: SqlExecutor, stamper: Writ
       if (!isExclusionExerciseId(exerciseId)) throw new RepositoryError('invalid', 'exercise_exclusion', exerciseId.slice(0, 32));
       const row = await read(exclusionId(exerciseId));
       if (excluded) {
-        if (!row) return insert(exerciseId);
+        if (!row) {
+          await insert(exerciseId);
+          return;
+        }
         if (row.deleted_at === null) return;
         const stamp = stamper.next();
         await db.execute('UPDATE exercise_exclusion SET deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.deviceId, stamp.hlc, row.id]);
@@ -44,12 +49,20 @@ export function createExerciseExclusionRepository(db: SqlExecutor, stamper: Writ
 
     async importLocal(exerciseIds) {
       let inserted = 0;
+      let failed = 0;
       for (const exerciseId of new Set(exerciseIds)) {
-        if (!isExclusionExerciseId(exerciseId) || (await read(exclusionId(exerciseId)))) continue;
-        await insert(exerciseId);
-        inserted += 1;
+        if (!isExclusionExerciseId(exerciseId)) {
+          failed += 1;
+          continue;
+        }
+        // Relecture 1 (points 2 et 4) : ligne existante jamais touchée, insertion sans effet sur une clé présente, échec isolé.
+        try {
+          if (!(await read(exclusionId(exerciseId))) && (await insert(exerciseId))) inserted += 1;
+        } catch {
+          failed += 1;
+        }
       }
-      return inserted;
+      return { inserted, failed };
     },
   };
 }
