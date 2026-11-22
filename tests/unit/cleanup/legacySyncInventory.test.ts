@@ -1,14 +1,10 @@
 // BL-133 (CLEAN-03) : l'inventaire du banc legacy (scripts/cleanup/legacySyncInventory.mjs) ne compte que les fichiers qui en dépendent
 // vraiment : un appareil simulé atteint par import (direct ou par un kit), l'ancien schéma, ou un dépôt hérité appelé.
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 const root = resolve(__dirname, '..', '..', '..');
-const dir = mkdtempSync(join(tmpdir(), 'inventaire-'));
-afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
 interface Row {
   readonly path: string;
@@ -16,9 +12,8 @@ interface Row {
 }
 
 function inventory(): Row[] {
-  const out = join(dir, 'inventaire.json');
-  execFileSync(process.execPath, [join(root, 'scripts/cleanup/legacySyncInventory.mjs'), '--json', out], { cwd: root, encoding: 'utf8' });
-  return JSON.parse(readFileSync(out, 'utf8')) as Row[];
+  const out = execFileSync(process.execPath, [join(root, 'scripts/cleanup/legacySyncInventory.mjs'), '--json', '-'], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  return JSON.parse(out) as Row[];
 }
 
 describe('inventaire du banc legacy (BL-133)', () => {
