@@ -2,8 +2,11 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../src/domain/clock';
 import type { SyncNowOptions, SyncReason } from '../../../src/platform/sync/types';
 import { createSyncService, HIDE_SYNC_DEADLINE_MS, startSyncScheduler, type DeadlineUnit } from '../../../src/sync';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Cycle borné du passage de l'iPhone en arrière-plan (ADR 0011 §22 point 6 ; Y-IOS-01 critères 9 à 11). L'échéance est comparée à
@@ -28,14 +31,14 @@ afterEach(async () => {
 /** Service de l'iPhone dont l'échéance est observée (et, pour `stopAt`, atteinte juste avant la frontière de ce rang). */
 function boundedService(device: SimDevice, stopAt: number | null, units: DeadlineUnit[]): void {
   let seen = 0;
-  device.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
+  device.service = createSyncService({ catalogue: SYNC_CATALOGUE,
     data: device.data,
     platform: device.platform,
     hlc: device.hlc,
     clock: device.clock,
     deviceId: device.id,
     devicePlatform: 'ios',
-    sv: SCHEMA_VERSION,
+    sv: I0_SCHEMA_VERSION,
     appVersion: '0.4.0',
     logger: device.logger,
     setTimeout: () => 0,
@@ -301,14 +304,14 @@ describe('Y-IOS-01 QA : hydratation qui dépasse son budget (échéance moins 2 
     expect(status.errorCode ?? null).toBeNull();
     expect(iphone.platform.testing.hydrationBudgetLeft(), 'budget du cycle épuisé, jamais dépassé').toBe(0);
     expect(status.pendingFiles.length, 'les fichiers attendus sont listés (« En attente d’iCloud »)').toBeGreaterThan(0);
-    expect((await iphone.driver.select("SELECT id FROM task WHERE title = 'Arrivée tardive' AND deleted_at IS NULL")).length > 0).toBe(false);
+    expect((await iphone.driver.select("SELECT id FROM meal_entry WHERE food_name = 'Arrivée tardive' AND deleted_at IS NULL")).length > 0).toBe(false);
     // L'écriture de l'iPhone n'a pas été perdue par l'attente.
     expect(await iphone.data.repos.sync.getMeta('inflight')).toBeNull();
     // Cycle d'ouverture (3 minutes de budget) : le téléchargement tient, la tâche arrive.
     iphone.platform.testing.setHydrationDelay(1_000);
     const reopened = await iphone.cycle();
     expect(reopened.phase).not.toBe('error');
-    expect((await iphone.driver.select("SELECT id FROM task WHERE title = 'Arrivée tardive' AND deleted_at IS NULL")).length > 0).toBe(true);
+    expect((await iphone.driver.select("SELECT id FROM meal_entry WHERE food_name = 'Arrivée tardive' AND deleted_at IS NULL")).length > 0).toBe(true);
     // Revue (QA) : les instantanés du PC jamais lus (restés dans le nuage, aucun épinglage sur iPhone) ne tiennent pas l'iPhone « en attente
     // d'iCloud » : seuls les fichiers dont le lecteur a besoin comptent.
     expect(reopened.pendingFiles).toEqual([]);

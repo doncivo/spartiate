@@ -93,6 +93,25 @@ jobs:
             echo "Spartiate ${VERSION}" > notes/notes.txt
           fi
 
+      # BL-130 (D-436) : le plugin apple-intelligence ne compile son code FoundationModels qu'avec le SDK iOS 26. Si le Xcode par défaut du
+      # runner est plus ancien, le Xcode 26 le plus récent installé est choisi ; sans lui, échec explicite (l'essai ne prouverait rien).
+      - name: SDK iOS 26
+        run: |
+          set -euo pipefail
+          sdk_major() { xcrun --sdk iphoneos --show-sdk-version | cut -d. -f1; }
+          if [ "$(sdk_major)" -lt 26 ]; then
+            CANDIDATE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1 || true)
+            if [ -n "$CANDIDATE" ]; then sudo xcode-select -s "$CANDIDATE/Contents/Developer"; fi
+          fi
+          xcodebuild -version
+          SDK=$(xcrun --sdk iphoneos --show-sdk-version)
+          echo "SDK iphoneos : $SDK"
+          if [ "$(sdk_major)" -lt 26 ]; then
+            echo "::error::SDK iphoneos $SDK : iOS 26 requis (BL-130). Xcode installés :"; ls -d /Applications/Xcode*.app || true
+            exit 1
+          fi
+          echo "- SDK iOS : $(xcodebuild -version | head -n 1), SDK iphoneos $SDK" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Rust stable et cible iOS
         uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable (branche stable au 2026-10-07)
         with:
@@ -251,6 +270,21 @@ jobs:
           echo "Front embarqué : /index.html et /${ASSET} présents"
           du -sh "$APP" "$APP/$EXE"
           ls "$APP"
+
+      # BL-130 (D-436) : FoundationModels n'existe qu'à partir d'iOS 26 ; lié en fort, l'app ne se lancerait pas sous iOS 18 à 25.
+      # Les commandes de chargement du binaire de l'IPA finale doivent le nommer en LC_LOAD_WEAK_DYLIB et jamais en LC_LOAD_DYLIB.
+      - name: Lien faible de FoundationModels
+        run: |
+          set -euo pipefail
+          APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
+          EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
+          LOADS=$(otool -l "$APP/$EXE" | awk '/^ *cmd LC_LOAD/{cmd=$2} / name /{print cmd, $2}')
+          grep 'FoundationModels' <<<"$LOADS" || true
+          if grep -q '^LC_LOAD_DYLIB .*FoundationModels\.framework' <<<"$LOADS"; then
+            echo "::error::FoundationModels lié en fort (LC_LOAD_DYLIB) : lancement impossible sous iOS 18 à 25"; exit 1
+          fi
+          grep -q '^LC_LOAD_WEAK_DYLIB .*FoundationModels\.framework' <<<"$LOADS" || { echo "::error::FoundationModels absent des liens faibles (LC_LOAD_WEAK_DYLIB)"; exit 1; }
+          echo "- FoundationModels : lien faible (LC_LOAD_WEAK_DYLIB) vérifié sur le binaire de l'IPA finale" >> "$GITHUB_STEP_SUMMARY"
 
       # 0.1.4 (8) : l'IPA finale porte bien une icône d'app. La copie source -> AppIcon.appiconset est déjà contrôlée octet pour octet
       # (apply-icons.mjs, étape « Icônes de l'app ») ; ici : AppIcon60x60@2x.png et Assets.car présents, Info.plist déclarant CFBundleIcons

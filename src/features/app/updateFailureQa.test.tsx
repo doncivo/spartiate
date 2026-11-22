@@ -4,7 +4,7 @@ import { createManualClock } from '../../domain/clock';
 import type { SqlDriver } from '../../db/driver';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup } from '../../db/migrationBackup';
-import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
+import { migrations } from '../../db/migrations';
 import { migrate, type Migration } from '../../db/migrator';
 import { t } from '../../i18n';
 import { tUpdateRestore } from '../../i18n/appUpdateRestoreText';
@@ -28,7 +28,7 @@ const readEnvironment = () => Promise.resolve(ENV);
 const clock = createManualClock('2026-10-09T08:00:00.000Z');
 const pad = (n: number): string => String(n).padStart(4, '0');
 const BROKEN: Migration = { version: LAST + 1, name: 'test_i06_qa_broken', statements: ['INSTRUCTION INVALIDE'] };
-const ADDITIVE: Migration = { version: LAST + 1, name: 'test_i06_qa_additive', statements: ['ALTER TABLE task ADD COLUMN i06_qa TEXT'] };
+const ADDITIVE: Migration = { version: LAST + 1, name: 'test_i06_qa_additive', statements: ['ALTER TABLE meal_entry ADD COLUMN i06_qa TEXT'] };
 
 function keepOpen(db: SqlDriver): SqlDriver {
   return { kind: db.kind, execute: (s, p) => db.execute(s, p), select: (s, p) => db.select(s, p), transaction: (fn) => db.transaction(fn), close: () => Promise.resolve() };

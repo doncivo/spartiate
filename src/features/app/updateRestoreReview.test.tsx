@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock } from '../../domain/clock';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
-import { openTestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb } from '../../db/repositories/sql/testSetup';
 import { t } from '../../i18n';
 import { tUpdateRestore } from '../../i18n/appUpdateRestoreText';
 import type { BackupFailureReason } from '../../platform/backup';
@@ -13,7 +13,7 @@ import { createSyncService } from '../../sync';
 import { silentSyncLogger } from '../../sync/log';
 import { UpdateRestoreAction } from './UpdateRestoreAction';
 import { restoreUpdateBackup, updateRestoreFailureText } from './updateRestore';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
 
 /**
  * Revue I-06 : B1 (raison `restore-unconfirmed`), I2 (restauration d'avant la mise à jour = retour arrière local, aucun marqueur de synchro,
@@ -65,11 +65,11 @@ describe('I2 : retour arrière local, aucun marqueur de synchro', () => {
     expect(warn.mock.calls.map((c: unknown[]) => String(c[0])).some((line) => line.includes('restore-done'))).toBe(false);
 
     // Après le redémarrage : le marqueur de la plateforme est absent (Rust n'en écrit aucun) -> fusion normale, jamais `restore-choice`.
-    const db = await openTestDb(DEVICE, '2026-10-09T08:00:00.000Z');
+    const db = await openBaseDb(DEVICE, '2026-10-09T08:00:00.000Z');
     const platform = createMemorySyncPlatform();
     await platform.folder.choose();
     await platform.key.create();
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 18, appVersion: '0.3.0', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), clock: db.clock, deviceId: DEVICE, sv: 18, appVersion: '0.3.0', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     await service.syncNow('manual');
     expect(await platform.restoreMarker.get()).toBeNull();
     expect(service.status().phase).not.toBe('restore-choice');
