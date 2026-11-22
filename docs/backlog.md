@@ -279,8 +279,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | à faire (0.29.x, séance et moteur, M) |
 | BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | à faire (0.29.x, séance et moteur, M) |
 | BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.29.x, import et contenu, S) |
-| BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | décidé par Ali (D-448) ; à faire (0.29.1, Progrès) |
-| BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | décidé par Ali (D-449) ; à faire (0.29.1, Progrès) |
+| BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | fait (PROGRES-0291, PR #197, D-448, D-455) |
+| BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | fait (PROGRES-0291, PR #197, D-449, D-456 ; reste à trancher : BL-135) |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.29.x, nutrition et récupération, M) |
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -290,7 +290,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.29.x, données et synchro, M) |
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart décidé par Ali (D-451) : kg seulement |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | fait (NUTRI-0291) |
-| BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | décidé par Ali (D-452) ; à faire (0.29.1, bilan) |
+| BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | fait (PROGRES-0291, PR #197, D-452, D-457) |
 | BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à faire (0.29.x, import et contenu, M) |
 | BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | à faire (0.29.x, import et contenu, M) |
 | BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | à faire (0.29.x, import et contenu, S) |
@@ -302,6 +302,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | fait (TECH-0291, PR #195, D-461) |
 | BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à trancher par Ali |
 | BL-136 | COQUILLE-0291 (revue à froid, D-459) | PC sous 1 024 px CSS (zoom de 150 %) : Progrès › Corps en une colonne (grille de FIX-0241 dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) hors de l’e2e BL-119, projet e2e iphone sans agent utilisateur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-137 | REL-0.29.1 (CI de SYNC-0291) | Perf Playwright du démarrage : 1 576 ms une fois pour un budget de 1 500 ms (run 44980315919), vert à la relance sans changement ; marge à surveiller (migration 21 au premier lancement d'une base neuve) | à faire (0.29.x, coquille, iOS et qualité, S) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -343,7 +344,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
 | § 8 I1 | PRD § 8 | partiel — « 2 semaines d'usage réel » pas encore atteint (usage depuis le 16/11, D-292) | reporté : durée d'usage non atteinte |
-| § 8 I2 | PRD § 8 | absent — adhérence ≥ 70 % sur 2 semaines : aucune mesure | décidé par Ali (D-449, BL-115) ; à faire (0.29.1) |
+| § 8 I2 | PRD § 8 | absent — adhérence ≥ 70 % sur 2 semaines : aucune mesure | fait (PROGRES-0291, PR #197, D-449) |
 | § 8 I3 | PRD § 8 | partiel — aucun exercice impossible, décharge non destructive (C-001, C-007) | fait en partie ; reste : C-001 corrigé (FIX-ASSIST #157) ; reste C-007 (grille de barre sans contrôle des disques montables, loadGrid.ts inchangé) (0.29.x, séance et moteur, M) |
 | § 8 I6 | PRD § 8 | partiel — confort : App Intents et import de programme absents | fait (audit 0.29.1 : import de programme IMPORT-029 (#187, D-419 à D-423) ; App Intents écartés par Ali (D-412)) |
 | § 9.2 | PRD § 9.2 | absent — e2e « séance iPhone → PC → édition PC → iPhone » | fait (SYNC-0281b, D-408) |

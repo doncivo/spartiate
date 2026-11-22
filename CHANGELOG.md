@@ -2,6 +2,20 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.1
+
+**Mets à jour le PC et l'iPhone le même jour.** Une migration : ta base passe au schéma 21 (deux tables ajoutées, rien n'est modifié ni effacé) ; une sauvegarde « Avant mise à jour » est faite d'abord. Un appareil resté en 0.29.0 garde de côté les exercices écartés et les gênes reçus de l'autre, sans les afficher, jusqu'à sa mise à jour.
+
+- **Exercices écartés et gênes communs aux deux appareils** : « Retirer, ne plus proposer » en séance et les gênes de Profil › Blessures sont maintenant synchronisés entre le PC et l'iPhone ; ce que tu avais déjà déclaré sur chaque appareil est repris une fois, sans perte. « Repartir de zéro » efface les gênes partout et garde les exercices écartés.
+- **Progrès › Entraînement** : sous chaque muscle, la dernière semaine complète est dite « dans », « sous » ou « au-dessus de la plage cible » (10 à 20 séries difficiles par semaine) ; la carte Adhérence montre aussi les prescriptions respectées (séries faites, charges tenues, sur ce qui était proposé).
+- **Bilan de la semaine** : une recommandation par thème (entraînement, nutrition, sommeil et récupération), chacune avec sa règle ; sans assez de données, « aucune recommandation ». Une semaine de pause ou de décharge ne conseille jamais d'ajouter des séries.
+- **PC au zoom de 150 %** : la disposition PC (barre latérale) est gardée quelle que soit la largeur, et la fenêtre tient à l'écran sur un portable (taille minimale abaissée).
+- **Séance et moteur** : les machines assistées personnalisées sont hors volume dans le journal ; une alerte ne dit plus « charge réduite » quand l'assistance est maintenue ; le résumé de fin ne confirme plus une charge aberrante par une séance de décharge ; si la charge de ta dernière séance n'existe pas dans le matériel du profil (autre salle), la proposition le dit.
+- **Nutrition** : le check-in ne montre plus une variation de 0 kg inventée ; l'attribution Ciqual est écrite sous les résultats Ciqual ; l'import des pas s'écrit en une fois par fichier.
+- **Maintenance** : compilation iPhone vérifiée avec le SDK iOS 26 (Apple Intelligence lié sans empêcher le lancement sous iOS 18) ; contrôle des dépendances Rust limité à ce qui est livré ; 29 anciens tests de synchronisation de plus sur le schéma de Spartiate ; textes inutilisés hérités retirés.
+
+Après la mise à jour : la liste complète des vérifications est dans `docs/constats-ali.md` (section 0.29.1) ; en priorité, écarte un exercice sur l'iPhone puis vérifie qu'il n'est plus proposé sur le PC, déclare une gêne fictive sur le PC puis vois-la sur l'iPhone et marque-la « guérie » ; sur le PC, règle le zoom de Windows à 150 % et vérifie que la barre latérale reste.
+
 ## 0.29.0
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 20. Mais les notes du matin et les bilans VISBODY saisis en 0.29.0 voyagent par la synchro : un appareil resté en 0.28.1 les garde sans les afficher, et refuserait ensuite l'import de son propre export complet (la 0.29.0 l'importe sans perte).
