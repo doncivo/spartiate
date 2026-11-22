@@ -4,7 +4,11 @@ import { CHECKIN_ANSWERS, dueCheckins, recordCheckin, type CheckinAnswer, type I
 import { tInjuries, type InjuriesTextKey } from '../../../i18n/injuriesText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { useSyncedData } from '../../sync/remoteChanges';
 import { loadInjuries, saveInjuries } from './injuriesStore';
+
+/** Relecture 1 (point 1) : la carte se relit quand un lot appliqué touche les gênes. */
+const SYNCED_TABLES = ['injury'] as const;
 import { replanInjuryReminders } from './replan';
 import './Injuries.css';
 
@@ -22,6 +26,7 @@ export function InjuryCheckinCard() {
   const [value, setValue] = useState<InjuriesValue | null>(null);
   const [worse, setWorse] = useState(false);
   const [failed, setFailed] = useState(false);
+  const synced = useSyncedData(SYNCED_TABLES);
 
   useEffect(() => {
     let live = true;
@@ -34,7 +39,7 @@ export function InjuryCheckinCard() {
     return () => {
       live = false;
     };
-  }, [repos]);
+  }, [repos, synced]);
 
   const answer = useCallback(
     async (id: string, choice: CheckinAnswer): Promise<void> => {

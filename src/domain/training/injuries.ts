@@ -1,4 +1,5 @@
 import { addDays } from '../localDate';
+import { sha256Hex } from '../exportImport/sha256';
 import { isLocalDate, type LocalDate } from '../types';
 import { EXERCISE_PATTERNS, type ExercisePattern, type MuscleWeight } from './types';
 
@@ -9,6 +10,8 @@ import { EXERCISE_PATTERNS, type ExercisePattern, type MuscleWeight } from './ty
  */
 export const INJURY_CHECKIN_DAYS = 14;
 export const INJURY_NOTE_MAX = 140;
+/** Relecture 1 (point 4) : même borne que le CHECK de la migration 0021 (`muscle_id` de 1 à 64 caractères). */
+export const INJURY_MUSCLE_ID_MAX = 64;
 /** Contribution minimale d'un muscle déclaré dans un exercice pour que celui-ci soit évité. */
 export const INJURY_MUSCLE_MIN_WEIGHT = 0.3;
 const ID_MAX = 64;
@@ -61,6 +64,7 @@ export function parseInjury(raw: unknown): Injury | null {
   const { id, muscleId, patterns, startedOn, note, status, healedOn, checkins } = r;
   if (typeof id !== 'string' || id === '' || id.length > ID_MAX || !isDate(startedOn)) return null;
   if (status !== 'active' && status !== 'healed') return null;
+  if (typeof muscleId === 'string' && muscleId.length > INJURY_MUSCLE_ID_MAX) return null;
   const muscle = typeof muscleId === 'string' && muscleId !== '' ? muscleId : null;
   const pats = Array.isArray(patterns) ? uniquePatterns(patterns.filter(isPattern)) : [];
   if (muscle === null && pats.length === 0) return null;
@@ -102,7 +106,7 @@ export function declareInjury(value: InjuriesValue, input: InjuryInput, today: L
   const patterns = uniquePatterns(input.patterns.filter(isPattern));
   const muscle = input.muscleId !== null && input.muscleId !== '' ? input.muscleId : null;
   if (input.id === '' || input.id.length > ID_MAX || value.items.some((i) => i.id === input.id)) return { ok: false, issue: 'id' };
-  if (muscle === null && patterns.length === 0) return { ok: false, issue: 'target' };
+  if ((muscle === null && patterns.length === 0) || (muscle !== null && muscle.length > INJURY_MUSCLE_ID_MAX)) return { ok: false, issue: 'target' };
   if (!isDate(input.startedOn) || input.startedOn > today) return { ok: false, issue: 'date' };
   const note = input.note === null || input.note.trim() === '' ? null : input.note.trim();
   if (note !== null && note.length > INJURY_NOTE_MAX) return { ok: false, issue: 'note' };
@@ -195,4 +199,58 @@ export function injuryFromColumns(id: string, row: Readonly<Record<string, unkno
   if (injury === null || !strict) return injury;
   const same = JSON.stringify(injuryToColumns(injury)) === JSON.stringify({ muscle_id: row['muscle_id'], patterns: row['patterns'], started_on: row['started_on'], note: row['note'], status: row['status'], healed_on: row['healed_on'], checkins: row['checkins'] });
   return same ? injury : null;
+}
+
+/**
+ * Relecture 1 de SYNC-0291 (point 1, D-468) : écriture d'une gêne depuis la valeur que l'écran a montrée (`before`), jamais depuis la ligne en base.
+ * - Champ simple (muscle, motifs, début, note, statut, guérison) : écrit seulement si l'utilisateur l'a changé (`after` ≠ `before`) ; une valeur reçue
+ *   entre-temps d'un autre appareil sur un champ que l'écran n'a pas touché reste telle quelle (« Pareil » sur une carte périmée n'annule pas une guérison).
+ * - Réponses au check-in (liste) : FUSION, jamais remplacement : les réponses ajoutées par l'écran (présentes dans `after`, absentes de `before`) sont
+ *   ajoutées à la liste actuelle (`current`, réponses reçues comprises), sans doublon (même jour, même réponse).
+ * - `current` illisible (version future) ou absent : la valeur de l'écran fait foi.
+ * Rend les colonnes à écrire (vide : rien à écrire).
+ */
+export function injuryUpdate(current: Injury | null, before: Injury, after: Injury): Partial<InjuryColumns> {
+  const base = current ?? before;
+  const b = injuryToColumns(before);
+  const a = injuryToColumns(after);
+  const c = injuryToColumns(base);
+  const out: Record<string, string | null> = {};
+  for (const col of ['muscle_id', 'patterns', 'started_on', 'note', 'status', 'healed_on'] as const) if (a[col] !== b[col] && a[col] !== c[col]) out[col] = a[col];
+  if (a.checkins !== b.checkins) {
+    const key = (x: InjuryCheckin): string => `${x.on}|${x.answer}`;
+    const seen = new Set(before.checkins.map(key));
+    const merged = [...base.checkins];
+    const present = new Set(merged.map(key));
+    for (const x of after.checkins) if (!seen.has(key(x)) && !present.has(key(x))) {
+      merged.push({ on: x.on, answer: x.answer });
+      present.add(key(x));
+    }
+    const text = JSON.stringify(merged.map((x) => ({ on: x.on, answer: x.answer })));
+    if (text !== c.checkins) out['checkins'] = text;
+  }
+  return out as Partial<InjuryColumns>;
+}
+
+/**
+ * Relecture 1 (point 2) : identifiant UUID DÉTERMINISTE d'une gêne locale d'avant les UUID (identifiant et contenu hachés) : deux reprises concurrentes
+ * ou rejouées donnent la même ligne (insertion sans effet sur une clé existante), jamais un doublon.
+ */
+export function legacyInjuryId(injury: Injury): string {
+  const cols = injuryToColumns(injury);
+  const hex = sha256Hex(new TextEncoder().encode(['injury-legacy', injury.id, cols.started_on, cols.muscle_id ?? '', cols.patterns, cols.note ?? ''].join('\u0000')));
+  const variant = ((parseInt(hex.charAt(16), 16) & 0x3) | 0x8).toString(16);
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${variant}${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
+}
+
+/**
+ * Relecture 1 (point 4) : l'ancien réglage est-il ENTIÈREMENT lisible (chaque élément distinct devenu une gêne) ? Sinon le lecteur le garde et
+ * journalise un code, au lieu de le vider en perdant une gêne illisible ici.
+ */
+export function legacyInjuriesComplete(raw: unknown): boolean {
+  if (typeof raw !== 'object' || raw === null) return false;
+  const value = raw as { readonly v?: unknown; readonly items?: unknown };
+  if (value.v !== 1 || !Array.isArray(value.items)) return false;
+  const ids = new Set(value.items.map((item: unknown) => (typeof item === 'object' && item !== null ? (item as { id?: unknown }).id : undefined)));
+  return !ids.has(undefined) && parseInjuries(raw).items.length === ids.size;
 }

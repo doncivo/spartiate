@@ -1,5 +1,6 @@
 import type { Repositories } from '../../../db/repositories/dataAccess';
-import { parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
+import { legacyInjuriesComplete, parseInjuries, type InjuriesValue } from '../../../domain/training/injuries';
+import { logFailure } from '../../../platform/desktop/log';
 
 type InjuryDeps = Pick<Repositories, 'settings' | 'injuries'>;
 
@@ -12,8 +13,10 @@ export async function loadInjuries(repos: InjuryDeps): Promise<InjuriesValue> {
   const injuries = await repos.injuries();
   const legacy = await repos.settings.get('training.injuries');
   if (legacy !== null && legacy !== undefined) {
-    await injuries.importLocal(parseInjuries(legacy).items);
-    await repos.settings.set('training.injuries', null);
+    const { failed } = await injuries.importLocal(parseInjuries(legacy).items);
+    // Relecture 1 (point 4) : le réglage n'est vidé que si TOUT ce qu'il portait est repris ; sinon il est gardé et un code est journalisé.
+    if (failed === 0 && legacyInjuriesComplete(legacy)) await repos.settings.set('training.injuries', null);
+    else logFailure('injuries', 'injuries-legacy-kept');
   }
   return injuries.read();
 }
@@ -25,5 +28,9 @@ export async function loadInjuries(repos: InjuryDeps): Promise<InjuriesValue> {
 export async function saveInjuries(repos: Pick<Repositories, 'injuries'>, before: InjuriesValue, after: InjuriesValue): Promise<void> {
   const repo = await repos.injuries();
   const previous = new Map(before.items.map((i) => [i.id, i]));
-  for (const injury of after.items) if (previous.get(injury.id) !== injury) await repo.save(injury);
+  // Relecture 1 (point 1, D-468) : chaque gêne est écrite depuis la valeur montrée (`before`), jamais depuis la ligne en base.
+  for (const injury of after.items) {
+    const seen = previous.get(injury.id);
+    if (seen !== injury) await repo.save(injury, seen);
+  }
 }

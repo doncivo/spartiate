@@ -8,7 +8,11 @@ import { tTraining } from '../../../i18n/trainingText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { PATTERN_KEY } from '../../training/labels';
+import { useSyncedData } from '../../sync/remoteChanges';
 import { loadInjuries, saveInjuries } from './injuriesStore';
+
+/** Relecture 1 (point 1) : la section se relit quand un lot appliqué touche les gênes. */
+const SYNCED_TABLES = ['injury'] as const;
 import { replanInjuryReminders } from './replan';
 import '../BodyScreen.css';
 import './Injuries.css';
@@ -29,6 +33,7 @@ export function InjuriesSection() {
   const container = useAppContainer();
   const repos = container.data.repos;
   const today = todayLocal(container.clock);
+  const synced = useSyncedData(SYNCED_TABLES);
   const [value, setValue] = useState<InjuriesValue>(EMPTY);
   const [muscles, setMuscles] = useState<readonly MuscleOption[]>([]);
   const [muscleId, setMuscleId] = useState('');
@@ -57,7 +62,7 @@ export function InjuriesSection() {
     return () => {
       live = false;
     };
-  }, [repos]);
+  }, [repos, synced]);
 
   const persist = useCallback(
     async (next: InjuriesValue): Promise<boolean> => {
