@@ -8,6 +8,7 @@ import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup'
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { readFileSync } from 'node:fs';
+import { announceLocalChanges } from '../../sync/remoteChanges';
 import { InjuryCheckinCard } from './InjuryCheckinCard';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c5' as DeviceId;
@@ -80,5 +81,17 @@ describe('Carte « Où en est ta gêne ? » (BLESSURES-b)', () => {
     const source = readFileSync('src/features/settings/injuries/InjuryCheckinCard.tsx', 'utf8');
     expect(source).not.toContain('BodyScreen.css');
     expect(source).toContain("import './Injuries.css'");
+  });
+
+  it('relecture 1, point 1 : la carte se relit quand un lot de « injury » est appliqué (guérie ailleurs : la carte disparaît)', async () => {
+    await seed('2026-11-06');
+    open();
+    expect(await screen.findByText(tInjuries('checkinTitle'))).toBeTruthy();
+    const current = await stored();
+    const [first] = current.items;
+    if (!first) throw new Error('gêne absente');
+    await (await db.data.repos.injuries()).save({ ...first, status: 'healed', healedOn: '2026-11-20' as LocalDate }, first);
+    announceLocalChanges(['injury']);
+    await waitFor(() => expect(screen.queryByText(tInjuries('checkinTitle'))).toBeNull());
   });
 });

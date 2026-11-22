@@ -8,6 +8,9 @@ import { PATTERN_KEY } from '../../training/labels';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
+import { declareInjury } from '../../../domain/training/injuries';
+import type { LocalDate } from '../../../domain/types';
+import { announceLocalChanges } from '../../sync/remoteChanges';
 import { InjuriesSection } from './InjuriesSection';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c4' as DeviceId;
@@ -81,5 +84,15 @@ describe('Profil › Blessures (BLESSURES-a)', () => {
     fireEvent.click(screen.getByRole('button', { name: tInjuries('save') }));
     expect((await screen.findByRole('alert')).textContent).toBe(tInjuries('errorDateRequired'));
     expect((await stored()).items).toEqual([]);
+  });
+
+  it('relecture 1, point 1 : la section se relit quand un lot de « injury » est appliqué (gêne déclarée ailleurs : listée)', async () => {
+    open();
+    expect(await screen.findByText(tInjuries('empty'))).toBeTruthy();
+    const r = declareInjury({ v: 1, items: [] }, { id: '20000000-0000-4000-8000-0000000000a1', muscleId: null, patterns: ['squat'], startedOn: '2026-11-19' as LocalDate, note: 'reçue de l’autre appareil' }, '2026-11-20' as LocalDate);
+    if (!r.ok) throw new Error(r.issue);
+    await (await db.data.repos.injuries()).save(r.value.items[0] as never);
+    announceLocalChanges(['injury']);
+    expect(await screen.findByText('reçue de l’autre appareil', { exact: false })).toBeTruthy();
   });
 });

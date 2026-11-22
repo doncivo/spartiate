@@ -190,7 +190,6 @@ export function isFavoriteId(id: string): boolean {
   return id.startsWith(FAVORITE_PREFIX) && isFavoriteRef(id.slice(FAVORITE_PREFIX.length));
 }
 
-/** Identifiant attendu d'une ligne de ces valeurs, ou null si `ref` manque ou est illisible. */
 /**
  * SYNC-0291 (BL-109, D-463) : exercice écarté (« ne plus proposer »), un par exercice, `exclusion|<exercice>` ; exercice = identifiant embarqué ou UUID
  * d'un exercice personnalisé, sans `|`, au plus 118 caractères (`exclusion|` + 118 = 128 = `MAX_SYNC_ID_LENGTH`). Le CHECK de la migration 0021
@@ -210,6 +209,7 @@ export function expectedExclusionId(row: ReadonlyMap<string, unknown>): string |
   return typeof exercise === 'string' && isExclusionExerciseId(exercise) ? exclusionId(exercise) : null;
 }
 
+/** Identifiant attendu d'une ligne de ces valeurs, ou null si `ref` manque ou est illisible. */
 export function expectedFavoriteId(row: ReadonlyMap<string, unknown>): string | null {
   const ref = row.get('ref');
   return typeof ref === 'string' && isFavoriteRef(ref) ? favoriteId(ref) : null;

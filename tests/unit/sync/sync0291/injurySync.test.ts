@@ -163,3 +163,39 @@ describe('(e) appareil resté en 0.29.0 (sv 20, ADR 0011 §7.2)', () => {
     expect(await rows(pc)).toHaveLength(1);
   });
 });
+
+describe('(f) relecture 1, point 1 : écriture depuis une valeur périmée après réception (D-468)', () => {
+  it('carte d’Aujourd’hui (PC) : « Pareil » sur une carte lue avant la guérison reçue de l’iPhone : guérie partout, les deux réponses gardées', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await declare(iphone, U(8), 'chest');
+    await roundTrip();
+    const seenOnPc = await load(pc);
+    const onPhone = await load(iphone);
+    await saveInjuries(iphone.data.repos, onPhone, recordCheckin(onPhone, U(8), 'healed', TODAY));
+    await roundTrip();
+    pc.clock.advance(5_000);
+    await saveInjuries(pc.data.repos, seenOnPc, recordCheckin(seenOnPc, U(8), 'same', TODAY));
+    await roundTrip();
+    for (const d of [pc, iphone]) {
+      const [item] = (await load(d)).items;
+      expect(item).toMatchObject({ status: 'healed', healedOn: TODAY });
+      expect(item?.checkins.map((c) => c.answer)).toEqual(['healed', 'same']);
+    }
+    expect(await rows(pc)).toEqual(await rows(iphone));
+  });
+
+  it('Profil › Blessures (PC) : « Marquer guérie » depuis une valeur lue avant la réponse reçue de l’iPhone : guérie, la réponse gardée', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await declare(pc, U(9), 'quads');
+    await roundTrip();
+    const seenOnPc = await load(pc);
+    const onPhone = await load(iphone);
+    await saveInjuries(iphone.data.repos, onPhone, recordCheckin(onPhone, U(9), 'worse', TODAY));
+    await roundTrip();
+    pc.clock.advance(5_000);
+    await saveInjuries(pc.data.repos, seenOnPc, markHealed(seenOnPc, U(9), TODAY));
+    await roundTrip();
+    for (const d of [pc, iphone]) expect((await load(d)).items[0]).toMatchObject({ status: 'healed', checkins: [{ on: TODAY, answer: 'worse' }] });
+    expect(await rows(pc)).toEqual(await rows(iphone));
+  });
+});

@@ -73,10 +73,51 @@ describe('InjuryRepository', () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     await (await repo()).save(declared(U(1), { note: 'déjà là' }));
     const legacy = [declared(U(1), { note: 'ancienne' }), declared('g1', { note: 'ancienne g1' }), declared(U(3), { muscleId: 'quads', patterns: [], note: null })];
-    expect(await (await repo()).importLocal(legacy)).toBe(2);
+    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 2, failed: 0 });
     const items = (await (await repo()).read()).items;
     expect(items.map((i) => i.note)).toEqual(['déjà là', 'ancienne g1', null]);
     expect(items[1]?.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-    expect(await (await repo()).importLocal(legacy)).toBe(0);
+    expect(await (await repo()).importLocal(legacy)).toEqual({ inserted: 0, failed: 0 });
+  });
+
+  it('relecture 1, point 2 : deux reprises concurrentes (carte et rappels au premier lancement) : aucune erreur, aucun doublon, ancien identifiant → même UUID', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    const legacy = [declared('g1', { note: 'ancienne g1' }), declared(U(3), { note: null })];
+    const results = await Promise.all([(await repo()).importLocal(legacy), (await repo()).importLocal(legacy)]);
+    expect(results.map((r) => r.failed)).toEqual([0, 0]);
+    expect(results.reduce((n, r) => n + r.inserted, 0)).toBe(2);
+    expect(await db.driver.select('SELECT COUNT(*) AS n FROM injury')).toEqual([{ n: 2 }]);
+  });
+});
+
+describe('relecture 1, point 1 : écriture depuis la valeur vue par l’utilisateur (D-468)', () => {
+  it('« Pareil » sur une carte périmée après une guérison reçue : la guérison reste, les deux réponses sont gardées', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    const seen = declared(U(1));
+    await (await repo()).save(seen);
+    db.clock.advance(1_000);
+    // L'autre appareil répond « Guérie » (ligne reçue) ; cet écran n'a pas relu.
+    const elsewhere = recordCheckin({ v: 1, items: [seen] }, U(1), 'healed', TODAY).items[0] as Injury;
+    await (await repo()).save(elsewhere, seen);
+    db.clock.advance(1_000);
+    const stale = recordCheckin({ v: 1, items: [seen] }, U(1), 'same', TODAY).items[0] as Injury;
+    await (await repo()).save(stale, seen);
+    const [now] = (await (await repo()).read()).items;
+    expect(now).toMatchObject({ status: 'healed', healedOn: TODAY });
+    expect(now?.checkins).toEqual([{ on: TODAY, answer: 'healed' }, { on: TODAY, answer: 'same' }]);
+  });
+
+  it('« Marquer guérie » depuis une valeur périmée : la réponse reçue entre-temps est gardée ; seuls status et healed_on partent', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    const seen = declared(U(2));
+    await (await repo()).save(seen);
+    db.clock.advance(1_000);
+    await (await repo()).save(recordCheckin({ v: 1, items: [seen] }, U(2), 'worse', TODAY).items[0] as Injury, seen);
+    await db.driver.execute('DELETE FROM sync_outbox');
+    db.clock.advance(1_000);
+    await (await repo()).save(markHealed({ v: 1, items: [seen] }, U(2), TODAY).items[0] as Injury, seen);
+    expect((await outbox()).map((r) => r.field).sort()).toEqual(['healed_on', 'status']);
+    const [now] = (await (await repo()).read()).items;
+    expect(now).toMatchObject({ status: 'healed', checkins: [{ on: TODAY, answer: 'worse' }] });
   });
 });

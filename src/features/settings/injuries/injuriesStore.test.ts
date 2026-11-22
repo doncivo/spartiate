@@ -22,6 +22,24 @@ const one = (id: string, startedOn = '2026-11-01'): InjuriesValue => {
 };
 
 describe('injuriesStore (D-465)', () => {
+  it('relecture 1, point 2 : deux lectures concurrentes au premier lancement : aucune n’échoue, aucun doublon', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    await db.data.repos.settings.set('training.injuries', one('g1'));
+    const [a, b] = await Promise.all([loadInjuries(db.data.repos), loadInjuries(db.data.repos)]);
+    expect(a.items).toHaveLength(1);
+    expect(b.items).toHaveLength(1);
+    expect(await db.driver.select('SELECT COUNT(*) AS n FROM injury')).toEqual([{ n: 1 }]);
+  });
+
+  it('relecture 1, point 4 : gêne au muscle trop long (CHECK à 64) : les autres sont reprises, le réglage est GARDÉ, jamais d’échec de lecture', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    const good = one(U(7)).items[0];
+    await db.data.repos.settings.set('training.injuries', { v: 1, items: [good, { ...good, id: U(8), muscleId: 'm'.repeat(65) }] });
+    expect((await loadInjuries(db.data.repos)).items.map((i) => i.id)).toEqual([U(7)]);
+    expect(await db.data.repos.settings.get('training.injuries')).not.toBeNull();
+    expect((await loadInjuries(db.data.repos)).items.map((i) => i.id)).toEqual([U(7)]);
+  });
+
   it('réglage { v: 1, items } repris une fois puis remis à null ; rejoué sans doublon', async () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     await db.data.repos.settings.set('training.injuries', one(U(1)));
