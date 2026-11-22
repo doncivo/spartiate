@@ -24,6 +24,8 @@ export interface CatalogueSearchOptions {
 export interface CatalogueSearchResult {
   readonly hits: readonly SearchableFood[];
   readonly ciqual: 'ok' | 'unavailable';
+  /** BL-107 : attribution du catalogue Ciqual embarqué (Licence Ouverte), à afficher sous des résultats Ciqual ; null sans catalogue. */
+  readonly ciqualAttribution?: string | null;
   /** Identifiants des produits OFF proposés mais périmés ou à date illisible. */
   readonly staleOff: readonly string[];
 }
@@ -43,7 +45,7 @@ export async function searchCatalogue(foods: FoodRepository, query: string, opti
   const staleOff = stored.filter((f) => f.source === 'off' && offCacheState(f.fetchedAt ?? '', options.now) !== 'fresh').map((f) => f.id);
   const ciqual: CiqualCatalogue | null = await (options.loadCiqual ?? loadCiqual)().catch(() => null);
   const universe = [...stored.map(toSearchable), ...(ciqual === null ? [] : ciqualSearchable(ciqual))];
-  return { hits: searchFoods(query, universe, options.limit === undefined ? {} : { limit: options.limit }), ciqual: ciqual === null ? 'unavailable' : 'ok', staleOff };
+  return { hits: searchFoods(query, universe, options.limit === undefined ? {} : { limit: options.limit }), ciqual: ciqual === null ? 'unavailable' : 'ok', ciqualAttribution: ciqual?.source.attribution ?? null, staleOff };
 }
 
 export type BarcodeLookup =

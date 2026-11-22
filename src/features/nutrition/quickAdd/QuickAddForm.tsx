@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
-import { QUICK_ADD_KCAL_MAX, QUICK_ADD_MACRO_MAX_G, validateMealEntry } from '../../../domain/nutrition';
+import { QUICK_ADD_KCAL_MAX, validateMealEntry } from '../../../domain/nutrition';
 import type { LocalDate, LocalTime } from '../../../domain/types';
 import { tNutrition } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
@@ -42,8 +42,8 @@ export function QuickAddForm({ date, defaultTime, onSaved, onClose }: QuickAddFo
     if (p === undefined || f === undefined || c === undefined) return setError(tNutrition('valueInvalid'));
     if (!TIME.test(time)) return setError(tNutrition('timeInvalid'));
     const draft = quickAddDraft({ date, time: time as LocalTime, name, kcal: energy, proteinG: p, fatG: f, carbG: c });
-    const issues = validateMealEntry(draft);
-    if (issues.length > 0) return setError(tNutrition(issues.includes('macros-exceed-energy') || [p, f, c].some((v) => typeof v === 'number' && v > QUICK_ADD_MACRO_MAX_G) ? 'macrosInconsistent' : 'valueInvalid'));
+    const issues = validateMealEntry(draft, { userEntry: true });
+    if (issues.length > 0) return setError(tNutrition(issues.includes('macros-exceed-energy') || issues.includes('macro-too-large') ? 'macrosInconsistent' : 'valueInvalid'));
     setBusy(true);
     setError(null);
     try {
