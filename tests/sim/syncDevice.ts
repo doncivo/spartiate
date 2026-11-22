@@ -82,7 +82,7 @@ let counter = 0;
  * 17 migrations (la moitié du coût d'un test à deux appareils).
  */
 /** `legacy` : ancien schéma et ancien catalogue (banc de test, D-67) ; `i0` : migration 0001 réelle et catalogue de production. */
-export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14' | 'v15' | 'v16' | 'v17' | 'v18' | 'v19';
+export type SimSchema = 'legacy' | 'i0' | 'v3' | 'v5' | 'v6' | 'v7' | 'v8' | 'v9' | 'v10' | 'v11' | 'v12' | 'v13' | 'v14' | 'v15' | 'v16' | 'v17' | 'v18' | 'v19' | 'v20';
 
 /**
  * I1-03 : `v3` : base et catalogue d'une app arrêtée à la migration 0003 (séance locale, ni `workout` ni `workout_set` publiées), `sv` = 3 :
@@ -136,10 +136,12 @@ export const PRE_SUPPLEMENT_SCHEMA: SimSchema = 'v16';
 /** I6-06 : `v17` : base et catalogue sans séances cardio publiées (migration 0017), `sv` = 17 : appareil pas encore mis à jour qui reçoit `cardio_session`. */
 export const V17_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 28)), order: SYNC_TABLE_ORDER.slice(0, 28) });
 /** SYNC-01 (D-275) : `v18` : base et catalogue d'avant la migration 0019 (PROG-01), `sv` = 18 : appareil pas encore mis à jour qui CRÉE des cycles et des cibles sans leurs colonnes de la 0019. */
-export const V18_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables), order: SYNC_TABLE_ORDER });
-export const V19_CATALOGUE = createCatalogue({ tables: beforeProg04(SYNC_CATALOGUE.tables), order: SYNC_TABLE_ORDER });
-const SCHEMA_CATALOGUES = { v19: V19_CATALOGUE, v18: V18_CATALOGUE, v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE, v14: V14_CATALOGUE, v15: V15_CATALOGUE, v16: V16_CATALOGUE, v17: V17_CATALOGUE } as const;
-const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : schema === 'v14' ? i0Migrations.slice(0, 14) : schema === 'v15' ? i0Migrations.slice(0, 15) : schema === 'v16' ? i0Migrations.slice(0, 16) : schema === 'v17' ? i0Migrations.slice(0, 17) : schema === 'v18' ? i0Migrations.slice(0, 18) : schema === 'v19' ? i0Migrations.slice(0, 19) : legacyMigrationList);
+export const V18_CATALOGUE = createCatalogue({ tables: beforeProg01(SYNC_CATALOGUE.tables.slice(0, 29)), order: SYNC_TABLE_ORDER.slice(0, 29) });
+export const V19_CATALOGUE = createCatalogue({ tables: beforeProg04(SYNC_CATALOGUE.tables.slice(0, 29)), order: SYNC_TABLE_ORDER.slice(0, 29) });
+/** SYNC-0291 (schéma 21) : `v20` : base et catalogue de la 0.29.0 (migration 0020), `sv` = 20 : appareil pas encore mis à jour qui reçoit `exercise_exclusion` et `injury`. */
+export const V20_CATALOGUE = createCatalogue({ tables: SYNC_CATALOGUE.tables.slice(0, 29), order: SYNC_TABLE_ORDER.slice(0, 29) });
+const SCHEMA_CATALOGUES = { v20: V20_CATALOGUE, v19: V19_CATALOGUE, v18: V18_CATALOGUE, v3: V3_CATALOGUE, v5: V5_CATALOGUE, v6: V6_CATALOGUE, v7: V7_CATALOGUE, v8: V8_CATALOGUE, v9: V9_CATALOGUE, v10: V10_CATALOGUE, v11: V11_CATALOGUE, v12: V12_CATALOGUE, v13: V13_CATALOGUE, v14: V14_CATALOGUE, v15: V15_CATALOGUE, v16: V16_CATALOGUE, v17: V17_CATALOGUE } as const;
+const schemaMigrations = (schema: SimSchema) => (schema === 'i0' ? i0Migrations : schema === 'v3' ? i0Migrations.slice(0, 3) : schema === 'v5' ? i0Migrations.slice(0, 5) : schema === 'v6' ? i0Migrations.slice(0, 6) : schema === 'v7' ? i0Migrations.slice(0, 7) : schema === 'v8' ? i0Migrations.slice(0, 8) : schema === 'v9' ? i0Migrations.slice(0, 9) : schema === 'v10' ? i0Migrations.slice(0, 10) : schema === 'v11' ? i0Migrations.slice(0, 11) : schema === 'v12' ? i0Migrations.slice(0, 12) : schema === 'v13' ? i0Migrations.slice(0, 13) : schema === 'v14' ? i0Migrations.slice(0, 14) : schema === 'v15' ? i0Migrations.slice(0, 15) : schema === 'v16' ? i0Migrations.slice(0, 16) : schema === 'v17' ? i0Migrations.slice(0, 17) : schema === 'v18' ? i0Migrations.slice(0, 18) : schema === 'v19' ? i0Migrations.slice(0, 19) : schema === 'v20' ? i0Migrations.slice(0, 20) : legacyMigrationList);
 const migratedImages: Partial<Record<SimSchema, Promise<Uint8Array>>> = {};
 function migratedDatabaseImage(schema: SimSchema = fileSchema): Promise<Uint8Array> {
   const migrations = schemaMigrations(schema);

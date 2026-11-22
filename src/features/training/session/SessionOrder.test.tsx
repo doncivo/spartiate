@@ -91,11 +91,12 @@ describe('SESS-01b — vignettes, sauter, ne plus proposer', () => {
     fireEvent.click(await screen.findByRole('button', { name: tSession('removeExcludeConfirm') }));
     await screen.findByRole('button', { name: tSession('stripItem', { n: 2, name: CURL }) });
     expect(await order()).toEqual(['row-barbell', 'curl-barbell']);
-    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual({ v: 1, ids: ['bench-press-barbell'] });
+    // SYNC-0291 (D-447) : écartés dans la table publiée exercise_exclusion, plus dans le réglage local.
+    expect(await (await db.data.repos.exerciseExclusions()).list()).toEqual(['bench-press-barbell']);
     fireEvent.click(within(screen.getByRole('region', { name: ROW })).getByRole('button', { name: tSession('replace') }));
     const sheet = await screen.findByRole('region', { name: tSession('replaceTitle', { name: ROW }) });
     fireEvent.click(within(sheet).getByRole('button', { name: tSession('restoreExcluded', { name: BENCH }) }));
     await within(sheet).findByText(tSession('restoredExcluded', { name: BENCH }));
-    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual({ v: 1, ids: [] });
+    expect(await (await db.data.repos.exerciseExclusions()).list()).toEqual([]);
   });
 });
