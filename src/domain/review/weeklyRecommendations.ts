@@ -75,16 +75,14 @@ function training(sentences: readonly ReviewSentence[]): Recommendation {
   if (done === 0) return none('training');
   // Revue à froid : règle « semaine allégée » d'abord. En pause ou en décharge, un volume bas est voulu : jamais « ajoute des séries ».
   const cycle = sentenceOf(sentences, 'cycle');
-  if (sessions.kind === 'sessionsPaused' || cycle?.kind === 'cycleDeload') {
-    const sources: RecommendationSource[] =
-      cycle?.kind === 'cycleDeload'
-        ? [
-            { fact: 'cycle.week', value: numberIn(cycle, 'cycle.week') ?? 0 },
-            { fact: 'cycle.total', value: numberIn(cycle, 'cycle.total') ?? 0 },
-          ]
-        : [{ fact: 'sessions.done', value: done }];
-    return { theme: 'training', kind: cycle?.kind === 'cycleDeload' ? 'trainingDeload' : 'trainingLight', rule: 'lightWeek', sources };
+  if (cycle?.kind === 'cycleDeload') {
+    // Revue : sans les deux faits du cycle, aucune recommandation plutôt qu'un 0 inventé.
+    const week = numberIn(cycle, 'cycle.week');
+    const total = numberIn(cycle, 'cycle.total');
+    if (week === null || total === null) return none('training');
+    return { theme: 'training', kind: 'trainingDeload', rule: 'lightWeek', sources: [{ fact: 'cycle.week', value: week }, { fact: 'cycle.total', value: total }] };
   }
+  if (sessions.kind === 'sessionsPaused') return { theme: 'training', kind: 'trainingLight', rule: 'lightWeek', sources: [{ fact: 'sessions.done', value: done }] };
   // Règle « plage de séries » : le muscle le plus travaillé de la semaine (premier du volume) comparé à la plage (D-448).
   const volume = sentenceOf(sentences, 'volume');
   const muscle = volume?.kind === 'volumeTop' ? volume.sources.find((s) => s.fact === 'volume.muscle')?.value : undefined;

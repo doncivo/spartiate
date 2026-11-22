@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LocalDate } from '../types';
+import type { CycleWeekMarker } from '../training/cycleWeek';
 import type { MuscleWeight } from '../training/types';
 import { RECOMMENDATION_CONFIG, RECOMMENDATION_THEMES, weeklyRecommendations, type Recommendation } from './weeklyRecommendations';
 import type { ReviewData } from './weeklyReview';
@@ -86,7 +87,7 @@ describe('weeklyRecommendations (BL-125, D-452, D-457)', () => {
       const low = { sessionDays: [d('2026-11-10')], workouts: [{ day: d('2026-11-10'), sets: work('bench', 6) }] };
       const paused = byTheme(weeklyRecommendations({ ...base, ...low, pauses: [{ from: d('2026-11-09'), to: null, lightWeek: false }] }, WEEK), 'training');
       expect(paused).toMatchObject({ kind: 'trainingLight', rule: 'lightWeek' });
-      const deload = byTheme(weeklyRecommendations({ ...base, ...low, target: null, cycleAt: () => ({ week: 5, total: 5, deload: true }) as never }, WEEK), 'training');
+      const deload = byTheme(weeklyRecommendations({ ...base, ...low, target: null, cycleAt: (): CycleWeekMarker => ({ week: 5, total: 5, deload: true }) }, WEEK), 'training');
       expect(deload).toMatchObject({ kind: 'trainingDeload', rule: 'lightWeek' });
       expect(deload.sources.find((x) => x.fact === 'cycle.week')?.value).toBe(5);
     });
