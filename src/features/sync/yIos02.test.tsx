@@ -8,7 +8,7 @@ import { createHlcClock } from '../../domain/hlc';
 import { REINTEGRATION_FAILURE_META } from '../../domain/sync/compat';
 import { asEntityId, type DeviceId, type Hlc } from '../../domain/types';
 import type { DeviceAck, EpochId } from '../../domain/sync/format';
-import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { createMemorySyncPlatform, MemorySyncFolder, type MemorySyncPlatform } from '../../platform/sync';
 import { createSyncService, silentSyncLogger } from '../../sync';
 import { AppContainerProvider } from '../app/AppContainerContext';
@@ -18,7 +18,11 @@ import { IosPairingScreen } from './IosPairingScreen';
 import { startSyncIntegration } from './startSync';
 import { SyncSettingsSection } from './SyncSettingsSection';
 import { createFakeSyncService, nextCall, type FakeSyncService } from './testKit';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
+import { selectSimSchema } from '../../../tests/sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000a1');
 const PC = '70000000-0000-4000-8000-000000000008' as DeviceId;
@@ -28,7 +32,7 @@ let db: TestDb;
 let sync: FakeSyncService;
 
 beforeEach(async () => {
-  db = await openTestDb(SELF, NOW);
+  db = await openBaseDb(SELF, NOW);
   sync = createFakeSyncService();
 });
 
@@ -194,11 +198,11 @@ describe('Réglages de l’iPhone (Y-IOS-02 critères 6 et 7)', () => {
 });
 
 describe('échec de réintégration sur iPhone (ADR 0011 §23 point 6 ; Y-IOS-02 critère 16)', () => {
-  const failure = { fields: 3, tables: ['task'], at: NOW, errors: ['UnknownColumn'] };
+  const failure = { fields: 3, tables: ['meal_entry'], at: NOW, errors: ['UnknownColumn'] };
 
   async function phoneService(): Promise<{ service: ReturnType<typeof createSyncService>; container: AppContainer }> {
     const platform = createMemorySyncPlatform({ platform: 'ios', nowMs: () => db.clock.nowMs() });
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE, data: db.data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), clock: db.clock, deviceId: SELF, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync: service, syncPlatform: platform, platform: { runtime: 'tauri', os: 'ios' } });
     return { service, container };
   }

@@ -1,11 +1,14 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
-import { createSimDevice, SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, I0_SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { publishOutbox } from '../../../src/sync/publisher';
 import { META, readJson } from '../../../src/sync/meta';
 import { SyncPlatformError } from '../../../src/platform/sync/types';
 import type { SyncDeps } from '../../../src/sync/deps';
 import type { DeviceAck } from '../../../src/domain/sync/format';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 vi.mock('../../../src/sync/publishRotation', () => { throw new Error('bloc de lecture indisponible'); });
 
@@ -24,7 +27,7 @@ beforeEach(async () => {
   head = value;
   d.folder.setAvailability(d.id, `${head.epoch}/j-${String(head.segment).padStart(8, '0')}.spj`, 'cloud');
   await d.createTask('Après');
-  deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
+  deps = { catalogue: SYNC_CATALOGUE, data: d.data, platform: d.platform, deviceId: d.id, devicePlatform: d.devicePlatform, hlc: d.hlc, clock: d.clock, logger: d.logger, sv: I0_SCHEMA_VERSION, appVersion: '0.3.3' };
 });
 afterEach(async () => { await d.close(); });
 

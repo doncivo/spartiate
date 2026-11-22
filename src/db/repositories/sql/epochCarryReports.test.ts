@@ -4,7 +4,7 @@ import { createHlcClock, createWriteStamper } from '../../../domain/hlc';
 import { EMPTY_CARRY_REPORT_BODY, EPOCH_CARRY_REPORT_KEEP, type EpochCarryReportBody, type EpochCarryReportHead } from '../../../domain/sync/epochCarryReport';
 import type { DeviceId, Hlc, IsoDateTime } from '../../../domain/types';
 import { openSqliteWasmDriver } from '../../drivers/sqliteWasm';
-import { legacyMigrations as migrations } from '../../../../tests/fixtures/legacy-schema';
+import { migrations } from '../../migrations';
 import { migrate } from '../../migrator';
 import { createSqlRepositories } from './index';
 
@@ -33,9 +33,9 @@ describe('EpochCarryReportRepository', () => {
         { device: 'c' as DeviceId, fields: 3, rows: 1, tombs: 0, late: 0 },
         { device: 'b' as DeviceId, fields: 2, rows: 1, tombs: 1, late: 0 },
       ],
-      restored: [{ table: 'task', rowId: 'r', label: 'À jeter', by: 'c' as DeviceId, deletedAt: AT, deletedBy: 'a' as DeviceId }],
-      recreated: [{ table: 'task', rowId: 't', label: 'Test Pc', by: 'c' as DeviceId, deletedAt: null, deletedBy: null }],
-      parentReplaced: [{ table: 'task', rowId: 'p', column: 'project_id', parentId: 'P', space: 'pro', label: 'Sous P', hlc: 'h' as Hlc, kind: 'reattached', cause: 'parent-replaced' }],
+      restored: [{ table: 'meal_entry', rowId: 'r', label: 'À jeter', by: 'c' as DeviceId, deletedAt: AT, deletedBy: 'a' as DeviceId }],
+      recreated: [{ table: 'meal_entry', rowId: 't', label: 'Test Pc', by: 'c' as DeviceId, deletedAt: null, deletedBy: null }],
+      parentReplaced: [{ table: 'routine_exercise', rowId: 'p', column: 'routine_day_id', parentId: 'P', space: 'pro', label: 'Sous P', hlc: 'h' as Hlc, kind: 'reattached', cause: 'parent-replaced' }],
       overflow: 4,
       overflowBy: { restored: 1, recreated: 3, parentReplaced: 0 },
     };

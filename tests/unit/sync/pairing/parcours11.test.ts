@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../../src/domain/hlc';
 import { PAIRING_VALIDITY_MS } from '../../../../src/domain/sync/format';
-import { SYNC_TABLES } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import type { DeviceId } from '../../../../src/domain/types';
 import { createAppContainer } from '../../../../src/features/app/container';
 import { useAppStore } from '../../../../src/features/app/appStore';
@@ -11,7 +11,10 @@ import type { MemorySyncFolder } from '../../../../src/platform/sync/memory';
 import { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { propagate } from '../../../sim/syncCloudSim';
 import { fromBase64Url, headerLine, openRecord, sealRecord, toBase64Url, type RecordPlace } from '../../../sim/syncCodec';
-import { createSimDevice, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Parcours 11 en simulation (Y-06 critère 19, ADR 0011 section 12) : « PC » et « second appareil », deux bases, deux coffres, deux
@@ -119,7 +122,7 @@ describe('parcours 11 en simulation (critère 19)', () => {
     expect(plain.join('\n')).toContain(TITLE);
     for (const text of files.values()) {
       expect(text).not.toContain(TITLE);
-      for (const table of SYNC_TABLES) expect(text).not.toContain(`"${table.name}"`);
+      for (const table of SYNC_CATALOGUE.tables) expect(text).not.toContain(`"${table.name}"`);
       expect(text).not.toContain(payload.recoveryKey);
       expect(text).not.toContain(toBase64Url(key));
     }

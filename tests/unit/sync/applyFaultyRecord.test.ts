@@ -4,8 +4,11 @@ import { DbError } from '../../../src/db/driver';
 import type { Repositories } from '../../../src/db/repositories';
 import type { SyncOp } from '../../../src/domain/sync/format';
 import { applyOpsIsolated, type ApplyContext } from '../../../src/sync/apply';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * TRI-24 (audit 1.0, « un enregistrement fautif bloque toute la synchro ») : une opération reçue que la base locale refuse (contrainte
@@ -36,11 +39,11 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
   return [a, b];
 }
 
-const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 
 /** Deux tâches de même titre chez A ; B refuse la seconde (index unique propre à B : la violation que ferait une règle de la base locale). */
 async function faultyBatch(a: SimDevice, b: SimDevice): Promise<void> {
-  await b.driver.execute('CREATE UNIQUE INDEX ux_tri24_title ON task(title)');
+  await b.driver.execute('CREATE UNIQUE INDEX ux_tri24_title ON meal_entry(food_name)');
   for (const title of ['Avant', 'Doublon', 'Doublon', 'Après']) {
     a.clock.advance(1_000);
     await a.createTask(title);
@@ -57,7 +60,7 @@ describe('TRI-24 : une opération refusée par la base locale ne bloque pas le r
     expect(await titlesOf(b)).toEqual(['Après', 'Avant', 'Doublon']);
     expect(status.phase).not.toBe('error');
     expect(status.warnings ?? []).toContain('received-unapplied');
-    expect(b.logger.entries.filter((e) => e.event === 'apply-rejected').map((e) => e.detail)).toEqual([expect.objectContaining({ table: 'task', code: 'constraint' })]);
+    expect(b.logger.entries.filter((e) => e.event === 'apply-rejected').map((e) => e.detail)).toEqual([expect.objectContaining({ table: 'meal_entry', code: 'constraint' })]);
     // Aucun contenu dans le journal : ni titre, ni identifiant.
     expect(JSON.stringify(b.logger.entries)).not.toContain('Doublon');
   });
@@ -107,8 +110,8 @@ describe('TRI-24 : seule une erreur de contrainte est isolée', () => {
       pendingFields: () => Promise.resolve(new Map()),
       tombstones: () => Promise.resolve(new Map()),
     };
-    const op = { t: 'task', id: '11111111-1111-4111-8111-111111111111', at: '2026-10-30T10:00:00.000Z', f: new Map() } as unknown as SyncOp;
-    const ctx = { catalogue: LEGACY_SYNC_CATALOGUE, localSv: 1, remoteSv: 1, now: '2026-10-30T10:00:00.000Z', knows: () => true, logger: { log: () => undefined } } as unknown as ApplyContext;
+    const op = { t: 'meal_entry', id: '11111111-1111-4111-8111-111111111111', at: '2026-10-30T10:00:00.000Z', f: new Map() } as unknown as SyncOp;
+    const ctx = { catalogue: SYNC_CATALOGUE, localSv: 1, remoteSv: 1, now: '2026-10-30T10:00:00.000Z', knows: () => true, logger: { log: () => undefined } } as unknown as ApplyContext;
     await expect(applyOpsIsolated({ sync } as unknown as Repositories, [op], ctx)).rejects.toBe(busy);
     expect(calls).toEqual(['savepoint apply_batch']);
   });

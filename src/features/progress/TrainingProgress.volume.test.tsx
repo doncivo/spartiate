@@ -57,4 +57,20 @@ describe('Progrès › Volume par muscle', () => {
     expect(chart.getAttribute('aria-label')).toContain(tTrainingProgress('volumeWeek', { date: '16/11', n: '3' }));
     expect(chart.getAttribute('aria-label')).toContain(tTrainingProgress('volumeWeek', { date: '28/09', n: '0' }));
   });
+
+  it('BL-114 (D-448) : dernière semaine complète comparée à la plage de 10 à 20, en toutes lettres, règle dite', async () => {
+    db.clock.set('2026-11-10T08:00:00.000Z');
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: W, name: 'Haut' });
+    const w = await r.addExercise(W, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché à la barre', sets: 12 });
+    for (const s of w.sets) await r.validateSet(s.id, { loadKg: 60, reps: 8 });
+    await db.data.transaction(async (repos) => (await repos.workouts()).close(W));
+    db.clock.set(NOW);
+    mount();
+    const chest = await screen.findByRole('listitem', { name: 'Pectoraux' });
+    expect(within(chest).getByText('Semaine dernière : 12, dans la plage cible')).toBeInTheDocument();
+    expect(within(screen.getByRole('listitem', { name: 'Triceps' })).getByText('Semaine dernière : 6, sous la plage cible')).toBeInTheDocument();
+    expect(screen.getByText(tTrainingProgress('volumeRangeRule', { min: 10, max: 20 }))).toBeInTheDocument();
+    expect(screen.getByText(/séries difficiles par muscle et par semaine : de 10 à 20 /)).toBeInTheDocument();
+  });
 });

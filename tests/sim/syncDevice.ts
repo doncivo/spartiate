@@ -66,6 +66,8 @@ export interface SimDevice {
   createTask(title: string, extra?: Partial<Task>): Promise<Task>;
   updateTask(id: TaskId, patch: Parameters<DataAccess['repos']['tasks']['update']>[1]): Promise<Task>;
   deleteTask(id: TaskId): Promise<void>;
+  /** BL-133 : annule une suppression (`tasks.restore` sur le banc legacy, entrées simulées sinon). */
+  restoreTask(id: TaskId): Promise<Task | null>;
   task(id: TaskId): Promise<Task | null>;
   close(): Promise<void>;
   /**
@@ -257,6 +259,10 @@ export async function createSimDevice(id: string, options: { readonly name?: str
     async deleteTask(taskId) {
       if (schema !== 'legacy') return entries.remove(taskId);
       await data.repos.tasks.softDelete([taskId]);
+    },
+    async restoreTask(taskId) {
+      if (schema !== 'legacy') return entries.restore(taskId);
+      return (await data.repos.tasks.restore([taskId]))[0] ?? null;
     },
     async task(taskId) {
       if (schema !== 'legacy') return entries.get(taskId);

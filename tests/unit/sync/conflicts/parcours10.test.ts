@@ -1,10 +1,13 @@
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import { afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../../src/domain/id';
 import type { TaskId } from '../../../../src/domain/types';
 import { createUndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
-import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, taskSnapshot, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Parcours 10 en intégration (Y-04 critère 11 ; Y-02 critère 2, Y-05 critère 4 ; ADR 0011 §12) : deux appareils simulés (bases SQLite
@@ -36,7 +39,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 }
 
 const conflictsOf = (d: SimDevice): SyncConflictUseCases =>
-  createSyncConflictUseCases({ catalogue: LEGACY_SYNC_CATALOGUE, clock: d.clock, ids: uuidGenerator, data: d.data, undo: createUndoStack(), logger: d.logger });
+  createSyncConflictUseCases({ catalogue: SYNC_CATALOGUE, clock: d.clock, ids: uuidGenerator, data: d.data, undo: createUndoStack(), logger: d.logger });
 
 const conflictLog = (d: SimDevice) =>
   d.driver.select('SELECT table_name, row_id, field, kept_value, discarded_value, kept_device, discarded_device, kept_hlc, discarded_hlc FROM conflict_log ORDER BY id');
@@ -75,7 +78,7 @@ describe('parcours 10 : conflit hors ligne, consultation et restauration', () =>
     for (const d of devices) expect((await d.task(id))?.time).toBe('09:00');
     const onPc = await conflictLog(pc);
     expect(onPc).toEqual([
-      expect.objectContaining({ table_name: 'task', row_id: id, field: 'time', kept_value: '"09:00"', discarded_value: '"10:00"', kept_device: IPHONE_ID, discarded_device: PC_ID }),
+      expect.objectContaining({ table_name: 'meal_entry', row_id: id, field: 'time', kept_value: '"09:00"', discarded_value: '"10:00"', kept_device: IPHONE_ID, discarded_device: PC_ID }),
     ]);
     expect(await conflictLog(iphone)).toEqual(onPc);
 
@@ -102,13 +105,13 @@ describe('parcours 10 : conflit hors ligne, consultation et restauration', () =>
       expect(await d.driver.select('SELECT COUNT(*) AS n FROM conflict_log')).toEqual([{ n: 1 }]);
     }
     expect(await taskSnapshot(iphone)).toEqual(await taskSnapshot(pc));
-    expect(await iphone.driver.select('SELECT time FROM task ORDER BY id')).toEqual(await pc.driver.select('SELECT time FROM task ORDER BY id'));
+    expect(await iphone.driver.select('SELECT time FROM meal_entry ORDER BY id')).toEqual(await pc.driver.select('SELECT time FROM meal_entry ORDER BY id'));
 
     // Sur l'iPhone, la valeur écartée est déjà en place : « Restaurer » ne réécrit rien et marque le conflit résolu (critère 10).
     const iphoneConflicts = conflictsOf(iphone);
     const [onIphone] = (await iphoneConflicts.list(1)).items;
     expect(await iphoneConflicts.restore(onIphone?.id ?? 0)).toEqual({ status: 'already' });
-    expect(await iphone.driver.select("SELECT COUNT(*) AS n FROM sync_outbox WHERE table_name = 'task'")).toEqual([{ n: 0 }]);
+    expect(await iphone.driver.select("SELECT COUNT(*) AS n FROM sync_outbox WHERE table_name = 'meal_entry'")).toEqual([{ n: 0 }]);
     expect((await iphoneConflicts.list(1)).items[0]?.restored).toBe(true);
   });
 
@@ -126,7 +129,7 @@ describe('parcours 10 : conflit hors ligne, consultation et restauration', () =>
     await iphone.cycle();
 
     const undo = createUndoStack();
-    const useCases = createSyncConflictUseCases({ catalogue: LEGACY_SYNC_CATALOGUE, clock: pc.clock, ids: uuidGenerator, data: pc.data, undo, logger: pc.logger });
+    const useCases = createSyncConflictUseCases({ catalogue: SYNC_CATALOGUE, clock: pc.clock, ids: uuidGenerator, data: pc.data, undo, logger: pc.logger });
     const [view] = (await useCases.list(1)).items;
     pc.clock.advance(1_000);
     await useCases.restore(view?.id ?? 0);
