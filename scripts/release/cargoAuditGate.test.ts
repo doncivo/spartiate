@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error module JavaScript sans déclaration de types
-import { classify, parseTree } from './cargo-audit-gate.mjs';
+import { advisoryWarnings, classify, parseTree } from './cargo-audit-gate.mjs';
 
 /**
  * BL-134 (lot 0.29.1) : `cargo audit` ne bloque la CI que pour une alerte de sécurité sur une crate compilée pour une cible livrée
@@ -38,6 +38,12 @@ describe('cargo audit limité au graphe livré (BL-134)', () => {
     expect(() => classify({ vulnerabilities: {} }, parseTree(TREE))).toThrow();
     expect(() => classify(report([]), new Set())).toThrow();
     expect(classify(report([]), parseTree(TREE))).toEqual({ blocking: [], warnings: [] });
+  });
+
+  it('revue : avertissements de cargo audit (non maintenue, yanked…) rendus visibles, jamais bloquants', () => {
+    const warnings = { unmaintained: [{ kind: 'unmaintained', package: { name: 'paste', version: '1.0.15' }, advisory: { id: 'RUSTSEC-2024-0436', title: 'paste - no longer maintained' } }], yanked: [{ kind: 'yanked', package: { name: 'foo', version: '0.1.0' }, advisory: null }] };
+    expect(advisoryWarnings({ ...report([]), warnings })).toEqual(['unmaintained RUSTSEC-2024-0436 sur paste@1.0.15 : paste - no longer maintained', 'yanked sur foo@0.1.0']);
+    expect(advisoryWarnings(report([]))).toEqual([]);
   });
 
   it('tests.yml : rapport JSON, graphes des deux cibles livrées, porte appelée sans --ignore', () => {
