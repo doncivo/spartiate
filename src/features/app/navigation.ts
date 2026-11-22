@@ -6,7 +6,7 @@ import type { ShortcutId } from './shortcuts';
  * Coquille et navigation (PRD § 18.2), ADR 0004.
  *
  * Pas de routeur d'URL (fenêtre unique Tauri, pas de lien profond) : un store Zustand en mémoire décrit la section, l'écran interne
- * et les surcouches. Cinq sections fixes (SPA-001b) ; la présentation dépend de `useLayout()` (rupture 1 024 px).
+ * et les surcouches. Cinq sections fixes (SPA-001b) ; la présentation dépend de `useLayout()` (rupture 1 024 px ; PC Windows toujours en disposition PC, D-459).
  */
 export const TAB_IDS = ['today', 'training', 'nutrition', 'progress', 'more'] as const;
 export type TabId = (typeof TAB_IDS)[number];
