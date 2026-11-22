@@ -141,6 +141,8 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     // Coquille Spartiate : cinq sections, « Aujourd’hui » courante (section neutre jusqu’à I1, aucun texte métier attendu).
     await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText(fr.nav.tabs.today);
     await expect(page.getByRole('navigation').getByText(fr.nav.tabs.more, { exact: true })).toBeVisible();
+    // BL-119 (D-450) : dans la vraie WebView2, le PC Windows est en disposition PC, quelle que soit la largeur de la fenêtre.
+    await expect(page.locator('.ct-app-shell')).toHaveAttribute('data-layout', 'pc');
     expect(app.exitCode, exited()).toBeNull();
     await testInfo.attach('dom.png', { body: await page.screenshot(), contentType: 'image/png' });
 
@@ -150,8 +152,9 @@ test('le binaire Windows démarre sur une base neuve et affiche l’écran du jo
     expect(capture.found, 'fenêtre « Spartiate » introuvable pour le processus').toBe(true);
     expect(capture.visible, 'fenêtre principale invisible').toBe(true);
     expect(capture.iconic, 'fenêtre principale réduite').toBe(false);
-    expect(capture.clientWidth, 'largeur de la zone cliente').toBeGreaterThanOrEqual(1024);
-    expect(capture.clientHeight, 'hauteur de la zone cliente').toBeGreaterThanOrEqual(700);
+    // BL-119 (D-459) : minimum de la fenêtre 800 × 360 logiques ; à 100 %, logique = physique.
+    expect(capture.clientWidth, 'largeur de la zone cliente').toBeGreaterThanOrEqual(800);
+    expect(capture.clientHeight, 'hauteur de la zone cliente').toBeGreaterThanOrEqual(360);
     expect(capture.printed, 'PrintWindow a échoué (session Windows non interactive ?)').toBe(true);
     expect(existsSync(capturePath), 'PNG de la fenêtre absent').toBe(true);
     const image = decodePng(new Uint8Array(readFileSync(capturePath)));

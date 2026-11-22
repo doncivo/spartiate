@@ -20,7 +20,7 @@ export interface AppShellProps {
   children: ReactNode;
   /** PC seulement : barre supérieure (titre de la section) au-dessus de la zone centrale ; ignorée sur iPhone. */
   topBar?: ReactNode;
-  /** `<DetailPanel />` ; affiché à droite sur PC seulement (≥ 1024 px), ignoré sur mobile. */
+  /** `<DetailPanel />` ; affiché à droite en disposition PC seulement (≥ 1024 px, ou PC Windows à toute largeur, D-459), ignoré sur mobile. */
   detail?: ReactNode;
   /** Bouton d'ajout flottant (`<Fab />`), ancré en bas à droite au-dessus du contenu. */
   fab?: ReactNode;
@@ -30,7 +30,7 @@ export interface AppShellProps {
 }
 
 /**
- * Coquille d'écran (PRD section 5) : onglets + zone centrale, avec un panneau de détail optionnel sur PC (≥ 1024 px). Sur iPhone,
+ * Coquille d'écran (PRD section 5) : onglets + zone centrale, avec un panneau de détail optionnel en disposition PC (≥ 1024 px, ou PC Windows, D-459). Sur iPhone,
  * le détail se présente en feuille (`Sheet`) rendue par la feature, hors de cette coquille.
  *
  * @example

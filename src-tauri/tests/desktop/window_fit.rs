@@ -1,4 +1,4 @@
-//! SPA-009 critère 2 : taille et position de la fenêtre PC dans la zone de travail du moniteur courant, minimum 1 024 × 700 logiques,
+//! SPA-009 critère 2 : taille et position de la fenêtre PC dans la zone de travail du moniteur courant, minimum 800 × 360 logiques (BL-119, D-459 : zoom Windows de 150 %),
 //! jamais abaissé en silence. Fixtures de moniteurs : résolution, mise à l'échelle (DPI), barre des tâches, écran secondaire à gauche.
 
 use spartiate_lib::window_fit::{
@@ -21,14 +21,14 @@ fn close(a: f64, b: f64) -> bool {
 
 #[test]
 fn constants_match_the_window_configuration() {
-    assert_eq!((MIN_WIDTH, MIN_HEIGHT), (1024.0, 700.0));
+    assert_eq!((MIN_WIDTH, MIN_HEIGHT), (800.0, 360.0));
     assert_eq!((DEFAULT_WIDTH, DEFAULT_HEIGHT), (1440.0, 900.0));
     let config = include_str!("../../tauri.windows.conf.json");
     for fragment in [
         "\"width\": 1440",
         "\"height\": 900",
-        "\"minWidth\": 1024",
-        "\"minHeight\": 700",
+        "\"minWidth\": 800",
+        "\"minHeight\": 360",
     ] {
         assert!(config.contains(fragment), "{fragment}");
     }
@@ -73,10 +73,10 @@ fn small_but_sufficient_work_area_shrinks_the_window_down_to_the_minimum() {
 
 #[test]
 fn work_area_below_the_minimum_is_reported_never_lowered() {
-    // 1366 × 768 avec barre des tâches : zone utile 1366 × 728, soit 689 de hauteur utile < 700.
-    let work = area(0.0, 0.0, 1366.0, 728.0);
+    // 1024 × 600 physiques à 150 %, barre des tâches de 72 px physiques : 682,67 × 352 logiques, sous le minimum.
+    let work = logical_work_area((0, 0), (1024, 528), 1.5);
     match fit_window(work, (DEFAULT_WIDTH, DEFAULT_HEIGHT)) {
-        Fit::TooSmall { width, height } => assert!(close(width, 1366.0) && close(height, 728.0)),
+        Fit::TooSmall { width, height } => assert!(close(width, 682.67) && close(height, 352.0)),
         Fit::Fits(rect) => panic!("le minimum ne doit pas être abaissé : {rect:?}"),
     }
     for (w, h) in [
@@ -134,4 +134,29 @@ fn restored_position_with_no_work_area_left_is_reported() {
         clamp_into_work_areas(lost, &[]),
         Fit::TooSmall { .. }
     ));
+}
+
+#[test]
+fn windows_zoom_150_percent_fits_the_three_screens_named_by_ali() {
+    // BL-119 (D-450, D-459) : 1 280 × 720, 1 366 × 768 et 1 920 × 1 080 physiques à 150 %, barre des tâches de 72 px physiques.
+    for (w, h, expected_width) in [
+        (1280_u32, 720_u32, 1280.0 / 1.5 - FRAME_WIDTH),
+        (1366, 768, 1366.0 / 1.5 - FRAME_WIDTH),
+        (1920, 1080, 1920.0 / 1.5 - FRAME_WIDTH),
+    ] {
+        let work = logical_work_area((0, 0), (w, h - 72), 1.5);
+        let Fit::Fits(rect) = fit_window(work, (DEFAULT_WIDTH, DEFAULT_HEIGHT)) else {
+            panic!("{w} × {h} à 150 % doit contenir la fenêtre");
+        };
+        assert!(
+            close(rect.width, expected_width),
+            "{w} × {h} : largeur {}",
+            rect.width
+        );
+        assert!(
+            rect.height >= MIN_HEIGHT && rect.height + FRAME_HEIGHT <= work.height + 0.01,
+            "{w} × {h} : hauteur {}",
+            rect.height
+        );
+    }
 }
