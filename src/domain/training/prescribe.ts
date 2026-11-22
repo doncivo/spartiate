@@ -191,7 +191,7 @@ export function prescribe(input: PrescribeInput): Prescription {
   const available = grid === null ? null : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
   // BL-106 (D-471) : la référence reste « disponible » (elle a été soulevée), mais si la grille du profil courant ne la contient pas (changement
   // de salle, maximum dépassé), la phrase le dit pour qu'Ali vérifie ; aucun arrondi tant qu'Ali n'a pas tranché.
-  if (grid !== null && !assisted && !grid.loads.some((kg) => Math.abs(kg - refLoad) < EPS)) reasons.add('reference-off-grid');
+  const offGrid = grid !== null && !assisted && refLoad > 0 && !grid.loads.some((kg) => Math.abs(kg - refLoad) < EPS);
   // 6. Contraintes (I2-02) : évaluées sur l'historique validé. Dernier travail du muscle : le plus récent entre la donnée de l'appelant
   // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
   // travaillé ; une séance sans aucune série faite ne compte pas).
@@ -373,6 +373,8 @@ export function prescribe(input: PrescribeInput): Prescription {
   // Assistée : la décote fait MONTER l'assistance (la charge totale baisse) ; la position est alors la raison dès qu'elle s'applique.
   const absorbed = body !== null && body.sign < 0 ? loadKg >= refLoad - EPS : loadKg <= refLoad + EPS;
   const headline: PrescriptionHeadline = pos.cut > 0 && absorbed ? 'position' : draft.headline;
+  // Revue : signalée seulement si la proposition reste à la charge de la référence (sinon elle est déjà un cran de la grille).
+  if (offGrid && Math.abs(loadKg - refLoad) < EPS) reasons.add('reference-off-grid');
   return finish({
     ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',

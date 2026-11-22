@@ -177,7 +177,7 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // FIX-ABERR (C-005) : séance aberrante non confirmée, référence plafonnée à la séance d'avant.
   if (p.reasons.includes('outlier-excluded')) notes.push({ key: 'noteOutlierHeld', params: { ratio: percent(p.activeConfig.outlierRatio) } });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
-  if (p.reasons.includes('reference-off-grid') && p.reference !== null) notes.push({ key: 'noteReferenceOffGrid', params: { loadKg: p.reference.loadKg } });
+  if (p.reasons.includes('reference-off-grid') && p.reference !== null) notes.push({ key: 'noteReferenceOffGrid', params: { load: p.reference.loadKg } });
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
@@ -204,6 +204,8 @@ export type ConstraintAlertKey =
   | 'alertRecoveryLow'
   | 'alertRecoveryLowSet'
   | 'alertRecoveryAssistHeld'
+  | 'alertRecoveryAssistHeldSet'
+  | 'alertRedDayAssistHeld'
   | 'alertRedDay';
 export type OptionKey = 'optionFatigueLoad' | 'optionFatigueReps' | 'optionStallVariant' | 'optionStallRange' | 'optionStallMiniDeload';
 
@@ -225,6 +227,8 @@ export function constraintAlerts(p: Prescription): { readonly key: ConstraintAle
     // BL-091 (FIX-ASSIST) : assistance maintenue, aucune « charge réduite de x % » : la contrainte est dite sans pourcentage.
     const held = p.reasons.includes('assistance-held');
     if (a.key === 'alertInactivity' && held) return { key: 'alertInactivityAssistHeld', params: {} };
+    if (a.key === 'alertRecoveryLow' && held && p.reasons.includes('recovery-red-day')) return { key: 'alertRedDayAssistHeld', params: {} };
+    if (a.key === 'alertRecoveryLow' && held && p.reasons.includes('recovery-set-removed')) return { key: 'alertRecoveryAssistHeldSet', params: {} };
     if (a.key === 'alertRecoveryLow' && held) return { key: 'alertRecoveryAssistHeld', params: {} };
     if (a.key === 'alertInactivity') return { key: a.key, params: { cut: percent(p.inactivityCut ?? 0) } };
     if (a.key === 'alertRecoveryLow' && p.reasons.includes('recovery-red-day')) return { key: 'alertRedDay', params: { cut: recoveryCut(p) } };
