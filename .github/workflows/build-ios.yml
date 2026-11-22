@@ -279,11 +279,11 @@ jobs:
           APP="$RUNNER_TEMP/check/Payload/Spartiate.app"
           EXE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP/Info.plist")
           LOADS=$(otool -l "$APP/$EXE" | awk '/^ *cmd LC_LOAD/{cmd=$2} / name /{print cmd, $2}')
-          echo "$LOADS" | grep 'FoundationModels' || true
-          if echo "$LOADS" | grep -q '^LC_LOAD_DYLIB .*FoundationModels\.framework'; then
+          grep 'FoundationModels' <<<"$LOADS" || true
+          if grep -q '^LC_LOAD_DYLIB .*FoundationModels\.framework' <<<"$LOADS"; then
             echo "::error::FoundationModels lié en fort (LC_LOAD_DYLIB) : lancement impossible sous iOS 18 à 25"; exit 1
           fi
-          echo "$LOADS" | grep -q '^LC_LOAD_WEAK_DYLIB .*FoundationModels\.framework' || { echo "::error::FoundationModels absent des liens faibles (LC_LOAD_WEAK_DYLIB)"; exit 1; }
+          grep -q '^LC_LOAD_WEAK_DYLIB .*FoundationModels\.framework' <<<"$LOADS" || { echo "::error::FoundationModels absent des liens faibles (LC_LOAD_WEAK_DYLIB)"; exit 1; }
           echo "- FoundationModels : lien faible (LC_LOAD_WEAK_DYLIB) vérifié sur le binaire de l'IPA finale" >> "$GITHUB_STEP_SUMMARY"
 
       # 0.1.4 (8) : l'IPA finale porte bien une icône d'app. La copie source -> AppIcon.appiconset est déjà contrôlée octet pour octet

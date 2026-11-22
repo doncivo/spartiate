@@ -36,6 +36,22 @@ export function classify(report, shipped) {
   return { blocking, warnings };
 }
 
+/** Revue : avertissements de cargo audit (`warnings` : non maintenue, unsound, yanked…) en lignes lisibles ; jamais bloquants. */
+export function advisoryWarnings(report) {
+  const groups = report?.warnings;
+  if (groups === null || typeof groups !== 'object') return [];
+  const lines = [];
+  for (const [kind, list] of Object.entries(groups)) {
+    if (!Array.isArray(list)) continue;
+    for (const w of list) {
+      const crate = `${w?.package?.name ?? '?'}@${w?.package?.version ?? '?'}`;
+      const id = w?.advisory?.id;
+      lines.push(id ? `${kind} ${id} sur ${crate} : ${w.advisory.title ?? ''}`.trimEnd() : `${kind} sur ${crate}`);
+    }
+  }
+  return lines;
+}
+
 function main(argv) {
   const [reportPath, ...trees] = argv;
   if (!reportPath || trees.length === 0) throw new Error('usage : cargo-audit-gate.mjs <rapport.json> <arbre…>');
@@ -47,6 +63,7 @@ function main(argv) {
     for (const crate of set) shipped.add(crate);
   }
   const { blocking, warnings } = classify(report, shipped);
+  for (const line of advisoryWarnings(report)) console.log(`::warning::cargo audit, ${line}`);
   for (const w of warnings) console.log(`::warning::${w.id} sur ${w.crate} (hors du graphe livré) : ${w.title}`);
   for (const b of blocking) console.log(`::error::${b.id} sur ${b.crate} (graphe livré) : ${b.title}`);
   console.log(`cargo audit : ${blocking.length} alerte(s) bloquante(s), ${warnings.length} hors du graphe livré, ${shipped.size} crates livrées`);
