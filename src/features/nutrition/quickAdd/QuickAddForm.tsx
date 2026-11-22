@@ -42,7 +42,7 @@ export function QuickAddForm({ date, defaultTime, onSaved, onClose }: QuickAddFo
     if (p === undefined || f === undefined || c === undefined) return setError(tNutrition('valueInvalid'));
     if (!TIME.test(time)) return setError(tNutrition('timeInvalid'));
     const draft = quickAddDraft({ date, time: time as LocalTime, name, kcal: energy, proteinG: p, fatG: f, carbG: c });
-    const issues = validateMealEntry(draft);
+    const issues = validateMealEntry(draft, { userEntry: true });
     if (issues.length > 0) return setError(tNutrition(issues.includes('macros-exceed-energy') || issues.includes('macro-too-large') ? 'macrosInconsistent' : 'valueInvalid'));
     setBusy(true);
     setError(null);

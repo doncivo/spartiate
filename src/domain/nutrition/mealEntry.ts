@@ -68,7 +68,11 @@ const SOURCES_BY_METHOD: Readonly<Record<EntryMethod, readonly EntrySource[]>> =
 
 const known = (v: number | null): v is number => v !== null && Number.isFinite(v);
 
-export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
+/**
+ * `userEntry` (revue BL-103) : saisie d'Ali à l'écran ; les bornes de D-343 s'appliquent toujours, même sous le nom de l'entrée Renpho
+ * (exemption réservée à l'import Santé, qui écrit sans cette option).
+ */
+export function validateMealEntry(draft: MealEntryDraft, options: { readonly userEntry?: boolean } = {}): MealEntryIssue[] {
   const issues: MealEntryIssue[] = [];
   const add = (issue: MealEntryIssue): void => {
     if (!issues.includes(issue)) issues.push(issue);
@@ -110,7 +114,7 @@ export function validateMealEntry(draft: MealEntryDraft): MealEntryIssue[] {
     else if (draft.kcal > QUICK_ADD_KCAL_MAX) add('value-invalid');
     // Revue FIX-SAISIE-NUTRI : les bornes de D-343 visent la saisie d'Ali ; l'entrée « Renpho — total du jour » écrite par l'import Santé
     // (kcal d'un fichier, macros éventuellement gardées d'un jour partiel) n'y est pas soumise, sinon tout l'import échouerait.
-    const imported = isRenphoDayEntry(draft);
+    const imported = options.userEntry !== true && isRenphoDayEntry(draft);
     if (!imported) for (const g of [draft.proteinG, draft.fatG, draft.carbG]) if (known(g) && g > QUICK_ADD_MACRO_MAX_G) add('macro-too-large');
     if (!imported && known(draft.kcal) && (known(draft.proteinG) || known(draft.fatG) || known(draft.carbG))) {
       const fromMacros = 4 * (draft.proteinG ?? 0) + 9 * (draft.fatG ?? 0) + 4 * (draft.carbG ?? 0);
