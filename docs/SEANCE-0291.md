@@ -51,3 +51,8 @@ rouge n'était plus dite : `alertRedDayAssistHeld` (« estimation, pas un avis m
 assisté d'isolation dite (`alertRecoveryAssistHeldSet`). Mineurs traités : note hors grille seulement si la proposition reste à la charge
 de la référence et si celle-ci est positive (lest nul). Rouge `bb475e7f` → vert `ee53edf7` puis correctif de type. Mineur consigné : le
 journal (BL-090) lit le matériel par `parseEquipmentIds`, plus strict que `equipmentOf` du résumé ; écart théorique.
+
+Relecture 2 (même agent, contre-relecture) : points 1 et 2 corrigés ; **important** : la note hors grille manquait sur le chemin des
+réductions (fatigue, petite décote gardée à la référence) depuis la correction « seulement à la charge de la référence » : ajoutée sur ce
+chemin aussi, test fatigue en salle B à 44 kg (rouge puis vert). Mineurs laissés : pas de test pour  ni pour un
+lest de 0 kg (garde  en place).
