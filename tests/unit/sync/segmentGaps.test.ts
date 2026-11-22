@@ -10,8 +10,11 @@ import { SyncStateUnreadableError } from '../../../src/domain/sync/stored';
 import { setSnapshotTestHooks } from '../../../src/sync/snapshot';
 import { META, readJson } from '../../../src/sync/meta';
 import { propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02, quatrième revue, point B (ADR 0011 §5.5, « Trou impossible à combler ») : un segment nécessaire tenu pour purgé que la
@@ -45,7 +48,7 @@ function refuseNextAppend(d: SimDevice): void {
 
 const resumes = (d: SimDevice, from = 0): number => d.logger.entries.slice(from).filter((e) => e.event === 'resumed-from-snapshot').length;
 const statusOf = (d: SimDevice, of: string): string | undefined => d.service.status().devices.find((x) => x.deviceId === of)?.status;
-const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 const epochOf = (d: SimDevice): EpochId => [...(d.folder.devices.get(d.id)?.epochs.keys() ?? [])].at(-1) as EpochId;
 const dropFirstSegment = (a: SimDevice, b: SimDevice): void => propagate(a.folder, b.folder, a.id, { drop: [`${epochOf(a)}/j-00000001.spj`] });
 
@@ -735,7 +738,7 @@ describe('septième revue, point 1 : failDefinitively sur la sortie no-eligible'
     const master = [{ deviceId: X, at: `${String(a.clock.nowMs()).padStart(15, '0')}-0000-${a.id}` as Hlc, lastAck: null }];
     const acker = { deviceId: a.id, acks: new Map([[X, { epoch, segment: 3, record: 1, hlc: null, stateSeq: 1 }]]) } as unknown as PublishedDeviceState;
     await a.data.repos.sync.setMeta(META.resume, 'true');
-    const deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps = { catalogue: SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: I0_SCHEMA_VERSION, logger: a.logger };
     const outcome = await resumeFromSnapshot(deps, epoch, new Map<DeviceId, PublishedDeviceState>(), ownState, () => false, { onRemoteChanges: () => undefined }, new Set(), { master, ackers: [acker], forgotten: forgetOrder(master) });
     expect(outcome).toMatchObject({ kind: 'no-eligible', uncovered: X, tried: { epoch, author: null, seq: null } });
     expect(await readJson(a.data.repos, META.resume)).toBeNull();

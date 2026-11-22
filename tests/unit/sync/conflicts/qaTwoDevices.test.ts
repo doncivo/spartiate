@@ -1,10 +1,13 @@
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 import { afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../../src/domain/id';
 import type { TaskId } from '../../../../src/domain/types';
 import { createUndoStack, type UndoStack } from '../../../../src/features/app/undo';
 import { createSyncConflictUseCases, type SyncConflictUseCases } from '../../../../src/features/sync/syncConflictUseCases';
-import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * QA de Y-04 (critères 5, 6, 7, 10 et 11) sur deux appareils simulés : restauration faite des deux côtés hors ligne, annulation après
@@ -35,7 +38,7 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 }
 
 function conflictsOf(d: SimDevice, undo: UndoStack = createUndoStack()): SyncConflictUseCases {
-  return createSyncConflictUseCases({ catalogue: LEGACY_SYNC_CATALOGUE, clock: d.clock, ids: uuidGenerator, data: d.data, undo, logger: d.logger });
+  return createSyncConflictUseCases({ catalogue: SYNC_CATALOGUE, clock: d.clock, ids: uuidGenerator, data: d.data, undo, logger: d.logger });
 }
 
 /** Un tour complet de synchro dans les deux sens (iCloud à jour partout, chacun lit puis publie). */
