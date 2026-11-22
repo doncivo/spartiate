@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
 import { DbStepError, JournalModeError, describeError } from '../../db/errorText';
 import { migrate } from '../../db/migrator';
-import { legacyMigrations as migrations } from '../../../tests/fixtures/legacy-schema';
+import { migrations } from '../../db/migrations';
 import { t } from '../../i18n';
 import { openDatabase } from '../../platform/database';
 import type { DbEnvironment } from '../../platform/dbDiagnostics';
@@ -11,7 +11,7 @@ import type { SyncPlatform } from '../../platform/sync/types';
 import { useAppStore, type DbFailure } from './appStore';
 import { bootstrapApp, bootstrapDatabase } from './bootstrap';
 import { DbFailureDetails, formatDbFailure } from './DbFailureDetails';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
 import { SYNC_STORAGE } from '../../db/repositories';
 
 const reset = () => useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null, dbBackupFailed: false, dbFailure: null });
@@ -70,7 +70,7 @@ describe('0.2.1 diagnostic : étape de l’ouverture qui a échoué', () => {
     await migrate(db, migrations.slice(0, 2));
     const transaction = db.transaction.bind(db);
     vi.spyOn(db, 'transaction').mockImplementationOnce(() => Promise.reject(new Error('no such column: space_id'))).mockImplementation(transaction);
-    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: LEGACY_SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
+    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
     expect(failure()).toMatchObject({ step: 'migration', migration: 3, message: 'no such column: space_id' });
   });
 
@@ -79,7 +79,7 @@ describe('0.2.1 diagnostic : étape de l’ouverture qui a échoué', () => {
     const select = db.select.bind(db);
     vi.spyOn(db, 'select').mockImplementation((sql, params) => (sql === 'PRAGMA journal_mode' ? Promise.resolve([{ journal_mode: 'delete' }] as never) : select(sql, params)));
     vi.spyOn(db, 'transaction').mockRejectedValueOnce(new Error('database is locked'));
-    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: LEGACY_SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
+    await bootstrapDatabase(() => Promise.resolve(db), { catalogue: SYNC_CATALOGUE, migrations, backup: () => Promise.resolve(undefined) });
     expect(failure()).toMatchObject({ step: 'migration', journalMode: 'delete' });
 
     reset();

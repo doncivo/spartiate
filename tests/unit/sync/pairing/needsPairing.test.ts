@@ -5,11 +5,11 @@ import type { DeviceAck, EpochId } from '../../../../src/domain/sync/format';
 import { asEntityId, type DeviceId, type Hlc } from '../../../../src/domain/types';
 import { DbError } from '../../../../src/db/driver';
 import type { DataAccess } from '../../../../src/db/repositories';
-import { openTestDb, type TestDb } from '../../../../src/db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../../../src/db/repositories/sql/testSetup';
 import { createMemorySyncPlatform, MemorySyncFolder, type MemorySyncPlatform } from '../../../../src/platform/sync';
 import type { SyncReason, SyncStatus } from '../../../../src/platform/sync/types';
 import { createSyncService, silentSyncLogger, startSyncScheduler } from '../../../../src/sync';
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
 
 /**
  * Y-IOS-02 (point de contrôle d'Ali, IPA 0.2.1) : un appareil dont le dossier contient les données chiffrées du PC et qui n'a pas la clé
@@ -25,7 +25,7 @@ const NOW = '2026-10-08T08:00:00.000Z';
 let db: TestDb;
 
 beforeEach(async () => {
-  db = await openTestDb(PHONE, NOW);
+  db = await openBaseDb(PHONE, NOW);
 });
 
 afterEach(async () => {
@@ -73,7 +73,7 @@ function lockableData(): { readonly data: DataAccess; readonly locked: { on: boo
 }
 
 function phoneService(platform: MemorySyncPlatform, data: DataAccess = db.data) {
-  return createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
+  return createSyncService({ catalogue: SYNC_CATALOGUE, data, platform, hlc: createHlcClock({ clock: db.clock, deviceId: PHONE }), clock: db.clock, deviceId: PHONE, devicePlatform: 'ios', sv: 14, appVersion: '0.2.3', logger: silentSyncLogger, setTimeout: () => 0, clearTimeout: () => undefined });
 }
 
 describe('appareil sans clé : toujours « à associer » (Y-IOS-02)', () => {

@@ -72,6 +72,42 @@ describe('CLEAN-03 : appareils simulés au schéma Spartiate', () => {
     }
   });
 
+  it('BL-133 : une modification sans champ pose un tampon (hlc et updated_at), comme le dépôt de tâches du banc legacy', async () => {
+    const a = await createSimDevice(A_ID);
+    try {
+      const t = await a.createTask('Tampon');
+      a.clock.advance(1_000);
+      const after = await a.updateTask(t.id as TaskId, {});
+      expect(after.hlc > t.hlc).toBe(true);
+      expect(after.updatedAt > t.updatedAt).toBe(true);
+    } finally {
+      await a.close();
+    }
+  });
+
+  it('BL-133 : restaurer une entrée supprimée la restaure partout ; une note vidée se lit vide des deux côtés', async () => {
+    const [a, b] = await room();
+    try {
+      const t = await a.createTask('Restaurée', { note: 'n1' });
+      await a.deleteTask(t.id as TaskId);
+      await a.cycle();
+      syncFolders([a, b]);
+      await b.cycle();
+      expect((await b.task(t.id as TaskId))?.deletedAt).not.toBeNull();
+      a.clock.advance(1_000);
+      expect((await a.restoreTask(t.id as TaskId))?.deletedAt).toBeNull();
+      await a.updateTask(t.id as TaskId, { note: '' });
+      await a.cycle();
+      syncFolders([a, b]);
+      await b.cycle();
+      expect(await b.task(t.id as TaskId)).toMatchObject({ deletedAt: null, note: '' });
+      expect(await taskSnapshot(b)).toEqual(await taskSnapshot(a));
+    } finally {
+      await a.close();
+      await b.close();
+    }
+  });
+
   it('un champ de tâche sans équivalent est refusé, jamais ignoré en silence', async () => {
     const a = await createSimDevice(A_ID);
     try {

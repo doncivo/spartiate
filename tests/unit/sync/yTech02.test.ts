@@ -8,8 +8,11 @@ import { knownDevices, maintain } from '../../../src/sync/maintenance';
 import { META, readJson, writeJson } from '../../../src/sync/meta';
 import { createMemorySyncLogger } from '../../../src/sync';
 import { propagate } from '../../sim/syncCloudSim';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-TECH-02 (revue d'ensemble de fin d'ordre 4) : avertissements du scan rendus visibles, échecs qui étaient avalés (abonnés, lectures de
@@ -340,7 +343,7 @@ describe('troisième revue, point 2 : segment absent, preuve par l’état accep
   }
   /** Segments de `d` dans chacune de ses époques, tels que son dossier les liste. */
   const ownSegments = (d: SimDevice): number[][] => [...(d.folder.devices.get(d.id)?.epochs.values() ?? [])].map((dir) => [...dir.segments.keys()]);
-  const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+  const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
   const resumes = (d: SimDevice, from: number): number => d.logger.entries.slice(from).filter((e) => e.event === 'resumed-from-snapshot').length;
 
   async function couple(): Promise<[SimDevice, SimDevice]> {
@@ -511,7 +514,7 @@ describe('quatrième revue, point C : covered ne compte que les accusés de l’
     await writeJson(a.data.repos, META.snapshot, null);
     const head = (await readJson<DeviceAck>(a.data.repos, META.head)) as DeviceAck;
     const epoch = head.epoch;
-    const deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: SCHEMA_VERSION, logger: a.logger };
+    const deps = { catalogue: SYNC_CATALOGUE, data: a.data, platform: a.platform, hlc: a.hlc, clock: a.clock, deviceId: a.id, devicePlatform: 'windows' as const, appVersion: '0.4.0', sv: I0_SCHEMA_VERSION, logger: a.logger };
     const run = async (accepted: Map<DeviceId, PublishedDeviceState>): Promise<void> => {
       const scan = await a.platform.scan({ keep: [...accepted.keys()] });
       await maintain(deps, { epoch, head, accepted, ownScan: scan.devices.find((d) => d.deviceId === a.id) ?? null, rows: await a.data.repos.sync.getStates() });
@@ -581,7 +584,7 @@ describe('quatrième revue, point D : preuve datée par l’état de nous accept
     };
   }
   const ownSegments = (d: SimDevice): number[] => [...([...(d.folder.devices.get(d.id)?.epochs.values() ?? [])].at(-1)?.segments.keys() ?? [])];
-  const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT title FROM task WHERE deleted_at IS NULL ORDER BY title')).map((r) => r.title);
+  const titlesOf = async (d: SimDevice): Promise<string[]> => (await d.driver.select<{ title: string }>('SELECT food_name AS title FROM meal_entry WHERE deleted_at IS NULL ORDER BY food_name')).map((r) => r.title);
 
   it('nos journaux arrivent chez A, plus notre état : attente tant que l’état accepté a moins de 180 jours, puis A nous expire, purge j-1, et B reprend', async () => {
     const a = await first();

@@ -255,9 +255,21 @@ jobs:
       - name: Installer cargo-audit
         if: steps.cache-audit.outputs.cache-hit != 'true'
         run: cargo install cargo-audit --locked --version "${CARGO_AUDIT_VERSION}"
-      # DEP-01 (D-160) : plus d'exception RUSTSEC-2026-0459 (libsqlite3-sys 0.39.1, SQLite 3.54.1) ; seule reste RUSTSEC-2023-0071.
+      # BL-134 (lot 0.29.1) : une alerte de sécurité ne bloque que si la crate (nom et version) est compilée pour une cible livrée
+      # (Windows ou iPhone, dépendances normales et de build) ; hors de ce graphe, avertissement visible (ex. RUSTSEC-2023-0071 sur rsa,
+      # tiré par sqlx-mysql jamais compilé, prouvé par l'étape « rsa jamais compilé »). Rapport illisible ou graphe vide : échec.
       - name: cargo audit
-        run: cargo audit --file src-tauri/Cargo.lock --ignore RUSTSEC-2023-0071
+        run: |
+          set -euo pipefail
+          # Code non nul attendu dès qu'une alerte existe (même hors graphe livré) : la porte ci-dessous décide ; rapport absent = échec.
+          code=0
+          cargo audit --json --file src-tauri/Cargo.lock > "$RUNNER_TEMP/audit.json" || code=$?
+          echo "cargo audit : code $code"
+          cd src-tauri
+          cargo tree --locked --target x86_64-pc-windows-msvc -e normal,build --prefix none > "$RUNNER_TEMP/tree-windows.txt"
+          cargo tree --locked --target aarch64-apple-ios -e normal,build --prefix none > "$RUNNER_TEMP/tree-ios.txt"
+          cd ..
+          node scripts/release/cargo-audit-gate.mjs "$RUNNER_TEMP/audit.json" "$RUNNER_TEMP/tree-windows.txt" "$RUNNER_TEMP/tree-ios.txt"
       # CI-PUB (C-175, PRD 23.2, D-47) : dépendances npm livrées (hors développement), alertes hautes ou critiques refusées.
       # Lit package-lock.json seulement (aucune installation, aucun secret) ; Node est préinstallé sur le runner.
       - name: npm audit

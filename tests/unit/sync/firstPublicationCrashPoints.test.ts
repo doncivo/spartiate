@@ -9,8 +9,11 @@ import { WAITING_ICLOUD_LONG_MS } from '../../../src/domain/sync/limits';
 import { pendingFileCount } from '../../../src/domain/sync/pendingFiles';
 import { t } from '../../../src/i18n';
 import { armCrash } from '../../sim/syncCrash';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, syncFolders, taskSnapshot, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-FIX-02 (B2 de docs/archive/circletasks/audit-1.0.md, ADR 0011 §30) : première publication interrompue. L'iPhone, associé et jamais publié, a une tâche `T`
@@ -110,14 +113,14 @@ async function crashAt(rank: number, extra: readonly string[] = []): Promise<{ a
 
 /** Service de l'iPhone sur une plateforme donnée (pannes de `writeState`, échéance). */
 function phoneService(b: SimDevice, platform: SyncPlatform, deadlineProbe?: Parameters<typeof createSyncService>[0]['deadlineProbe']): void {
-  b.service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
+  b.service = createSyncService({ catalogue: SYNC_CATALOGUE,
     data: b.data,
     platform,
     hlc: b.hlc,
     clock: b.clock,
     deviceId: b.id,
     devicePlatform: 'ios',
-    sv: SCHEMA_VERSION,
+    sv: I0_SCHEMA_VERSION,
     appVersion: '0.4.0',
     logger: b.logger,
     setTimeout: () => 0,

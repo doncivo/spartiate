@@ -2,10 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../src/domain/hlc';
 import { SYNCING_BANNER_DELAY_MS } from '../../../src/domain/sync/limits';
 import { asEntityId, type DeviceId } from '../../../src/domain/types';
-import { openTestDb, type TestDb } from '../../../src/db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../../src/db/repositories/sql/testSetup';
 import { createMemorySyncPlatform, type SyncFolderInfo, type SyncPlatform } from '../../../src/platform/sync';
 import { createMemorySyncLogger, createSyncService } from '../../../src/sync';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
 
 /**
  * Service de synchro et bandeaux A-09 (revue, points 2 et 3) : un abonné qui lève n'empêche ni les autres abonnés ni la synchro, et
@@ -17,7 +17,7 @@ const SELF = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000a1');
 let db: TestDb;
 
 beforeEach(async () => {
-  db = await openTestDb(SELF, '2026-10-06T08:00:00.000Z');
+  db = await openBaseDb(SELF, '2026-10-06T08:00:00.000Z');
 });
 
 afterEach(async () => {
@@ -27,7 +27,7 @@ afterEach(async () => {
 function make(platform: SyncPlatform) {
   const logger = createMemorySyncLogger();
   const timers: { handler: () => void; ms: number }[] = [];
-  const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
+  const service = createSyncService({ catalogue: SYNC_CATALOGUE,
     data: db.data,
     platform,
     hlc: createHlcClock({ clock: db.clock, deviceId: SELF }),
