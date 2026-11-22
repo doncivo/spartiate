@@ -279,6 +279,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     const keptKg = roundKg(Math.min(snapped.loadKg, refLoad));
     const pos = positioned(keptKg, snapped.reps);
     const loadKg = pos.loadKg;
+    // Revue 2 : contrainte qui laisse la charge à la référence hors grille (fatigue, petite décote gardée) : signalée comme sur le chemin ordinaire.
+    if (offGrid && Math.abs(loadKg - refLoad) < EPS) reasons.add('reference-off-grid');
     return finish({
       ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
       status: 'prescribed',
