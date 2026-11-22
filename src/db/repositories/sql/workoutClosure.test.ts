@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { RoutineInput } from '../../../domain/training';
 import type { DeviceId } from '../../../domain/types';
+import { prescribe } from '../../../domain/training/prescribe';
+import { input } from '../../../../tests/fixtures/training/progression';
 import { openBaseDb, type TestDb } from './testSetup';
 
 /** I1-03 : clôture, journal, correction, suppression d'une séance close et mise à jour de la routine (D-27, § 13.5, § 13.8). */
@@ -255,5 +257,38 @@ describe('FIX-ABERR revue 1 : exercice personnalisé lesté, record au résumé 
     await session(W1, 5);
     const records = (await session(W2, 10)).summary.records.map((r) => [r.kind, r.value]);
     expect(records).toContainEqual(['load', 10]);
+  });
+});
+
+describe('BL-092 : résumé de fin, une décharge retenue ne confirme pas une aberrante', () => {
+  it('100, 100, 100 kg puis 200 kg (aberrante) et 200 kg en décharge acceptée : 105 kg est un record ; sans décharge, non', async () => {
+    for (const deloadMarked of [false, true]) {
+      db = await openBaseDb(DEVICE);
+      const at = async (n: number, kg: number, deload = false): Promise<string> => {
+        db.clock.advance(86_400_000);
+        const id = u(200 + n);
+        const r = await repo();
+        await r.start({ source: 'empty', id, name: 'Séance' });
+        const w = await r.addExercise(id, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets: 3 });
+        for (const set of w.sets) await r.validateSet(set.id, { reps: 8, loadKg: kg });
+        if (deload) {
+          const p = { ...prescribe(input()), deload: true, loadKg: kg };
+          await (await db.data.repos.progression()).recordDecision({ exerciseId: 'bench-press-barbell', workoutId: id, prescription: p, accepted: true, chosenLoadKg: kg, chosenReps: [8, 8, 8] });
+        }
+        db.clock.advance(60_000);
+        return id;
+      };
+      for (const [n, kg, deload] of [[1, 100, false], [2, 100, false], [3, 100, false], [4, 200, false], [5, 200, deloadMarked]] as const) {
+        const id = await at(n, kg, deload);
+        await db.data.transaction(async (repos) => (await repos.workouts()).close(id));
+      }
+      const last = await at(6, 105);
+      const closed = await db.data.transaction(async (repos) => (await repos.workouts()).close(last));
+      const loads = closed.summary.records.filter((r) => r.kind === 'load').map((r) => r.value);
+      if (deloadMarked) expect(loads).toContain(105);
+      else expect(loads).not.toContain(105);
+      await db.close();
+    }
+    db = await openBaseDb(DEVICE);
   });
 });
