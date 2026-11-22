@@ -5,6 +5,9 @@ import type { IsoDateTime } from '../../../../src/domain/types';
 import { migrate } from '../../../../src/db/migrator';
 import { migrations } from '../../../../src/db/migrations';
 import { reintegrateUnknownFields } from '../../../../src/db/repositories';
+import { declareInjury } from '../../../../src/domain/training/injuries';
+import type { LocalDate } from '../../../../src/domain/types';
+import { loadInjuries, saveInjuries } from '../../../../src/features/settings/injuries/injuriesStore';
 import { loadExcludedExercises, writeExcluded } from '../../../../src/features/training/exclusionsStore';
 import { resetAllData } from '../../../../src/sync/dataReset';
 import { createMemorySyncLogger } from '../../../../src/sync/log';
@@ -88,6 +91,21 @@ describe('(b) conflits hors ligne', () => {
   });
 });
 
+describe('(b2) relecture 1, point 3 : critère 2 de la fiche, cas symétrique', () => {
+  it('écarté d’un côté, remis plus tard de l’autre : remis partout', async () => {
+    const [pc, iphone] = await pcAndIphone();
+    await writeExcluded(pc.data.repos, 'row-cable', true);
+    await roundTrip();
+    // Hors ligne : le PC écarte de nouveau un autre exercice, l'iPhone remet row-cable plus tard.
+    await writeExcluded(pc.data.repos, 'dip-bodyweight', true);
+    iphone.clock.advance(5_000);
+    await writeExcluded(iphone.data.repos, 'row-cable', false);
+    await roundTrip();
+    for (const d of [pc, iphone]) expect(await excluded(d)).toEqual(['dip-bodyweight']);
+    expect(await rows(pc)).toEqual(await rows(iphone));
+  });
+});
+
 describe('(c) reprise des réglages locaux des deux appareils (D-465)', () => {
   it('union, sans perte ni doublon ; rejouée sans effet ; réglages remis à null', async () => {
     const [pc, iphone] = await pcAndIphone();
@@ -135,5 +153,35 @@ describe('(e) appareil resté en 0.29.0 (sv 20, ADR 0011 §7.2)', () => {
     expect(await pc.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
     expect(await rows(pc)).toEqual(await rows(iphone));
     expect(await rows(pc)).toEqual([{ id: 'exclusion|squat-barbell', exercise_id: 'squat-barbell', gone: 0 }]);
+  });
+});
+
+describe('(e2) relecture 1, mineur : appareil en 0.29.0 qui rejoint par l’INSTANTANÉ (route de FIX-A009)', () => {
+  it('écartés et gênes reçus par l’instantané : gardés dans sync_unknown, réintégrés après la migration 0021', async () => {
+    // L'écrivain à jour est le PC (i0) ; l'iPhone resté en 0.29.0 (v20) rejoint ensuite par l'instantané (comme FIX-A009).
+    const writer = await createSimDevice(PC, { name: 'PC', schema: 'i0' });
+    const late = await createSimDevice(IPHONE, { name: 'iPhone', schema: 'v20', devicePlatform: 'ios', clock: createManualClock(writer.clock.nowMs()) });
+    devices = [writer, late];
+    await setupFirst(writer);
+    await writer.cycle();
+    await writeExcluded(writer.data.repos, 'squat-barbell', true);
+    const r = declareInjury({ v: 1, items: [] }, { id: '20000000-0000-4000-8000-0000000000b1', muscleId: 'chest', patterns: [], startedOn: '2026-11-01' as LocalDate, note: null }, '2026-11-22' as LocalDate);
+    if (!r.ok) throw new Error(r.issue);
+    await saveInjuries(writer.data.repos, await loadInjuries(writer.data.repos), r.value);
+    await writer.cycle();
+    // Une semaine plus tard : instantané publié ; le PC rejoint ensuite, par cet instantané.
+    writer.clock.advance(8 * 86_400_000);
+    late.clock.advance(8 * 86_400_000);
+    await writer.cycle();
+    writer.clock.advance(11 * 60_000);
+    late.clock.advance(11 * 60_000);
+    await pair(writer, late);
+    await late.cycle();
+    expect((await late.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_unknown ORDER BY table_name')).map((x) => x.table_name)).toEqual(['exercise_exclusion', 'injury']);
+    await migrate(late.driver, migrations);
+    await reintegrateUnknownFields(late.driver, { catalogue: SYNC_CATALOGUE, now: new Date(late.clock.nowMs()).toISOString() as IsoDateTime });
+    expect(await late.driver.select('SELECT 1 FROM sync_unknown')).toEqual([]);
+    expect(await rows(late)).toEqual(await rows(writer));
+    expect(await late.driver.select('SELECT id FROM injury')).toEqual([{ id: '20000000-0000-4000-8000-0000000000b1' }]);
   });
 });

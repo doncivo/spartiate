@@ -23,12 +23,29 @@ describe('exclusionsStore : reprise unique du réglage local (D-465)', () => {
     expect(await db.data.repos.settings.get('training.excludedExercises')).toBeNull();
   });
 
-  it('réglage illisible : vidé sans rien insérer ; aucun réglage : rien écrit', async () => {
+  // Relecture 1 (point 4) : un réglage illisible n'est plus vidé (il serait perdu) : il est gardé et un code est journalisé.
+  it('réglage illisible : GARDÉ, rien inséré ; aucun réglage : rien écrit', async () => {
     db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
     expect(await loadExcludedExercises(db.data.repos)).toEqual([]);
     await db.data.repos.settings.set('training.excludedExercises', { v: 9, ids: ['x'] });
     expect(await loadExcludedExercises(db.data.repos)).toEqual([]);
-    expect(await db.data.repos.settings.get('training.excludedExercises')).toBeNull();
+    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual({ v: 9, ids: ['x'] });
     expect(await db.driver.select('SELECT 1 FROM exercise_exclusion')).toEqual([]);
+  });
+
+  it('relecture 1, point 4 : identifiant hors des bornes de la table (« | », plus de 118 caractères) : les autres repris, le réglage GARDÉ', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    const value = { v: 1, ids: ['squat-barbell', 'a|b', 'x'.repeat(119)] };
+    await db.data.repos.settings.set('training.excludedExercises', value);
+    expect(await loadExcludedExercises(db.data.repos)).toEqual(['squat-barbell']);
+    expect(await db.data.repos.settings.get('training.excludedExercises')).toEqual(value);
+  });
+
+  it('relecture 1, point 2 : deux lectures concurrentes au premier lancement : aucune n’échoue', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-22T08:00:00.000Z');
+    await db.data.repos.settings.set('training.excludedExercises', { v: 1, ids: ['squat-barbell', 'row-cable'] });
+    const [a, b] = await Promise.all([loadExcludedExercises(db.data.repos), loadExcludedExercises(db.data.repos)]);
+    expect(a).toEqual(['row-cable', 'squat-barbell']);
+    expect(b).toEqual(['row-cable', 'squat-barbell']);
   });
 });
