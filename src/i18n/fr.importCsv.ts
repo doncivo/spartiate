@@ -4,5 +4,4 @@
  */
 export const importCsvFr = {
   undoLabel: '{count} tâches importées',
-  undoLabelOne: '1 tâche importée',
 };
