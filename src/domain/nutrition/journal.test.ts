@@ -55,6 +55,15 @@ describe('I4-03 : weeklyBalance : balance 7 jours', () => {
     expect(b.averageKcal).toBe(2400);
     expect(b.deltaKcal).toBeNull();
   });
+  it('BL-101 : cible comparée exposée (moyenne des cibles des jours complets avec une cible de repos, sinon la cible ; null sans cible)', () => {
+    expect(weeklyBalance(days([2400, null, 2300, 2500, null, 2600, 2400]), [], TARGET, D(9)).targetKcal).toBe(2650);
+    const rest = { ...TARGET, kcal: 2200 };
+    const perDay = (d: string) => (d === D(3) || d === D(5) ? rest : TARGET);
+    // Jours complets : 3 (repos), 5 (repos), 6, 8, 9 → (2200 + 2200 + 2650 × 3) / 5 = 2470.
+    expect(weeklyBalance(days([2400, null, 2300, 2500, null, 2600, 2400]), [], TARGET, D(9), perDay as never).targetKcal).toBe(2470);
+    expect(weeklyBalance(days([null, null, null, null, null, null, null]), [], TARGET, D(9), perDay as never).targetKcal).toBeNull();
+    expect(weeklyBalance(days([2400, null, null, null, null, null, null]), [], null, D(9)).targetKcal).toBeNull();
+  });
   it('jours hors fenêtre de 7 jours ignorés', () => {
     const b = weeklyBalance([completeDay(D(1), 3000), completeDay(D(9), 2000)], [], null, D(9));
     expect(b.completeDays).toBe(1);
