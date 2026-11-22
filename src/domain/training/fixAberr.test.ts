@@ -102,6 +102,15 @@ describe('C-005 records et 1RM affichés', () => {
     const history = [...pastSets(10, 100), ...pastSets(14, 100), ...pastSets(18, 100)];
     expect(personalRecords(current(200), history)).toEqual([]);
   });
+  it('BL-092 : une séance de décharge ne confirme pas une aberrante au résumé de fin (D-323 (2)), fin de séance lue de la séance close', () => {
+    const exerciseId = setRow(0).exerciseId;
+    const history = [...pastSets(10, 100), ...pastSets(14, 100), ...pastSets(18, 200), ...pastSets(20, 200)];
+    // Sans marque de décharge, la séance du 20 confirme celle du 18 : 105 kg n'est pas un record.
+    expect(personalRecords(current(105), history).map((r) => r.kind)).not.toContain('load');
+    // La séance du 20 est une décharge retenue : elle ne confirme rien, 200 kg reste aberrante, 105 kg est un record.
+    const meta = new Map([['past-20', { endedAt: at(20), deloadExercises: new Set([exerciseId]) }]]);
+    expect(personalRecords(current(105), history, undefined, undefined, meta).map((r) => [r.kind, r.value])).toContainEqual(['load', 105]);
+  });
   it('résumé de fin : une aberrante passée (1 000 kg) n’empêche pas un vrai record à 105 kg', () => {
     const history = [...pastSets(10, 100), ...pastSets(14, 100), ...pastSets(18, 1000)];
     expect(personalRecords(current(105), history).map((r) => [r.kind, r.value])).toContainEqual(['load', 105]);
