@@ -31,7 +31,7 @@ l’ordre (barre de recherche « Rechercher des actions ») :
 1. **Rechercher des échantillons Santé**
    - Type : **Poids**
    - Ajoute un filtre : **Date de début** · **au cours des derniers** · **30 jours**
-   - Trier par : **Date de début** · Ordre : **Plus récent en premier**
+   - Trier par : **Date de début** · Ordre : **Plus ancien en premier** (comme la partie C : au-delà de 10 000 lignes, Spartiate garde les plus récentes, lues par la fin)
 2. **Répéter avec chaque** (élément : *Échantillons Santé*). À l’intérieur de la boucle :
    1. **Formater la date**
       - Date : touche le champ → **Élément de répétition** → **Date de début**
