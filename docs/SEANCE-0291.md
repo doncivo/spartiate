@@ -44,4 +44,10 @@ Reportés à la PR suivante : BL-108, BL-110, BL-111, BL-112 (taille M), BL-121 
 
 ## Passe code-reviewer (à froid)
 
-À consigner après la relecture.
+Relecture 1 (agent code-reviewer distinct, lecture seule) : **à corriger**. (1, bloquant) note de BL-106 : charge écrite à l'anglaise
+(« 22.5 ») et sans « 2 × » pour une paire d'haltères : `progressionNoteText` (src/i18n/progressionText.ts) formate le paramètre `load`
+comme la phrase principale ; test à 22,5 kg. (2, important) BL-091 : journée rouge acceptée d'un assisté en alerte secondaire, la journée
+rouge n'était plus dite : `alertRedDayAssistHeld` (« estimation, pas un avis médical » conservé) ; mineur traité : série retirée d'un
+assisté d'isolation dite (`alertRecoveryAssistHeldSet`). Mineurs traités : note hors grille seulement si la proposition reste à la charge
+de la référence et si celle-ci est positive (lest nul). Rouge `bb475e7f` → vert `ee53edf7` puis correctif de type. Mineur consigné : le
+journal (BL-090) lit le matériel par `parseEquipmentIds`, plus strict que `equipmentOf` du résumé ; écart théorique.
