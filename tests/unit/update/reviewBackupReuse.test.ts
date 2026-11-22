@@ -3,7 +3,7 @@ import { createManualClock } from '../../../src/domain/clock';
 import type { SqlDriver } from '../../../src/db/driver';
 import { openSqliteWasmDriver } from '../../../src/db/drivers/sqliteWasm';
 import { findUpdateBackup, type MigrationBackup, type MigrationBackupRequest } from '../../../src/db/migrationBackup';
-import { legacyMigrations as migrations } from '../../fixtures/legacy-schema';
+import { migrations } from '../../../src/db/migrations';
 import { migrate, type Migration } from '../../../src/db/migrator';
 import { useAppStore } from '../../../src/features/app/appStore';
 import { bootstrapDatabase } from '../../../src/features/app/bootstrap';
@@ -16,7 +16,7 @@ import { bootstrapDatabase } from '../../../src/features/app/bootstrap';
 
 const LAST = migrations.at(-1)?.version ?? 0;
 const pad = (n: number): string => String(n).padStart(4, '0');
-const A: Migration = { version: LAST + 1, name: 'test_i06_r_a', statements: ['ALTER TABLE task ADD COLUMN i06_r_a TEXT'] };
+const A: Migration = { version: LAST + 1, name: 'test_i06_r_a', statements: ['ALTER TABLE meal_entry ADD COLUMN i06_r_a TEXT'] };
 const BROKEN_B: Migration = { version: LAST + 2, name: 'test_i06_r_b', statements: ['INSTRUCTION INVALIDE'] };
 const FIXED_B: Migration = { version: LAST + 2, name: 'test_i06_r_b', statements: ['CREATE TABLE i06_r_b (id INTEGER)'] };
 

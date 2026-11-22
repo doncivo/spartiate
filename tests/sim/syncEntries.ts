@@ -10,7 +10,8 @@ import type { SqlDriver, SqlRow, SqlValue } from '../../src/db/driver';
  * `hlc`), comme un dépôt : les déclencheurs de la migration réelle capturent chaque champ modifié (`sync_outbox`, `sync_field_clock`).
  *
  * Correspondance (fixe, réversible) : titre = `food_name` ; note = `food_id` (chaîne vide = NULL) ; état `todo` = `method` `search`, `done` =
- * `quickadd` ; date = `date` ; heure = `time` (sans heure = `00:00`). Tout autre champ de tâche demandé est refusé (erreur), jamais ignoré :
+ * `quickadd` ; date = `date` ; heure = `time` (sans heure = `00:00`). Note vide : le banc legacy écrit `''`, ici NULL ; les lectures du banc
+ * (`SIM_ENTRY_SELECT`, `get`) rendent `''` dans les deux cas, et vider une note non vide est capturé comme une écriture du champ (BL-133). Tout autre champ de tâche demandé est refusé (erreur), jamais ignoré :
  * un scénario qui en dépend reste sur le banc legacy.
  */
 export const SIM_ENTRY_TABLE = 'meal_entry';
@@ -90,6 +91,8 @@ export interface SimEntries {
   create(id: TaskId, title: string, extra: Partial<Task>): Promise<Task>;
   update(id: TaskId, patch: Partial<Task>): Promise<Task>;
   remove(id: TaskId): Promise<void>;
+  /** BL-133 : annule une suppression (même écriture que `tasks.restore` du banc legacy : `deleted_at` remis à NULL, tampon neuf). */
+  restore(id: TaskId): Promise<Task | null>;
   get(id: TaskId): Promise<Task | null>;
 }
 
@@ -119,16 +122,20 @@ export function createSimEntries(driver: SqlDriver, schemaOf: () => string, stam
       refuseUnmapped(patch, schemaOf());
       const fields = Object.entries(fieldsOf(patch));
       await must(id);
-      if (fields.length > 0) {
-        const s = stamp();
-        const sets = fields.map(([column]) => `${column} = ?`).join(', ');
-        await driver.execute(`UPDATE ${SIM_ENTRY_TABLE} SET ${sets}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND deleted_at IS NULL`, [...fields.map(([, value]) => value), s.at, s.deviceId, s.hlc, id]);
-      }
+      // BL-133 : tampon posé même sans champ (le dépôt de tâches du banc legacy écrit toujours `updated_at`, `device_id` et `hlc`).
+      const s = stamp();
+      const sets = fields.map(([column]) => `${column} = ?, `).join('');
+      await driver.execute(`UPDATE ${SIM_ENTRY_TABLE} SET ${sets}updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND deleted_at IS NULL`, [...fields.map(([, value]) => value), s.at, s.deviceId, s.hlc, id]);
       return must(id);
     },
     async remove(id) {
       const s = stamp();
       await driver.execute(`UPDATE ${SIM_ENTRY_TABLE} SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND deleted_at IS NULL`, [s.at, s.at, s.deviceId, s.hlc, id]);
+    },
+    async restore(id) {
+      const s = stamp();
+      await driver.execute(`UPDATE ${SIM_ENTRY_TABLE} SET deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND deleted_at IS NOT NULL`, [s.at, s.deviceId, s.hlc, id]);
+      return get(id);
     },
     get,
   };

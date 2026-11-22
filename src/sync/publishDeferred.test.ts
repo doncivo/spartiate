@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { createSimDevice, SCHEMA_VERSION, setupFirst, type SimDevice } from '../../tests/sim/syncDevice';
+import { createSimDevice, I0_SCHEMA_VERSION, setupFirst, type SimDevice, selectSimSchema } from '../../tests/sim/syncDevice';
 import { SyncPlatformError } from '../platform/sync/types';
 import { createSyncService, HIDE_SYNC_DEADLINE_MS } from './index';
 import { epochId } from '../domain/sync/format';
@@ -7,7 +7,10 @@ import type { SyncStatusWarning } from '../domain/syncBanners';
 import type { DeviceId } from '../domain/types';
 import { createMemorySyncLogger } from './log';
 import { deferred, type PublishFacts } from './orphanEpoch';
-import { LEGACY_SYNC_CATALOGUE } from '../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-FIX-02, revue M1 : journal `publish-deferred` et cause nommée de `publish-blocked`. Un refus pendant une première publication ouverte par
@@ -56,7 +59,7 @@ describe('openedHere et io sur l’état (contre-revue S2)', () => {
     device = b;
     await setupFirst(b);
     const service = (platform: typeof b.platform, deadlineProbe?: (unit: string) => void) =>
-      createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE, data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, devicePlatform: 'ios', sv: SCHEMA_VERSION, appVersion: '0.4.0', logger: b.logger, setTimeout: () => 0, clearTimeout: () => undefined, ...(deadlineProbe ? { deadlineProbe } : {}) });
+      createSyncService({ catalogue: SYNC_CATALOGUE, data: b.data, platform, hlc: b.hlc, clock: b.clock, deviceId: b.id, devicePlatform: 'ios', sv: I0_SCHEMA_VERSION, appVersion: '0.4.0', logger: b.logger, setTimeout: () => 0, clearTimeout: () => undefined, ...(deadlineProbe ? { deadlineProbe } : {}) });
     // Époque ouverte, instantané écrit, échéance du cycle hide juste avant l'état : exception openedHere au cycle suivant.
     b.service = service(b.platform, (unit) => {
       if (unit === 'write-state') b.clock.advance(HIDE_SYNC_DEADLINE_MS);

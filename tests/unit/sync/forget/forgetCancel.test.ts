@@ -6,8 +6,11 @@ import type { ForgetStep, SyncPlatform } from '../../../../src/platform/sync/typ
 import { createMemorySyncLogger, createSyncService } from '../../../../src/sync';
 import type { SyncDeps } from '../../../../src/sync/deps';
 import { cancelForgetRequest, declareForget, FORGET_META, readForgetStatus } from '../../../../src/sync/forget';
-import { createSimDevice, pair, SCHEMA_VERSION, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { createSimDevice, pair, I0_SCHEMA_VERSION, setupFirst, syncFolders, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-10-FIX-01 « Annuler la demande » (critères 3 à 7, 9, 12, 13) : partie moteur.
@@ -196,14 +199,14 @@ describe('façade service.cancelForgetRequest (critère 4, QA 6)', () => {
   it('plateforme sous Proxy intégral (tout accès fait échouer le test) : annulation et relecture de l’état sans un seul accès', async () => {
     const { phone } = await rateLimitedPhone();
     const touched: string[] = [];
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE,
       data: phone.data,
       platform: forbiddenPlatform(touched),
       hlc: phone.hlc,
       clock: phone.clock,
       deviceId: PHONE,
       devicePlatform: 'ios',
-      sv: SCHEMA_VERSION,
+      sv: I0_SCHEMA_VERSION,
       appVersion: '0.4.0',
       logger: createMemorySyncLogger(),
       setTimeout: () => 0,

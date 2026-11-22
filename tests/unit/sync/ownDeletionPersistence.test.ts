@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createSimDevice, SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice } from '../../sim/syncDevice';
+import { createSimDevice, I0_SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../sim/syncDevice';
 import { deleteOwnTracked, observeOwnDeletions, readOwnDeleteFailures } from '../../../src/sync/ownDeletion';
 import { CycleInterrupted } from '../../../src/sync/deadline';
 import { SyncStateUnreadableError } from '../../../src/domain/sync/stored';
@@ -8,7 +8,10 @@ import type { SyncDeps } from '../../../src/sync/deps';
 import type { EpochId } from '../../../src/domain/sync/format';
 import { abandonOrphan, retryOrphanDeletion } from '../../../src/sync/orphanEpoch';
 import { createSyncService } from '../../../src/sync/service';
-import { LEGACY_SYNC_CATALOGUE } from '../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 const SELF = '56d4eec1-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const EPOCH = `e0009-${SELF}` as EpochId;
@@ -17,7 +20,7 @@ let deps: SyncDeps;
 beforeAll(warmSimDevices);
 beforeEach(async () => {
   device = await createSimDevice(SELF);
-  deps = { catalogue: LEGACY_SYNC_CATALOGUE, data: device.data, platform: { ...device.platform, deleteOwn: vi.fn(() => Promise.reject(new SyncPlatformError('io'))) }, hlc: device.hlc, clock: device.clock, deviceId: device.id, devicePlatform: device.devicePlatform, appVersion: '0.3.3', sv: SCHEMA_VERSION, logger: device.logger };
+  deps = { catalogue: SYNC_CATALOGUE, data: device.data, platform: { ...device.platform, deleteOwn: vi.fn(() => Promise.reject(new SyncPlatformError('io'))) }, hlc: device.hlc, clock: device.clock, deviceId: device.id, devicePlatform: device.devicePlatform, appVersion: '0.3.3', sv: I0_SCHEMA_VERSION, logger: device.logger };
 });
 afterEach(async () => { await device.close(); });
 

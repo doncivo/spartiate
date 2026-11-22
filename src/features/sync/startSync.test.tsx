@@ -6,7 +6,7 @@ import { SYNCING_BANNER_DELAY_MS } from '../../domain/sync/limits';
 import { asEntityId, type DeviceId, type IsoDateTime } from '../../domain/types';
 import { createMemorySyncPlatform, type MemorySyncPlatform, type SyncFolderInfo } from '../../platform/sync';
 import { createSyncService, silentSyncLogger } from '../../sync';
-import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
+import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import type { SyncDeviceStatus, SyncStatus } from '../../platform/sync/types';
 import { useAppStatusStore } from '../app/appStatus';
 import { AppStatusBanner } from '../app/AppStatusBanner';
@@ -17,7 +17,11 @@ import { BLOCKING_PHASE_META, startSyncIntegration, type SyncIntegration } from 
 import { syncStore } from './syncStore';
 import { statusLine } from './syncText';
 import { createFakeSyncService, type FakeSyncService } from './testKit';
-import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../domain/sync/syncTables';
+import { selectSimSchema } from '../../../tests/sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Bandeaux A-09 de la synchro (critère 9, solde) : `SyncService` factice, base SQLite de test, horloge manuelle et minuterie factice
@@ -71,7 +75,7 @@ const device = (deviceId: DeviceId, platform: 'ios' | 'windows', status: SyncDev
 const renderBanner = (): void => void render(<AppStatusBanner />);
 
 beforeEach(async () => {
-  db = await openTestDb(SELF, NOW);
+  db = await openBaseDb(SELF, NOW);
   sync = createFakeSyncService();
   container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: SELF }), data: db.data, sync });
   timers = [];
@@ -333,7 +337,7 @@ describe('états persistés et redémarrage (critères 9 f, 9 i, 9 j)', () => {
     const status = useAppStatusStore.getState();
     act(() => status.setStatus('offline', {}));
     await start().refreshed();
-    set({ phase: 'syncing', reintegrationFailure: { fields: 2, tables: ['task'], at: NOW as IsoDateTime, errors: ['x'] } });
+    set({ phase: 'syncing', reintegrationFailure: { fields: 2, tables: ['meal_entry'], at: NOW as IsoDateTime, errors: ['x'] } });
     fireTimers();
     await db.data.repos.sync.setMeta(JOIN_META, JSON.stringify(failure));
     set({ phase: 'waiting-icloud', errorCode: 'cloud-pending' });
@@ -467,7 +471,7 @@ describe('« Synchro en cours » avec le vrai service : un seul seuil (revue, po
     let release: (info: SyncFolderInfo) => void = () => undefined;
     const held = new Promise<SyncFolderInfo>((resolve) => (release = resolve));
     const serviceTimers: (() => void)[] = [];
-    const service = createSyncService({ catalogue: LEGACY_SYNC_CATALOGUE,
+    const service = createSyncService({ catalogue: SYNC_CATALOGUE,
       data: db.data,
       platform: { ...base, folder: { ...base.folder, info: () => held } },
       hlc: createHlcClock({ clock: db.clock, deviceId: SELF }),
