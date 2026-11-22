@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, set, target } from '../../../tests/fixtures/training/progression';
 import type { IsoDateTime } from '../types';
+import { explanationNotes } from './explain';
 import { prescribe } from './prescribe';
 import type { ExerciseSession } from './types';
 
@@ -57,6 +58,18 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     expect(a.reference?.loadKg).toBe(44);
     expect(b.reference?.loadKg).toBe(44);
     expect(b.reasons).toContain('top-reached');
+  });
+
+  it('BL-106 (D-465) : charge d’historique hors de la grille de la salle courante, prescription inchangée mais signalée', () => {
+    const b = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
+    expect(b.loadKg).toBe(44);
+    expect(b.reasons).toContain('reference-off-grid');
+    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { loadKg: 44 } });
+    const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: FITNESS_PARK_ANTONY }));
+    expect(a.reasons).not.toContain('reference-off-grid');
+    // Au-dessus du maximum du matériel de la salle : signalée de même.
+    const heavy = prescribe(input({ exercise: CURL, history: history(55, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
+    expect(heavy.reasons).toContain('reference-off-grid');
   });
 
   it('sans profil de matériel : la charge monte d’un incrément estimé (46,5) et la raison « incrément inconnu » est dite', () => {
