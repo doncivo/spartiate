@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { LocalDate, LocalTime } from '../types';
 import { aggregateDay } from './dayTotals';
 import { toMealEntryInput, validateMealEntry, type MealEntryDraft } from './mealEntry';
+import { RENPHO_DAY_ENTRY_NAME } from './renphoDay';
 
 /** I4-02 : validation d'une entrée de journal (méthode, provenance, grammes, macros, confiance) ; valeurs synthétiques. */
 
@@ -101,6 +102,11 @@ describe('BL-103 : macro au-delà de la borne de saisie, motif propre', () => {
     expect(validateMealEntry(quick({ proteinG: 1001 }))).toContain('macro-too-large');
     expect(validateMealEntry(quick({ proteinG: 1001 }))).not.toContain('value-invalid');
     expect(validateMealEntry(quick({ carbG: 1000 }))).not.toContain('macro-too-large');
+  });
+  it('revue : une saisie d’Ali nommée comme l’entrée Renpho n’échappe pas à la borne ; l’import, si', () => {
+    const renpho = quick({ foodName: RENPHO_DAY_ENTRY_NAME, proteinG: 1500 });
+    expect(validateMealEntry(renpho)).not.toContain('macro-too-large');
+    expect(validateMealEntry(renpho, { userEntry: true })).toContain('macro-too-large');
   });
 });
 
