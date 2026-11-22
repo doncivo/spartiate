@@ -94,6 +94,16 @@ describe('validateMealEntry : Quick Add', () => {
   });
 });
 
+describe('BL-103 : macro au-delà de la borne de saisie, motif propre', () => {
+  const quick = (over: Partial<MealEntryDraft> = {}): MealEntryDraft =>
+    entry({ method: 'quickadd', source: 'manual', foodId: null, foodName: 'Ajout rapide', grams: null, kcal: 9000, proteinG: null, fatG: null, carbG: null, ...over });
+  it('plus de 1 000 g d’une macro en Quick Add : « macro-too-large », pas « value-invalid »', () => {
+    expect(validateMealEntry(quick({ proteinG: 1001 }))).toContain('macro-too-large');
+    expect(validateMealEntry(quick({ proteinG: 1001 }))).not.toContain('value-invalid');
+    expect(validateMealEntry(quick({ carbG: 1000 }))).not.toContain('macro-too-large');
+  });
+});
+
 describe('validateMealEntry : photo (schéma seulement, aucun flux ici)', () => {
   const photo = (over: Partial<MealEntryDraft> = {}): MealEntryDraft => entry({ method: 'photo', source: 'estimate', foodId: null, foodName: 'Pâtes (estimation)', confidence: 0.6, ...over });
   it('estimation corrigeable : confiance obligatoire, grammes obligatoires', () => {
