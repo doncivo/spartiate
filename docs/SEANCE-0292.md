@@ -53,20 +53,20 @@ Branche `SEANCE-0292` depuis `origin/main` (`3de66bf6`). Aucune migration, aucun
 
 ## Décisions proposées (Claude (choix prudent) ; révisable par Ali ; à reporter dans docs/decisions.md)
 
-- **D-489** (C-012, Q-9 option B) : durée d'une série chronométrée = haut de sa plage cible (secondes) ; 45 s pour les autres métriques ou une
+- **D-506** (C-012, Q-9 option B) : durée d'une série chronométrée = haut de sa plage cible (secondes) ; 45 s pour les autres métriques ou une
   cible illisible ; l'aperçu de la carte « Séance du jour » lit la métrique du catalogue. Q-9 reste ouverte (A ou C possibles).
-- **D-490** (C-025) : inactivité en jours civils dans le fuseau de l'appareil au moment du calcul (`-getTimezoneOffset()`), UTC sans
+- **D-507** (C-025) : inactivité en jours civils dans le fuseau de l'appareil au moment du calcul (`-getTimezoneOffset()`), UTC sans
   fuseau ; instant illisible : aucune décote ; comparaison d'instants ISO par `Date.parse`, ordre des chaînes si l'un est illisible.
-- **D-491** (C-007) : grille de barre = charges du pas déclaré (incrément, sinon 2 × plus petit disque) montables avec les disques déclarés
+- **D-508** (C-007) : grille de barre = charges du pas déclaré (incrément, sinon 2 × plus petit disque) montables avec les disques déclarés
   (nombre par côté) ; un profil embarqué (un disque par masse) garde sa grille (20 à 237,5 kg par 2,5).
-- **D-492** (C-029) : plusieurs poulies sans identifiant : seules les charges disponibles sur toutes ; aucune commune : aucune grille.
-- **D-493** (§ 11) : surcharges par exercice de 10 constantes, bornées (`TUNABLE_BOUNDS` : plafond de hausse ≤ 10 %, recalibrage ≤ 5 %,
+- **D-509** (C-029) : plusieurs poulies sans identifiant : seules les charges disponibles sur toutes ; aucune commune : aucune grille.
+- **D-510** (§ 11) : surcharges par exercice de 10 constantes, bornées (`TUNABLE_BOUNDS` : plafond de hausse ≤ 10 %, recalibrage ≤ 5 %,
   décharge 0,5 à 1…) ; hors bornes, illisible ou clé inconnue : ignorée ; la décharge d'un cycle (entrée `deloadLoad`) l'emporte.
   Stockage et écran d'édition non faits : ils exigent une migration (partie données et synchro).
-- **D-494** (C-004) : recalibrage borné à un cran : le 1RM recalibré enregistré suit la charge retenue (1RM × charge / référence).
-- **D-495** (C-030) : rampe d'un lesté sur le total (corps × fraction + lest), lest arrondi vers le bas ; sous le premier lest disponible,
+- **D-511** (C-004) : recalibrage borné à un cran : le 1RM recalibré enregistré suit la charge retenue (1RM × charge / référence).
+- **D-512** (C-030) : rampe d'un lesté sur le total (corps × fraction + lest), lest arrondi vers le bas ; sous le premier lest disponible,
   poids du corps seul (une étape) ; poids de corps inconnu ou sans grille : aucune rampe.
-- **D-496** (C-010) : la structure de la séance compte les séries de travail et chronométrées ; une série prévue changée en dégressive fait
+- **D-513** (C-010) : la structure de la séance compte les séries de travail et chronométrées ; une série prévue changée en dégressive fait
   baisser le nombre de séries de la ligne (question posée) ; un exercice fait seulement en dégressives ou partielles n'est ni retiré ni ajouté.
 
 ## Questions (à reporter dans docs/decisions-a-prendre.md)
@@ -101,7 +101,7 @@ Rouge (constaté en local) → vert, commits de `origin/main..SEANCE-0292` :
 | C-004 | `29d4d9a5` | `70fbce52` | 105 → 102,5 kg |
 | C-006 | `ac642e99` | `e231bc12` | [11, 11] → [10, 10] |
 | C-007 | `0e9a9748` | `8a8e12c1` | loadGrid.test.ts:76 (figeait C-007) réécrit ; attente erronée du rouge (45 kg montable) corrigée dans le vert |
-| C-010 | `e490f8bc` | `270a5921`, `5902f708` | SessionClosure.test.tsx : attente changée et expliquée (D-496) |
+| C-010 | `e490f8bc` | `270a5921`, `5902f708` | SessionClosure.test.tsx : attente changée et expliquée (D-513) |
 | C-016 | `525f05fa` | `7cccbe0e` | |
 | C-012 | `b099cf38` | `21853b53` | 255 → 300 s |
 | C-013 | `c71a575a` | `7358f048` | generateSession.test.ts : deux attentes changées et expliquées (D-472) |
@@ -134,11 +134,11 @@ identiques (`Z`), C-013 n'altère pas les lignes `routine` (test dédié), § 11
 
 | ID | Statut |
 |---|---|
-| C-004 | fait (SEANCE-0292, D-494) |
+| C-004 | fait (SEANCE-0292, D-511) |
 | C-006 | fait (SEANCE-0292) |
-| C-007 | fait (SEANCE-0292, D-491) |
-| C-010 | fait (SEANCE-0292, D-496) |
-| C-012 | fait en choix prudent (SEANCE-0292, D-489 ; Q-9 reste ouverte) |
+| C-007 | fait (SEANCE-0292, D-508) |
+| C-010 | fait (SEANCE-0292, D-513) |
+| C-012 | fait en choix prudent (SEANCE-0292, D-506 ; Q-9 reste ouverte) |
 | C-013 | fait (SEANCE-0292, D-472) |
 | C-014 | fait (SEANCE-0292) |
 | C-015 | fait (SEANCE-0292) |
@@ -148,13 +148,13 @@ identiques (`Z`), C-013 n'altère pas les lignes `routine` (test dédié), § 11
 | C-021 | fait (SEANCE-0292) |
 | C-023 | fait (SEANCE-0292) |
 | C-024 | sans défaut côté domaine (test qui fige) ; double compte par la saisie : C-071 |
-| C-025 | fait (SEANCE-0292, D-490) |
+| C-025 | fait (SEANCE-0292, D-507) |
 | C-026 | à trancher (Q-11) ; règle actuelle figée par un test |
 | C-027 | fait : règle figée par un test (D-474) |
-| C-029 | fait (SEANCE-0292, D-492) |
-| C-030 | fait (SEANCE-0292, D-495) |
+| C-029 | fait (SEANCE-0292, D-509) |
+| C-030 | fait (SEANCE-0292, D-512) |
 | C-177 | fait (SEANCE-0292) |
-| § 11 | fait en partie (moteur, D-493) ; reste : stockage et édition des surcharges (migration, partie données et synchro) |
+| § 11 | fait en partie (moteur, D-510) ; reste : stockage et édition des surcharges (migration, partie données et synchro) |
 | § 11.2-5 | fait (C-004, C-027) |
 | § 11.2-7 | fait (C-006, C-007, C-029) |
 | § 12.1-4 | fait (C-012 en choix prudent, C-013) |

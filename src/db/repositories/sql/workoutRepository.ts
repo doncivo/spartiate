@@ -757,7 +757,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     async unvalidateSet(setId) {
       await requireSet(setId);
       const stamp = stamper.next();
-      // SEANCE-0292 (C-072, D-502) : une série validée rouverte est tracée (corrected_at) ; une série à faire reste telle quelle.
+      // SEANCE-0292 (C-072, D-519) : une série validée rouverte est tracée (corrected_at) ; une série à faire reste telle quelle.
       await db.execute('UPDATE workout_set SET done = 0, done_at = NULL, corrected_at = CASE WHEN done = 1 THEN ? ELSE corrected_at END, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
         stamp.at,
         stamp.at,

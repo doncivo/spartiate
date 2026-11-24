@@ -49,7 +49,7 @@ export function estimateExerciseSec(sets: number, restSec: number, config: Gener
 }
 
 /**
- * C-012 (Q-9 option B, choix prudent D-489) : durée d'une série d'un exercice chronométré = sa durée cible (haut de la plage, en secondes) ;
+ * C-012 (Q-9 option B, choix prudent D-506) : durée d'une série d'un exercice chronométré = sa durée cible (haut de la plage, en secondes) ;
  * 45 s pour les autres métriques ou une cible illisible.
  */
 export function setDurationSec(metric: ExerciseMetric | undefined, repMax: number, config: GenerationConfig): number {

@@ -20,7 +20,7 @@ export const TRACK_RULES = {
   /** Segment plus rapide que 15 m/s (54 km/h) : saut de signal, ignoré. */
   maxSpeedMps: 15,
   /**
-   * Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. SEANCE-0292 (C-008, D-497) : le pas minimal est
+   * Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. SEANCE-0292 (C-008, D-514) : le pas minimal est
    * aussi la précision annoncée du point (max(3 m, précision)) ; un écart plus court que l'incertitude n'est pas un déplacement.
    */
   minStepM: 3,
@@ -78,7 +78,7 @@ const isUsable = (p: TrackPoint): boolean =>
   Number.isFinite(p.lat) && Number.isFinite(p.lon) && Number.isFinite(p.at) && Number.isFinite(p.accuracyM) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180 && p.accuracyM >= 0 && p.accuracyM <= TRACK_RULES.maxAccuracyM;
 
 /**
- * Ajoute une mesure au tracé : imprécise, instant qui recule, saut irréaliste ou pas trop court : état inchangé. SEANCE-0292 (C-022, D-498) :
+ * Ajoute une mesure au tracé : imprécise, instant qui recule, saut irréaliste ou pas trop court : état inchangé. SEANCE-0292 (C-022, D-515) :
  * tant qu'aucune distance n'est comptée (un seul point gardé), un saut irréaliste est mis en attente ; si le point suivant est cohérent avec
  * lui et pas avec le premier, le premier point était décalé : le point en attente le remplace (un premier point décalé ne bloque plus les
  * suivants et n'ajoute pas son décalage). Un saut isolé reste ignoré.

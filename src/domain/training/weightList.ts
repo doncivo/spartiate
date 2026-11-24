@@ -1,5 +1,5 @@
 /**
- * SEANCE-0292 (C-066, D-499) : lecture d'une liste de poids saisie dans un profil de matériel (disques par côté, kettlebells). Les poids sont
+ * SEANCE-0292 (C-066, D-516) : lecture d'une liste de poids saisie dans un profil de matériel (disques par côté, kettlebells). Les poids sont
  * séparés par des points-virgules ; la virgule est la décimale française. Une décimale qui n'est pas un multiple de 0,25 kg (« 12,16 »,
  * « 20,1 ») n'existe pas dans une salle : c'est presque sûrement deux poids séparés par une virgule ; la liste est refusée avec un motif qui le
  * dit, jamais devinée.
@@ -39,7 +39,7 @@ export function parseWeightList(text: string): WeightListResult {
   return { ok: true, values };
 }
 
-/** SEANCE-0292 (C-081, D-500) : nombre de disques d'un poids par côté, au plus (au-delà : saisie fautive). */
+/** SEANCE-0292 (C-081, D-517) : nombre de disques d'un poids par côté, au plus (au-delà : saisie fautive). */
 export const MAX_PLATES_PER_WEIGHT = 20;
 
 export type PlateListResult =
@@ -49,7 +49,7 @@ export type PlateListResult =
 const COUNT_RE = /^(.+?)\s*[×xX*]\s*(\d+)$/;
 
 /**
- * SEANCE-0292 (C-081, D-500) : disques par côté, « 20 × 4 ; 10 » (quatre disques de 20 kg par côté, un de 10) ; « x » ou « * » valent « × » ;
+ * SEANCE-0292 (C-081, D-517) : disques par côté, « 20 × 4 ; 10 » (quatre disques de 20 kg par côté, un de 10) ; « x » ou « * » valent « × » ;
  * sans nombre : un disque. Nombre de 1 à 20 ; poids en double refusé.
  */
 export function parsePlateList(text: string): PlateListResult {

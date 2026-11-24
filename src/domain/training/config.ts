@@ -115,7 +115,7 @@ export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
 export type TunableKey = 'deloadLoad' | 'maxGainPerSession' | 'snapTolerance' | 'easyRecalibrationGain' | 'unknownIncrementKg' | 'fatigueDrop' | 'stallSessions' | 'detrainStartDays' | 'lowRecoveryLoad' | 'timeStepMaxSec';
 
 /**
- * SEANCE-0292 (§ 11, choix prudent D-493) : bornes des surcharges par exercice. Le plafond de hausse ne dépasse jamais 10 % (§ 11.5 « aucune
+ * SEANCE-0292 (§ 11, choix prudent D-510) : bornes des surcharges par exercice. Le plafond de hausse ne dépasse jamais 10 % (§ 11.5 « aucune
  * hausse > 10 % par séance ») et le recalibrage « Facile » jamais 5 % (§ 11.2.5) : une surcharge ne peut que rendre le moteur plus prudent ou
  * adapter un réglage matériel. Hors bornes, illisible ou clé inconnue : ignorée (valeur par défaut).
  */

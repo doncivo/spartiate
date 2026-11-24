@@ -20,7 +20,7 @@ export const CATALOG_ASSISTED_IDS: ReadonlySet<string> = new Set(['pull-up-assis
 export const CATALOG_BODYWEIGHT_LOAD_IDS: ReadonlySet<string> = new Set(['push-up-weighted', 'pull-up-weighted']);
 
 /**
- * SEANCE-0292 (C-071, D-501) : sens du champ de charge d'une série. `ballast` : lest seul, le poids de corps est compté à part (métrique
+ * SEANCE-0292 (C-071, D-518) : sens du champ de charge d'une série. `ballast` : lest seul, le poids de corps est compté à part (métrique
  * `bodyweight-reps` ou fraction de poids de corps déclarée : tractions, dips, pompes lestées) ; `assistance` : assistance de la machine
  * (assisté) ; `load` : charge soulevée. Saisir le poids total dans un champ « lest » doublerait le poids de corps (C-024).
  */
