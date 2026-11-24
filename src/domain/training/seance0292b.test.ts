@@ -116,4 +116,33 @@ describe('SEANCE-0292b BL-112 (D-539) : exercices sans charge, fatigue, stagnati
     const same = prescribe(input({ exercise: PUSH_UP, history: [bwSession(3, null, [10, 10, 10])], target: target(8, 15), positionRank: 2, lastPositionRank: 2 }));
     expect(same.reasons).not.toContain('position-discount');
   });
+
+  // Relecture (F) : la décote de position des valeurs vaut aussi sur les chemins de contrainte (comme pour un exercice chargé, où `positioned`
+  // suit les réductions) : inactivité, récupération basse, décharge et fatigue ; jamais une hausse, lest inchangé, note dite.
+  it('décote de position sur les chemins inactivité, récupération basse, décharge et fatigue (2ᵉ rang, × 0,93)', () => {
+    const base = { exercise: PUSH_UP, target: target(8, 15), positionRank: 2, lastPositionRank: 1 } as const;
+    const paused = prescribe(input({ ...base, history: [bwSession(40, null, [10, 10, 10])] }));
+    expect(paused.headline).toBe('inactivity');
+    expect(paused.reasons).toEqual(expect.arrayContaining(['inactivity-discount', 'position-discount']));
+    expect(paused.sets.map((s) => s.reps)).toEqual([9, 9, 9]);
+    expect(paused.loadKg).toBe(0);
+    expect(explanationNotes(paused)).toContainEqual({ key: 'notePositionValues', params: { rank: 2, cut: 7 } });
+
+    const low = prescribe(input({ ...base, history: [bwSession(3, null, [10, 10, 10])], recovery: { recovery: 20, sleepHours: null, restingHrDelta: null } }));
+    expect(low.headline).toBe('recovery-low');
+    expect(low.reasons).toEqual(expect.arrayContaining(['recovery-low', 'position-discount']));
+    expect(low.sets.map((s) => s.reps)).toEqual([9, 9, 9]);
+    expect(explanationNotes(low)).toContainEqual({ key: 'notePositionValues', params: { rank: 2, cut: 7 } });
+
+    const deload = prescribe(input({ ...base, history: [bwSession(3, null, [10, 10, 10])], deload: true }));
+    expect(deload.headline).toBe('deload');
+    expect(deload.reasons).toContain('position-discount');
+    expect(deload.sets.every((s) => s.reps === 9)).toBe(true);
+
+    const fatigue = prescribe(input({ ...base, history: [bwSession(6, null, [12, 12, 12]), bwSession(3, null, [9, 9, 8])] }));
+    expect(fatigue.headline).toBe('fatigue');
+    expect(fatigue.sets.map((s) => s.reps)).toEqual([8, 8, 7]);
+    // Le choix « −2 répétitions » part des valeurs de référence (9-9-8), jamais au-dessus de la proposition décotée.
+    for (const o of fatigue.options ?? []) for (const [i, r] of (o.reps ?? []).entries()) expect(r).toBeLessThanOrEqual(fatigue.sets[i]?.reps ?? 0);
+  });
 });
