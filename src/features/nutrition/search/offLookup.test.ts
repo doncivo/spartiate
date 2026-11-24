@@ -238,3 +238,13 @@ describe('searchOnline : seulement sur appel explicite', () => {
     expect(hits.hits.map((h) => [h.provenance, h.barcode])).toEqual([['off', CODE]]);
   });
 });
+
+describe('NUTRI-0292 (C-047) : fiche périmée et produit devenu inconnu d\'OFF', () => {
+  it('la fiche périmée est proposée (marquée), pas perdue sur « not-found »', async () => {
+    const { deps, foods } = await setup(createFakeOff());
+    await foods.cacheOff(cached('2026-07-01T08:00:00.000Z'));
+    const r = await resolveBarcode(deps, CODE);
+    expect(r).toMatchObject({ kind: 'found', via: 'stale' });
+    expect(r.kind === 'found' && r.food.name).toBe('Skyr en cache');
+  });
+});
