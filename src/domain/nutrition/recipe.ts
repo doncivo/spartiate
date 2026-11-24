@@ -130,6 +130,8 @@ export function recipeTotals(recipe: Pick<Recipe, 'ingredients'>): RecipeTotals 
 
 /** Valeurs d'une portion : total non arrondi / portions, puis arrondi au dixième. */
 export function recipePerServing(recipe: Pick<Recipe, 'ingredients' | 'servings'>): RecipeTotals {
+  // C-044 : un nombre de portions invalide (0, négatif, non entier) ne donne jamais Infinity : valeurs inconnues.
+  if (!Number.isInteger(recipe.servings) || recipe.servings < 1) return { kcal: null, proteinG: null, fatG: null, carbG: null, fiberG: null };
   return rounded(rawTotals(recipe.ingredients), recipe.servings);
 }
 
@@ -167,7 +169,7 @@ export function entryFromRecipe(
   at: { readonly date: LocalDate; readonly time: LocalTime },
 ): MealEntryDraft | null {
   const weight = recipeWeightG(recipe);
-  if (!(weight > 0) || !Number.isInteger(recipe.servings) || recipe.servings < 1) return null;
+  if (recipe.ingredients.length === 0 || !(weight > 0) || !Number.isInteger(recipe.servings) || recipe.servings < 1) return null;
   const amount = quantity.kind === 'servings' ? quantity.n : quantity.g;
   if (!Number.isFinite(amount) || amount <= 0) return null;
   const fraction = quantity.kind === 'servings' ? amount / recipe.servings : amount / weight;
@@ -199,7 +201,7 @@ export interface RecipeSearchable {
   readonly kcalPerServing: number | null;
   readonly servings: number;
   /** Poids d'une portion en grammes. */
-  readonly servingGrams: number;
+  readonly servingGrams: number | null;
 }
 
 export function recipeAsSearchable(recipe: Recipe): RecipeSearchable {
@@ -209,7 +211,7 @@ export function recipeAsSearchable(recipe: Recipe): RecipeSearchable {
     name: recipe.name,
     kcalPerServing: recipePerServing(recipe).kcal,
     servings: recipe.servings,
-    servingGrams: tenth(recipeWeightG(recipe) / recipe.servings),
+    servingGrams: Number.isInteger(recipe.servings) && recipe.servings >= 1 ? tenth(recipeWeightG(recipe) / recipe.servings) : null,
   };
 }
 
