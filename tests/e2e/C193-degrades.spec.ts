@@ -5,7 +5,7 @@ import { openToday } from './helpers/today';
  * C-193 (PRD § 18.3, « aucune donnée : pas de faux zéro ») : sur une base neuve, Aujourd'hui dit l'absence de données de récupération en
  * texte, sans cadran ni valeur inventée. Les deux projets (pc, iphone) tournent dans Chromium sans agent iPhone : l'app y détecte un
  * autre système que iOS et affiche le texte « résumé jamais reçu » (RecoveryToday.tsx) ; les textes de l'iPhone réel et l'action
- * « Ouvrir Apple Santé » sont couverts par src/features/recovery/RecoveryToday.test.tsx. Les autres lignes de § 18.3 sont testées
+ * du bouton d'import Santé sont couverts par src/features/recovery/RecoveryToday.test.tsx. Les autres lignes de § 18.3 sont testées
  * ailleurs (tests/e2e/I-02.spec.ts pour la signature ; voir docs/CI-0292.md). PC (1 440 px) et iPhone (440 px).
  */
 test.beforeEach(async ({ page }) => {

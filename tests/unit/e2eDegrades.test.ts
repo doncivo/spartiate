@@ -9,8 +9,7 @@ describe('C193-degrades.spec.ts : assertions qui peuvent échouer', () => {
   it('aucune assertion sur « J+0/14 » (texte que cet état ne rend jamais)', () => {
     expect(spec).not.toContain('J+0/14');
   });
-  it('l\'indication qui suit le texte d\'absence est exigée, iPhone et PC', () => {
-    expect(spec).toContain('Va dans Plus → Apple Santé → Raccourcis pour importer ton sommeil, ta HRV et ta FC de repos.');
+  it("l'indication qui suit le texte d'absence est exigée", () => {
     expect(spec).toContain('L’iPhone calcule la récupération depuis ses imports Raccourcis et la publie ici par la synchro.');
   });
 });
