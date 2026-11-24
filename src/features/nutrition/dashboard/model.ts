@@ -68,7 +68,7 @@ function targetForDay(snapshot: NutritionSnapshot): ((date: Day) => DayTarget) |
   if (!snapshot.targets.some((t) => t.restPlan !== null && t.restPlan !== undefined)) return undefined;
   const fallback = snapshot.target?.target ?? null;
   return (date) => {
-    const record = effectiveTarget(snapshot.targets, date);
+    const record = effectiveTarget(snapshot.targets, date, snapshot.today);
     if (record === null) return fallback ?? { kcal: 0, proteinG: 0, fatG: 0, carbG: 0 };
     return dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set()).target;
   };

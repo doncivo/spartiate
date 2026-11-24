@@ -141,7 +141,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const first = useMemo(() => firstCheckIn(snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns), [snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns]);
   const tdee = useMemo(() => tdeeAt(snapshot, period.weekEnd), [snapshot, period.weekEnd]);
   // Cible en vigueur pendant la semaine analysée : une décision prise pour la semaine suivante ne change pas la proposition relancée.
-  const effective = effectiveTarget(targets, period.weekEnd);
+  const effective = effectiveTarget(targets, period.weekEnd, snapshot.today);
   const current = effective?.target ?? null;
   // FIX-0271 (U-12) : plan de repos actuel (une cible de repos enregistrée le matin du check-in compte), rapporté à la cible analysée.
   const restPlan = checkInRestPlan(targets, period.weekEnd, snapshot.today);

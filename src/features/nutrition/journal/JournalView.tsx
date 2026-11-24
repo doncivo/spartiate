@@ -121,7 +121,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
   const declaration = loaded !== null && loaded.date === date ? loaded.declaration : null;
   const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput), declaration ?? undefined), [date, entries, declaration]);
   // PROG-01 (D-270) : cible du type de jour (entraînement ou repos) ; sans cible de repos, la cible unique.
-  const record = effectiveTarget(snapshot.targets, date);
+  const record = effectiveTarget(snapshot.targets, date, snapshot.today);
   const dayTarget = record === null ? null : dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set());
   const target = dayTarget?.target ?? null;
   // Tant que le journal du jour n'est pas lu (chargement, échec), aucun restant n'est affiché : « — », jamais la cible entière.

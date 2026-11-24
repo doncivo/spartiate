@@ -5,7 +5,7 @@
  */
 
 import { localDateOfInstant } from '../donePeriod';
-import { parseHlc } from '../hlc';
+import { isHlc, parseHlc } from '../hlc';
 import { isLocalDate, type Hlc, type IsoDateTime, type LocalDate } from '../types';
 import { floorVerdict } from './floor';
 import { restTargetFromGap, type RestPlan } from './restDay';
@@ -90,6 +90,13 @@ export function targetInForceSince(record: Pick<TargetRecord, 'weekStart' | 'hlc
   return decided !== null && decided > record.weekStart ? decided : record.weekStart;
 }
 
+/** Décision la plus récente par HLC puis UUID ; un HLC illisible perd toujours contre un HLC lisible (C-040). */
+function laterDecision(a: Pick<TargetRecord, 'id' | 'hlc'>, b: Pick<TargetRecord, 'id' | 'hlc'>): boolean {
+  const [okA, okB] = [isHlc(a.hlc), isHlc(b.hlc)];
+  if (okA !== okB) return okA;
+  return a.hlc > b.hlc || (a.hlc === b.hlc && a.id > b.id);
+}
+
 /**
  * Cible en vigueur à `date` (D-82 amendée par D-314) : parmi les lignes ACCEPTÉES dont la semaine a commencé le `date` ou avant, la prise
  * d'effet la plus TARDIVE gagne (`targetInForceSince` : max(semaine, date de décision)), puis la dernière décision par HLC, puis l'UUID.
@@ -98,13 +105,15 @@ export function targetInForceSince(record: Pick<TargetRecord, 'weekStart' | 'hlc
  * d'Ali), et à prise d'effet égale le HLC tranche comme avant : un check-in du lundi accepté le mercredi passe devant la cible du mardi.
  * Comme sous D-82, une décision vaut pour toute sa semaine, y compris les jours antérieurs à sa prise d'effet (relecture rétroactive).
  */
-export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc'>>(records: readonly T[], date: LocalDate): T | null {
+export function effectiveTarget<T extends Pick<TargetRecord, 'id' | 'weekStart' | 'accepted' | 'hlc'>>(records: readonly T[], date: LocalDate, today?: LocalDate): T | null {
   let best: T | null = null;
   let bestSince = '';
   for (const r of records) {
     if (!r.accepted || r.weekStart > date) continue;
-    const since = targetInForceSince(r);
-    if (best === null || since > bestSince || (since === bestSince && (r.hlc > best.hlc || (r.hlc === best.hlc && r.id > best.id)))) {
+    let since = targetInForceSince(r);
+    // C-040 : une décision datée d'après aujourd'hui (horloge d'un appareil en avance) prend effet au plus tôt aujourd'hui, jamais devant une cible prévue.
+    if (today !== undefined && since > today) since = today > r.weekStart ? today : r.weekStart;
+    if (best === null || since > bestSince || (since === bestSince && laterDecision(r, best))) {
       best = r;
       bestSince = since;
     }
