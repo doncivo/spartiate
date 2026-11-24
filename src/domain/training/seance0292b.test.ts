@@ -72,3 +72,11 @@ describe('SEANCE-0292b BL-106 / § 12.4 (D-496) : charge d’historique hors du 
     }
   });
 });
+
+describe('SEANCE-0292b § 12.3 (D-497) : modes Variable, Fixe et Statique retirés', () => {
+  it('le domaine ne nomme plus de variantes de Libre (aucune option à afficher) ; les modes restent Guidé, Libre, Maison, Importé', async () => {
+    const types: Record<string, unknown> = await import('./generationTypes');
+    expect(types['LIBRE_VARIANTS']).toBeUndefined();
+    expect(types['PROGRAM_MODES']).toEqual(['guide', 'libre', 'maison', 'importe']);
+  });
+});
