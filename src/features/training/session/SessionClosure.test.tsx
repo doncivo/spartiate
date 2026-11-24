@@ -250,7 +250,7 @@ describe('« Mettre à jour la routine ? » (§ 13.8)', () => {
 });
 
 describe('après la clôture', () => {
-  // SEANCE-0292 (BL-141, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée) ; « Nouvelle séance » propose la copie.
+  // SEANCE-0292 (BL-160, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée) ; « Nouvelle séance » propose la copie.
   it('« Fermer » revient à l’accueil ; la séance close se copie depuis « Nouvelle séance » (historique réel)', async () => {
     openSession();
     await startFromRoutine();
@@ -267,7 +267,7 @@ describe('après la clôture', () => {
   });
 });
 
-describe('SEANCE-0292 (BL-141) : après « Fermer le résumé », l’onglet Entraînement montre son accueil', () => {
+describe('SEANCE-0292 (BL-160) : après « Fermer le résumé », l’onglet Entraînement montre son accueil', () => {
   it('« Fermer le résumé » ramène à l’accueil de l’Entraînement ; un appui sur l’onglet ne laisse pas « Nouvelle séance »', async () => {
     openSession();
     await startFromRoutine();
@@ -349,7 +349,7 @@ describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’a
   it('« Fermer le résumé » est une réponse : la question ne revient pas', async () => {
     await closeWithoutRowing();
     fireEvent.click(screen.getByRole('button', { name: 'Fermer le résumé' }));
-    // SEANCE-0292 (BL-141, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée), la question ne revient pas.
+    // SEANCE-0292 (BL-160, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée), la question ne revient pas.
     await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
     expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
     await reopen();

@@ -131,7 +131,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
             access={access}
             closed={load.closed}
             heldOf={heldLookup(data)}
-            // SEANCE-0292 (BL-141, D-527) : « Fermer le résumé » ramène à l'accueil de l'Entraînement (l'onglet ne reste pas sur « Nouvelle séance »).
+            // SEANCE-0292 (BL-160, D-527) : « Fermer le résumé » ramène à l'accueil de l'Entraînement (l'onglet ne reste pas sur « Nouvelle séance »).
             onClose={() => {
               setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed: null } : now));
               onExit();

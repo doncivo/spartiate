@@ -164,7 +164,7 @@ identiques (`Z`), C-013 n'altère pas les lignes `routine` (test dédié), § 11
 # SEANCE-0292 — partie B : écrans de séance, historique, matériel
 
 Lignes : C-008, C-022, C-066, C-069, C-071 (avec C-024), C-072, C-077, C-078, C-080, C-081, C-082, C-083, BL-110, BL-111, BL-112, BL-121,
-BL-141, § 10.3, § 13.3 b, § 13.4, § 13.8 c, § 14.3 a, § 14.3 b, § 17.1 a. Chapitres : 10.3, 13, 14.3, 17.1. Source : audit Claude 0.27.0
+BL-160, § 10.3, § 13.3 b, § 13.4, § 13.8 c, § 14.3 a, § 14.3 b, § 17.1 a. Chapitres : 10.3, 13, 14.3, 17.1. Source : audit Claude 0.27.0
 (`.codex-tmp/lot028/constats-claude.md`, hors git) et docs/backlog.md. Aucune migration, aucun fichier de synchro ; rien d'ajouté au départ
 (écrans touchés tous chargés à la demande : Entraînement, Séance, Journal, Matériel, Cardio ; `src/domain/training` et `src/domain/cardio`
 hors de tests/bundle/start-modules.json).
@@ -189,7 +189,7 @@ hors de tests/bundle/start-modules.json).
 12. C-083 (à vérifier, appareil) : heure par sélecteur natif, durée au pavé décimal (« 45,30 » = 45:30) ; annonce VoiceOver du suivi au plus
     une fois par minute ou par 100 m.
 13. BL-121 : les gênes actives écartent leurs patterns et les exercices du muscle gêné des remplaçants proposés en séance, et le disent.
-14. BL-141 : après « Fermer le résumé », l'onglet Entraînement montre son accueil, pas « Nouvelle séance ».
+14. BL-160 : après « Fermer le résumé », l'onglet Entraînement montre son accueil, pas « Nouvelle séance ».
 15. § 10.3 : notifications demandées à la fin de la première séance, jamais au premier repos (le repos reste dans l'app).
 16. § 14.3 b : matériel forcé et interdit modifiables dans un profil ; les deux à la fois refusé.
 17. Lignes de synthèse : § 13.4 (7), § 13.8 c (7, 11), § 14.3 a (3, 4), § 14.3 b (16, C-029 en partie A).
@@ -221,7 +221,7 @@ hors de tests/bundle/start-modules.json).
 - **D-518** (C-071) : champ « Lest (kg) » (métrique poids du corps ou fraction de poids de corps) avec l'aide « poids du corps non compris »,
   « Assistance (kg) » pour un assisté, « Charge (kg) » sinon ; en séance et à la correction.
 - **D-519** (C-072, § 13.4) : « Annuler la validation » d'une série validée date `corrected_at` (colonne publiée existante, publiée à la
-  clôture) ; les valeurs d'avant ne sont pas gardées (Q-14).
+  clôture) ; les valeurs d'avant ne sont pas gardées (Q-13).
 - **D-520** (C-072) : une correction ne vide pas la charge d'une série d'exercice à charge (`load-reps`) ; la modifier reste permis.
 - **D-521** (C-078) : la saisie d'une série à faire est écrite dans `workout_set` (séance ouverte, jamais publiée) à la sortie d'un champ et
   une seconde après la dernière frappe, sans redessiner la séance ; un champ illisible ou hors bornes n'écrit rien ; « Accepter » ne remplit
@@ -235,7 +235,7 @@ hors de tests/bundle/start-modules.json).
   la séance proposée ; leur nombre est dit ; la recherche libre de la bibliothèque reste ouverte.
 - **D-526** (§ 10.3) : aucune demande d'autorisation au repos (repos dans l'app, texte qui le dit) ; à la clôture d'une séance sur l'iPhone,
   l'autorisation est demandée si elle n'a jamais été décidée (donc à la fin de la première séance) ; jamais sur le PC.
-- **D-527** (BL-141) : « Fermer le résumé » ramène à l'accueil de l'Entraînement ; « Nouvelle séance » (carte du jour) propose la copie.
+- **D-527** (BL-160) : « Fermer le résumé » ramène à l'accueil de l'Entraînement ; « Nouvelle séance » (carte du jour) propose la copie.
 - **D-528** (C-083) : heure de début par le sélecteur natif (`type="time"`) ; durée au pavé décimal, « , » ou « . » valent « : » suivis de deux
   chiffres (« 45,30 ») ; l'annonce VoiceOver du suivi change au plus chaque minute ou chaque 100 m.
 - **D-529** (§ 14.3 b) : matériel forcé et interdit modifiables par cases dans la modification d'un profil ; un même matériel forcé et interdit
@@ -243,7 +243,7 @@ hors de tests/bundle/start-modules.json).
 
 ## Questions, partie B (à reporter dans docs/decisions-a-prendre.md)
 
-### Q-13 — Pause de séance (BL-110, § 13.2 « Pause / abandonner »)
+### Q-12 — Pause de séance (BL-110, § 13.2 « Pause / abandonner »)
 
 Constat : une pause qui ne retire pas son temps de la durée publiée n'a pas d'effet utile ; la durée est `ended_at − started_at`.
 - A. Colonnes additives `workout.paused_at` et `workout.paused_ms` (publiées avec la séance close ; anciens exports et journaux : 0) ; chrono,
@@ -253,7 +253,7 @@ Constat : une pause qui ne retire pas son temps de la durée publiée n'a pas d'
 
 Recommandation : A. Conséquences : migration additive et relecture sync-icloud (partie données et synchro) ; écran de séance ensuite.
 
-### Q-14 — Trace d'une correction de série (C-072, § 13.4, § 13.8)
+### Q-13 — Trace d'une correction de série (C-072, § 13.4, § 13.8)
 
 Constat : seule la date (`corrected_at`) est gardée, pas la valeur d'avant.
 - A. Garder la date seule (état actuel, D-519).
@@ -262,7 +262,7 @@ Constat : seule la date (`corrected_at`) est gardée, pas la valeur d'avant.
 
 Recommandation : B (une ligne lisible, sans table nouvelle). Conséquences : migration additive, relecture sync-icloud, affichage au journal.
 
-### Q-15 — « Fermer le résumé » (BL-141)
+### Q-14 — « Fermer le résumé » (BL-160)
 
 - A. Retour à l'accueil de l'Entraînement (choix prudent D-527, fait).
 - B. Rester sur « Nouvelle séance » ; un nouvel appui sur l'onglet actif ramène à son accueil (règle de navigation commune, coquille).
@@ -271,8 +271,8 @@ Recommandation : A (moins de gestes ; B demande une règle de navigation commune
 
 ## Hors périmètre de la partie B (consigné)
 
-- BL-110 : pause de séance, Q-13 (données et synchro : colonnes additives `paused_at`, `paused_ms`).
-- C-072 : valeurs d'avant une correction, Q-14 (données et synchro : colonne `corrected_from` ou table).
+- BL-110 : pause de séance, Q-12 (données et synchro : colonnes additives `paused_at`, `paused_ms`).
+- C-072 : valeurs d'avant une correction, Q-13 (données et synchro : colonne `corrected_from` ou table).
 - C-072 / D-519 : `corrected_at` est désormais daté aussi pour une série rouverte en séance ouverte (colonne et moment de publication
   inchangés : publiée à la clôture) ; à faire relire par sync-icloud avec la PR (valeur publiée nouvelle, aucun champ nouveau).
 - § 13.3 b : action « +30 s » de la notification de repli : catégorie d'action iOS et traitement de l'action (rôles notifications et
@@ -305,7 +305,7 @@ Rouge (constaté en échec en local) → vert, commits de la partie B (après `2
 | C-082 / § 13.8 c | `ffc13a99` | `3afcc1ae` | nom de ligne lu seul dans le test |
 | BL-121 | `8afcf55c` | `299e37c6` | |
 | § 10.3 | `445c564c` | `aa30a78f` | |
-| BL-141 | `d7c91fcd` | `747dcf70` | SessionClosure.test.tsx : deux attentes changées (D-527) |
+| BL-160 | `d7c91fcd` | `747dcf70` | SessionClosure.test.tsx : deux attentes changées (D-527) |
 | C-083 | `da6944b1` | `bebf2726` | CardioGps.test.tsx : 0,22 → 0,2 km ; reste le constat d'appareil |
 | § 14.3 b | `80e27013` | `a22137e6` | |
 | (renumérotation) | — | `5e2261e8` | D-489 à D-505 → D-506 à D-522 (Ali a pris D-489 à D-505) |
@@ -333,22 +333,22 @@ nouvelle) ; § 10.3 ne demande rien sur le PC.
 | C-066 | fait (SEANCE-0292, D-516) |
 | C-069 | fait (SEANCE-0292) |
 | C-071 | fait (SEANCE-0292, D-518) ; ferme le double compte de C-024 |
-| C-072 | fait en partie (SEANCE-0292, D-519, D-520) ; reste la valeur d'avant la correction (Q-14, données et synchro) |
+| C-072 | fait en partie (SEANCE-0292, D-519, D-520) ; reste la valeur d'avant la correction (Q-13, données et synchro) |
 | C-077 | fait (SEANCE-0292) |
 | C-078 | fait (SEANCE-0292, D-521, D-522) ; constat d'appareil ajouté (fermeture forcée) |
 | C-080 | fait (SEANCE-0292, D-524) |
 | C-081 | fait (SEANCE-0292, D-517) |
 | C-082 | fait (SEANCE-0292, D-523) |
 | C-083 | code fait (SEANCE-0292, D-528) ; reste le constat d'appareil (docs/constats-ali.md) |
-| BL-110 | à trancher (Q-13) ; puis données et synchro (colonnes additives) |
+| BL-110 | à trancher (Q-12) ; puis données et synchro (colonnes additives) |
 | BL-111 | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
 | BL-112 | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
 | BL-121 | fait (SEANCE-0292, D-525) |
-| BL-141 | fait (SEANCE-0292, D-527 ; Q-15) |
+| BL-160 | fait (SEANCE-0292, D-527 ; Q-14) |
 | § 10.3 | fait (SEANCE-0292, D-526) ; constat d'appareil ajouté |
 | § 13.3 b | reste : catégorie et action « +30 s » (rôles notifications et ios-mobile) |
-| § 13.4 | fait en partie (C-072) ; reste Q-14 |
-| § 13.8 c | fait en partie (C-072, C-082) ; reste Q-14 |
+| § 13.4 | fait en partie (C-072) ; reste Q-13 |
+| § 13.8 c | fait en partie (C-072, C-082) ; reste Q-13 |
 | § 14.3 a | fait (C-066, C-081) |
 | § 14.3 b | fait (SEANCE-0292, D-529 ; C-029 en partie A) |
 | § 17.1 a | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
