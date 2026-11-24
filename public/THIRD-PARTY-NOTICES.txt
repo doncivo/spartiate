@@ -48,7 +48,7 @@ cargo cfg_aliases 0.2.2 : MIT
 cargo chrono 0.4.45 : MIT OR Apache-2.0
 cargo cmake 0.1.58 : MIT OR Apache-2.0
 cargo const-oid 0.9.6 : Apache-2.0 OR MIT
-cargo cookie 0.18.2 : MIT OR Apache-2.0
+cargo cookie 0.18.3 : MIT OR Apache-2.0
 cargo core-foundation 0.10.1 : MIT OR Apache-2.0
 cargo core-foundation 0.9.4 : MIT OR Apache-2.0
 cargo core-foundation-sys 0.8.7 : MIT OR Apache-2.0
@@ -6311,7 +6311,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 ----- Texte 41 : 1 composant(s) -----
-cookie 0.18.2
+cookie 0.18.3
 
 Apache License
                         Version 2.0, January 2004
