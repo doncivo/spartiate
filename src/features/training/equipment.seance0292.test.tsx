@@ -71,4 +71,32 @@ describe('Matériel : listes de poids', () => {
       expect((await inventory()).platesPerSideKg.map((p) => p.weightKg)).toEqual([20, 1.25]);
     });
   });
+
+  describe('C-081 : nombre de disques modifiable, poids en double refusé', () => {
+    it('« 20 × 4 ; 10 » : quatre disques de 20 kg par côté, un de 10 ; relu tel quel à la modification suivante', async () => {
+      await editCopy();
+      fireEvent.change(screen.getByLabelText(/^Disques par côté/), { target: { value: '20 × 4 ; 10' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+      await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+      expect((await inventory()).platesPerSideKg).toEqual([
+        { weightKg: 20, count: 4 },
+        { weightKg: 10, count: 1 },
+      ]);
+      fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
+      expect(screen.getByLabelText(/^Disques par côté/)).toHaveValue('20 × 4 ; 10');
+    });
+
+    it('« 20 ; 20 » ou kettlebells « 16 ; 16 » : refusé (poids en double), rien d’écrit', async () => {
+      await editCopy();
+      const before = await inventory();
+      fireEvent.change(screen.getByLabelText(/^Disques par côté/), { target: { value: '20 ; 20' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/en double/);
+      fireEvent.change(screen.getByLabelText(/^Disques par côté/), { target: { value: '20' } });
+      fireEvent.change(screen.getByLabelText(/^Kettlebells/), { target: { value: '16 ; 16' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/en double/);
+      expect(await inventory()).toEqual(before);
+    });
+  });
 });
