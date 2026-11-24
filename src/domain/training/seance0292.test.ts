@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, FITNESS_PARK_ANTONY, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
 import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../types';
@@ -330,5 +330,36 @@ describe('SEANCE-0292 C-025 : inactivité en jours civils ; instants comparés c
     );
     expect(p.headline).toBe('decision');
     expect(p.loadKg).toBe(90);
+  });
+});
+
+describe('SEANCE-0292 C-026 (vérification, défaut avéré) : une décision postérieure à la dernière séance reste soumise aux réductions', () => {
+  const hist = [session(3, 100, [8, 8, 8])];
+  const decision = { decidedAt: daysAgo(1), accepted: false, loadKg: 90, reps: [8, 8, 8] };
+
+  it('sans contrainte : la décision est reprise telle quelle (90 kg × 8, 8, 8)', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10) }));
+    expect(p.headline).toBe('decision');
+    expect(p.loadKg).toBe(90);
+  });
+
+  it('semaine de décharge : séries ÷ 2 et charge × 0,8 de la décision (72 kg arrondi vers le bas au cran de barre : 70 kg), décharge dite', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), deload: true }));
+    expect(p.headline).toBe('deload');
+    expect(p.deload).toBe(true);
+    expect(p.loadKg).toBe(70);
+    expect(p.sets).toHaveLength(1);
+    expect(p.reasons).toContain('decision-reference');
+    expect(p.reference?.loadKg).toBe(90);
+  });
+
+  it('journée rouge acceptée : × 0,95 arrondi vers le bas (85 kg) ; pause de 3 semaines : décote d’inactivité', () => {
+    const red = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), recovery: { recovery: 20, sleepHours: null, restingHrDelta: null, redDay: true } }));
+    expect(red.headline).toBe('recovery-low');
+    expect(red.loadKg).toBe(85);
+    const old = [session(30, 100, [8, 8, 8])];
+    const paused = prescribe(input({ exercise: BENCH, history: old, lastDecision: { ...decision, decidedAt: daysAgo(29) }, target: target(8, 10) }));
+    expect(paused.reasons).toContain('inactivity-discount');
+    expect(paused.loadKg).toBeLessThan(90);
   });
 });
