@@ -77,9 +77,10 @@ export interface MigrateOptions {
   readonly onSchemaRead?: (info: { readonly current: number; readonly known: number }) => void;
 }
 
-/** Étapes de `migrate()`, dans l'ordre : lecture du schéma, sauvegarde, chaque migration, crochet final. */
+/** Étapes de `migrate()`, dans l'ordre : lecture du schéma, chargement des instructions (seulement s'il y a du travail), sauvegarde, chaque migration, crochet final. */
 export type MigrateStep =
   | { readonly kind: 'schema' }
+  | { readonly kind: 'load' }
   | { readonly kind: 'backup' }
   | { readonly kind: 'migration'; readonly version: number }
   | { readonly kind: 'afterApply' };
@@ -196,6 +197,7 @@ export async function migrate(
   const done = new Set(applied.map((row) => row.version));
   const pendingEntries = plan.entries.filter((e) => !done.has(e.version));
   // Instructions chargées seulement s'il y a du travail ; chacune doit correspondre à la somme de contrôle du plan (manifeste périmé : refus avant toute écriture).
+  if (pendingEntries.length > 0) onStep({ kind: 'load' });
   const pending = pendingEntries.length === 0 ? [] : await loadPending(plan, pendingEntries);
   if (pending.length > 0 && options.beforeApply) {
     onStep({ kind: 'backup' });
@@ -225,7 +227,13 @@ export async function migrate(
 }
 
 async function loadPending(plan: MigrationPlan, entries: readonly MigrationEntry[]): Promise<Migration[]> {
-  const loaded = new Map((await plan.load()).map((m) => [m.version, m]));
+  let list: readonly Migration[];
+  try {
+    list = await plan.load();
+  } catch (error) {
+    throw new MigrationError('Chargement des migrations impossible', { cause: error });
+  }
+  const loaded = new Map(list.map((m) => [m.version, m]));
   return entries.map((entry) => {
     const migration = loaded.get(entry.version);
     if (!migration || migrationChecksum(migration) !== entry.checksum) {
