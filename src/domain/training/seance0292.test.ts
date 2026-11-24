@@ -6,7 +6,7 @@ import type { DeviceId, Hlc } from '../types';
 import { routineDiff } from './closure';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
-import type { WorkoutSet, WorkoutWithSets } from './session';
+import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
 import type { ProgressionEquipment, RoutineDay } from './types';
 
 /**
@@ -109,5 +109,15 @@ describe('SEANCE-0292 C-010 : séries dégressives et partielles hors de l’éc
 
   it('exercice de la routine fait seulement en dégressives : ni retiré ni modifié (il a été fait)', () => {
     expect(routineDiff(w([s(0, { setKind: 'drop', loadKg: 40 })]), day).hasChanges).toBe(false);
+  });
+});
+
+describe('SEANCE-0292 C-016 : isCompletedWorkSet ne compte ni dégressive ni partielle comme travail', () => {
+  it('travail et chronométrée validées : oui ; dégressive, partielle, échauffement : non', () => {
+    expect(isCompletedWorkSet(setRow(0, { done: true, reps: 8, loadKg: 60 }))).toBe(true);
+    expect(isCompletedWorkSet(setRow(0, { setKind: 'timed', done: true, durationSec: 45 }))).toBe(true);
+    expect(isCompletedWorkSet(setRow(0, { setKind: 'drop', done: true, reps: 8, loadKg: 40 }))).toBe(false);
+    expect(isCompletedWorkSet(setRow(0, { setKind: 'partial', done: true, reps: 5, loadKg: 70 }))).toBe(false);
+    expect(isCompletedWorkSet(setRow(0, { setKind: 'warmup', done: true, reps: 8, loadKg: 40 }))).toBe(false);
   });
 });
