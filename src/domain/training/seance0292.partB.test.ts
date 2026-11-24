@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import * as training from './index';
 import { emptyInventory, validateEquipmentProfile } from './index';
+import { replacementCandidates } from './replacement';
+import { R_BENCH_BB, R_BENCH_DB, R_FLY_CABLE, R_GYM, R_LIBRARY } from '../../../tests/fixtures/training/replacement';
 
 /** SEANCE-0292, partie B : vecteurs du domaine de l'entraînement (une section par ligne). */
 
@@ -23,5 +25,17 @@ describe('C-072 : une correction ne vide pas la charge d’un exercice à charge
     expect(fn(e(80), e(82.5), 'load-reps')).toEqual([]);
     expect(fn(e(null), e(null), 'load-reps')).toEqual([]);
     expect(fn(e(10), e(null), 'bodyweight-reps')).toEqual([]);
+  });
+});
+
+describe('BL-121 : gênes appliquées au remplacement d’exercice en séance', () => {
+  const groupOf = (e: training.EmbeddedExercise): string | null => e.group ?? null;
+  it('exercices évités (muscle d’une gêne) et patterns douloureux : jamais proposés ; leur nombre est rendu', () => {
+    const avoid = { patterns: [R_FLY_CABLE.pattern === R_BENCH_DB.pattern ? 'hinge' : R_FLY_CABLE.pattern], exerciseIds: ['bench-press-dumbbell'] } as const;
+    const out = replacementCandidates({ of: R_BENCH_BB, library: R_LIBRARY, profile: R_GYM, excluded: new Set(), present: new Set(['bench-press-barbell']), groupOf, avoid } as Parameters<typeof replacementCandidates>[0]);
+    expect(out.alternatives.map((e) => e.id)).toEqual([]);
+    expect(out.similar.map((e) => e.id)).not.toContain('fly-cable');
+    expect(out.similar.map((e) => e.id)).not.toContain('bench-press-dumbbell');
+    expect((out as unknown as { avoided?: number }).avoided).toBeGreaterThanOrEqual(2);
   });
 });
