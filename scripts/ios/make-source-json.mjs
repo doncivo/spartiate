@@ -48,6 +48,17 @@ const sameOS =(a, b) => String(a).replace(/(\.0)+$/, '') === String(b).replace(/
  * Construit le source.json. `existing` : source.json publié (ou null) ; `info` : Info.plist de l'IPA (objet).
  * Lève une erreur au moindre écart, rien n'est publié dans ce cas.
  */
+// REL-0.29.2 (D-489, complément d'audit du 24/11) : les notes de trois versions déjà publiées portaient le nom d'un lieu réel
+// (l'identifiant du profil de matériel par défaut, renommé « salle-complete » en DATA-0292). Elles sont réécrites ici, à chaque
+// publication, jamais à la main : le mot (reconnu par son empreinte SHA-256, comme scripts/release/privacy.test.ts ; le nom n'est
+// pas écrit) et les deux mots à majuscule qui le précèdent (nom de l'enseigne) deviennent le nom affiché « Salle complète ».
+const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f52110d4';
+const isPlaceWord = (w) => w.length === 6 && createHash('sha256').update(w.toLowerCase()).digest('hex') === PLACE_SHA256;
+export function redactPlace(text) {
+  if (typeof text !== 'string') return text;
+  return text.replace(/(?:\p{Lu}\p{L}* \p{Lu}\p{L}* )?(\p{L}+)/gu, (m, w) => (isPlaceWord(w) ? 'Salle complète' : m));
+}
+
 export function buildSource({ template, existing, info, version, downloadURL, size, sha256, notes, date, minOSVersion }) {
   if (!/^\d+\.\d+\.\d+$/.test(version ?? '')) throw new Error(`Version invalide : ${version}`);
   if (downloadURL !== ipaUrlFor(version)) throw new Error(`URL de l'IPA inattendue : ${downloadURL} (attendu ${ipaUrlFor(version)})`);
@@ -74,7 +85,9 @@ export function buildSource({ template, existing, info, version, downloadURL, si
     minOSVersion,
   };
   const existingApp = existing?.apps?.find((a) => a.bundleIdentifier === tApp.bundleIdentifier);
-  const previous = (existingApp?.versions ?? []).filter((v) => v && v.version !== version && v.version !== '__VERSION__');
+  const previous = (existingApp?.versions ?? [])
+    .filter((v) => v && v.version !== version && v.version !== '__VERSION__')
+    .map((v) => (typeof v.localizedDescription === 'string' && redactPlace(v.localizedDescription) !== v.localizedDescription ? { ...v, localizedDescription: redactPlace(v.localizedDescription) } : v));
   // SideStore prend la première entrée pour la dernière version : tri par numéro décroissant, pas par date
   // de publication (un correctif 1.9.1 publié après 2.0.0 reste derrière). Tri stable : une version
   // republiée garde sa place.
