@@ -440,6 +440,8 @@ export const trainingFr = {
   sectionCycle: 'Cycle',
   sectionCardio: 'Cardio',
   historyTitle: 'Séances terminées',
+  /** SEANCE-0292 (C-082). */
+  historyMore: 'Afficher les séances plus anciennes',
   historyEmpty: 'Aucune séance terminée pour l’instant. Termine une séance pour la retrouver ici, avec ses séries et son volume.',
   historySetsOne: '{n} série',
   historySets: '{n} séries',

@@ -477,6 +477,17 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       return rows.map((row) => ({ ...rowToWorkout(row), sets: (byWorkout.get(row.id) ?? []).map(rowToSet) }));
     },
 
+    async closedPage(limit, offset) {
+      const n = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 100) : 50;
+      const skip = Number.isInteger(offset) && offset > 0 ? offset : 0;
+      const rows = await db.select<WorkoutRow>('SELECT * FROM workout WHERE ended_at IS NOT NULL AND deleted_at IS NULL ORDER BY ended_at DESC, id LIMIT ? OFFSET ?', [n, skip]);
+      if (rows.length === 0) return [];
+      const sets = await db.select<SetRow>(`SELECT * FROM workout_set WHERE deleted_at IS NULL AND workout_id IN (${rows.map(() => '?').join(', ')}) ORDER BY position, id`, rows.map((r) => r.id));
+      const byWorkout = new Map<string, SetRow[]>();
+      for (const set of sets) byWorkout.set(set.workout_id, [...(byWorkout.get(set.workout_id) ?? []), set]);
+      return rows.map((row) => ({ ...rowToWorkout(row), sets: (byWorkout.get(row.id) ?? []).map(rowToSet) }));
+    },
+
     async closedStarts() {
       const rows = await db.select<{ readonly started_at: string }>('SELECT started_at FROM workout WHERE ended_at IS NOT NULL AND deleted_at IS NULL ORDER BY started_at, id');
       return rows.map((r) => r.started_at as IsoDateTime);

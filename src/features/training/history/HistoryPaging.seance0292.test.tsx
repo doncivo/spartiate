@@ -47,9 +47,10 @@ describe('C-082 : journal au-delà de 50 séances', () => {
     );
     const list = await screen.findByRole('list', { name: 'Séances terminées' });
     expect(within(list).getAllByRole('button', { name: /^Séance \d+/ })).toHaveLength(50);
-    expect(within(list).queryByRole('button', { name: /^Séance 1 / })).toBeNull();
+    // Nom de la ligne lu seul (le nom accessible du bouton colle le nom et la date).
+    expect(within(list).queryByText('Séance 1')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Afficher les séances plus anciennes' }));
-    expect(await within(list).findByRole('button', { name: /^Séance 1 / })).toBeInTheDocument();
+    expect(await within(list).findByText('Séance 1')).toBeInTheDocument();
     expect(within(list).getAllByRole('button', { name: /^Séance \d+/ })).toHaveLength(55);
     expect(screen.queryByRole('button', { name: 'Afficher les séances plus anciennes' })).toBeNull();
   });
