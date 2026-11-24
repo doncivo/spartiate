@@ -299,3 +299,36 @@ describe('SEANCE-0292 C-024 (vérification) : tractions, la charge saisie est le
     expect(lift(10)).toBe(135);
   });
 });
+
+describe('SEANCE-0292 C-025 : inactivité en jours civils ; instants comparés comme instants, pas comme chaînes', () => {
+  const at = (iso: string) => iso as IsoDateTime;
+  const now = at('2026-11-28T18:00:00.000Z');
+
+  it('dernière séance le 7/11 à 20:00 UTC, maintenant le 28/11 à 18:00 : 21 jours civils (pas 20,9 tranches de 24 h) → décote d’inactivité', () => {
+    const p = prescribe(input({ exercise: BENCH, now, history: [{ ...session(0, 100, [8, 8, 8]), endedAt: at('2026-11-07T20:00:00.000Z') }], target: target(8, 10) }));
+    expect(p.reasons).toContain('inactivity-discount');
+    expect(p.inactivityCut).toBeGreaterThan(0);
+  });
+
+  it('décalage horaire donné (UTC+1) : 7/11 23:30 heure locale (22:30 UTC) → 28/11 00:30 locale (27/11 23:30 UTC) : 21 jours civils locaux', () => {
+    const hist = [{ ...session(0, 100, [8, 8, 8]), endedAt: at('2026-11-07T22:30:00.000Z') }];
+    const local = prescribe(input({ exercise: BENCH, now: at('2026-11-27T23:30:00.000Z'), history: hist, target: target(8, 10), utcOffsetMinutes: 60 }));
+    expect(local.reasons).toContain('inactivity-discount');
+    const utc = prescribe(input({ exercise: BENCH, now: at('2026-11-27T23:30:00.000Z'), history: hist, target: target(8, 10) }));
+    expect(utc.reasons).not.toContain('inactivity-discount');
+  });
+
+  it('décision prise à 18:30Z après une séance close à 19:00+01:00 (18:00Z) : la décision l’emporte (comparaison d’instants)', () => {
+    const p = prescribe(
+      input({
+        exercise: BENCH,
+        now: at('2026-11-08T10:00:00.000Z'),
+        history: [{ ...session(0, 100, [8, 8, 8]), endedAt: at('2026-11-07T19:00:00.000+01:00') }],
+        lastDecision: { decidedAt: at('2026-11-07T18:30:00.000Z'), accepted: false, loadKg: 90, reps: [8, 8, 8] },
+        target: target(8, 10),
+      }),
+    );
+    expect(p.headline).toBe('decision');
+    expect(p.loadKg).toBe(90);
+  });
+});
