@@ -175,10 +175,16 @@ SummaryGap : 935 verts ; `tsc --noEmit` vert ; eslint sans erreur. Suite complè
 
 Vérifications locales (`--maxWorkers=1`, couverture coupée) : src/domain/training, progressionNotes, LibraryBodyMap, SessionRecords,
 ExerciseProgression.seance0292b : 953 verts (76 fichiers) ; ExerciseProgression*.test.tsx : 38 verts ; `tsc --noEmit` vert ; eslint sans erreur sur
-les fichiers modifiés. Bundle : `CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts` : « normalisé
-183842 octets » (main 183 794, +48 ; plafond 358 400). Constat : SessionRecords.test.tsx, test d'origine « 65 kg × 8 » (`76d1feb7`), échoue
-par intermittence sur ce poste chargé, version de HEAD comprise (2 échecs sur 3 essais, `findBy` à 1 s) ; aucun délai changé, à surveiller
-en CI. Relecture 2 : à faire sur le run CI de ce lot.
+les fichiers modifiés. Bundle (mesure finale) : `CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts` :
+« normalisé 183842 octets » ; plafond 358 400. Écart de +48 avec le chiffre de référence 183 794 vérifié par builds locaux
+(`npm run build -- --manifest`, `node tests/bundle/measureStart.ts`) : `origin/main` `d4d46030` (DATA-0292, base actuelle de la
+branche) mesure lui-même 183 842 normalisés, et les 45 blocs de départ ont des tailles identiques bloc par bloc entre main et la branche
+(seul un nom de bloc haché diffère, même taille) : la branche n'ajoute aucun octet au départ ; 183 794 ne correspond pas à `d4d46030`
+(`f2a2a1d2`, avant DATA-0292 : 192 104). Aucune compensation faite (aucun module du départ dans la zone du module). Intermittence de
+SessionRecords.test.tsx (« 65 kg × 8 », `76d1feb7`) : cause trouvée, les `findBy` (1 s) couvraient la première importation à froid
+des modules à la demande (contenu JSON, progression, contrôle d'aberration à la validation, journée rouge) ; 3 échecs sur 3 avant,
+préchauffage en `beforeAll` (`e647a415`, précédent Circuit.test.tsx, aucun délai changé) ; 10 passages consécutifs verts après.
+Relecture 2 : à faire sur le run CI de ce lot.
 
 ## Statuts proposés
 
