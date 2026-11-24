@@ -42,6 +42,14 @@ export interface RecoverySet {
   readonly difficulty: RecoveryDifficulty | null;
   readonly isWarmup: boolean;
   readonly completed: boolean;
+  /**
+   * BL-139 : exercice au poids du corps lesté ou assisté. `baseKg` = poids de corps × fraction portée (null : poids de corps inconnu, la série n'est pas
+   * devinée), `loadSign` 1 pour un lest (charge totale = base + kg), −1 pour une assistance (base − kg). Absents : exercice ordinaire (charge = kg).
+   */
+  readonly baseKg?: number | null;
+  readonly loadSign?: 1 | -1;
+  /** BL-139 : durée tenue (secondes) d'une série chronométrée ; absente ou nulle : série en répétitions. */
+  readonly durationSec?: number | null;
   /** Muscles sollicités par l'exercice, poids 0 < w ≤ 1. */
   readonly muscles: readonly { readonly id: string; readonly weight: number }[];
 }

@@ -59,6 +59,8 @@ export const RECOVERY_CONFIG = {
     cardioCounted: true,
     /** Ressenti admis pour le cardio (RPE entier), bornes de la migration `cardio_session`. */
     cardioRpe: { rpeMin: 1, rpeMax: 10 },
+    /** BL-139 (proposition, révisable par Ali) : répétitions équivalentes à une minute de série chronométrée (une répétition ≈ 5 s sous tension). */
+    timedRepsPerMinute: 12,
     max: 10,
   },
 

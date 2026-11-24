@@ -2,7 +2,7 @@ import { logFailure } from '../../../platform/desktop/log';
 import { openShortcutFiles, openShortcutPicker, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
 import { detectTimeZone } from '../../../platform/timeZone';
 import type { RecoverySet, RecoveryWorkout } from '../../../domain/recovery';
-import { resolveExercise } from '../../../domain/training';
+import { loadFieldOf, resolveExercise } from '../../../domain/training';
 import type { AppContainer } from '../../app/container';
 import { createShortcutImportService, REREAD_DELAY_MS, shouldReread, type ImportLog, type ShortcutImportService } from './service';
 import { healthBodyImportFor, type HealthBodyImportService } from '../healthBodyImport';
@@ -22,6 +22,8 @@ export async function loadRecoveryWorkouts(container: AppContainer, sinceIso: st
     import('../../training/content').then((m) => m.loadTrainingContent()),
   ]);
   const customs = await exercises.list();
+  // BL-139 : poids de corps le plus récent (séries au poids du corps lesté ou assisté) ; inconnu : ces séries ne sont pas devinées.
+  const bodyKg = (await (await repos.bodyWeights()).listRecent(1))[0]?.kg ?? null;
   const closed = (await workouts.listClosed(60)).filter((w) => w.endedAt !== null && w.endedAt >= sinceIso);
   const result: RecoveryWorkout[] = [];
   for (const workout of closed) {
@@ -29,9 +31,15 @@ export async function loadRecoveryWorkouts(container: AppContainer, sinceIso: st
     if (full === null || full.endedAt === null) continue;
     const sets: RecoverySet[] = full.sets.map((s) => {
       const resolved = resolveExercise({ id: s.exerciseId, frozenName: s.exerciseName }, content.catalog, customs);
+      const exercise = resolved.exercise;
+      const field = exercise === null ? 'load' : loadFieldOf(exercise);
+      const fraction = exercise === null ? null : (exercise.bodyweightFraction ?? (exercise.metric === 'bodyweight-reps' ? 1 : null));
+      const body = field === 'load' ? {} : { baseKg: bodyKg !== null && fraction !== null ? bodyKg * fraction : null, loadSign: field === 'assistance' ? (-1 as const) : (1 as const) };
       return {
         kg: s.loadKg,
         reps: s.reps,
+        durationSec: s.durationSec,
+        ...body,
         difficulty: s.difficulty ?? null,
         isWarmup: s.setKind === 'warmup',
         completed: s.done,
