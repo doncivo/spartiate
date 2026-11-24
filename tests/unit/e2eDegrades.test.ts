@@ -14,3 +14,12 @@ describe('C193-degrades.spec.ts : assertions qui peuvent échouer', () => {
     expect(spec).toContain('L’iPhone calcule la récupération depuis ses imports Raccourcis et la publie ici par la synchro.');
   });
 });
+
+// Run CI 45372804746 : « Curl marteau » se fait aux haltères, le champ s'appelle « Charge par haltère (kg) » ; un libellé « Charge (kg) » exact ne le trouve pas.
+describe('saisie de la charge dans les specs de séance', () => {
+  it.each(['tests/e2e/C193-seance-clavier.spec.ts', 'tests/visual/capture.spec.ts'])('%s accepte « Charge par haltère (kg) »', (file) => {
+    const text = readFileSync(resolve(import.meta.dirname, '..', '..', file), 'utf8');
+    expect(text).not.toContain("getByLabel('Charge (kg)', { exact: true })");
+    expect(text).toContain('Charge( par haltère)? \(kg\)');
+  });
+});
