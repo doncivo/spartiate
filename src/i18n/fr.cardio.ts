@@ -15,6 +15,8 @@ export const cardioFr = {
   dateLabel: 'Date',
   timeLabel: 'Heure de début',
   durationLabel: 'Durée (min ou h:mm:ss)',
+  /** SEANCE-0292 (C-083). */
+  durationHint: 'La virgule vaut « : » (45,30 : 45 min 30 s).',
   distanceLabel: 'Distance (km, facultative)',
   avgHrLabel: 'FC moyenne (bpm, facultative)',
   rpeLabel: 'Ressenti (1 à 10)',

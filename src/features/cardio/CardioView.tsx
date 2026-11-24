@@ -325,12 +325,18 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
           </label>
           <label className="ct-cardio__field">
             <span className="ct-cardio__label">{tCardio('timeLabel')}</span>
-            <input className="ct-cardio__input" inputMode="numeric" autoComplete="off" value={form.time} onChange={(e) => set('time', e.target.value)} />
+            {/* SEANCE-0292 (C-083) : sélecteur d'heure natif (le pavé numérique de l'iPhone n'a pas « : »). */}
+            <input className="ct-cardio__input" type="time" autoComplete="off" value={form.time} onChange={(e) => set('time', e.target.value)} />
           </label>
-          <label className="ct-cardio__field">
-            <span className="ct-cardio__label">{tCardio('durationLabel')}</span>
-            <input className="ct-cardio__input" inputMode="numeric" autoComplete="off" value={form.duration} onChange={(e) => set('duration', e.target.value)} />
-          </label>
+          <div className="ct-cardio__field">
+            <label className="ct-cardio__field">
+              <span className="ct-cardio__label">{tCardio('durationLabel')}</span>
+              <input className="ct-cardio__input" inputMode="decimal" autoComplete="off" aria-describedby="ct-cardio-duration-hint" value={form.duration} onChange={(e) => set('duration', e.target.value)} />
+            </label>
+            <span id="ct-cardio-duration-hint" className="ct-today__muted">
+              {tCardio('durationHint')}
+            </span>
+          </div>
           <label className="ct-cardio__field">
             <span className="ct-cardio__label">{tCardio('distanceLabel')}</span>
             <input className="ct-cardio__input" inputMode="decimal" autoComplete="off" value={form.distance} onChange={(e) => set('distance', e.target.value)} />

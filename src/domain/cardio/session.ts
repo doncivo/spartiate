@@ -63,7 +63,11 @@ export function parseRpe(v: unknown): number | null {
 export function parseDurationText(text: string): Parsed<number> {
   const t = text.trim();
   if (t === '') return { ok: false, issue: 'empty' };
-  const parts = t.split(':');
+  // SEANCE-0292 (C-083, D-528) : le pavé décimal de l'iPhone n'a pas « : » ; « , » ou « . » en tient lieu, suivi de deux chiffres (« 45,30 »).
+  if (/[.,]/.test(t)) {
+    if (t.includes(':') || !/^\d{1,4}([.,]\d{2}){1,2}$/.test(t)) return { ok: false, issue: 'format' };
+  }
+  const parts = t.split(/[:.,]/);
   if (parts.length > 3 || parts.some((p) => !/^\d{1,4}$/.test(p))) return { ok: false, issue: 'format' };
   const n = parts.map(Number) as [number, ...number[]];
   let sec: number;

@@ -182,8 +182,9 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
               <figcaption className="ct-today__muted">{tCardio('gpsTrackNote')}</figcaption>
             </figure>
           )}
+          {/* SEANCE-0292 (C-083) : annonce au plus chaque minute ou chaque 100 m (VoiceOver ne la relit pas tous les 10 m). */}
           <p className="ct-visually-hidden" role="status">
-            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(Math.floor(elapsedSec / 60) * 60), distance: formatKm(distanceM) })}
+            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(Math.floor(elapsedSec / 60) * 60), distance: formatKm(Math.floor(distanceM / 100) * 100) })}
           </p>
           {live.paused ? <p className="ct-cardio__message">{line('gpsPaused')}</p> : live.lost ? <p className="ct-cardio__message">{line('gpsLost')}</p> : null}
           <div className="ct-cardio__gps-actions">
