@@ -72,11 +72,11 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-010 | audit Claude 0.27.0 | mineur — séries dégressives et partielles comptées dans l'écart de routine | à faire (0.29.x, séance et moteur, S) |
 | C-011 | audit Claude 0.27.0 | mineur — tonnage et records d'un exercice assisté comptent l'assistance | fait (FIX-ASSIST, PR à venir) |
 | C-012 | audit Claude 0.27.0 | mineur — durée estimée à 45 s par série quelle que soit la métrique (exercices chronométrés sous-estimés) | à faire (0.29.x, séance et moteur, S) |
-| C-013 | audit Claude 0.27.0 | mineur — plages 5–10 / 8–15 du § 12.1.4 appliquées aux seules substitutions (à trancher, D-86) | à trancher par Ali : generateSession.ts:260 plages 5–10/8–15 appliquées aux seules substitutions ; D-86 ne couvre pas le cas, décision d'Ali requise |
+| C-013 | audit Claude 0.27.0 | mineur — plages 5–10 / 8–15 du § 12.1.4 appliquées aux seules substitutions (à trancher, D-86) | à faire (0.29.x, séance et moteur, S) : D-472 (Ali, 24/11) |
 | C-014 | audit Claude 0.27.0 | mineur — replay : `doneAt` illisible, ordre indéfini au lieu de l'ordre par position | à faire (0.29.x, séance et moteur, S) |
 | C-015 | audit Claude 0.27.0 | mineur — circuit : exercice compté membre du groupe par ses seules séries d'échauffement | à faire (0.29.x, séance et moteur, S) |
 | C-016 | audit Claude 0.27.0 | amélioration — `isCompletedWorkSet` inutilisée hors tests, compte dégressives et partielles comme travail | à faire (0.29.x, séance et moteur, S) |
-| C-017 | audit Claude 0.27.0 | mineur — dernier jour fait vidé : la rotation repart de l'avant-dernier (ambigu dans D-243) | à trancher par Ali : programDay.ts:28-33 jour vidé ignoré, rotation depuis l'avant-dernier ; règle ambiguë dans D-243 (rotation seulement sans jours rattachés, D-316) |
+| C-017 | audit Claude 0.27.0 | mineur — dernier jour fait vidé : la rotation repart de l'avant-dernier (ambigu dans D-243) | à faire (0.29.x, séance et moteur, S) : D-473 (Ali, 24/11), test qui fige |
 | C-018 | audit Claude 0.27.0 | à vérifier — `programDayFor` ignore la séance déjà close du jour (confirmé par C-063) | fait (audit 0.29.1 : FIX-PROGRAMME (PR #167, C-063) : programDay.ts:67-69 kind 'done' si séance close aujourd'hui) |
 | C-019 | audit Claude 0.27.0 | mineur — jour de la semaine non entier accepté ; « Lundi2 » rattaché au lundi (D-317) | à faire (0.29.x, séance et moteur, S) |
 | C-020 | audit Claude 0.27.0 | important, à vérifier — « Semaine de reprise » préremplie par l'onboarding à chaque ouverture (voir C-064) | fait (audit 0.29.1 : FIX-PROGRAMME (PR #167, C-064) : CycleView.tsx:92 et :118 reprise de l'onboarding au premier cycle seulement) |
@@ -86,7 +86,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-024 | audit Claude 0.27.0 | à vérifier — tractions et dips : poids du corps ajouté à la charge saisie, double compte possible (voir C-071) | à faire (0.29.x, séance et moteur, S) |
 | C-025 | audit Claude 0.27.0 | mineur — inactivité comptée en tranches de 24 h ; dates comparées comme chaînes ISO | à faire (0.29.x, séance et moteur, S) |
 | C-026 | audit Claude 0.27.0 | à vérifier — décision datée après la dernière séance rendue sans contraintes (décharge, inactivité, journée rouge) | à faire (0.29.x, séance et moteur, S) |
-| C-027 | audit Claude 0.27.0 | mineur — « Dur » bloque le cran mais pas l'échelle de répétitions (§ 11.2.5 ambigu) | à trancher par Ali : prescribe.ts:313-315 « Dur » bloque seulement au haut de plage ; échelle de répétitions non bloquée, § 11.2.5 ambigu |
+| C-027 | audit Claude 0.27.0 | mineur — « Dur » bloque le cran mais pas l'échelle de répétitions (§ 11.2.5 ambigu) | à faire (0.29.x, séance et moteur, S) : D-474 (Ali, 24/11), test qui fige |
 | C-028 | audit Claude 0.27.0 | mineur — aberrante : séances partielles et décharges comptées ; première séance jamais aberrante | fait (FIX-ABERR) |
 | C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | à faire (0.29.x, séance et moteur, S) |
 | C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | à faire (0.29.x, séance et moteur, S) |
@@ -97,11 +97,11 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-035 | audit Claude 0.27.0 | mineur — rappel de complément perdu le jour du passage à l'heure d'été | à faire (0.29.x, nutrition et récupération, S) |
 | C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | fait (D-357 ; preuve NUTRI-a, 0.28.1, D-397) |
 | C-037 | audit Claude 0.27.0 | mineur — cible de repos : glucides ramenés à 0 sans recalcul des kcal ; floor contre round | à faire (0.29.x, nutrition et récupération, S) |
-| C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | à trancher par Ali : checkIn.ts premier check-in sans cible, couverture non contrôlée ; D-362 : « ticket nutrition après décision » (D-74) |
-| C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | à trancher par Ali : Jour Renpho jamais complet (renphoDay.ts, dayTotals.ts) ; à trancher par Ali (D-113) |
+| C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | à faire (0.29.x, nutrition et récupération, S) : D-475 (Ali, 24/11), test qui fige |
+| C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | à faire (0.29.x, nutrition et récupération, S) : D-476 (Ali, 24/11) |
 | C-040 | audit Claude 0.27.0 | mineur — horloge en avance : décision future qui passe devant une cible prévue ; HLC illisible mal classé | à faire (0.29.x, nutrition et récupération, S) |
 | C-041 | audit Claude 0.27.0 | mineur — totaux du jour non arrondis (erreurs de virgule flottante) | à faire (0.29.x, nutrition et récupération, S) |
-| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | à trancher par Ali : Lipides « traces » rendent la journée inconnue (sumKnown null) ; à trancher par Ali (D-75) |
+| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | à faire (0.29.x, nutrition et récupération, S) : D-477 (Ali, 24/11) |
 | C-043 | audit Claude 0.27.0 | mineur — code à 8 chiffres toujours lu en EAN-8 ; format rapporté par le scanner non transmis | à faire (0.29.x, nutrition et récupération, S) |
 | C-044 | audit Claude 0.27.0 | mineur — recette : `servings` à 0 donne Infinity ; recette vide acceptée avec une entrée toute nulle | à faire (0.29.x, nutrition et récupération, S) |
 | C-045 | audit Claude 0.27.0 | mineur — UPC-A sur 12 chiffres non retrouvé dans le cache ; normalisation de « ß » fautive | à faire (0.29.x, nutrition et récupération, S) |
@@ -117,10 +117,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-055 | audit Claude 0.27.0 | mineur — deux pesées au même instant : la dernière ligne du fichier gagne | à faire (0.29.x, nutrition et récupération, S) |
 | C-056 | audit Claude 0.27.0 | mineur, à vérifier — fichier Santé remplacé tronqué accepté (valeur coupée lue) | à faire (0.29.x, nutrition et récupération, S) |
 | C-057 | audit Claude 0.27.0 | amélioration, à vérifier (H-25) — séparateur de milliers anglais lu comme décimale dans `pas.csv` | à faire (0.29.x, nutrition et récupération, S) |
-| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | à trancher par Ali : recoveryImport/service.ts jour calculé dans le fuseau actuel ; à trancher (REV-01 constat 9) |
+| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | à faire (0.29.x, nutrition et récupération, M) : D-478 (Ali, 24/11) |
 | C-059 | audit Claude 0.27.0 | mineur — nuit du jour non soumise au seuil de 180 min pour le score | à faire (0.29.x, nutrition et récupération, S) |
 | C-060 | audit Claude 0.27.0 | mineur — baseline à σ = 0 ou HRV absente classée niveau B (libellé seulement) | à faire (0.29.x, nutrition et récupération, S) |
-| C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | à trancher par Ali : baseline.ts 14 nuits valides sans limite de calendrier ; à trancher par Ali |
+| C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | à faire (0.29.x, nutrition et récupération, S) : D-479 (Ali, 24/11) |
 | C-062 | audit Claude 0.27.0 | à vérifier — récupération musculaire figée au calcul ; cardio importé non retiré (§ 16.3) ; rappel à heure inexistante | à faire (0.29.x, nutrition et récupération, M) |
 | C-063 | audit Claude 0.27.0 | important — séance du jour proposée de nouveau après avoir été faite | fait (FIX-PROGRAMME) |
 | C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | fait (FIX-PROGRAMME) |
@@ -194,7 +194,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-132 | audit Claude 0.27.0 | amélioration — 927 clés sur 1 715 de `fr.ts` jamais lues ; catalogues morts dans `start-modules.json` | fait en partie ; reste : 163 clés retirées (FIX-COQUILLE, PR #170) ; restent les autres clés mortes de fr.ts et fr.capture/fr.scan/fr.routines/fr.notifications au départ (0.29.x, coquille, iOS et qualité, M) |
 | C-133 | audit Claude 0.27.0 | amélioration — code mort hérité (csvImport, taskRules, planNotifications…) sans import de production | fait en partie ; reste : platform/ocr désormais utilisé (IMPORT-029, PhotoReader.tsx) ; restent csvImport, taskRules, taskTrash, quietHours, eventReminders… sans import de production (0.29.x, coquille, iOS et qualité, M) |
 | C-134 | audit Claude 0.27.0 | à vérifier (D-36) — « code absent des captures d'écran » sans ligne UNVERIFIED ; couleurs d'appairage mal justifiées | fait en partie ; reste : ligne UNVERIFIED ajoutée (capability-matrix.md:64, MATRICE-DOC #171) ; restent exemption pairing.css, palette copiée, QR gardé après échec, marqueur vide (0.29.x, coquille, iOS et qualité, S) |
-| C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à trancher par Ali : rupture 1 024 (useLayout.ts) contre 900 px § 18.5 et Ctrl+K sans D-n ; à trancher avec BL-119, puis commentaires faux à corriger |
+| C-135 | audit Claude 0.27.0 | amélioration — PRD : rupture 1 024 contre 900 px, Ctrl+K absent sans décision ; commentaires faux | à faire (0.29.x, coquille, iOS et qualité, M) : D-480 (Ali, 24/11), disposition PC sans seuil et palette Ctrl+K |
 | C-136 | audit Claude 0.27.0 | important — export importable seulement sous 2 Mo | fait en partie ; reste : plafond 24 Mio aligné (import.rs:22, FIX-EXPORT #164, D-335) ; reste la mesure d'une base synthétique de 12 mois (0.29.x, données et synchro, S) |
 | C-137 | audit Claude 0.27.0 | important — la rotation peut supprimer la sauvegarde qu'elle vient de créer | fait (SAUV-RUST) |
 | C-138 | audit Claude 0.27.0 | important — aucune exclusion mutuelle entre restaurations, sauvegardes et mise de côté | fait (SAUV-RUST) |
@@ -300,7 +300,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | constat d'Ali à faire (docs/constats-ali.md) |
 | BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | fait en partie ; reste : 133 fichiers sur le banc legacy, raisons dans docs/TECH-0291-BL133.md (textes longs, champs sans équivalent, dépôts hérités, versions simulées) (0.29.x, données et synchro, L) ; 29 migrés (PR #195, D-462) |
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | fait (TECH-0291, PR #195, D-461) |
-| BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à trancher par Ali |
+| BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à faire (0.29.x, données et synchro, M) : D-481 (Ali, 24/11), colonne additive et relecture sync-icloud |
 | BL-136 | COQUILLE-0291 (revue à froid, D-459) | PC sous 1 024 px CSS (zoom de 150 %) : Progrès › Corps en une colonne (grille de FIX-0241 dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) hors de l’e2e BL-119, projet e2e iphone sans agent utilisateur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-137 | REL-0.29.1 (CI de SYNC-0291) | Perf Playwright du démarrage : 1 576 ms une fois pour un budget de 1 500 ms (run 44980315919), vert à la relance sans changement ; marge à surveiller (migration 21 au premier lancement d'une base neuve) | à faire (0.29.x, coquille, iOS et qualité, S) |
 
@@ -395,7 +395,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 15.3 b | PRD § 15.3 | absent — assiette (C-194) | fait en partie ; reste : assiette livrée (NUTRI-c, D-396, #180) ; enregistrement en recette, grammes, heure, conservation restent (BL-117) (0.29.x, nutrition et récupération, M) |
 | § 15.5 | PRD § 15.5 | partiel — tableau de bord (C-088) | fait (audit 0.29.1 : cible du jour au tableau de bord (FIX-PLANCHER, D-340, #165)) |
 | § 16.1 C | PRD § 16.1 | partiel — niveau C : zone cible jamais affichée (C-191) | fait (audit 0.29.1 : zone cible affichée (PROGRES-c, D-393, #179)) |
-| § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | à trancher par Ali : C-049 corrigé (FIX-RECUP, D-345, D-346, #166) ; reste C-061 (baseline sans limite de calendrier), à trancher |
+| § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | à faire (0.29.x, nutrition et récupération, S) : C-061 tranché par Ali (D-479) |
 | § 16.3 b | PRD § 16.3 | partiel — Exertion par zones FC remplacée par minutes × ressenti (D-88, D-220) | reporté : zones FC sans HealthKit direct (D-69) |
 | § 16.3 c | PRD § 16.3 | partiel — zone cible ≥ 66 / 34–65 / ≤ 33 calculée et stockée, non affichée (C-191) | fait (PROGRES-c, D-393) |
 | § 16.3 d | PRD § 16.3 | partiel — récupération par muscle : cardio importé non retiré (C-062) | à trancher par Ali : cardio importé non retiré de la récupération musculaire : implémenter ou amender le PRD (D-364, D-88) |
@@ -407,7 +407,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 17.1 d | PRD § 17.1 | absent — tendances de récupération sur 30 jours (C-191) | fait (PROGRES-c, D-393) |
 | § 17.1 e | PRD § 17.1 | partiel — graphiques Recharts < 300 ms : recharts déclaré, jamais importé (C-167) | caduque : graphiques en SVG, Recharts non importé (D-394) ; retrait de la dépendance : BL-116 ; mesure < 300 ms : § 23.1 g |
 | § 18.1 a | PRD § 18.1 | partiel — barre latérale PC non rétractable (C-192) | fait (COQUILLE-PC-b, D-399) |
-| § 18.1 b | PRD § 18.1 | partiel — Ctrl+1…5 présents, Ctrl+K absent (C-135) | à trancher par Ali : Ctrl+K absent du code, sans décision (C-135) : implémenter la recherche ou écart décidé |
+| § 18.1 b | PRD § 18.1 | partiel — Ctrl+1…5 présents, Ctrl+K absent (C-135) | à faire (0.29.x, coquille, iOS et qualité, S) : Ctrl+K tranché par Ali (D-480), avec C-135 |
 | § 18.1 c | PRD § 18.1 | partiel — swipe et appui long absents, haptique seule (C-192) | à faire (0.29.x, coquille, iOS et qualité, M) |
 | § 18.1 d | PRD § 18.1 | absent — clic droit et double-clic (C-192) | fait (COQUILLE-PC-a, D-398) |
 | § 18.1 e | PRD § 18.1 | partiel — minuteur PC sans badge dans le titre (C-192) | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -419,7 +419,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 18.4 a | PRD § 18.4 | partiel — contrastes AA (C-111, C-112) | fait (audit 0.29.1 : anneau de focus et bordures contrastés (A11Y, D-370, D-371, #174)) |
 | § 18.4 b | PRD § 18.4 | partiel — icône d'app non générée par script depuis `spartiate.svg` (C-194) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | à faire (0.29.x, CI, M) |
-| § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à trancher par Ali : PRD § 18 contradictoire : 1 024 px (tableau, useLayout) contre « ≥ 900 px » (maquettes) ; C-135, C-188 |
+| § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à faire (0.29.x, coquille, iOS et qualité, S) : tranché par Ali (D-480), avec C-135 |
 | § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | fait (COQUILLE-PC-c, D-400 ; constat d'Ali H-19a) |
 | § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | fait (COQUILLE-0291, PR #198, D-459) |
 | § 18.6 c | PRD § 18.6 | partiel — équivalent clavier (C-068, C-121, C-122) | fait en partie ; reste : focus après Entrée en séance fait (D-356, #170) ; restent C-121, C-122 et le focus du journal des facteurs (C-068) (0.29.x, coquille, iOS et qualité, M) |
