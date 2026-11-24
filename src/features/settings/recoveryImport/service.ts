@@ -233,7 +233,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
     const segments = sleep.flatMap((s) => (s.stage === null ? [] : [{ start: s.startAt, end: s.endAt, stage: s.stage as SleepStage }]));
     const { nights, ignoredGroups } = buildSleepNights(segments, tz);
-    const hrvSamples = hrv.flatMap((s) => (s.value === null ? [] : [{ measuredAt: s.startAt, day: utcToLocal(s.startAt, tz).date, value: s.value }]));
+    const hrvSamples = hrv.flatMap((s) => (s.value === null ? [] : [{ measuredAt: s.startAt, day: utcToLocal(s.startAt, tz).date, value: s.value, offsetMin: null }]));
     const byDay = new Map<string, number>();
     for (const s of rhr) if (s.value !== null) byDay.set(utcToLocal(s.startAt, tz).date, s.value);
     const records = toNightRecords({ nights, hrv: hrvSamples, restingHrByDay: [...byDay].map(([day, value]) => ({ day, value })), timeZone: tz });

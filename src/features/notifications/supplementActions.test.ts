@@ -288,7 +288,7 @@ describe('déclencheurs de l’action « Pris » (FIX-0221)', () => {
       },
       run: async () => {
         calls.push('run');
-        return { status: 'done' as const, taken: 0, applied: 0, duplicates: 0, failed: 0 };
+        return { status: 'done' as const, taken: 0, applied: 0, duplicates: 0, failed: 0, unmatched: 0 };
       },
     };
     return { document, calls, listeners, start: () => startSupplementActions({ document: document as never, source, makeProcessor: () => processor }) };
