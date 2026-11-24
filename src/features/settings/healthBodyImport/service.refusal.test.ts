@@ -23,6 +23,7 @@ describe('C-128 : refus du dépôt pendant l\'import de nutrition', () => {
   });
 
   it('un jour refusé est compté ; l\'autre jour est écrit ; l\'import est « done »', async () => {
+    const log = vi.fn();
     const reader = { kind: 'folder' as const, automatic: true, read: vi.fn(async () => files({ 'energie.csv': '2026-11-07T08:00:00+01:00;2000;kcal\n2026-11-08T08:00:00+01:00;2200;kcal\n' })) } as unknown as ShortcutFilesReader;
     const service = createHealthBodyImportService({
       reader,
@@ -34,12 +35,14 @@ describe('C-128 : refus du dépôt pendant l\'import de nutrition', () => {
         }),
       clock: createManualClock('2026-11-08T10:00:00.000Z'),
       timeZone: 'Europe/Paris',
-      log: () => undefined,
+      log,
       state: { get: async () => null, set: async () => undefined },
     });
     const result = await service.run('manual');
     expect(result.status).toBe('done');
     expect(result.nutrition).toMatchObject({ created: 1, refused: 1 });
+    // I2 : le refus est dans le journal technique (comptes seulement, aucune valeur alimentaire).
+    expect(log).toHaveBeenCalledWith('body-import-nutrition', expect.objectContaining({ refused: 1 }));
     const written = await (await db.data.repos.mealEntries()).listBetween('2026-11-01' as LocalDate, '2026-11-30' as LocalDate);
     expect(written.map((e) => e.date)).toEqual(['2026-11-08']);
   });
