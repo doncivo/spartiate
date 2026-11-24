@@ -218,6 +218,7 @@ export const nutritionFr = {
   plateItem: '{name} · {grams} g',
   plateGramsLabel: 'Quantité de {name} (g)',
   plateTimeLabel: 'Heure de {name}',
+  plateGramsInvalid: 'Quantité de {name} : plus de 0 et au plus 10 000 g.',
   plateRecipeName: 'Nom de la recette',
   plateRecipeSave: 'Enregistrer en recette',
   plateRecipeSaved: 'Recette enregistrée.',

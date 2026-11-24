@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { plateTotals, type Plate } from '../../../domain/nutrition';
+import { FOOD_GRAMS_MAX, plateTotals, type Plate } from '../../../domain/nutrition';
 import type { LocalTime } from '../../../domain/types';
 import { formatInt, orDash, tNutrition } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
@@ -24,6 +24,13 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
   const totals = plateTotals(plate);
   // Texte en cours de frappe par aliment (« 12, » reste saisissable) ; la quantité n'est reprise que si elle est valide.
   const [typed, setTyped] = useState<Readonly<Record<string, string>>>({});
+  // Une quantité saisie hors bornes (0, > 10 000, illisible) n'est jamais reprise en silence : le champ est invalide, dit pourquoi, et l'ajout est bloqué.
+  const badGrams = plate.filter((item) => {
+    const text = typed[item.food.ref];
+    if (text === undefined) return false;
+    const n = parseNumber(text);
+    return typeof n !== 'number' || !(n > 0) || n > FOOD_GRAMS_MAX;
+  });
   const [recipeName, setRecipeName] = useState('');
   const [recipeState, setRecipeState] = useState<'idle' | 'saved' | 'invalid' | 'error'>('idle');
   return (
@@ -36,7 +43,7 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
             <NumberField
               label={tNutrition('plateGramsLabel', { name: item.food.name })}
               value={typed[item.food.ref] ?? String(item.grams).replace('.', ',')}
-              invalid={typed[item.food.ref] !== undefined && typeof parseNumber(typed[item.food.ref] ?? '') !== 'number'}
+              invalid={badGrams.includes(item)}
               onChange={(value) => {
                 setTyped((current) => ({ ...current, [item.food.ref]: value }));
                 const grams = parseNumber(value);
@@ -71,13 +78,18 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
       {recipeState === 'saved' ? <p role="status">{tNutrition('plateRecipeSaved')}</p> : null}
       {recipeState === 'invalid' ? <p role="alert" className="ct-nutrition__warning">{tNutrition('plateRecipeInvalid')}</p> : null}
       {recipeState === 'error' ? <p role="alert" className="ct-nutrition__warning">{tNutrition('plateRecipeError')}</p> : null}
+      {badGrams.map((item) => (
+        <p key={item.food.ref} role="alert" className="ct-nutrition__warning">
+          {tNutrition('plateGramsInvalid', { name: item.food.name })}
+        </p>
+      ))}
       {failed ? (
         <p role="alert" className="ct-nutrition__warning">
           {tNutrition('writeError')}
         </p>
       ) : null}
       <div className="ct-nutrition__actions">
-        <Button disabled={busy} onClick={onCommit}>
+        <Button disabled={busy || badGrams.length > 0} onClick={onCommit}>
           {tNutrition('plateCommit')}
         </Button>
         <Button variant="secondary" onClick={onClear}>
