@@ -107,5 +107,7 @@ export const trainingSessionFr = {
   shareSets: 'Séries : {n}',
   shareVolume: 'Volume : {value} kg',
   shareRecord: 'Record : {name}, {text}',
+  // SEANCE-0292b (§ 17.1 a) : record signalé en séance, à la validation de la série qui l'établit.
+  liveRecord: 'Record · {name} : {text}',
   platesStandard: 'Jeu de disques standard : aucun disque déclaré dans le profil de matériel.',
 } as const;

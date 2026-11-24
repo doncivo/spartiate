@@ -3,6 +3,9 @@ import { progressionFr } from './fr.progression';
 /** Textes de la prescription (I2-01) ; importé seulement par le composant à la demande `ExerciseProgression`. */
 export type ProgressionTextKey = keyof typeof progressionFr;
 
+/** SEANCE-0292b (BL-111) : jour d'une décision, « 12 novembre ». */
+export const progressionDay = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+
 export function tProgression(key: ProgressionTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = progressionFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
@@ -14,7 +17,10 @@ export function tProgression(key: ProgressionTextKey, params?: Readonly<Record<s
  */
 export function progressionNoteText(note: { readonly key: ProgressionTextKey; readonly params: Readonly<Record<string, number>> }, held: 1 | 2 | null): string {
   const params: Record<string, string | number> = { ...note.params };
-  const load = note.params['load'];
-  if (typeof load === 'number') params['load'] = tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: String(load).replace('.', ',') });
+  // SEANCE-0292b (D-496) : la charge retenue « kept » s'écrit comme « load ».
+  for (const name of ['load', 'kept'] as const) {
+    const kg = note.params[name];
+    if (typeof kg === 'number') params[name] = tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: String(kg).replace('.', ',') });
+  }
   return tProgression(note.key, params);
 }

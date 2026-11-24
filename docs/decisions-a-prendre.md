@@ -45,3 +45,29 @@ Recommandation : B. Conséquences : migration additive, relecture sync-icloud, a
 - B. Rester sur « Nouvelle séance » ; un nouvel appui sur l'onglet actif ramène à son accueil (règle commune à tous les onglets).
 
 Recommandation : A (moins de gestes).
+
+## Q-15 — Arrondi de la décote de position (H-1, écart G3) (SEANCE-0292b)
+
+Constat : 2ᵉ exercice du muscle, 40 kg × 0,93 = 37,2 kg. Gravl publie 37,5 kg (arrondi au plus proche, répétitions compensées dans les deux
+sens) ; Spartiate propose 35 kg et une répétition de plus (arrondi vers le bas, § 11.3 « +1 rep si l'écart dépasse 3 % »).
+- A (recommandé) : garder l'arrondi vers le bas (jamais au-dessus de la cible, règle unique du moteur). Conséquence : séance un peu plus
+  légère au 2ᵉ rang.
+- B : arrondi au plus proche avec une répétition de moins si la charge monte. Conséquence : règle d'arrondi propre à la position, ENGINE_VERSION
+  relevée.
+
+## Q-16 — Échelle après un cran (H-1, écart G2b) (SEANCE-0292b)
+
+Constat : après 8-8-8 et un cran, Gravl repart à 8-7-6 (série d'appui en tête), Spartiate au bas de la plage sur chaque série (6-6-6).
+- A (recommandé) : garder (règle D-72, figée par TESTS-FIGES). B : repartir au profil de répétitions de la première séance de l'échelle.
+
+
+## Q-17 — Référence sous la plus petite charge du profil (D-536 dépasse D-496) (SEANCE-0292b)
+
+Constat : D-496 (Ali) dit « arrondie vers le bas à la grille, plafonnée au maximum » ; sous le minimum, il n'existe aucune charge en dessous.
+D-536 (Claude) répond « à saisir » (aucune charge proposée) ; ce cas n'était pas tranché par Ali. Aucun code changé par cette question.
+- A (recommandé) : garder « à saisir », note « sous la plus petite charge de ce profil ». Conséquences : jamais de hausse au-delà du plafond
+  de +10 % (4 kg → 5 kg = +25 %) ; Ali saisit la charge qu'il utilise ; la propriété `prescribe.property.test.ts` (D-536) le fige.
+- B : proposer la plus petite charge du profil avec des répétitions réduites pour garder l'effort (e1RM ≤ référence + 10 %). Conséquences :
+  une proposition chiffrée tout de suite ; règle nouvelle (répétitions ajustées à la baisse sur une hausse de charge, contraire au
+  « reps → charge jamais dans la même prescription »), vecteurs et propriété à réécrire, `ENGINE_VERSION` relevée.
+

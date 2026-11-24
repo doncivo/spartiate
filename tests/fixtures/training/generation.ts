@@ -172,7 +172,6 @@ export const PPL_DAYS: readonly RoutineDaySpec[] = [PUSH, PULL, LEGS, { ...PUSH,
 
 export const program = (patch: Partial<GenerationProgram> = {}): GenerationProgram => ({
   mode: 'guide',
-  libreVariant: null,
   split: 'upper-lower',
   customDays: [],
   variety: 'consistent',

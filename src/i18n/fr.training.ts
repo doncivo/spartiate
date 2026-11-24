@@ -25,6 +25,9 @@ export const trainingFr = {
   // Bibliothèque
   search: 'Rechercher un exercice',
   groupFilter: 'Groupe musculaire',
+  // SEANCE-0292b (BL-111) : carte du corps de la bibliothèque (reflet visuel du filtre « Groupe musculaire »).
+  bodyMapFront: 'Avant',
+  bodyMapBack: 'Arrière',
   groupAll: 'Tous les groupes',
   // MOTEUR-0281c (§ 14.2) : filtres par muscle et par pattern de mouvement.
   muscleFilter: 'Muscle',

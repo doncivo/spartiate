@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BENCH, CURL, LEG_PRESS, daysAgo, input } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
 import { epley } from './estimate1rm';
+import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
 import type { Difficulty, ExerciseSession, PrescribeInput, ReasonCode } from './types';
 
@@ -80,12 +81,40 @@ describe('propriétés du moteur', () => {
         const p = prescribe(x);
         if (p.reference === null || p.loadKg === null) return;
         if (p.reasons.some((r) => CONSTRAINTS.has(r))) return;
+        // SEANCE-0292b (BL-106, D-496) : référence hors de la grille du profil, ramenée au cran inférieur de la grille (seule baisse permise).
+        // Relecture (C) : exactement la plus grande charge de la grille ≤ référence (donc plafonnée au maximum du matériel).
+        if (p.reasons.includes('reference-off-grid')) {
+          const grid = loadGrid(x.exercise.equipment, x.equipment);
+          expect(grid).not.toBeNull();
+          const refKg = p.reference.loadKg;
+          const below = (grid?.loads ?? []).filter((kg) => kg <= refKg + 1e-9);
+          expect(below.length).toBeGreaterThan(0);
+          expect(p.loadKg).toBe(Math.max(...below));
+          expect(p.loadKg).toBeLessThanOrEqual(Math.max(...(grid?.loads ?? [])));
+          return;
+        }
         expect(p.loadKg).toBeGreaterThanOrEqual(p.reference.loadKg);
         if (p.headline === 'rep-ladder' || p.headline === 'hold-hard' || p.headline === 'extra-rep') expect(p.loadKg).toBe(p.reference.loadKg);
         expect(p.sets).toHaveLength(x.target.sets);
         expect(p.confidence).toBeGreaterThanOrEqual(0);
         expect(p.confidence).toBeLessThanOrEqual(1);
       }),
+    );
+  });
+
+  it('D-536 : référence hors grille sous la plus petite charge du profil : « à saisir », aucune charge proposée', () => {
+    fc.assert(
+      fc.property(arbInput, fc.option(fc.integer({ min: 0, max: 100 }), { nil: null }), fc.boolean(), (x, recovery, deload) => {
+        const p = prescribe({ ...x, recovery: recovery === null ? null : { recovery, sleepHours: null, restingHrDelta: null }, deload });
+        const grid = loadGrid(x.exercise.equipment, x.equipment);
+        if (p.reference === null || grid === null || grid.loads.length === 0) return;
+        const ref = p.reference.loadKg;
+        if (ref <= 0 || ref >= Math.min(...grid.loads) - 1e-9) return;
+        expect(p.status).toBe('to-enter');
+        expect(p.loadKg).toBeNull();
+        expect(p.reasons).toContain('reference-off-grid');
+      }),
+      { numRuns: 300 },
     );
   });
 });

@@ -72,7 +72,6 @@ export function buildGenerationInput(data: GenerationData, source: GenerationSou
     day: dayIndex,
     program: {
       mode: settings.mode,
-      libreVariant: null,
       split: settings.split,
       customDays: source.days.map((_, i) => (i === dayIndex ? settings.customGroups : [])),
       variety: settings.variety,

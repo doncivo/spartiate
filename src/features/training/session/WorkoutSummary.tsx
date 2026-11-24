@@ -10,6 +10,7 @@ import type { Held } from '../loadDisplay';
 import { recordText, SummaryFigures } from './SummaryFigures';
 import { prescriptionGaps, type ExerciseGap, type GapTarget } from '../../../domain/training/summaryGap';
 import { nextProgramDay } from '../../../domain/training/programDay';
+import { CATALOG_ASSISTED_IDS, isAssistedEquipment } from '../../../domain/training/assisted';
 import { formatExerciseLoad } from '../../../i18n/trainingText';
 import { tSession } from '../../../i18n/trainingSessionText';
 import { renderSummaryImage, shareSummaryImage, summaryCard, type ShareOutcome, type SummaryCard } from './summaryShare';
@@ -80,7 +81,10 @@ export function WorkoutSummary({ access, closed, onClose, onJournal, heldOf = ()
           const decision = await progression.decisionFor(workout.id, id).catch(() => null);
           if (decision !== null && decision.loadKg !== null) targets.set(id, { loadKg: decision.loadKg, reps: decision.reps });
         }
-        if (alive) setGaps(prescriptionGaps(workout.sets, targets));
+        // BL-140 : assistés (catalogue et personnalisés avec la machine, supprimés compris), charge faite = la moins assistée.
+        const customs = await (async () => (await access.repos.exercises()).list({ includeDeleted: true }))().catch(() => []);
+        const assisted = new Set([...CATALOG_ASSISTED_IDS, ...customs.filter((c) => isAssistedEquipment(c.equipment)).map((c) => c.id)]);
+        if (alive) setGaps(prescriptionGaps(workout.sets, targets, assisted));
       } catch {
         if (alive) setGaps('error');
       }
