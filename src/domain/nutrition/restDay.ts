@@ -40,8 +40,10 @@ const carbFor = (kcal: number, proteinG: number, fatG: number): number =>
 
 /** Cible de repos par un écart en kcal (négatif : moins de glucides). */
 export function restTargetFromGap(training: Target, gapKcal: number): Target {
-  const kcal = Math.round(training.kcal + gapKcal);
-  return { kcal, proteinG: training.proteinG, fatG: training.fatG, carbG: Math.max(0, Math.floor(training.carbG + gapKcal / KCAL_PER_G.carb + 1e-9)) };
+  const carbG = Math.round(training.carbG + gapKcal / KCAL_PER_G.carb);
+  if (carbG >= 0) return { kcal: Math.round(training.kcal + gapKcal), proteinG: training.proteinG, fatG: training.fatG, carbG };
+  // C-037 : glucides bornés à 0, les kcal suivent les macros (protéines et lipides gardés) au lieu de rester sans macros pour les porter.
+  return { kcal: Math.round(KCAL_PER_G.protein * training.proteinG + KCAL_PER_G.fat * training.fatG), proteinG: training.proteinG, fatG: training.fatG, carbG: 0 };
 }
 
 /** Cible de repos saisie en kcal : même règle que l'écart. */

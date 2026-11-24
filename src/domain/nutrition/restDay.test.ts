@@ -33,7 +33,7 @@ describe('PROG-01 : cible de repos (D-271)', () => {
     expect(restTargetFromGap(TRAINING, DEFAULT_REST_GAP_KCAL)).toEqual({ kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 });
   });
   it('saisie en kcal : même écart porté par les glucides', () => {
-    expect(restTargetFromKcal(TRAINING, 2250)).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 });
+    expect(restTargetFromKcal(TRAINING, 2250)).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 233 });
   });
   it('glucides jamais négatifs', () => {
     const low: Target = { kcal: 2000, proteinG: 200, fatG: 100, carbG: 30 };
