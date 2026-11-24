@@ -123,7 +123,7 @@ describe('« Terminer la séance »', () => {
     expect(await one('SELECT ended_at FROM workout')).toEqual({ ended_at: null });
   });
 
-  it('clôture : résumé (durée, séries, volume hors dégressive) ; séance close en base, repos et Live Activity arrêtés ; aucune question de routine sans écart', async () => {
+  it('clôture : résumé (durée, séries, volume hors dégressive) ; séance close en base, repos et Live Activity arrêtés ; série prévue changée en dégressive : écart de routine', async () => {
     // Une série dégressive validée avant le montage : elle compte dans les séries, pas dans le volume (§ 13.5).
     const workout = await db.data.transaction(async (r) => (await r.workouts()).start({ source: 'routine', routineId: u(1), dayId: u(2) }));
     const first = workout.sets[0];
@@ -149,7 +149,9 @@ describe('« Terminer la séance »', () => {
     expect(within(summary).getByText('Séries').nextElementSibling).toHaveTextContent('4');
     expect(within(summary).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1\s417,5$/);
     expect(within(summary).getByText(/Hors échauffement, séries dégressives, partielles et chronométrées/)).toBeInTheDocument();
-    expect(within(summary).queryByText('Mettre à jour la routine ?')).toBeNull();
+    // SEANCE-0292 (C-010) : attente changée ; une série de travail prévue changée en dégressive ne compte plus dans la structure (2 séries de
+    // travail du développé couché au lieu de 3) : la question est posée. « Aucune question sans écart » reste couvert par closure.test.ts (« aucun écart : la question n’est pas posée »).
+    expect(within(summary).getByText('Mettre à jour la routine ?')).toBeInTheDocument();
     expect(await one('SELECT ended_at, rest_timer_end_at FROM workout')).toEqual({ ended_at: '2026-11-09T17:30:00.000Z', rest_timer_end_at: null });
     expect(f.calls.ends).toBeGreaterThanOrEqual(1);
     expect(f.calls.cancel).toBeGreaterThanOrEqual(1);
