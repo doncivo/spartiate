@@ -54,7 +54,7 @@ describe('Apple Santé : section « Corps et nutrition » (I6-04)', () => {
     expect(screen.getByText('date sans fuseau horaire : 1')).toBeInTheDocument();
     expect(screen.getByText(/jours créés : 1 · mis à jour : 0/)).toBeInTheDocument();
     // I2 (C-128) : le résumé dit aussi les jours refusés par l'enregistrement (0 ici).
-    expect(screen.getByText(/sans énergie (rien écrit) : 0 · refusés par l’enregistrement : 0./)).toBeInTheDocument();
+    expect(screen.getByText(/sans énergie \(rien écrit\) : 0 · refusés par l’enregistrement : 0\./)).toBeInTheDocument();
     expect(screen.getByText('2 fichiers lus.')).toBeInTheDocument();
     expect(screen.getAllByText('Fichier absent : rien n’a été lu pour ce type.')).toHaveLength(8);
     expect(document.body.textContent).not.toMatch(/81[,.]4|2300/);
