@@ -268,6 +268,35 @@ describe('make-source-json (source SideStore)', () => {
     expect(app.versions[1]).toEqual(published.apps[0]?.versions[0]);
   });
 
+  // REL-0.29.2 (D-489, complément d'audit) : les notes déjà publiées d'anciennes versions portaient le nom d'un lieu réel (l'identifiant du
+  // profil par défaut et son nom affiché) ; la publication suivante les réécrit, jamais à la main. Témoins construits, le nom n'est pas écrit.
+  it('retire le nom du lieu des notes des versions déjà publiées, sans toucher au reste', () => {
+    const word = String.fromCharCode(97, 110, 116, 111, 110, 121);
+    const cap = word.charAt(0).toUpperCase() + word.slice(1);
+    const old = (v: string, d: string) => ({ version: v, date: '2026-11-06T17:14:49.947Z', localizedDescription: d, downloadURL: ipaUrlFor(v), size: 10, minOSVersion: '18.0' });
+    const published = {
+      name: 'Spartiate',
+      apps: [{ name: 'Spartiate', bundleIdentifier: 'fr.spartiate.app', versions: [
+        old('0.3.3', `- Profil de matériel Club Sport ${cap} copié avant la 0.3.0 : la paire revient.`),
+        old('0.3.0', `- Arrondis (par défaut Club Sport ${cap}).\n- Base en version 5.`),
+        old('0.2.0', `- Matériel : profil « Club Sport ${cap} » utilisé par défaut.`),
+        old('0.1.0', 'Spartiate 0.1.0'),
+      ] }],
+      news: [],
+    };
+    const r = cli('0.3.4', writeTmp('published-place.json', JSON.stringify(published)));
+    const versions = (r.json?.apps[0] as App).versions;
+    const notes = versions.map((v) => v.localizedDescription ?? '');
+    for (const n of notes) expect(n.toLowerCase()).not.toContain(word);
+    expect(notes.slice(1)).toEqual([
+      '- Profil de matériel Salle complète copié avant la 0.3.0 : la paire revient.',
+      '- Arrondis (par défaut Salle complète).\n- Base en version 5.',
+      '- Matériel : profil « Salle complète » utilisé par défaut.',
+      'Spartiate 0.1.0',
+    ]);
+    expect(versions[4]).toEqual(published.apps[0]?.versions[3]);
+  });
+
   it('refuse un IPA dont la version, le bundle ou l’iOS minimum diffèrent, une URL ou une version invalides', () => {
     expect(cli('1.0.0', null, [], info('1.0.1')).stderr).toMatch(/Version de l'IPA 1\.0\.1/);
     expect(cli('1.0.0', null, [], info('1.0.0', { CFBundleIdentifier: 'fr.autre' })).status).toBe(1);
