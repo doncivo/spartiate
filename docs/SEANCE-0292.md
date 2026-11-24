@@ -121,7 +121,7 @@ Rouge (constaté en local) → vert, commits de `origin/main..SEANCE-0292` :
 | § 11 | `3f440cb5` | `606dd731` | |
 
 Lancés en local (`CI=1 … --maxWorkers=1 --coverage.enabled=false`) : src/domain/training (904 verts), src/domain/onboarding,
-src/features/training, src/features/today, src/features/progress, src/db/repositories, src/i18n (résultat ci-dessous) ; `tsc --noEmit` et
+src/features/training, src/features/today, src/features/progress, src/db/repositories, src/i18n : 244 fichiers, 2 141 tests verts en un passage ; `tsc --noEmit` et
 `eslint` sur les fichiers touchés : propres. Dépassements de délai isolés sous charge (programImport.qa, SessionScreen, CycleView), verts
 seuls : déjà vus en 0.29.1, aucun lien avec ce lot.
 
