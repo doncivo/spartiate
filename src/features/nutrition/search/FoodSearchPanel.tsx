@@ -313,6 +313,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   // Flèches haut / bas : de la zone de recherche aux résultats et entre eux (clavier PC) ; Entrée active le bouton ciblé.
   const moveFocus = (event: KeyboardEvent): void => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    // C-099 : les flèches d'un groupe de choix (filtres) lui appartiennent ; elles ne vont pas dans les résultats.
+    if (event.target instanceof Element && event.target.closest('[role="radiogroup"]') !== null) return;
     const hits = Array.from(root.current?.querySelectorAll<HTMLButtonElement>('[data-hit]') ?? []);
     if (hits.length === 0) return;
     event.preventDefault();
