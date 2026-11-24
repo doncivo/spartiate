@@ -115,6 +115,10 @@ export const progressionFr = {
   accept: 'Accepter',
   modify: 'Modifier',
   refuse: 'Refuser',
+  // SEANCE-0292b (BL-111) : retour à la prescription précédente depuis l'explication, en séance.
+  revertFrom: 'Avant ta dernière hausse ({date}) : {value}.',
+  revertButton: 'Revenir à la prescription précédente',
+  revertHint: 'Reprend ces valeurs pour cette séance ; ton historique et tes décisions restent intacts.',
   decisionHint: 'Rien n’est rempli sans ton accord ; tes saisies l’emportent toujours.',
   editLoad: 'Charge proposée (kg)',
   editLoadPair: 'Charge proposée par haltère (kg)',

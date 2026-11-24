@@ -56,7 +56,7 @@ afterEach(async () => {
 });
 
 describe('BL-111 : retour à la prescription précédente en séance', () => {
-  it('après une hausse (60 × 10 → 62,5 × 8) : le bouton reprend 60 × 10 · 10 · 10, remplit les séries et trace un retour', async () => {
+  it('après une hausse (60 × 10 → 62,5 × 8) : le bouton reprend 60 × 10 · 10 · 10, remplit les séries et trace la modification', async () => {
     await closedWithDecision(u(1), 60, [10, 10, 10]);
     await closedWithDecision(u(2), 62.5, [8, 8, 8]);
     const r = await db.data.repos.workouts();
@@ -70,8 +70,9 @@ describe('BL-111 : retour à la prescription précédente en séance', () => {
     expect(await within(p).findByText('Valeurs retenues : 60 kg × 10.')).toBeInTheDocument();
     const rows = await db.driver.select<{ load_kg: number | null; reps: number | null }>(`SELECT load_kg, reps FROM workout_set WHERE set_kind = 'work' AND workout_id = '${CURRENT}' ORDER BY position`);
     expect(rows.map((x) => [x.load_kg, x.reps])).toEqual([[60, 10], [60, 10], [60, 10]]);
+    // D-537 : valeur retenue de cette séance, tracée comme une modification (acceptée = non), pas comme la décision de retour de la fiche.
     const decision = await (await db.data.repos.progression()).decisionFor(CURRENT, 'bench-press-barbell');
-    expect(decision?.revert).toBe(true);
+    expect(decision).toMatchObject({ accepted: false, loadKg: 60, reps: [10, 10, 10] });
   });
 
   it('sans hausse dans les décisions : aucun bouton de retour', async () => {
