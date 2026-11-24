@@ -220,6 +220,13 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // DATA-0292 : le SQL des migrations (0001 à la dernière) est chargé à la demande, seulement quand la base a du travail ; le départ n'embarque que le manifeste.
+  it.each(['CREATE TABLE exercise_exclusion', 'CREATE TABLE body_weight', 'sync_cardio_session_ai'])('DATA-0292 : le SQL de migration « %s » est hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I1-02 : séance active, minuteur de repos et carte « Séance » d'Aujourd'hui (bloc à la demande) : aucun octet dans le départ.
   it('I1-02 : la carte « Séance » d’Aujourd’hui est un bloc à la demande, hors du départ', () => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
