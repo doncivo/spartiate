@@ -349,7 +349,11 @@ export function prescribe(input: PrescribeInput): Prescription {
   if (increase !== null) {
     const cap = Math.max(current, reference.e1rmKg) * (1 + config.maxGainPerSession);
     const fits = (loadKg: number, reps: readonly number[]): boolean => epley(totalLoad(loadKg, body), Math.max(...reps)) <= cap + 1e-9;
-    const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
+    // C-004 (§ 11.3 « < 0,4 → provisoire, hausse ≤ 1 cran ») : en confiance provisoire, le recalibrage « Facile » est borné au cran suivant
+    // de la grille (sans grille : cran supposé `unknownIncrementKg`) ; entre 0,4 et 0,6, il reste entier (§ 11.2.5).
+    const oneStep = available === null ? refLoad + config.unknownIncrementKg : nextLoadAbove(refLoad, available);
+    const bounded = draft.recalibration !== null && confidence < config.provisionalBelow && oneStep !== null && increase.targetKg > oneStep + EPS;
+    const snapped = bounded ? { loadKg: oneStep, reps: increase.reps, extraRep: false } : snapToEquipment(increase.targetKg, increase.reps, available, config);
     // Assisté (FIX-ASSIST) : la « hausse » est une assistance plus faible, jamais au-dessus de la référence.
     const snappedLoad = assisted ? Math.min(snapped.loadKg, refLoad) : Math.max(snapped.loadKg, refLoad);
     if (draft.recalibration !== null && snappedLoad <= refLoad + EPS) {
@@ -361,7 +365,9 @@ export function prescribe(input: PrescribeInput): Prescription {
       draft = hold('rep-ladder', plusOne(reference.reps, index), index);
     } else if (fits(snappedLoad, snapped.reps)) {
       if (snapped.extraRep) reasons.add('snap-extra-rep');
-      draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps };
+      // C-004 : recalibrage borné, le 1RM relevé suit la charge retenue (pas les +5 % entiers).
+      const recalibration = bounded && draft.recalibration !== null ? { at: draft.recalibration.at, estimated1rmKg: current * (snappedLoad / refLoad) } : draft.recalibration;
+      draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps, recalibration };
     } else {
       // Au-delà du garde-fou : la charge inférieure (la référence), et l'échelle de répétitions continue au-delà du haut de plage.
       reasons.add('gain-capped');
