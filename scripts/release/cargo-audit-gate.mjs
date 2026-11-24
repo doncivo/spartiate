@@ -4,7 +4,7 @@
 // Bloque (code 1) si une alerte de sécurité touche une crate (nom ET version) compilée pour une cible livrée ; une alerte hors de ce
 // graphe devient un avertissement visible (::warning::). Un rapport illisible ou un graphe vide bloque : jamais de passage silencieux.
 // Aucune dépendance : s'exécute sans `npm ci`.
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 
@@ -52,6 +52,21 @@ export function advisoryWarnings(report) {
   return lines;
 }
 
+/** A-005 : résumé Markdown du job (alertes, avertissements par nature) : la liste courante, jamais une liste tenue à la main. */
+export function summaryMarkdown(report, { blocking, warnings }, shippedCount) {
+  const lines = ['### cargo audit', '', `${blocking.length} alerte(s) bloquante(s) ; ${warnings.length} hors du graphe livré ; ${shippedCount} crates livrées (Windows et iPhone).`, ''];
+  const rows = [
+    ...blocking.map((b) => `| bloquante | ${b.id} | ${b.crate} | ${b.title} |`),
+    ...warnings.map((w) => `| hors graphe livré | ${w.id} | ${w.crate} | ${w.title} |`),
+  ];
+  for (const line of advisoryWarnings(report)) {
+    const m = line.match(/^(\S+) (?:(RUSTSEC-\S+) )?sur (\S+?)(?: : (.*))?$/);
+    rows.push(m ? `| ${m[1]} | ${m[2] ?? ''} | ${m[3]} | ${m[4] ?? ''} |` : `| avertissement | | | ${line} |`);
+  }
+  if (rows.length === 0) return [...lines, 'Aucune alerte ni aucun avertissement.', ''].join('\n');
+  return [...lines, '| nature | avis | crate | titre |', '| --- | --- | --- | --- |', ...rows, ''].join('\n');
+}
+
 function main(argv) {
   const [reportPath, ...trees] = argv;
   if (!reportPath || trees.length === 0) throw new Error('usage : cargo-audit-gate.mjs <rapport.json> <arbre…>');
@@ -67,6 +82,7 @@ function main(argv) {
   for (const w of warnings) console.log(`::warning::${w.id} sur ${w.crate} (hors du graphe livré) : ${w.title}`);
   for (const b of blocking) console.log(`::error::${b.id} sur ${b.crate} (graphe livré) : ${b.title}`);
   console.log(`cargo audit : ${blocking.length} alerte(s) bloquante(s), ${warnings.length} hors du graphe livré, ${shipped.size} crates livrées`);
+  if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, summaryMarkdown(report, { blocking, warnings }, shipped.size));
   return blocking.length === 0 ? 0 : 1;
 }
 

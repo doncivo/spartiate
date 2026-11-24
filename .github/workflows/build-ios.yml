@@ -268,6 +268,10 @@ jobs:
           grep -q "/index.html" "$APP/$EXE" || { echo "::error::index.html non embarqué"; exit 1; }
           grep -q "/${ASSET}" "$APP/$EXE" || { echo "::error::${ASSET} non embarqué"; exit 1; }
           echo "Front embarqué : /index.html et /${ASSET} présents"
+          # BL-043 : avis de licence des composants tiers, copiés de public/ dans dist/ puis embarqués comme le reste du front.
+          test -s dist/THIRD-PARTY-NOTICES.txt || { echo "::error::dist/THIRD-PARTY-NOTICES.txt absent ou vide"; exit 1; }
+          grep -q "/THIRD-PARTY-NOTICES.txt" "$APP/$EXE" || { echo "::error::THIRD-PARTY-NOTICES.txt non embarqué"; exit 1; }
+          echo "Avis de licence embarqués : /THIRD-PARTY-NOTICES.txt présent"
           du -sh "$APP" "$APP/$EXE"
           ls "$APP"
 
@@ -324,7 +328,10 @@ jobs:
           [ "$APPBUILD" = "$EXTBUILD" ] || { echo "::error::CFBundleVersion différent : app $APPBUILD, extension $EXTBUILD"; exit 1; }
           plutil -convert xml1 -o "$RUNNER_TEMP/extension-info.plist" "$EXT/Info.plist"
           if grep -Eq 'UIBackgroundModes|application-groups|aps-environment' "$RUNNER_TEMP/extension-info.plist"; then echo "::error::l'extension déclare un mode de fond, un App Group ou un push"; exit 1; fi
-          codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2> "$RUNNER_TEMP/extension-entitlements.err"
+          if ! codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2> "$RUNNER_TEMP/extension-entitlements.err"; then
+            cat "$RUNNER_TEMP/extension-entitlements.err" >&2
+            echo "::error::codesign -d a échoué sur l'extension Live Activity"; exit 1
+          fi
           if grep -Eq 'application-groups|aps-environment|com.apple.developer.healthkit' "$RUNNER_TEMP/extension-entitlements.plist"; then echo "::error::l'extension porte un entitlement interdit"; exit 1; fi
           {
             echo "- Extension Live Activity de l'IPA finale : PlugIns/SpartiateLiveActivity.appex présente, ${EXTID} v${EXTVER}, point d'extension ${POINT}"

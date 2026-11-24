@@ -14,9 +14,35 @@ import { useAppStore } from './appStore';
 import { bootstrapDatabase } from './bootstrap';
 import { DbFailureDetails } from './DbFailureDetails';
 import { restoreUpdateBackup } from './updateRestore';
-// @ts-expect-error instrumentation .mjs réservée aux builds A9
-import { afterApplyFault, pauseAfterCommit } from '../../../scripts/ios/prepare-a9.mjs';
 import { LEGACY_SYNC_CATALOGUE } from '../../../tests/fixtures/legacy-schema/catalogue';
+
+/**
+ * Pannes de laboratoire A9, en place dans ce test depuis le retrait de scripts/ios/prepare-a9.mjs (CI-0292, C-161) : elles ne servaient qu'ici
+ * et à l'outil d'instrumentation des IPA de laboratoire, retiré (même identifiant que l'app réelle). Mêmes gardes que l'ancien outil.
+ */
+const baseline19 = async (db: SqlDriver, report: MigrateReport): Promise<void> => {
+  const versions = await db.select<{ version: number }>('SELECT MAX(version) AS version FROM schema_migrations');
+  if (report.currentVersion !== 19 || report.applied.length !== 1 || report.applied[0] !== 19 || versions[0]?.version !== 19) {
+    throw Object.assign(new Error('A9 requires a fresh migration from schema 18 to 19'), { name: 'A9InvalidBaseline' });
+  }
+};
+async function afterApplyFault(db: SqlDriver, report: MigrateReport): Promise<void> {
+  if (localStorage.getItem('ct.a9.afterapply.consumed') === '1') return;
+  await baseline19(db, report);
+  await db.select('SELECT COUNT(*) AS count FROM epoch_carry_report');
+  localStorage.setItem('ct.a9.afterapply.consumed', '1');
+  throw Object.assign(new Error('A9 injected failure after committed schema 19'), { name: 'A9AfterApplyCommitted19' });
+}
+async function pauseAfterCommit(db: SqlDriver, report: MigrateReport): Promise<void> {
+  if (['paused', 'resuming'].includes(localStorage.getItem('ct.a9.interruption') ?? '')) {
+    localStorage.setItem('ct.a9.interruption', 'resuming');
+    return;
+  }
+  if (localStorage.getItem('ct.a9.interruption') === 'completed') return;
+  await baseline19(db, report);
+  localStorage.setItem('ct.a9.interruption', 'paused');
+  await new Promise(() => { /* le processus est arrêté physiquement, jamais par un minuteur */ });
+}
 
 const fault = { mode: 'afterapply', completedHooks: 0 };
 const actual = { migrate: migrator.migrate };
