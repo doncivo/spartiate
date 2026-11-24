@@ -157,3 +157,115 @@ Relecture à froid de l'agent lui-même, distincte : points à surveiller, aucun
 renommage par Ali la ferait redevenir une saisie ordinaire (comportement d'avant). (2) C-058 : `parseInstant` ne contrôle plus le décalage de la cellule contre le fuseau de l'appareil ; le jour
 « futur » (`day > today`) est jugé dans le fuseau de la mesure. (3) BL-142 : `muscleGroupLabel` est sans appelant d'écran (aucun écran n'affiche encore les groupes) ; la famille est déclarée dans
 `unusedKeys.test.ts`.
+
+---
+
+# NUTRI-0292 — Partie B : écrans (nutrition, compléments, Corps, Exertion)
+
+Lot 0.29.2, registre « nutrition et récupération », partie B : C-070, C-090 à C-093, C-099 à C-106, BL-117. Chapitres : 15 (nutrition), 16 (Exertion), 18 (états, § 18.3 erreurs
+dites). Aucune migration, aucun changement de synchro (voir « Pour données et synchro » en fin de partie). Source des constats : `docs/audit-claude-0.27.0/constats.md` (branche
+`audit-claude-0.27.0`), lue ligne à ligne.
+
+## Passe product-owner (critères)
+
+1. C-070 : l'Exertion ne dit plus « cardio non compté » : la portée affichée suit `RECOVERY_CONFIG.exertion.cardioCounted` (D-220 : le cardio saisi compte).
+2. C-090 : « +5 cm en 4 semaines » n'est dit que si la référence a entre 28 et 42 jours ; au-delà, l'écart dit sa date réelle (« Écart depuis le … ») et la colonne « 4 sem. » du PC reste « — ».
+3. C-091 : changer l'heure d'un complément n'efface plus la constance : une prise cochée à une heure changée depuis couvre un créneau encore libre du même jour (constance, série, bande).
+4. C-092 : le filtre Perso / Ciqual / OFF est appliqué AVANT la coupe à 50 résultats. C-093 : l'échelle de la tendance de poids ignore les pesées aberrantes (dessinées au bord, comptées en texte).
+5. C-099 : la déclaration de journée ne garde que la dernière valeur de flèches rapides ; les flèches d'un groupe de filtres ne vont plus dans les résultats. C-100 : un code lu par la caméra est enregistré `method: 'scan'`.
+6. C-101 (§ 18.3) : récents, recherche, portions de fiche et interrupteur des rappels disent leur échec (plus de « liste vide » ni d'interrupteur muet). C-102 : heure invalide dite comme telle ; fiche OFF périmée signalée depuis la liste ; Échap revient d'une étape.
+7. C-103 : cocher puis décocher vite finit décoché ; « −200 » lu comme 200 kcal en moins ; cible de repos au-dessus de la cible d'entraînement refusée avec sa raison ; retrait en échec : l'interrupteur reste sur l'état réel.
+8. C-104 : note sous « Actuel » (cible de la semaine analysée) ; historique « décidée le … » ; préférence dont l'écriture échoue : retour à la valeur enregistrée. C-105 : « Tour de taille » / « Hauteur », pastilles de zone au clavier, valeur effacée au changement de zone, date du jour suivie, fibres hors de la carte Corps.
+9. C-106 : « Tableau de bord » (au lieu de Dashboard), « Open Food Facts » (au lieu de Cache OFF), « saisi » (au lieu de loggé / logué), « Objectif du profil » (profil) distinct de « Objectif » (Stratégie) ; catalogue `fr.scan` retiré du départ.
+10. BL-117 : « Habituels » (go-tos) ; assiette gardée à la fermeture de la recherche, grammes et heure propres à chaque aliment, enregistrable en recette d'une portion.
+
+## Passe agent du module
+
+- Exertion : `src/features/recovery/RecoveryToday.tsx`, `src/i18n/fr.recovery.ts`. Corps : `src/features/bodyProgress/{bodyZone,BodyZones,BodyProgress}.ts(x)`, `src/i18n/fr.bodyProgress.ts`.
+- Compléments : `src/domain/nutrition/supplements.ts` (`settledIntakes`), `src/features/nutrition/supplements/{constancy,SupplementsView}`.
+- Recherche : `src/domain/nutrition/{foodSearch,plate,goTos}.ts`, `src/features/nutrition/search/{FoodSearchPanel,PlateCard,catalogueSearch}`, `src/features/nutrition/{useCases,shared}`.
+- Journal, Stratégie, check-in, dashboard : `journal/JournalView`, `strategy/{StrategyView,RestTargetForm}`, `checkIn/CheckInView`, `dashboard/{model,Charts}`. Textes : `src/i18n/fr.{nutrition,supplements,body}.ts`.
+
+## Vérifications écrites (lignes « à vérifier »)
+
+- **C-095 (fait en 0.27)** : sans objet ici. **C-099 (flèches de filtre)** : défaut confirmé (la flèche bougeait aussi le focus vers les résultats, puis le rerendu le perdait) : corrigé.
+- **C-101, `JournalView.tsx:90-91` « sans Réessayer »** : à la lecture de 0.29.2 le bouton « Réessayer » existe déjà : sans défaut, figé par `Search0292.test.tsx` (« journal illisible : message et bouton Réessayer »).
+- **C-103, `<input type="time">` suit le réglage 12/24 h de l'iPhone** : NON vérifiable sans appareil. Le champ reste un `type="time"` ; à constater par Ali (docs/constats-ali.md : iPhone, Journal, ouvrir Rechercher, choisir un aliment, lire le champ « Heure »). Si l'iPhone affiche 12 h, remplacer par deux champs numériques (H, M) : Q-24.
+- **C-105, silhouette** : zones d'environ 18 px et chevauchement cou / épaules / poitrine : la silhouette reste un complément tactile ; les pastilles (44 pt, clavier et lecteur d'écran, roving tabindex) sont la voie d'accès complète. Taille des zones tactiles à constater par Ali (iPhone, Progrès, Corps, toucher le cou puis l'épaule). Non modifié sans appareil : Q-25.
+- **C-105, photo toujours datée du jour / sélecteur bloqué si `cancel` n'arrive pas (`picker.ts`)** : non corrigés (date de la photo = jour de l'ajout, choix de conception D-99 ; `cancel` de `<input type="file">` dépend de WKWebView, H-27 UNVERIFIED) : constat d’Ali, Q-25.
+- **C-106, « Corps sans tendance ni dépense (§ 17, à vérifier dans Progrès) »** : hors de cette fiche (`src/features/progress`) : non vérifié ici, reste « à faire » pour la partie Progrès.
+- **C-106, deux réglages « Objectif »** : ils sont deux données distinctes (`profile.goal` : prise de masse / perte de poids / maintien ; `nutrition.prefs.goal` : maintien / perte / prise + rythme) et peuvent se contredire. Interim : libellés distincts (« Objectif du profil » / « Objectif »). Fusion en une seule source : Q-23 (Ali).
+
+## Passe qa-test (rouge → vert)
+
+Chaque test rouge a été constaté en échec en local (`npx vitest run --coverage.enabled=false --maxWorkers=1 <fichier>`), commité seul, puis le code dans un commit séparé.
+
+| Ligne | Rouge | Vert |
+|---|---|---|
+| C-070 | be24d13a | 42adfb3c |
+| C-090 | 09e3543d, ec5ac192 | de1514d4 |
+| C-091 | b59d81e1 | e63e2824, 212f193e (typage) |
+| C-092 | 7f56b3d4 | c9afcaf5 |
+| C-093 | 9a97598e | e427879c |
+| C-099 | be16071b, 74100ace | 32b3965c, a06355ee |
+| C-100 | cc9f83fb | 20bf9f11 |
+| C-101 | 07701991 | 32b655b9 |
+| C-102 | 988b0f87 | 6e1c7e68 |
+| C-103 | e4d89863, 1c296b27 | 70d7327c, 635bbf03 |
+| C-104 | 66c0f691 | 70506567 |
+| C-105 | a799cca5 | 1141af1e |
+| C-106 | 3b0d39b2 | 9d5ca65d |
+| BL-117 | 51dcae91, cac35d2a | c5ba8601 (domaine), 4883d94a (écrans) |
+
+- Attentes changées assumées : `RecoveryToday.test.tsx` (texte de l'avis `exertion_cardio_not_counted`, résumés d'avant D-220) ; `BodyProgress*.test.tsx` (« Taille » devient « Tour de taille » ou « Hauteur », fibres absentes de la
+  carte) ; `BodyScreen.test.tsx` (groupe « Objectif du profil ») ; `DayCompleteness`, `NutritionScreen`, `CheckInErgo02` (« Tableau de bord », « jours saisis ») et les specs `tests/e2e/FIX-092-onglets`, `V0-7-1-mise-en-page`, `tests/visual/capture`
+  (nom de l'onglet) ; `supplements.test.ts` (une prise d'une heure changée couvre un créneau libre : 4 sur 4 au lieu de 3 sur 4) ; `Plate.test.tsx` (le nom est dans un élément exact, la quantité dans un champ) ;
+  `permissionTexts.test.ts` (assertion sur `fr.scan.cameraHint` retirée avec le catalogue mort) ; `NutritionScreen.test.tsx:511` (233 g de glucides : résidu de C-037, partie A).
+- Lancés en local (`--maxWorkers=1`) : `src/features/{nutrition,bodyProgress,recovery,settings/BodyScreen}`, `src/domain/nutrition`, `src/i18n`, `src/ui/ErgoShared` : verts ; `tsc --noEmit` et `eslint` propres.
+- e2e : aucune spec nouvelle ; les trois specs existantes touchées (nom de l'onglet) tournent en CI. Les parcours nouveaux (assiette gardée, recette, Habituels) sont couverts par des tests d'écran (`Search0292.test.tsx`).
+- Bundle (mesure normalisée, `CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts --silent=false`) : normalisé 182 931 octets (référence main 183 842 : −911 octets, dû au catalogue `fr.scan` retiré) ; 170 tests du bundle verts ; aucun module ajouté à `tests/bundle/start-modules.json`, un retiré.
+
+## Statuts proposés (ID → statut)
+
+- fait : C-070, C-090, C-091, C-092, C-093, C-099, C-100, C-101, C-102, C-104, BL-117 (go-tos : définition choisie, Q-22).
+- fait en partie ; reste : **C-103** : `<input type="time">` en 12 h sur l'iPhone, à constater (Q-24) ; **C-105** : zones de la silhouette (taille, chevauchement), date de la photo, sélecteur sans `cancel` (Q-25, constat d'Ali) ;
+  **C-106** : « Corps sans tendance ni dépense » à vérifier dans Progrès ; fusion des deux objectifs (Q-23) ; `fr.capture.ts` reste au départ (ses clés `capture.undo.created` et `capture.dictation.*` sont lues par `undo.ts` et `permissionTexts.test.ts` : à démêler avec coquille et iOS).
+- Hypothèses : aucune nouvelle (H-27, sélecteur de photo, reste UNVERIFIED).
+
+## D- proposées (à partir de D-553)
+
+- **D-553** : C-091 : l'historique des heures d'un complément n'est pas conservé (D-211 : configuration courante) ; pour les statistiques (constance, série, bande), une prise cochée à une heure qui n'est plus prévue couvre un
+  créneau encore libre du même jour, une prise par créneau. La carte du jour et les rappels restent à l'heure exacte (cocher et décocher visent l'heure exacte). Choix prudent, révisable par Ali.
+- **D-554** : C-090 : « sur 4 semaines » n'est dit que pour une référence de 28 à 42 jours avant la dernière mesure ; au-delà, l'écart dit sa date (« Écart depuis le … »), la colonne « 4 sem. » reste « — ».
+- **D-555** : C-093 : une pesée aberrante (pondérée 0,25, § 15.1) n'entre pas dans l'échelle du graphique de tendance ; elle est dessinée au bord et comptée (« Pesées hors du cadre : n »).
+- **D-556** : C-100 : `meal_entry.method = 'scan'` pour un aliment trouvé par un code lu par la caméra ; un code saisi à la main reste `search`.
+- **D-557** : C-103 : dans « Écart les jours de repos (kcal en moins) », un signe saisi est lu comme la même quantité en moins (« −200 » = 200 en moins) ; une cible de repos au-dessus de celle des jours d'entraînement est refusée avec sa raison.
+- **D-558** : C-099 : les écritures de la déclaration de journée sont mises en file, la dernière valeur gagne (jamais une valeur intermédiaire laissée par des flèches rapides).
+- **D-559** : C-106 : vocabulaire fr : « Tableau de bord » (onglet), « Open Food Facts » (filtre), « saisi » (jours, barres) ; « Objectif du profil » pour `profile.goal` ; C-105 : « Tour de taille » / « Hauteur » ; les fibres importées de Santé
+  ne s'affichent plus dans la carte Corps (elles restent stockées, `health_fiber_g`). `fr.scan.ts` (scan de tâches, CircleTasks) retiré de l'arbre de départ.
+- **D-560** : BL-117 : « go-tos » (§ 15.3, mot non défini par le chapitre) = aliments pris au moins 3 fois sur les 90 derniers jours, 6 au plus, du plus fréquent au moins fréquent, sans Quick Add ; section « Habituels » de la recherche
+  vide ; l'assiette appartient au Journal (gardée à la fermeture de la recherche, rien n'est écrit avant « Ajouter l'assiette au journal ») ; grammes et heure propres à chaque aliment ; « Enregistrer en recette » crée une recette d'une portion
+  (un ingrédient par aliment, valeurs figées pour 100 g) et laisse l'assiette en place. Complète D-396.
+
+## Questions à Ali (à partir de Q-22)
+
+- **Q-22** (BL-117, D-560) : définition des « go-tos ». A = pris au moins 3 fois sur 90 jours (livré) ; B = les repas entiers répétés (même heure, mêmes aliments) ; C = un réglage d'Ali (épingler des aliments). Recommandation : A, puis C si la liste ne te convient pas.
+- **Q-23** (C-106) : `profile.goal` (Réglages › Corps) et `nutrition.prefs.goal` (Stratégie) sont deux réglages qui peuvent se contredire. A = garder deux réglages aux libellés distincts (livré) ; B = une seule source : Stratégie lit le profil (le rythme reste en Stratégie) ;
+  C = Stratégie écrit aussi le profil. Recommandation : B (lecture seule, sans schéma ; avis de data-model).
+- **Q-24** (C-103) : si l'iPhone affiche le champ « Heure » en 12 h : A = garder (réglage système) ; B = deux champs numériques H et M en 24 h (D-21 : heures en 24 h). Recommandation : B si constaté.
+- **Q-25** (C-105) : silhouette de Corps : A = garder la silhouette en complément des pastilles ; B = retirer la silhouette ; C = agrandir les zones (déplacer cou et épaules, rayon de 11). Photo : toujours datée du jour de l'ajout (D-99) : A = garder ; B = proposer la date (champ). Recommandation : A et A, après constat sur l'iPhone.
+
+## Pour données et synchro
+
+1. Aucune migration, table, colonne, déclencheur ni catalogue de synchro modifié dans cette partie ; `src/sync/**`, `src/domain/sync/**`, `src-tauri/**` intacts.
+2. **C-100 (D-556)** : `meal_entry.method` reçoit la valeur `scan`, déjà admise par le type `EntryMethod`. Relecture sync-icloud (D-26) : à confirmer par data-model que le `CHECK` de `meal_entry.method` de la migration publiée admet `scan`
+   (le test d'écran l'écrit en base réelle sans refus, donc la contrainte locale l'admet) ; une version précédente lit la valeur sans nouvelle contrainte.
+3. **BL-117** : `recipe` et `recipe_ingredient` (tables publiées) reçoivent des recettes créées depuis l'assiette par le dépôt existant (`create`), sans champ nouveau.
+4. **Q-23 option B** : lecture seule du profil par Stratégie, sans schéma ; l'option C écrirait `profile.goal` (table publiée) : relecture sync-icloud.
+5. **C-091** : aucun historique d'heures n'est ajouté (D-553). Si Ali veut des heures datées exactes, il faudra une table ou une colonne publiée (historique d'heures du complément) : à ne pas faire sans décision.
+
+## Passe code-reviewer
+
+Relecture à froid, distincte. Points à surveiller, aucun bloquant relevé : (1) C-091 : `settledIntakes` suppose qu'une prise orpheline vient d'une heure changée ; une prise cochée par erreur à une heure non prévue couvre un créneau libre, une fois par créneau.
+(2) C-092 : changer de filtre relance la recherche (un instant sans résultat, jamais ceux d'une autre provenance). (3) C-099 : la file d'écriture de la déclaration écrit la première valeur puis la dernière si les flèches sont très rapides ;
+l'état final est toujours la dernière valeur. (4) BL-117 : l'assiette du Journal n'est pas gardée au changement d'onglet (état d'écran) ; `fr.capture.ts` reste au départ.
