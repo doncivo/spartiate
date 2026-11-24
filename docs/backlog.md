@@ -307,6 +307,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-161 | CI-0292 (relecture des paires visuelles, run 45379435573) | Barre latérale PC à 1 440 px : nom « SPARTIATE » coupé en deux lignes, « Entraînement » collé à « Ctrl 2 » (PC-Entrainement-indisponible-app.png) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-162 | CI-0292 (relecture des paires visuelles, run 45379435573) | Bandeau de signature (iPhone, 440 px) : lien « Voir » coupé en « Vo / ir » (Degrade-signature-expiree-app.png) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-163 | CI-0292 (relecture des paires visuelles, run 45379435573) | Scènes « Entrainement-indisponible » : la capture montre « Chargement… » ; scène « Degrade-apprentissage » : l'état d'apprentissage de la récupération hors du cadre ; attendre l'état visé avant la capture | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-164 | NUTRI-0292 (contre-relecture à froid, mineurs) | Assiette : « Enregistrer en recette » reste actif quand une quantité est invalide (la recette prend les grammes retenus, pas ceux du champ) ; variable `none` inutile dans `DayCompleteness.test.tsx` | à faire (0.29.x, coquille, iOS et qualité, S) |
 
 ## 3. Audit Codex 0.26.0
 
