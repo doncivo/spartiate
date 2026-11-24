@@ -50,7 +50,7 @@ describe('RecoveryRepository', () => {
   it('saveDay : une ligne par jour et par muscle, relues telles quelles, mises en file en ligne entière', async () => {
     db = await openBaseDb(DEVICE);
     const saved = must(await (await repo()).saveDay(output()));
-    expect(saved.day).toMatchObject({ id: 'recovery|2026-11-09', summary: output().summary, engineVersion: 1, deletedAt: null, deviceId: DEVICE });
+    expect(saved.day).toMatchObject({ id: 'recovery|2026-11-09', summary: output().summary, engineVersion: 2, deletedAt: null, deviceId: DEVICE });
     expect(saved.muscles.map((m) => [m.id, m.muscleId, m.percent])).toEqual([['muscle|2026-11-09|lats', 'lats', 30], ['muscle|2026-11-09|quads', 'quads', 40]]);
     expect(await (await repo()).getDay(D(9))).toEqual(saved.day);
     expect(await (await repo()).listMuscles(D(9))).toEqual(saved.muscles);

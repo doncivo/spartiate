@@ -130,6 +130,8 @@ describe('migration 0008 : nutrition (I4-02)', () => {
     await insert(db, 'meal_entry', entry({ food_id: 'ciqual:1000', source: 'ciqual' })); // aucune fiche stockée requise
     await insert(db, 'meal_entry', entry({ id: uuid(60), method: 'quickadd', source: 'manual', food_id: null, grams: null, protein_g: null, fat_g: null, carb_g: null, kcal: 400 }));
     await insert(db, 'meal_entry', entry({ id: uuid(61), method: 'photo', source: 'estimate', food_id: null, confidence: 0.6 }));
+    // C-100 (D-556) : un code lu par la caméra s'écrit « scan » : la contrainte de la migration publiée l'admet (aucune migration touchée).
+    await insert(db, 'meal_entry', entry({ id: uuid(62), method: 'scan', source: 'off', food_id: 'off:1' }));
     await db.close();
   });
 
