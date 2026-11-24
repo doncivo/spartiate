@@ -1,4 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error module JavaScript sans déclaration de types
 import { summaryMarkdown } from './cargo-audit-gate.mjs';
@@ -34,5 +37,24 @@ describe('A-005 : résumé de cargo audit toujours à jour', () => {
     const workflow = readFileSync(new URL('../../.github/workflows/tests.yml', import.meta.url), 'utf8');
     expect(workflow).not.toMatch(/cargo audit[^\n]*--ignore/);
     expect(workflow).toContain('cargo-audit-gate.mjs');
+  });
+  it('le script écrit le résumé dans GITHUB_STEP_SUMMARY (exécution réelle sur un rapport synthétique)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'audit-summary-'));
+    const reportPath = join(dir, 'audit.json');
+    const treePath = join(dir, 'tree.txt');
+    const summaryPath = join(dir, 'summary.md');
+    writeFileSync(reportPath, JSON.stringify(report));
+    writeFileSync(treePath, 'spartiate v0.1.0 (C:\x)
+serde v1.0.0
+rustix v1.1.5
+');
+    writeFileSync(summaryPath, '');
+    const script = resolve(import.meta.dirname, 'cargo-audit-gate.mjs');
+    const out = execFileSync(process.execPath, [script, reportPath, treePath], { encoding: 'utf8', env: { ...process.env, GITHUB_STEP_SUMMARY: summaryPath } });
+    expect(out).toContain('cargo audit : 0 alerte(s) bloquante(s), 1 hors du graphe livré');
+    const md = readFileSync(summaryPath, 'utf8');
+    expect(md).toContain('### cargo audit');
+    expect(md).toContain('RUSTSEC-2023-0071');
+    expect(md).toContain('vieille@1.0.0');
   });
 });
