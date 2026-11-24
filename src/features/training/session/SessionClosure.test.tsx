@@ -264,6 +264,21 @@ describe('après la clôture', () => {
   });
 });
 
+describe('SEANCE-0292 (BL-141) : après « Fermer le résumé », l’onglet Entraînement montre son accueil', () => {
+  it('« Fermer le résumé » ramène à l’accueil de l’Entraînement ; un appui sur l’onglet ne laisse pas « Nouvelle séance »', async () => {
+    openSession();
+    await startFromRoutine();
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Terminer' }));
+    fireEvent.click(within(await summaryRegion()).getByRole('button', { name: 'Fermer le résumé' }));
+    expect(await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' })).toBeInTheDocument();
+    act(() => useNavigationStore.getState().goToTab('today'));
+    act(() => useNavigationStore.getState().goToTab('training'));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'training' });
+  });
+});
+
 describe('SEANCE-0292 (§ 10.3) : notifications demandées en fin de première séance', () => {
   it('autorisation pas encore décidée (iPhone) : aucune demande pendant la séance ; demandée une fois à la clôture', async () => {
     const f = fakes();
