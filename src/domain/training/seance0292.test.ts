@@ -375,3 +375,26 @@ describe('SEANCE-0292 C-027 (D-474) : « Dur » bloque seulement la hausse de ch
     expect(hard.reasons).toContain('hard-blocks-increase');
   });
 });
+
+describe('SEANCE-0292 C-029 : grille de charges robuste (pile illisible, plusieurs poulies, matériel interdit)', () => {
+  const base = FITNESS_PARK_ANTONY.inventory;
+  const profile = (inventory: Partial<ProgressionEquipment['inventory']>): ProgressionEquipment => ({ inventory: { ...base, ...inventory }, increments: FITNESS_PARK_ANTONY.increments });
+
+  it('machine au maximum illisible (NaN, ligne synchronisée abîmée) : aucune grille, jamais 2 000 charges', () => {
+    const p = profile({ machines: [{ equipmentId: 'leg-press-machine', stackMinKg: 5, stackMaxKg: Number.NaN, stepKg: 5 }] });
+    expect(loadGrid(['leg-press-machine'], p)).toBeNull();
+    const step = profile({ machines: [{ equipmentId: 'leg-press-machine', stackMinKg: 5, stackMaxKg: 100, stepKg: Number.NaN }] });
+    expect(loadGrid(['leg-press-machine'], step)).toBeNull();
+  });
+
+  it('deux poulies (5 à 50 par 5 ; 2,5 à 40 par 2,5) : seules les charges des deux (5 à 40 par 5), jamais 45 kg propre à une seule', () => {
+    const p = profile({ cables: [{ minKg: 5, maxKg: 50, stepKg: 5 }, { minKg: 2.5, maxKg: 40, stepKg: 2.5 }] });
+    expect(loadGrid(['high-pulley'], p)?.loads).toEqual([5, 10, 15, 20, 25, 30, 35, 40]);
+  });
+
+  it('matériel interdit dans le profil (barre) : il ne fournit pas la grille (le suivant, haltères, oui)', () => {
+    const p = profile({ forbidden: ['barbell'] });
+    expect(loadGrid(['barbell'], p)).toBeNull();
+    expect(loadGrid(['barbell', 'dumbbell'], p)?.source).toBe('dumbbell');
+  });
+});
