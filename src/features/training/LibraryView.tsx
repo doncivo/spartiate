@@ -72,7 +72,6 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
 
   return (
     <div className="ct-training__list-block">
-      <LibraryBodyMap groups={data.content.groups} selected={group} onChange={setGroup} />
       <div className="ct-training__filters">
         <label className="ct-training__field">
           <span className="ct-training__label">{tTraining('search')}</span>
@@ -127,6 +126,8 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
           <p className="ct-training__muted">{tTraining('pickerHint')}</p>
         )}
       </div>
+      {/* V0-7-1 point 5 (run 45443720283) : la carte suit les filtres pour que l'interrupteur reste visible sans défiler sur iPhone. */}
+      <LibraryBodyMap groups={data.content.groups} selected={group} onChange={setGroup} />
       <p className="ct-training__muted" aria-live="polite">
         {tPlural(tTraining, filtered.length, 'countOne', 'countMany')}
       </p>
