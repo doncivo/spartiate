@@ -98,7 +98,16 @@ describe('SEANCE-0292 C-010 : séries dégressives et partielles hors de l’éc
     expect(diff.setsChanged).toEqual([{ lineId: 'l1', exerciseId: 'bench-press-barbell', exerciseName: 'Nom bench-press-barbell', from: 3, to: 2 }]);
   });
 
+
+  it('exercice de la routine fait seulement en dégressives : ni retiré ni modifié (il a été fait)', () => {
+    const diff = routineDiff(w([s(0, { setKind: 'drop', loadKg: 40 })]), day);
+    expect(diff.hasChanges).toBe(false);
+  });
   it('séries chronométrées comptées comme travail', () => {
     expect(routineDiff(w([s(0, { setKind: 'timed', durationSec: 30 }), s(1), s(2)]), day).hasChanges).toBe(false);
+  });
+
+  it('exercice de la routine fait seulement en dégressives : ni retiré ni modifié (il a été fait)', () => {
+    expect(routineDiff(w([s(0, { setKind: 'drop', loadKg: 40 })]), day).hasChanges).toBe(false);
   });
 });

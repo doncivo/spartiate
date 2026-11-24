@@ -242,8 +242,12 @@ export function routineDiff(workout: WorkoutWithSets, day: RoutineDay | null): R
   const counts = new Map<string, { name: string; count: number; first: WorkoutSet; blocks: number[] }>();
   let previous: { exerciseId: string; circuitId: string | null } | null = null;
   const groupBlock = new Map<string, number>();
+  // C-010 : un exercice fait seulement en dégressives ou partielles a été fait (ni retiré ni modifié).
+  const withExtraSets = new Set<string>();
   for (const s of [...workout.sets].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))) {
-    if (s.deletedAt !== null || s.setKind === 'warmup') continue;
+    // C-010 : seules les séries de travail et chronométrées forment la structure (échauffement, dégressive et partielle exclues).
+    if (s.deletedAt === null && (s.setKind === 'drop' || s.setKind === 'partial')) withExtraSets.add(s.exerciseId);
+    if (s.deletedAt !== null || (s.setKind !== 'work' && s.setKind !== 'timed')) continue;
     const circuitId = s.circuitId ?? null;
     const entry = counts.get(s.exerciseId) ?? { name: s.exerciseName, count: 0, first: s, blocks: [] };
     counts.set(s.exerciseId, entry);
@@ -268,7 +272,8 @@ export function routineDiff(workout: WorkoutWithSets, day: RoutineDay | null): R
     const shares = splitAmongLines(own, counts.get(exerciseId)?.blocks ?? []);
     own.forEach((l, i) => done.set(l.id, shares[i] ?? 0));
   }
-  const removed: RoutineDiffRemoved[] = lines.filter((l) => (done.get(l.id) ?? 0) === 0).map((l) => ({ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName }));
+  const doneOnlyExtra = (l: (typeof lines)[number]): boolean => withExtraSets.has(l.exerciseId) && !counts.has(l.exerciseId);
+  const removed: RoutineDiffRemoved[] = lines.filter((l) => (done.get(l.id) ?? 0) === 0 && !doneOnlyExtra(l)).map((l) => ({ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName }));
   const setsChanged: RoutineDiffSets[] = lines.flatMap((l) => {
     const to = done.get(l.id) ?? 0;
     return to > 0 && to !== l.sets ? [{ lineId: l.id, exerciseId: l.exerciseId, exerciseName: l.exerciseName, from: l.sets, to }] : [];
