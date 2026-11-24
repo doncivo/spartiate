@@ -67,8 +67,11 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const { data } = container;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [found, setFound] = useState<{ readonly query: string; readonly provenance: SearchProvenance | undefined; readonly result: CatalogueSearchResult } | null>(null);
+  const [found, setFound] = useState<{ readonly query: string; readonly provenance: SearchProvenance | undefined; readonly failed?: boolean; readonly result: CatalogueSearchResult } | null>(null);
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
+  // C-101 : un échec de lecture n'est jamais présenté comme une liste vide ou une absence de résultat.
+  const [recentsFailed, setRecentsFailed] = useState(false);
+  const [searchTry, setSearchTry] = useState(0);
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
@@ -201,7 +204,10 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         const list = await (await data.repos.mealEntries()).recentFoods(12);
         if (live) setRecents(list);
       } catch {
-        if (live) setRecents([]);
+        if (live) {
+          setRecents([]);
+          setRecentsFailed(true);
+        }
       }
     })();
     return () => {
@@ -264,10 +270,10 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         const result = await searchCatalogue(await data.repos.foods(), query, { now: new Date(container.clock.nowMs()).toISOString() as IsoDateTime, ...(provenance === undefined ? {} : { provenance }) });
         if (ticket === request.current) setFound({ query, provenance, result });
       } catch {
-        if (ticket === request.current) setFound({ query, provenance, result: { hits: [], ciqual: 'unavailable', staleOff: [] } });
+        if (ticket === request.current) setFound({ query, provenance, failed: true, result: { hits: [], ciqual: 'ok', staleOff: [] } });
       }
     })();
-  }, [query, provenance, data, container]);
+  }, [query, provenance, searchTry, data, container]);
 
   // Recettes (D-80) : lues à la demande, seulement quand elles peuvent figurer dans les résultats (filtre « Tout » ou « Mes recettes »).
   useEffect(() => {
@@ -569,7 +575,11 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           <h2 id="ct-nutrition-recents" className="ct-nutrition__subtitle ct-section-title">
             {tNutrition('recents')}
           </h2>
-          {recents === null ? null : recents.length === 0 ? (
+          {recentsFailed ? (
+            <p role="alert" className="ct-nutrition__warning">
+              {tNutrition('recentsReadError')}
+            </p>
+          ) : recents === null ? null : recents.length === 0 ? (
             <p className="ct-nutrition__muted">{tNutrition('recentsEmpty')}</p>
           ) : (
             <ul className="ct-nutrition__list">
@@ -584,6 +594,15 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
               ))}
             </ul>
           )}
+        </section>
+      ) : found !== null && found.query === query && found.provenance === provenance && found.failed === true ? (
+        <section aria-label={tNutrition('searchResults')}>
+          <p role="alert" className="ct-nutrition__warning">
+            {tNutrition('searchReadError')}
+          </p>
+          <Button variant="secondary" onClick={() => setSearchTry((n) => n + 1)}>
+            {tNutrition('retry')}
+          </Button>
         </section>
       ) : result === null ? null : (
         <section aria-label={tNutrition('searchResults')}>
@@ -727,6 +746,7 @@ function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
   const [portions, setPortions] = useState<readonly PortionRecord[]>([]);
+  const [portionsFailed, setPortionsFailed] = useState(false);
   const [failed, setFailed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [favoriteFailed, setFavoriteFailed] = useState(false);
@@ -742,7 +762,10 @@ function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite
         const list = await (await data.repos.foods()).listPortions(food.ref);
         if (live) setPortions(list);
       } catch {
-        if (live) setPortions([]);
+        if (live) {
+          setPortions([]);
+          setPortionsFailed(true);
+        }
       }
     })();
     return () => {
@@ -818,6 +841,11 @@ function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite
             </p>
           ) : null}
         </>
+      ) : null}
+      {portionsFailed ? (
+        <p role="status" className="ct-nutrition__muted">
+          {tNutrition('portionsReadError')}
+        </p>
       ) : null}
       {portions.length > 0 ? (
         <div className="ct-nutrition__chips" role="group" aria-label={tNutrition('portionsLabel')}>
