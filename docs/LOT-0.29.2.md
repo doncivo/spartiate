@@ -58,3 +58,11 @@ Compté par `grep -o 'à faire ([^)]*)' docs/backlog.md` (statut « à faire (0.
 Décisions d'Ali du 24/11 consignées en D-472 à D-481 ; les dix lignes concernées passent en « à faire » (C-013, C-017, C-027 : séance
 et moteur ; C-038, C-039, C-042, C-058, C-061 : nutrition et récupération ; C-135 : coquille, iOS et qualité ; BL-135 : données et
 synchro), soit 185 lignes à traiter.
+
+## Recompte après le complément d'audit (24/11, AUDIT-0292)
+
+Complément d'Ali : docs/LOT-0.29.2-audit.md (D-489 à D-505, lignes BL-138 à BL-159). Sur la base de main après la CI (#205, 11 lignes
+fermées) et avant la fusion de séance et moteur (#206) : **195 lignes « à faire »** — CI 3, séance et moteur 54, nutrition et
+récupération 43, données et synchro 26, import et contenu 5, coquille, iOS et qualité 64. Ordre (D-492) : séance #206, puis BL-138
+(données et synchro), puis les 3 lignes CI nouvelles, la suite de séance et moteur (BL-106, BL-140, BL-141, § 12.3, D-73 (4), restes
+de #206), nutrition et récupération, publication 0.29.2.

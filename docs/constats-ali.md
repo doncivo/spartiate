@@ -156,6 +156,7 @@ Ces constats demandent les deux appareils : coche-les après avoir fait le geste
 - [ ] **BL-021 (cardio saisi sur PC)** — saisis une séance cardio sur le PC (Entraînement › Cardio, sans GPS) ; après synchro, la séance apparaît sur l'iPhone, sans tracé, avec sa durée, sa distance et son ressenti. Date : ____ Version : ____
 - [ ] **BL-015 (bandeau « appareil plus ancien »)** — provoque ce cas seulement si un appareil est resté en version précédente (sinon, note « non rencontré ») : le bandeau nomme le bon appareil à mettre à jour et ne propose rien d'autre. Date : ____ Version : ____
 - [ ] **BL-017 (routine et cible)** — après la mise à jour (0.27.0 et suivantes) : Entraînement › Routines, ta routine : chaque jour porte son jour de la semaine (un import le fait si la mise à jour ne l'a pas fait) ; un jour de la semaine lance le jour prévu pour ce jour-là ; Nutrition › Stratégie : la cible du jour est la cible en vigueur, et une cible planifiée à date future n'est pas battue par une décision antérieure. Au lancement d'un cycle, la durée proposée reprend ton dernier réglage ; en cours de cycle, un changement de durée ne s'applique qu'après confirmation. Date : ____ Version : ____
+- [ ] **BL-157 (clé de synchro après une mise à jour SideStore)** — avant une mise à jour SideStore N → N+1, note sur l'iPhone que la synchro fonctionne (Plus › Appareils et synchro : dernière synchro récente, une saisie faite sur le PC visible sur l'iPhone) ; après la mise à jour par « Mettre à jour » dans SideStore, vérifie que la synchro reprend sans redemander la clé ni l'appairage (une nouvelle saisie du PC arrive sur l'iPhone). Date : ____ Version : ____
 
 ### Documents (sans appareil, à lire)
 
@@ -187,6 +188,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | ID | Sections |
 | --- | --- |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
+| BL-157 | Les deux appareils › Synchro |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |
 | BL-014 | PC › Séance |
