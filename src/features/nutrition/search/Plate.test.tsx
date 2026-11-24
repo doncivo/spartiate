@@ -46,8 +46,8 @@ describe('NUTRI-c : assiette', () => {
     await pick('Skyr maison', 'skyr', '150');
     await pick('Miel local', 'miel', '20');
     const plate = await screen.findByRole('region', { name: tNutrition('plateTitle') });
-    expect(within(plate).getByText(/Skyr maison/)).toBeTruthy();
-    expect(within(plate).getByText(/Miel local/)).toBeTruthy();
+    expect(within(plate).getByText('Skyr maison')).toBeTruthy();
+    expect(within(plate).getByText('Miel local')).toBeTruthy();
     expect(within(plate).getByText(/150 kcal/)).toBeTruthy();
     expect(await all()).toHaveLength(0);
     fireEvent.click(within(plate).getByRole('button', { name: tNutrition('plateCommit') }));

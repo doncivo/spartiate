@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { addToPlate, computeTotals, plateEntries, removeFromPlate, type Plate, isFavorite, parseRecipeFoodId, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type Recipe, type RecipeSearchable, type SearchProvenance } from '../../../domain/nutrition';
+import { addDays } from '../../../domain/localDate';
+import { todayLocal } from '../../../domain/clock';
+import { GO_TO_WINDOW_DAYS, addToPlate, computeTotals, goTos, plateEntries, plateToRecipeDraft, removeFromPlate, setPlateGrams, setPlateTime, type GoTo, type Plate, isFavorite, parseRecipeFoodId, resolveFavorites, toggleFavorite, validateMealEntry, type Favorite, type Recipe, type RecipeSearchable, type SearchProvenance } from '../../../domain/nutrition';
 import type { SearchableFood } from '../../../domain/nutrition/foodSearch';
 import { missingNutrients } from '../../../domain/nutrition/offProduct';
 import type { IsoDateTime, LocalDate, LocalTime } from '../../../domain/types';
@@ -55,6 +57,9 @@ export interface FoodSearchPanelProps {
   readonly defaultTime: string;
   readonly onSaved: () => void;
   readonly onClose: () => void;
+  /** BL-117 : l'assiette appartient au journal (gardée quand la recherche se ferme). */
+  readonly plate: Plate;
+  readonly onPlateChange: (plate: Plate) => void;
 }
 
 /**
@@ -62,7 +67,7 @@ export interface FoodSearchPanelProps {
  * est affichée sur chaque ligne. Choisir un aliment ouvre la quantité (grammes ou portions de la fiche), les totaux sont recalculés et
  * corrigeables ; rien n'est enregistré avant « Ajouter au journal ».
  */
-export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSearchPanelProps) {
+export function FoodSearchPanel({ date, defaultTime, onSaved, onClose, plate, onPlateChange }: FoodSearchPanelProps) {
   const container = useAppContainer();
   const { data } = container;
   const [query, setQuery] = useState('');
@@ -71,11 +76,12 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
   // C-101 : un échec de lecture n'est jamais présenté comme une liste vide ou une absence de résultat.
   const [recentsFailed, setRecentsFailed] = useState(false);
+  const [goTosList, setGoTosList] = useState<readonly GoTo[] | null>(null);
+  const [goTosFailed, setGoTosFailed] = useState(false);
   const [searchTry, setSearchTry] = useState(0);
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [plate, setPlate] = useState<Plate>([]);
   const committingPlate = useRef(false);
   const [plateState, setPlateState] = useState<'idle' | 'busy' | 'failed'>('idle');
   const [recipeSearch, setRecipeSearch] = useState<RecipeSearchState | null>(null);
@@ -215,6 +221,23 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     };
   }, [data]);
 
+  // BL-117 : « Habituels » (go-tos) : aliments pris au moins 3 fois sur 90 jours ; un échec de lecture est dit.
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      try {
+        const today = todayLocal(container.clock);
+        const entries = await (await data.repos.mealEntries()).listBetween(addDays(today, -(GO_TO_WINDOW_DAYS - 1)), today);
+        if (live) setGoTosList(goTos(entries, today));
+      } catch {
+        if (live) setGoTosFailed(true);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [data, container]);
+
   useEffect(() => {
     let live = true;
     void (async () => {
@@ -346,12 +369,29 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     setPlateState('busy');
     try {
       await (await data.repos.mealEntries()).createMany(drafts);
+      onPlateChange([]);
       onSaved();
     } catch {
       setPlateState('failed');
     } finally {
       committingPlate.current = false;
     }
+  }
+
+  async function saveAsRecipe(name: string): Promise<'saved' | 'invalid' | 'error'> {
+    const draft = plateToRecipeDraft(plate, name);
+    if (draft === null) return 'invalid';
+    try {
+      await (await data.repos.recipes()).create(draft);
+      return 'saved';
+    } catch {
+      return 'error';
+    }
+  }
+
+  /** « Habituels » (go-tos, BL-117) : rouvre la quantité d'un aliment pris souvent, avec sa dernière quantité. */
+  async function pickGoTo(go: GoTo): Promise<void> {
+    await pickRecent({ foodId: go.foodId, foodName: go.foodName, source: go.source as RecentFood['source'], lastGrams: go.lastGrams ?? 100, lastDate: go.lastDate, lastTime: '12:00' as LocalTime, lastMethod: 'search' });
   }
 
   async function pickRecent(recent: RecentFood): Promise<void> {
@@ -415,7 +455,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           defaultTime={defaultTime}
           onBack={() => setSelection(null)}
           onAddToPlate={(food, grams, method) => {
-            setPlate((current) => addToPlate(current, food, grams, method));
+            onPlateChange(addToPlate(plate, food, grams, method));
             setSelection(null);
           }}
           onSaved={onSaved}
@@ -451,7 +491,18 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
         </Button>
       </div>
       {plate.length === 0 ? null : (
-        <PlateCard plate={plate} busy={plateState === 'busy'} failed={plateState === 'failed'} onRemove={(ref) => setPlate((current) => removeFromPlate(current, ref))} onClear={() => setPlate([])} onCommit={() => void commitPlate()} />
+        <PlateCard
+          plate={plate}
+          busy={plateState === 'busy'}
+          failed={plateState === 'failed'}
+          defaultTime={defaultTime}
+          onRemove={(ref) => onPlateChange(removeFromPlate(plate, ref))}
+          onClear={() => onPlateChange([])}
+          onCommit={() => void commitPlate()}
+          onGrams={(ref, grams) => onPlateChange(setPlateGrams(plate, ref, grams))}
+          onTime={(ref, time) => onPlateChange(setPlateTime(plate, ref, time))}
+          onSaveRecipe={saveAsRecipe}
+        />
       )}
       <SegmentedControl
         label={tNutrition('searchFilterLabel')}
@@ -579,6 +630,27 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           </Suspense>
         </section>
       ) : query.trim() === '' ? (
+        <>
+        {goTosList !== null && goTosList.length > 0 ? (
+          <section aria-label={tNutrition('goTosTitle')}>
+            <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('goTosTitle')}</h2>
+            <p className="ct-nutrition__muted">{tNutrition('goTosHint')}</p>
+            <ul className="ct-nutrition__list">
+              {goTosList.map((go) => (
+                <li key={go.foodId}>
+                  <button type="button" data-hit className="ct-nutrition__hit" onClick={() => void pickGoTo(go)}>
+                    <span className="ct-nutrition__hit-name">{go.foodName}</span>
+                    <span className="ct-nutrition__muted ct-nutrition__num">{go.lastGrams === null ? '' : tNutrition('goToLast', { n: go.count, grams: formatTenth(go.lastGrams) })}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : goTosFailed ? (
+          <p role="alert" className="ct-nutrition__warning">
+            {tNutrition('goTosReadError')}
+          </p>
+        ) : null}
         <section aria-labelledby="ct-nutrition-recents">
           <h2 id="ct-nutrition-recents" className="ct-nutrition__subtitle ct-section-title">
             {tNutrition('recents')}
@@ -603,6 +675,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
             </ul>
           )}
         </section>
+        </>
       ) : found !== null && found.query === query && found.provenance === provenance && found.failed === true ? (
         <section aria-label={tNutrition('searchResults')}>
           <p role="alert" className="ct-nutrition__warning">

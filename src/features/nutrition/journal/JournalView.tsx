@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
-import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals } from '../../../domain/nutrition';
+import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals, type Plate } from '../../../domain/nutrition';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatTime } from '../../../i18n/format';
 import { formatDayLong, formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
@@ -87,6 +87,8 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
   const date = mode.kind === 'idle' ? (picked ?? snapshot.today) : mode.date;
   const formOpen = mode.kind !== 'idle';
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
+  // BL-117 : l'assiette en cours est gardée quand la recherche se ferme (rien n'est écrit avant « Ajouter l'assiette au journal »).
+  const [plate, setPlate] = useState<Plate>([]);
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   // C-099 : choix affiché tout de suite ; les écritures sont mises en file, la dernière valeur gagne (jamais une valeur intermédiaire laissée).
@@ -254,7 +256,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
       ) : null}
 
       {mode.kind === 'search' ? (
-        <FoodSearchPanel date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        <FoodSearchPanel date={mode.date} defaultTime={defaultTime} plate={plate} onPlateChange={setPlate} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'quick' ? (
         <QuickAddForm date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'meals' ? (
