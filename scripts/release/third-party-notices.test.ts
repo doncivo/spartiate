@@ -81,4 +81,8 @@ describe('BL-043 (relecture) : --check s\'exécute là où node_modules existe',
     expect(install, 'npm ci avant --check').toBeGreaterThanOrEqual(0);
     expect(install).toBeLessThan(check);
   });
+  it('build-windows.yml cherche aussi les avis dans l\'exécutable de l\'application', () => {
+    const windows = readFileSync(resolve(root, '.github/workflows/build-windows.yml'), 'utf8');
+    expect(windows).toMatch(/grep -q "THIRD-PARTY-NOTICES\.txt" src-tauri\/target\/release\/spartiate\.exe/);
+  });
 });
