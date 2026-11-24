@@ -271,6 +271,12 @@ jobs:
           cd ..
           node scripts/release/cargo-audit-gate.mjs "$RUNNER_TEMP/audit.json" "$RUNNER_TEMP/tree-windows.txt" "$RUNNER_TEMP/tree-ios.txt"
       # BL-043 : les avis de licence livrés (public/THIRD-PARTY-NOTICES.txt) correspondent à package-lock.json et à Cargo.lock.
+      # Le script lit les textes de licence dans node_modules : Node et npm ci (sans scripts, aucune compilation) sont nécessaires.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts
       - name: Avis de licence à jour
         run: node scripts/release/third-party-notices.mjs --check
       # CI-PUB (C-175, PRD 23.2, D-47) : dépendances npm livrées (hors développement), alertes hautes ou critiques refusées.
