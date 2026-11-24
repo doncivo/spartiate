@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, input, session, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
+import type { ProgressionEquipment } from './types';
 
 /**
  * SEANCE-0292 (lot 0.29.2, partie A : moteur et génération) : une section par ligne du registre (docs/SEANCE-0292.md). Fixtures
@@ -39,5 +41,38 @@ describe('SEANCE-0292 C-006 : décharge arrondie vers le bas, sans répétition 
     expect(p.loadKg).toBe(20);
     expect(p.sets.every((s) => s.reps === 10)).toBe(true);
     expect(p.reasons).not.toContain('snap-extra-rep');
+  });
+});
+
+describe('SEANCE-0292 C-007 : grille de barre limitée aux disques réellement montables (§ 11.2.7, § 14.3)', () => {
+  const home = (plates: { weightKg: number; count: number }[], increments: ProgressionEquipment['increments'] = {}): ProgressionEquipment => ({
+    inventory: { ...FITNESS_PARK_ANTONY.inventory, platesPerSideKg: plates },
+    increments,
+  });
+
+  it('disques par côté {20, 2,5} : 20, 25, 60 et 65 kg seulement ; 45 kg (impossible à monter) jamais proposé', () => {
+    expect(loadGrid(['barbell'], home([{ weightKg: 20, count: 1 }, { weightKg: 2.5, count: 1 }]))?.loads).toEqual([20, 25, 60, 65]);
+    expect(loadGrid(['barbell'], home([{ weightKg: 20, count: 1 }, { weightKg: 2.5, count: 1 }], { barbell: 2.5 }))?.loads).toEqual([20, 25, 60, 65]);
+  });
+
+  it('deux disques de 2,5 et deux de 10 par côté : 35 et 55 kg exclus', () => {
+    expect(loadGrid(['barbell'], home([{ weightKg: 2.5, count: 2 }, { weightKg: 10, count: 2 }]))?.loads).toEqual([20, 25, 30, 40, 45, 50, 60, 65, 70]);
+  });
+
+  it('profil de la salle (un disque de chaque masse de 1,25 à 30 kg) : grille inchangée, 20 à 237,5 kg par 2,5', () => {
+    const loads = loadGrid(['barbell'], FITNESS_PARK_ANTONY)?.loads ?? [];
+    expect(loads[0]).toBe(20);
+    expect(loads[loads.length - 1]).toBe(237.5);
+    expect(loads.length).toBe(88);
+  });
+
+  it('incrément déclaré plus grand que le plus petit disque : le pas déclaré reste respecté (5 kg)', () => {
+    expect(loadGrid(['barbell'], home([{ weightKg: 1.25, count: 2 }, { weightKg: 5, count: 2 }], { barbell: 5 }))?.loads).toEqual([20, 25, 30, 35, 40]);
+  });
+
+  it('haut de plage à 25 kg avec {20, 2,5} : cran montable suivant 60 kg au-delà du plafond +10 %, échelle de répétitions (pas 30 kg)', () => {
+    const p = prescribe(input({ exercise: BENCH, history: [session(3, 25, [10, 10, 10])], target: target(8, 10), equipment: home([{ weightKg: 20, count: 1 }, { weightKg: 2.5, count: 1 }]) }));
+    expect(p.loadKg).toBe(25);
+    expect(p.reasons).toContain('gain-capped');
   });
 });
