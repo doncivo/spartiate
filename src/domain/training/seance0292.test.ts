@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
-import { GEN_LIBRARY, input as genInput } from '../../../tests/fixtures/training/generation';
+import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc } from '../types';
 import { routineDiff } from './closure';
 import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
 import { estimateExerciseSec, estimateSessionSec, generateSession } from './generateSession';
+import type { GenerationEquipment } from './generationTypes';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
@@ -143,5 +144,29 @@ describe('SEANCE-0292 C-012 : durée d’une série chronométrée = sa durée c
 
   it('exercice à charge : 45 s par série, inchangé', () => {
     expect(estimateExerciseSec(3, 60, GEN_CONFIG)).toBe(255);
+  });
+});
+
+describe('SEANCE-0292 C-013 (D-472) : plages du § 12.1.4 pour tout exercice placé par la génération', () => {
+  const noBarbell: GenerationEquipment = { kind: 'salle', inventory: { ...GYM.inventory, available: GYM.inventory.available.filter((i) => i !== 'barbell') } };
+
+  it('substitution de même type (rowing barre → haltère, polyarticulaire 6–10) : 5–10 ; isolation substituée (curl barre 8–12) : 8–15', () => {
+    const s = generateSession(genInput({ equipment: noBarbell }));
+    const sub = s.exercises.find((e) => e.sourceExerciseId === 'row-barbell');
+    expect(sub?.origin).toBe('substitution');
+    expect(sub?.kind).toBe('compound');
+    expect([sub?.repMin, sub?.repMax]).toEqual([5, 10]);
+    const curl = s.exercises.find((e) => e.sourceExerciseId === 'curl-barbell');
+    expect(curl?.origin).toBe('substitution');
+    expect([curl?.repMin, curl?.repMax]).toEqual([8, 15]);
+  });
+
+  it('ligne de la routine d’Ali : plage écrite gardée (D-86), 6–10 et 12–15', () => {
+    const s = generateSession(genInput());
+    const bench = s.exercises.find((e) => e.exerciseId === 'bench-barbell');
+    expect(bench?.origin).toBe('routine');
+    expect([bench?.repMin, bench?.repMax]).toEqual([6, 10]);
+    const raise = s.exercises.find((e) => e.exerciseId === 'lateral-raise-dumbbell');
+    expect([raise?.repMin, raise?.repMax]).toEqual([12, 15]);
   });
 });
