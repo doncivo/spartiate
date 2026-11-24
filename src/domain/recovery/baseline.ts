@@ -47,10 +47,21 @@ export interface Baseline {
   readonly stats: BaselineStats;
 }
 
-/** Baseline d'une mesure : les `baselineDays` dernières nuits VALIDES (sommeil ≥ seuil, mesure présente) strictement avant `today`. */
+/** Jour civil `yyyy-MM-dd` décalé de `delta` jours (même règle que `shiftDay` de daySummary, sans l'importer : pas de cycle). */
+function dayShifted(day: string, delta: number): string {
+  const [y = 0, m = 1, d = 1] = day.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + delta)).toISOString().slice(0, 10);
+}
+
+/**
+ * Baseline d'une mesure : les `baselineDays` dernières nuits VALIDES (sommeil ≥ seuil, mesure présente) strictement avant `today`, parmi celles des
+ * `baselineWindowDays` derniers jours calendaires (C-061, D-479 : une ancienne baseline n'est jamais gardée telle quelle). Sous `baselineDays` nuits
+ * valides dans la fenêtre, la baseline est « en reconstruction » (la qualité du jour n'est alors jamais « good »).
+ */
 export function buildBaseline(nights: readonly NightRecord[], today: string, metric: 'hrvMs' | 'restingHr'): Baseline {
+  const windowStart = dayShifted(today, -RECOVERY_CONFIG.baselineWindowDays);
   const values = nights
-    .filter((n) => n.day < today && n[metric] !== null && n.asleepMinutes !== null && n.asleepMinutes >= RECOVERY_CONFIG.validNightMinAsleepMinutes)
+    .filter((n) => n.day < today && n.day >= windowStart && n[metric] !== null && n.asleepMinutes !== null && n.asleepMinutes >= RECOVERY_CONFIG.validNightMinAsleepMinutes)
     .sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0))
     .slice(0, RECOVERY_CONFIG.baselineDays)
     .map((n) => n[metric] as number);

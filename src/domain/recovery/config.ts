@@ -24,6 +24,8 @@ export const CARDIO_SRPE_SCALE = 1;
 export const RECOVERY_CONFIG = {
   /** § 16.3 Baseline. */
   baselineDays: 14,
+  /** D-479 (C-061) : fenêtre de calendrier de la baseline, en jours avant aujourd'hui ; sous `baselineDays` nuits valides dedans : « en reconstruction ». */
+  baselineWindowDays: 30,
   minNights: 7,
   outlierSigma: 2.5,
   /** Proposition : durée de sommeil minimale pour qu'une nuit compte comme « valide » (le PRD ne la fixe pas). */
