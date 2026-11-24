@@ -63,7 +63,7 @@ async function baseline() {
 }
 
 beforeEach(() => {
-  vi.spyOn(migrator, 'migrate').mockImplementation((db: SqlDriver, list: typeof migrations, options: MigrateOptions = {}) => actual.migrate(db, list, {
+  vi.spyOn(migrator, 'migrate').mockImplementation((db: SqlDriver, list: Parameters<typeof actual.migrate>[1], options: MigrateOptions = {}) => actual.migrate(db, list, {
     ...options,
     afterApply: async (driver: SqlDriver, report: MigrateReport) => {
       if (fault.mode === 'interruption') await pauseAfterCommit(driver, report);

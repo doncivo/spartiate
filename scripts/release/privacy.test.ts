@@ -4,6 +4,7 @@
 // (« valeur réelle d'Ali », « ta moyenne habituelle (…) », « constat … : 7 h 12 », cible chiffrée attribuée à un constat d'Ali). La liste exacte des
 // valeurs retirées est gardée hors dépôt (HIST-01) ; un chiffre synthétique reste permis tant qu'il n'est pas attribué à Ali.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -15,7 +16,16 @@ const TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|
 const OUT = [/^docs\/archive\//, /^content\//, /(^|\/)package-lock\.json$/, /Cargo\.lock$/, /^src-tauri\/vendor\//, /^src-tauri\/gen\//];
 const SELF = 'scripts/release/privacy.test.ts';
 const files = tracked.filter((f) => f !== SELF && TEXT.test(f) && !OUT.some((re) => re.test(f)));
-const read = (f: string): string => readFileSync(resolve(root, f), 'utf8');
+const cache = new Map<string, string>();
+/** Lecture mémorisée : le dépôt entier est parcouru par plusieurs gardes (DATA-0292). */
+const read = (f: string): string => {
+  let text = cache.get(f);
+  if (text === undefined) {
+    text = readFileSync(resolve(root, f), 'utf8');
+    cache.set(f, text);
+  }
+  return text;
+};
 
 type Hit = { file: string; line: number; text: string };
 function scan(paths: readonly string[], patterns: readonly RegExp[], allow: (line: string) => boolean = () => false): Hit[] {
@@ -82,5 +92,54 @@ describe('aucun conseil de supprimer ou de réinstaller l’app (C-110, C-181)',
     const guides = ['docs/install-iphone.md', 'docs/install-pc.md'];
     const inherited = [/\btâches\b/i, /\bagendas?\b/i, /jours fériés/i, /CT_GOOGLE/, /Réglages\s*[›>]\s*(«\s*)?(À propos|Synchronisation|Journaux|Rechercher)/];
     expect(scan(guides, inherited)).toEqual([]);
+  });
+});
+
+// DATA-0292 (BL-138, D-489) : le nom d'un lieu réel (salle de sport d'Ali) ne figure dans AUCUN fichier suivi, contenu embarqué (content/), CHANGELOG et
+// fiches compris, hors docs/archive (lecture seule, D-40). La garde ne contient pas le nom : elle compare l'empreinte SHA-256 de chaque MOT des
+// fichiers (découpage aux non-lettres et aux majuscules internes : `FOO_NOM`, `forNom`, `d'Nom`, `nom-complet` sont des mots « nom ») et des chemins.
+const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f52110d4';
+const PLACE_LENGTH = 6;
+const placeFiles = tracked.filter((f) => f !== SELF && !/^docs\/archive\//.test(f));
+/** Fichiers dont le contenu est lu par la garde du lieu. */
+/** Binaire : un octet nul dans les 8 000 premiers octets. */
+const isBinary = (f: string): boolean => readFileSync(resolve(root, f)).subarray(0, 8000).includes(0);
+const placeScanned = placeFiles.filter((f) => !isBinary(f));
+const hashed = new Map<string, boolean>();
+function isPlaceWord(word: string): boolean {
+  let known = hashed.get(word);
+  if (known === undefined) {
+    known = createHash('sha256').update(word).digest('hex') === PLACE_SHA256;
+    hashed.set(word, known);
+  }
+  return known;
+}
+export function mentionsPlace(text: string): boolean {
+  // Mots : minuscules précédées d'une majuscule facultative, ou suite de majuscules (« fooNom » donne « foo », « Nom » ; « NOMReal » donne « NOM », « Real »).
+  for (const match of text.matchAll(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g)) {
+    const word = match[0];
+    if (word.length === PLACE_LENGTH && isPlaceWord(word.toLowerCase())) return true;
+  }
+  return false;
+}
+
+describe('aucun nom de lieu réel dans les fichiers suivis (D-489)', () => {
+  it('la garde reconnaît le nom sous ses formes (témoins construits, jamais écrits)', () => {
+    const word = String.fromCharCode(97, 110, 116, 111, 110, 121);
+    const cap = word.charAt(0).toUpperCase() + word.slice(1);
+    expect(mentionsPlace(`fitness-park-${word}`)).toBe(true);
+    expect(mentionsPlace(`FITNESS_PARK_${word.toUpperCase()}`)).toBe(true);
+    expect(mentionsPlace(`for${cap}`)).toBe(true);
+    expect(mentionsPlace(`${word.toUpperCase()}Real`)).toBe(true);
+    expect(mentionsPlace(`une salle à ${cap}.`)).toBe(true);
+    expect(mentionsPlace('fitness-park-salle-complete, Salle complète, ant tony')).toBe(false);
+  });
+  it('la garde lit tout fichier suivi non binaire, pas seulement une liste d’extensions', () => {
+    expect(placeFiles.filter((f) => !placeScanned.includes(f) && !isBinary(f))).toEqual([]);
+  });
+  it('aucun fichier suivi (contenu, CHANGELOG, fiches, tests, chemins) ne le porte', () => {
+    const textual = placeScanned;
+    expect(placeFiles.filter((f) => mentionsPlace(f))).toEqual([]);
+    expect(textual.filter((f) => mentionsPlace(read(f)))).toEqual([]);
   });
 });

@@ -110,7 +110,7 @@ export interface StackRange {
   readonly minKg: number;
   readonly maxKg: number;
   readonly stepKg: number;
-  /** Charges isolées en plus de la plage (paire d'haltères de 9 kg à Antony) ; absent dans les profils antérieurs. */
+  /** Charges isolées en plus de la plage (paire d'haltères de 9 kg à la salle) ; absent dans les profils antérieurs. */
   readonly extraKg?: readonly number[];
 }
 export interface MachineSpec {

@@ -286,6 +286,13 @@
     "CREATE TRIGGER sync_injury_ai AFTER INSERT ON injury\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       DELETE FROM sync_tombstone WHERE table_name = 'injury' AND row_id = NEW.id;\n       DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*';\n       INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('injury', NEW.id, '*');\n     END",
     "CREATE TRIGGER sync_injury_au AFTER UPDATE ON injury\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n         SELECT 'injury', NEW.id, '*', OLD.hlc, NULL\n         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*');\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'muscle_id', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('muscle_id', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.muscle_id IS NOT NEW.muscle_id\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id' AND OLD.muscle_id IS NOT NEW.muscle_id;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'muscle_id' WHERE OLD.muscle_id IS NOT NEW.muscle_id;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'patterns', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('patterns', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.patterns IS NOT NEW.patterns\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns' AND OLD.patterns IS NOT NEW.patterns;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'patterns' WHERE OLD.patterns IS NOT NEW.patterns;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'started_on', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('started_on', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.started_on IS NOT NEW.started_on\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on' AND OLD.started_on IS NOT NEW.started_on;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'started_on' WHERE OLD.started_on IS NOT NEW.started_on;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'note', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('note', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.note IS NOT NEW.note\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note' AND OLD.note IS NOT NEW.note;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'note' WHERE OLD.note IS NOT NEW.note;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'status', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('status', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.status IS NOT NEW.status\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status' AND OLD.status IS NOT NEW.status;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'status' WHERE OLD.status IS NOT NEW.status;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'healed_on', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('healed_on', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.healed_on IS NOT NEW.healed_on\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on' AND OLD.healed_on IS NOT NEW.healed_on;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'healed_on' WHERE OLD.healed_on IS NOT NEW.healed_on;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'checkins', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('checkins', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.checkins IS NOT NEW.checkins\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins' AND OLD.checkins IS NOT NEW.checkins;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'checkins' WHERE OLD.checkins IS NOT NEW.checkins;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'created_at', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('created_at', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.created_at IS NOT NEW.created_at\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at;\nINSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'injury', NEW.id, 'deleted_at', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('deleted_at', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.deleted_at IS NOT NEW.deleted_at\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at;\n       DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;\n       INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL;\n     END"
    ]
+  },
+  {
+   "version": 22,
+   "name": "default_profile_rename",
+   "statements": [
+    "UPDATE settings SET value = replace(value, '\"fitness-park-' || char(97,110,116,111,110,121) || '\"', '\"salle-complete\"') WHERE key IN ('training.activeEquipmentProfile', 'onboarding.draft', 'onboarding.answers')"
+   ]
   }
  ],
  "versions": [
@@ -1989,6 +1996,128 @@
     "sync_workout_set_au",
     "sync_workout_set_difficulty_au"
    ]
+  },
+  {
+   "version": 22,
+   "tables": [
+    "body_weight",
+    "cardio_session",
+    "cardio_track",
+    "conflict_log",
+    "data_reset",
+    "day_completeness",
+    "epoch_carry_report",
+    "equipment_profile",
+    "exercise",
+    "exercise_exclusion",
+    "food",
+    "food_favorite",
+    "food_portion",
+    "injury",
+    "meal_entry",
+    "measurement",
+    "mesocycle",
+    "muscle_recovery",
+    "nutrition_target",
+    "profile",
+    "progress_photo",
+    "progress_photo_file",
+    "progression_profile",
+    "recipe",
+    "recipe_ingredient",
+    "recommendation_decision",
+    "recovery_day",
+    "recovery_factor",
+    "recovery_import_state",
+    "recovery_sample",
+    "routine",
+    "routine_day",
+    "routine_exercise",
+    "schema_migrations",
+    "settings",
+    "supplement",
+    "supplement_intake",
+    "sync_field_clock",
+    "sync_guard",
+    "sync_meta",
+    "sync_outbox",
+    "sync_parked",
+    "sync_state",
+    "sync_tombstone",
+    "sync_unknown",
+    "workout",
+    "workout_set"
+   ],
+   "triggers": [
+    "sync_body_weight_ai",
+    "sync_body_weight_au",
+    "sync_cardio_session_ai",
+    "sync_cardio_session_au",
+    "sync_data_reset_ai",
+    "sync_data_reset_au",
+    "sync_day_completeness_ai",
+    "sync_day_completeness_au",
+    "sync_equipment_profile_ai",
+    "sync_equipment_profile_au",
+    "sync_exercise_ai",
+    "sync_exercise_au",
+    "sync_exercise_exclusion_ai",
+    "sync_exercise_exclusion_au",
+    "sync_food_ai",
+    "sync_food_au",
+    "sync_food_favorite_ai",
+    "sync_food_favorite_au",
+    "sync_food_portion_ai",
+    "sync_food_portion_au",
+    "sync_injury_ai",
+    "sync_injury_au",
+    "sync_meal_entry_ai",
+    "sync_meal_entry_au",
+    "sync_measurement_ai",
+    "sync_measurement_au",
+    "sync_mesocycle_ai",
+    "sync_mesocycle_au",
+    "sync_mesocycle_program_au",
+    "sync_muscle_recovery_ai",
+    "sync_muscle_recovery_au",
+    "sync_nutrition_target_ai",
+    "sync_nutrition_target_au",
+    "sync_nutrition_target_rest_au",
+    "sync_profile_ai",
+    "sync_profile_au",
+    "sync_progress_photo_ai",
+    "sync_progress_photo_au",
+    "sync_progression_profile_ai",
+    "sync_progression_profile_au",
+    "sync_recipe_ai",
+    "sync_recipe_au",
+    "sync_recipe_ingredient_ai",
+    "sync_recipe_ingredient_au",
+    "sync_recommendation_decision_ai",
+    "sync_recommendation_decision_au",
+    "sync_recovery_day_ai",
+    "sync_recovery_day_au",
+    "sync_recovery_factor_ai",
+    "sync_recovery_factor_au",
+    "sync_routine_ai",
+    "sync_routine_au",
+    "sync_routine_day_ai",
+    "sync_routine_day_au",
+    "sync_routine_day_weekday_au",
+    "sync_routine_exercise_ai",
+    "sync_routine_exercise_au",
+    "sync_routine_exercise_circuit_au",
+    "sync_supplement_ai",
+    "sync_supplement_au",
+    "sync_supplement_intake_ai",
+    "sync_supplement_intake_au",
+    "sync_workout_ai",
+    "sync_workout_au",
+    "sync_workout_close_decisions_au",
+    "sync_workout_set_ai",
+    "sync_workout_set_au",
+    "sync_workout_set_difficulty_au"
+   ]
   }
  ],
  "triggers": [
@@ -2017,7 +2146,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2045,7 +2175,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2056,7 +2187,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2067,7 +2199,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2080,7 +2213,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2093,7 +2227,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2113,7 +2248,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2133,7 +2269,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2160,7 +2297,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2187,7 +2325,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2214,7 +2353,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2241,7 +2381,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2249,7 +2390,8 @@
    "table": "exercise_exclusion",
    "sql": "CREATE TRIGGER sync_exercise_exclusion_ai AFTER INSERT ON exercise_exclusion WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN DELETE FROM sync_tombstone WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id; DELETE FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '*'; INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('exercise_exclusion', NEW.id, '*'); END",
    "versions": [
-    21
+    21,
+    22
    ]
   },
   {
@@ -2257,7 +2399,8 @@
    "table": "exercise_exclusion",
    "sql": "CREATE TRIGGER sync_exercise_exclusion_au AFTER UPDATE ON exercise_exclusion WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'exercise_exclusion', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'exercise_exclusion', NEW.id, 'exercise_id', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field IN ('exercise_id', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'exercise_id') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'exercise_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.exercise_id IS NOT NEW.exercise_id ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'exercise_id' AND OLD.exercise_id IS NOT NEW.exercise_id; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'exercise_exclusion', NEW.id, 'exercise_id' WHERE OLD.exercise_id IS NOT NEW.exercise_id; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'exercise_exclusion', NEW.id, 'created_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field IN ('created_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'created_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.created_at IS NOT NEW.created_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'exercise_exclusion', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'exercise_exclusion', NEW.id, 'deleted_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field IN ('deleted_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'deleted_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.deleted_at IS NOT NEW.deleted_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'exercise_exclusion', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at; DELETE FROM sync_outbox WHERE table_name = 'exercise_exclusion' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'exercise_exclusion', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; END",
    "versions": [
-    21
+    21,
+    22
    ]
   },
   {
@@ -2278,7 +2421,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2299,7 +2443,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2313,7 +2458,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2327,7 +2473,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2348,7 +2495,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2369,7 +2517,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2377,7 +2526,8 @@
    "table": "injury",
    "sql": "CREATE TRIGGER sync_injury_ai AFTER INSERT ON injury WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN DELETE FROM sync_tombstone WHERE table_name = 'injury' AND row_id = NEW.id; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'; INSERT INTO sync_outbox (table_name, row_id, field) VALUES ('injury', NEW.id, '*'); END",
    "versions": [
-    21
+    21,
+    22
    ]
   },
   {
@@ -2385,7 +2535,8 @@
    "table": "injury",
    "sql": "CREATE TRIGGER sync_injury_au AFTER UPDATE ON injury WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'muscle_id', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('muscle_id', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.muscle_id IS NOT NEW.muscle_id ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'muscle_id' AND OLD.muscle_id IS NOT NEW.muscle_id; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'muscle_id' WHERE OLD.muscle_id IS NOT NEW.muscle_id; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'patterns', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('patterns', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.patterns IS NOT NEW.patterns ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'patterns' AND OLD.patterns IS NOT NEW.patterns; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'patterns' WHERE OLD.patterns IS NOT NEW.patterns; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'started_on', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('started_on', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.started_on IS NOT NEW.started_on ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'started_on' AND OLD.started_on IS NOT NEW.started_on; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'started_on' WHERE OLD.started_on IS NOT NEW.started_on; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'note', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('note', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.note IS NOT NEW.note ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'note' AND OLD.note IS NOT NEW.note; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'note' WHERE OLD.note IS NOT NEW.note; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'status', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('status', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.status IS NOT NEW.status ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'status' AND OLD.status IS NOT NEW.status; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'status' WHERE OLD.status IS NOT NEW.status; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'healed_on', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('healed_on', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.healed_on IS NOT NEW.healed_on ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'healed_on' AND OLD.healed_on IS NOT NEW.healed_on; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'healed_on' WHERE OLD.healed_on IS NOT NEW.healed_on; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'checkins', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('checkins', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.checkins IS NOT NEW.checkins ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'checkins' AND OLD.checkins IS NOT NEW.checkins; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'checkins' WHERE OLD.checkins IS NOT NEW.checkins; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'created_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('created_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.created_at IS NOT NEW.created_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'created_at' AND OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'created_at' WHERE OLD.created_at IS NOT NEW.created_at; INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'injury', NEW.id, 'deleted_at', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field IN ('deleted_at', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'injury' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.deleted_at IS NOT NEW.deleted_at ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = 'deleted_at' AND OLD.deleted_at IS NOT NEW.deleted_at; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, 'deleted_at' WHERE OLD.deleted_at IS NOT NEW.deleted_at; DELETE FROM sync_outbox WHERE table_name = 'injury' AND row_id = NEW.id AND field = '+' AND OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'injury', NEW.id, '+' WHERE OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS NULL; END",
    "versions": [
-    21
+    21,
+    22
    ]
   },
   {
@@ -2406,7 +2557,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2427,7 +2579,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2444,7 +2597,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2461,7 +2615,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2483,7 +2638,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2505,7 +2661,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2515,7 +2672,8 @@
    "versions": [
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2534,7 +2692,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2553,7 +2712,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2574,7 +2734,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2595,7 +2756,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2605,7 +2767,8 @@
    "versions": [
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2633,7 +2796,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2661,7 +2825,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2678,7 +2843,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2695,7 +2861,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2718,7 +2885,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2741,7 +2909,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2761,7 +2930,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2781,7 +2951,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2801,7 +2972,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2821,7 +2993,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2844,7 +3017,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2867,7 +3041,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2886,7 +3061,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2905,7 +3081,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2923,7 +3100,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2941,7 +3119,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2968,7 +3147,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -2995,7 +3175,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3022,7 +3203,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3049,7 +3231,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3058,7 +3241,8 @@
    "sql": "CREATE TRIGGER sync_routine_day_weekday_au AFTER UPDATE OF weekday ON routine_day WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'routine_day', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'routine_day' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'routine_day', NEW.id, 'weekday', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'routine_day' AND row_id = NEW.id AND field IN ('weekday', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'routine_day' AND row_id = NEW.id AND field = 'weekday') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_day' AND row_id = NEW.id AND field = 'weekday'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'routine_day' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.weekday IS NOT NEW.weekday ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'routine_day' AND row_id = NEW.id AND field = 'weekday' AND OLD.weekday IS NOT NEW.weekday; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'routine_day', NEW.id, 'weekday' WHERE OLD.weekday IS NOT NEW.weekday; END",
    "versions": [
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3085,7 +3269,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3112,7 +3297,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3127,7 +3313,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3139,7 +3326,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3151,7 +3339,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3163,7 +3352,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3175,7 +3365,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3200,7 +3391,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3225,7 +3417,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3248,7 +3441,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3273,7 +3467,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3298,7 +3493,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   },
   {
@@ -3321,7 +3517,8 @@
     18,
     19,
     20,
-    21
+    21,
+    22
    ]
   }
  ]

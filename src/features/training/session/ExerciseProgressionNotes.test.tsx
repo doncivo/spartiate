@@ -12,7 +12,7 @@ import { TrainingScreen } from '../TrainingScreen';
 
 /**
  * I2-04 (points 2 et 3) : la phrase de la proposition dit qu'une séance partielle a été ignorée et que la grille de charges repose sur du
- * matériel « à vérifier » (barre EZ du profil embarqué Fitness Park Antony). Information seulement : la proposition reste proposée.
+ * matériel « à vérifier » (barre EZ du profil embarqué Fitness Park). Information seulement : la proposition reste proposée.
  */
 
 const DEVICE = '60000000-0000-4000-8000-0000000000e5' as DeviceId;

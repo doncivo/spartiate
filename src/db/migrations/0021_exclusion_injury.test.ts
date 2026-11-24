@@ -30,7 +30,7 @@ const outbox = (db: SqlDriver) => db.select<{ table_name: string; row_id: string
 
 describe('migration 0021 : exercices écartés publiés (SYNC-0291, schéma 21)', () => {
   it('registre : 0001 à 0021 ; version 21, nom exclusion_injury', () => {
-    expect(migrations.map((m) => m.version)).toEqual(Array.from({ length: 21 }, (_, i) => i + 1));
+    expect(migrations.slice(0, 21).map((m) => m.version)).toEqual(Array.from({ length: 21 }, (_, i) => i + 1));
     expect(migrations[20]).toBe(migration0021ExclusionInjury);
     expect(migration0021ExclusionInjury.name).toBe('exclusion_injury');
   });

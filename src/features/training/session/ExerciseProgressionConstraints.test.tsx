@@ -13,7 +13,7 @@ import { TrainingScreen } from '../TrainingScreen';
 /**
  * I2-02 : alertes et choix facultatifs dans le bloc Proposition (fatigue, deload manuel). Rien n'est appliqué d'office : un choix ne remplit
  * les séries qu'au geste d'Ali et se trace dans `recommendation_decision` comme une modification ; « Refuser » trace un refus ; un deload
- * retenu sort la séance des statistiques du moteur. Base SQLite réelle (wasm), contenu embarqué, profil Fitness Park Antony (barre 2,5 kg).
+ * retenu sort la séance des statistiques du moteur. Base SQLite réelle (wasm), contenu embarqué, profil Fitness Park (barre 2,5 kg).
  */
 
 const DEVICE = '60000000-0000-4000-8000-0000000000e4' as DeviceId;

@@ -79,7 +79,7 @@ export interface DumbbellExtrasSource {
  */
 export const LEGACY_DUMBBELL_EXTRAS_SOURCES: readonly DumbbellExtrasSource[] = [
   {
-    name: 'Fitness Park Antony',
+    name: 'Fitness Park',
     inventory: {
       // prettier-ignore
       available: ['barbell', 'ez-bar', 'trap-bar', 'pull-up-bar', 'parallel-bars', 'weight-plate', 'dumbbell', 'kettlebell', 'machine', 'seated-machine', 'assisted-pull-up-machine', 'chest-supported-row-machine', 'chest-press-machine', 'incline-chest-press-machine', 'pec-deck', 'reverse-pec-deck', 'shoulder-press-machine', 'preacher-curl-machine', 'triceps-machine', 'hack-squat-machine', 'smith-machine', 'pendulum-squat-machine', 'leg-press-machine', 'leg-extension-machine', 'leg-curl-machine', 'seated-leg-curl-machine', 'lying-leg-curl-machine', 'hip-thrust-machine', 'glute-kickback-machine', 'hip-abduction-machine', 'standing-calf-machine', 'seated-calf-machine', 'tibialis-machine', 'ab-crunch-machine', 'captain-chair', 'low-pulley', 'high-pulley', 'cable-machine', 'bench', 'flat-bench', 'incline-bench', 'back-extension-bench', 'rack', 'bodyweight', 'cable-handle', 'neutral-grip-handle', 'close-grip-handle', 'straight-bar-attachment', 'rope-attachment', 'ankle-strap', 'mat', 'wall', 'floor'],
@@ -95,7 +95,7 @@ const sameSet = (a: readonly string[], b: readonly string[]): boolean => {
 };
 
 /**
- * I2-04 : paires d'haltères en plus de la plage (`extraKg`, 9 kg à Antony) rattrapées À LA LECTURE pour une copie d'un profil embarqué
+ * I2-04 : paires d'haltères en plus de la plage (`extraKg`, 9 kg à la salle) rattrapées À LA LECTURE pour une copie d'un profil embarqué
  * faite avant la 0.3.0 (le champ n'existait pas). Copie reconnue par son nom (commence par le nom embarqué, « (copie) »), sinon par une liste
  * de matériel identique à celle d'un seul profil embarqué ; seules les paires que la plage actuelle encadre sont ajoutées, et seulement si `extraKg` est absent (une valeur
  * présente, même vide, est celle d'Ali). Rien d'autre n'est touché ; sans rattrapage, le même objet est rendu. Aucune écriture.

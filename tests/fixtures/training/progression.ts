@@ -3,7 +3,7 @@ import { DEFAULT_PROGRESSION_CONFIG } from '../../../src/domain/training/config'
 import type { IsoDateTime } from '../../../src/domain/types';
 
 /**
- * Fixtures synthétiques I2-01 (D-38 : aucune donnée réelle). `FITNESS_PARK_ANTONY` reprend les valeurs du profil embarqué par défaut
+ * Fixtures synthétiques I2-01 (D-38 : aucune donnée réelle). `SALLE_COMPLETE` reprend les valeurs du profil embarqué par défaut
  * (content/equipment-profiles/profiles.json, converti par `toEmbeddedProfile`) : barre olympique 20 kg, disques 1,25 à 30 kg (un par
  * masse et par côté), haltères 2 à 50 kg par pas de 2, incréments barre 2,5 et haltère 2 ; machines et poulies sans palier connu.
  */
@@ -12,7 +12,7 @@ export const NOW = '2026-11-07T18:00:00.000Z' as IsoDateTime;
 const DAY = 86_400_000;
 export const daysAgo = (days: number): IsoDateTime => new Date(Date.parse(NOW) - days * DAY).toISOString() as IsoDateTime;
 
-export const FITNESS_PARK_ANTONY: ProgressionEquipment = {
+export const SALLE_COMPLETE: ProgressionEquipment = {
   inventory: {
     available: ['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'leg-press-machine', 'high-pulley', 'flat-bench'],
     forced: [],
@@ -36,12 +36,12 @@ export const FITNESS_PARK_ANTONY: ProgressionEquipment = {
 };
 
 /** Salle aux kettlebells vérifiées (4 et 34 kg seulement). */
-export const KETTLEBELL_GYM: ProgressionEquipment = { inventory: { ...FITNESS_PARK_ANTONY.inventory, toVerify: [] }, increments: FITNESS_PARK_ANTONY.increments };
+export const KETTLEBELL_GYM: ProgressionEquipment = { inventory: { ...SALLE_COMPLETE.inventory, toVerify: [] }, increments: SALLE_COMPLETE.increments };
 
 /** Salle avec une machine à charges guidées par pas de 5 kg (vecteur « stack 5 kg » du § 11.6). */
 export const STACK_GYM: ProgressionEquipment = {
-  inventory: { ...FITNESS_PARK_ANTONY.inventory, machines: [{ equipmentId: 'leg-press-machine', stackMinKg: 5, stackMaxKg: 200, stepKg: 5 }] },
-  increments: FITNESS_PARK_ANTONY.increments,
+  inventory: { ...SALLE_COMPLETE.inventory, machines: [{ equipmentId: 'leg-press-machine', stackMinKg: 5, stackMaxKg: 200, stepKg: 5 }] },
+  increments: SALLE_COMPLETE.increments,
 };
 
 export const BENCH = { id: 'bench-press-barbell', metric: 'load-reps', equipment: ['barbell', 'flat-bench'] } as const;
@@ -75,7 +75,7 @@ export const input = (over: Partial<PrescribeInput> = {}): PrescribeInput => ({
   history: [],
   lastDecision: null,
   profile: null,
-  equipment: FITNESS_PARK_ANTONY,
+  equipment: SALLE_COMPLETE,
   target: target(8, 10),
   config: DEFAULT_PROGRESSION_CONFIG,
   now: NOW,

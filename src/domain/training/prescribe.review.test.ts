@@ -6,15 +6,15 @@ import { toEmbeddedProfile } from '../../features/training/content';
 import type { ExerciseSession, PrescribeInput } from './types';
 
 /**
- * Relecture à froid du moteur I2-01 (PR #60 et #61), cas réels de la salle d'Ali (Fitness Park Antony) avant sa première séance réelle
+ * Relecture à froid du moteur I2-01 (PR #60 et #61), cas réels de la salle d'Ali (Fitness Park) avant sa première séance réelle
  * du 9 novembre 2026 : une vraie progression ne doit jamais être écartée pour toujours, une série isolée ne fixe pas la charge des autres,
  * « Facile » au haut de la fourchette ne fait pas moins bien que sans, la confiance n'est jamais NaN, la paire d'haltères de 9 kg existe.
  */
 
 const profiles = JSON.parse(readFileSync(new URL('../../../content/equipment-profiles/profiles.json', import.meta.url), 'utf8')) as { profiles: Parameters<typeof toEmbeddedProfile>[0][] };
-const antonyJson = profiles.profiles[0];
-if (antonyJson === undefined) throw new Error('profil Antony absent');
-const ANTONY = toEmbeddedProfile(antonyJson);
+const salleJson = profiles.profiles[0];
+if (salleJson === undefined) throw new Error('profil Salle absent');
+const SALLE = toEmbeddedProfile(salleJson);
 const NOW = '2026-11-09T18:00:00.000Z';
 const ago = (days: number): string => new Date(Date.parse(NOW) - days * 86_400_000).toISOString();
 let n = 0;
@@ -29,7 +29,7 @@ const BENCH = { id: 'bench-press-barbell', metric: 'load-reps', equipment: ['bar
 const DB = { id: 'bench-press-dumbbell', metric: 'load-reps', equipment: ['dumbbell', 'flat-bench'] } as PrescribeInput['exercise'];
 const target = (repMin: number, repMax: number, sets = 3): PrescribeInput['target'] => ({ sets, repMin, repMax, rir: null });
 const run = (over: Partial<PrescribeInput>) =>
-  prescribe({ exercise: BENCH, history: [], lastDecision: null, profile: null, equipment: ANTONY, target: target(6, 10), config: CFG, now: NOW, ...over } as PrescribeInput);
+  prescribe({ exercise: BENCH, history: [], lastDecision: null, profile: null, equipment: SALLE, target: target(6, 10), config: CFG, now: NOW, ...over } as PrescribeInput);
 
 describe('B1 : une vraie progression n’est jamais écartée pour toujours', () => {
   it('calibration 30 kg puis 50 kg (> 150 %) : non confirmée, la référence reste 30 kg (FIX-ABERR, C-005, C-168 : le test figeait 50 kg)', () => {
@@ -80,7 +80,7 @@ describe('I3 : la confiance est toujours un nombre', () => {
 
 describe('M1 : la paire d’haltères de 9 kg existe', () => {
   // FIX-0173 (D-142) : « Salle complète » n'a plus la paire de 9 kg propre à l'ancienne salle ; un profil qui la déclare (copie, profil personnel) la garde.
-  const WITH_9 = { ...ANTONY, inventory: { ...ANTONY.inventory, dumbbells: { minKg: 2, maxKg: 58, stepKg: 2, extraKg: [9] } } };
+  const WITH_9 = { ...SALLE, inventory: { ...SALLE.inventory, dumbbells: { minKg: 2, maxKg: 58, stepKg: 2, extraKg: [9] } } };
   it('8 kg × 12 (8–12) → 9 kg avec la paire de 9 kg ; jamais 9 kg sur « Salle complète » (paire absente)', () => {
     const p = run({ exercise: DB, target: target(8, 12), history: [session(3, 8, [12, 12, 12])], equipment: WITH_9 });
     expect(p.loadKg).toBe(9);

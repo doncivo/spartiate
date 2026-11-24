@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "defaultProfileId": "fitness-park-antony",
+  "defaultProfileId": "salle-complete",
   "profiles": [
     {
-      "id": "fitness-park-antony",
+      "id": "salle-complete",
       "name": "Salle complète",
       "kind": "salle",
       "isPreset": false,

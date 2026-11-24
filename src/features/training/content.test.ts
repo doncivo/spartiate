@@ -20,11 +20,11 @@ describe('contenu embarqué de l’entraînement', () => {
     expect(content.catalog.list().length).toBeGreaterThanOrEqual(150);
     expect(content.programs.map((p) => p.id)).toEqual(['full-body-3j', 'haut-bas-4j', 'ppl-6j', 'maison-halteres-3j']);
     expect(content.profiles.map((p) => [p.id, p.name])).toEqual([
-      ['fitness-park-antony', 'Salle complète'],
+      ['salle-complete', 'Salle complète'],
       ['maison-halteres', 'Maison haltères'],
       ['poids-de-corps', 'Poids de corps'],
     ]);
-    expect(content.defaultProfileId).toBe('fitness-park-antony');
+    expect(content.defaultProfileId).toBe('salle-complete');
     expect(content.catalog.get('bench-press-barbell')?.origin).toBe('embedded');
     // I6-07 : média sous licence vérifiée (D-231) ; un exercice sans correspondance reste sans média (repli, D-71).
     expect(content.catalog.get('bench-press-barbell')?.media).toEqual({ images: ['bench-press-barbell.png'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0042-tension.png' });
@@ -51,32 +51,32 @@ describe('contenu embarqué de l’entraînement', () => {
       expect(parseInventory(copy.inventory), profile.id).toEqual(copy.inventory);
       expect(parseIncrements(copy.increments), profile.id).toEqual(copy.increments);
     }
-    const antony = must(content.profiles[0]);
-    expect(antony.inventory.toVerify).toEqual(expect.arrayContaining(['kettlebells', 'barbell:Barre EZ']));
-    expect(antony.increments).toEqual({ barbell: 2.5, dumbbell: 2 });
+    const salle = must(content.profiles[0]);
+    expect(salle.inventory.toVerify).toEqual(expect.arrayContaining(['kettlebells', 'barbell:Barre EZ']));
+    expect(salle.increments).toEqual({ barbell: 2.5, dumbbell: 2 });
     // I2-01 : chaque barre est reliée à son matériel (grille de charges du moteur) ; la barre guidée sans poids n'est pas retenue.
-    expect(antony.inventory.barbells.map((b) => [b.equipmentId, b.weightKg])).toEqual([['barbell', 20], ['barbell', 8], ['ez-bar', 8.5], ['trap-bar', 18]]);
+    expect(salle.inventory.barbells.map((b) => [b.equipmentId, b.weightKg])).toEqual([['barbell', 20], ['barbell', 8], ['ez-bar', 8.5], ['trap-bar', 18]]);
   });
 
   it('compatibilité : les groupes d’alternatives du JSON ; poids de corps sans barre', async () => {
     const content = await loadTrainingContent();
     const body = must(content.profiles.find((p) => p.id === 'poids-de-corps'));
-    const antony = must(content.profiles.find((p) => p.id === 'fitness-park-antony'));
+    const salle = must(content.profiles.find((p) => p.id === 'salle-complete'));
     const forBody = filterCompatibleExercises(content.catalog.list(), body).map((e) => e.id);
     expect(forBody).toContain('push-up');
     expect(forBody).not.toContain('bench-press-barbell');
-    const forAntony = filterCompatibleExercises(content.catalog.list(), antony).map((e) => e.id);
-    expect(forAntony).toContain('bench-press-barbell');
+    const forSalle = filterCompatibleExercises(content.catalog.list(), salle).map((e) => e.id);
+    expect(forSalle).toContain('bench-press-barbell');
     // FIX-0173 : la salle complète a un pupitre (preacher-bench) ; la machine belt squat reste absente.
-    expect(forAntony).toContain('preacher-curl');
-    expect(forAntony).not.toContain('belt-squat');
+    expect(forSalle).toContain('preacher-curl');
+    expect(forSalle).not.toContain('belt-squat');
   });
 
-  it('les programmes de la salle sont entièrement compatibles avec Fitness Park Antony', async () => {
+  it('les programmes de la salle sont entièrement compatibles avec Fitness Park', async () => {
     const content = await loadTrainingContent();
-    const antony = must(content.profiles[0]);
-    for (const program of content.programs.filter((p) => p.compatibleProfileIds.includes('fitness-park-antony'))) {
-      for (const day of program.days) for (const line of day.exercises) expect(filterCompatibleExercises([must(content.catalog.get(line.exerciseId))], antony), `${program.id} ${line.exerciseId}`).toHaveLength(1);
+    const salle = must(content.profiles[0]);
+    for (const program of content.programs.filter((p) => p.compatibleProfileIds.includes('salle-complete'))) {
+      for (const day of program.days) for (const line of day.exercises) expect(filterCompatibleExercises([must(content.catalog.get(line.exerciseId))], salle), `${program.id} ${line.exerciseId}`).toHaveLength(1);
     }
   });
 });

@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { BENCH, CURL, DEADLIFT_TRAP, FITNESS_PARK_ANTONY, LEG_PRESS, SWING, input, session, set, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, DEADLIFT_TRAP, SALLE_COMPLETE, LEG_PRESS, SWING, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import { BENCH_DB, DUMBBELLS_WITH_9, PUSH_UP, SMALL_PLATES, STACK_5 } from '../../../tests/fixtures/training/warmup';
 import { WARMUP_STEPS } from './config';
 import { analyzeHistory } from './estimate1rm';
@@ -13,7 +13,7 @@ import { warmupExerciseIds, warmupForExercise, warmupRamp, warmupTargets, type W
  * disponible juste en dessous, répétitions arrondies en dessous, une rampe pour le premier exercice composé de chaque pattern.
  */
 
-const grid = (equipment: readonly string[], profile = FITNESS_PARK_ANTONY): readonly number[] | null => loadGrid(equipment, profile)?.loads ?? null;
+const grid = (equipment: readonly string[], profile = SALLE_COMPLETE): readonly number[] | null => loadGrid(equipment, profile)?.loads ?? null;
 
 describe('paramètres (config.ts, § 13.8)', () => {
   it('40 % × 8, 60 % × 5, 80 % × 2, figés', () => {
@@ -58,7 +58,7 @@ describe('cibles avant snap (critère 1)', () => {
 });
 
 describe('snap au matériel (critère 3)', () => {
-  it('barre olympique d’Antony (pas de 2,5 kg) : 100 kg → 40 × 8, 60 × 5, 80 × 2 exacts', () => {
+  it('barre olympique de la salle (pas de 2,5 kg) : 100 kg → 40 × 8, 60 × 5, 80 × 2 exacts', () => {
     expect(warmupRamp(100, grid(BENCH.equipment))).toEqual([
       { loadKg: 40, reps: 8 },
       { loadKg: 60, reps: 5 },
@@ -80,11 +80,11 @@ describe('snap au matériel (critère 3)', () => {
     ]);
   });
 
-  it('barre hexagonale d’Antony (18 kg, pas de 2,5) : 100 kg → 38 / 58 / 78', () => {
+  it('barre hexagonale de la salle (18 kg, pas de 2,5) : 100 kg → 38 / 58 / 78', () => {
     expect(warmupRamp(100, grid(DEADLIFT_TRAP.equipment))?.map((s) => s.loadKg)).toEqual([38, 58, 78]);
   });
 
-  it('haltères d’Antony avec la paire de 9 kg : 24 kg → 9 / 14 / 18 ; sans la paire : 8 / 14 / 18', () => {
+  it('haltères de la salle avec la paire de 9 kg : 24 kg → 9 / 14 / 18 ; sans la paire : 8 / 14 / 18', () => {
     expect(warmupRamp(24, grid(BENCH_DB.equipment, DUMBBELLS_WITH_9))).toEqual([
       { loadKg: 9, reps: 8 },
       { loadKg: 14, reps: 5 },
@@ -125,19 +125,19 @@ describe('snap au matériel (critère 3)', () => {
   it('aucune grille connue (machine ou poulie « à vérifier », kettlebells sans pas, aucun profil) : aucune rampe, aucune charge inventée', () => {
     expect(warmupRamp(100, null)).toEqual([]);
     expect(warmupRamp(100, [])).toEqual([]);
-    expect(warmupForExercise(LEG_PRESS, 100, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise({ metric: 'load-reps', equipment: ['high-pulley'] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise(SWING, 24, FITNESS_PARK_ANTONY)).toEqual([]);
+    expect(warmupForExercise(LEG_PRESS, 100, SALLE_COMPLETE)).toEqual([]);
+    expect(warmupForExercise({ metric: 'load-reps', equipment: ['high-pulley'] }, 60, SALLE_COMPLETE)).toEqual([]);
+    expect(warmupForExercise(SWING, 24, SALLE_COMPLETE)).toEqual([]);
     expect(warmupForExercise(BENCH, 100, null)).toEqual([]);
   });
 
   it('exercice hors charge × répétitions (poids du corps, chrono) : aucune rampe', () => {
-    expect(warmupForExercise(PUSH_UP, 100, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise({ metric: 'time', equipment: [] }, 60, FITNESS_PARK_ANTONY)).toEqual([]);
+    expect(warmupForExercise(PUSH_UP, 100, SALLE_COMPLETE)).toEqual([]);
+    expect(warmupForExercise({ metric: 'time', equipment: [] }, 60, SALLE_COMPLETE)).toEqual([]);
   });
 
-  it('warmupForExercise prend la grille du matériel de l’exercice (barre olympique d’Antony)', () => {
-    expect(warmupForExercise(BENCH, 100, FITNESS_PARK_ANTONY)).toEqual(warmupRamp(100, grid(BENCH.equipment)));
+  it('warmupForExercise prend la grille du matériel de l’exercice (barre olympique de la salle)', () => {
+    expect(warmupForExercise(BENCH, 100, SALLE_COMPLETE)).toEqual(warmupRamp(100, grid(BENCH.equipment)));
     expect(warmupForExercise(BENCH_DB, 24, DUMBBELLS_WITH_9).map((s) => s.loadKg)).toEqual([9, 14, 18]);
   });
 });

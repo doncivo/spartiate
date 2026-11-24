@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, FITNESS_PARK_ANTONY, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, SALLE_COMPLETE, daysAgo, input, session, target } from '../../../tests/fixtures/training/progression';
 import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../types';
@@ -61,7 +61,7 @@ describe('SEANCE-0292 C-006 : décharge arrondie vers le bas, sans répétition 
 
 describe('SEANCE-0292 C-007 : grille de barre limitée aux disques réellement montables (§ 11.2.7, § 14.3)', () => {
   const home = (plates: { weightKg: number; count: number }[], increments: ProgressionEquipment['increments'] = {}): ProgressionEquipment => ({
-    inventory: { ...FITNESS_PARK_ANTONY.inventory, platesPerSideKg: plates },
+    inventory: { ...SALLE_COMPLETE.inventory, platesPerSideKg: plates },
     increments,
   });
 
@@ -75,7 +75,7 @@ describe('SEANCE-0292 C-007 : grille de barre limitée aux disques réellement m
   });
 
   it('profil de la salle (un disque de chaque masse de 1,25 à 30 kg) : grille inchangée, 20 à 237,5 kg par 2,5', () => {
-    const loads = loadGrid(['barbell'], FITNESS_PARK_ANTONY)?.loads ?? [];
+    const loads = loadGrid(['barbell'], SALLE_COMPLETE)?.loads ?? [];
     expect(loads[0]).toBe(20);
     expect(loads[loads.length - 1]).toBe(237.5);
     expect(loads.length).toBe(88);
@@ -377,8 +377,8 @@ describe('SEANCE-0292 C-027 (D-474) : « Dur » bloque seulement la hausse de ch
 });
 
 describe('SEANCE-0292 C-029 : grille de charges robuste (pile illisible, plusieurs poulies, matériel interdit)', () => {
-  const base = FITNESS_PARK_ANTONY.inventory;
-  const profile = (inventory: Partial<ProgressionEquipment['inventory']>): ProgressionEquipment => ({ inventory: { ...base, ...inventory }, increments: FITNESS_PARK_ANTONY.increments });
+  const base = SALLE_COMPLETE.inventory;
+  const profile = (inventory: Partial<ProgressionEquipment['inventory']>): ProgressionEquipment => ({ inventory: { ...base, ...inventory }, increments: SALLE_COMPLETE.increments });
 
   it('machine au maximum illisible (NaN, ligne synchronisée abîmée) : aucune grille, jamais 2 000 charges', () => {
     const p = profile({ machines: [{ equipmentId: 'leg-press-machine', stackMinKg: 5, stackMaxKg: Number.NaN, stepKg: 5 }] });
@@ -403,19 +403,19 @@ describe('SEANCE-0292 C-030 : échauffement d’un exercice lesté calculé sur 
   const WEIGHTED = { metric: 'load-reps', equipment: ['pull-up-bar', 'loading-belt', 'dumbbell'], bodyweightFraction: 1 } as const;
 
   it('tractions lestées 40 kg à 80 kg de corps (total 120) : 40 % = 48 → poids du corps × 8, 60 % = 72 → poids du corps (fusionné), 80 % = 96 → lest 16 × 2', () => {
-    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY, undefined, 80)).toEqual([
+    expect(warmupForExercise(WEIGHTED, 40, SALLE_COMPLETE, undefined, 80)).toEqual([
       { loadKg: 0, reps: 8 },
       { loadKg: 16, reps: 2 },
     ]);
   });
 
   it('poids de corps inconnu : aucune rampe (jamais 40 % du lest seul, ≈ 95 % de la charge totale)', () => {
-    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY)).toEqual([]);
-    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY, undefined, null)).toEqual([]);
+    expect(warmupForExercise(WEIGHTED, 40, SALLE_COMPLETE)).toEqual([]);
+    expect(warmupForExercise(WEIGHTED, 40, SALLE_COMPLETE, undefined, null)).toEqual([]);
   });
 
   it('exercice à charge ordinaire : rampe inchangée (100 kg : 40, 60, 80)', () => {
-    expect(warmupForExercise(BENCH, 100, FITNESS_PARK_ANTONY).map((s) => s.loadKg)).toEqual([40, 60, 80]);
+    expect(warmupForExercise(BENCH, 100, SALLE_COMPLETE).map((s) => s.loadKg)).toEqual([40, 60, 80]);
   });
 });
 

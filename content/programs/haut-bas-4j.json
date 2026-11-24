@@ -6,7 +6,7 @@
   "split": "upper-lower",
   "audienceFr": "Intermédiaire, salle",
   "compatibleProfileIds": [
-    "fitness-park-antony"
+    "salle-complete"
   ],
   "mesocycleWeeks": 5,
   "periodization": [

@@ -23,7 +23,7 @@ const FULL: OnboardingDraft = {
   experience: 'intermediate',
   sessionsPerWeek: 3,
   durationMin: 60,
-  equipmentProfileId: 'fitness-park-antony',
+  equipmentProfileId: 'salle-complete',
   acceptProposal: false,
   mesoWeeks: 4,
 };
