@@ -15,4 +15,11 @@ describe('progressionNoteText', () => {
     expect(text).toContain('2 × 42,5 kg');
     expect(text).not.toMatch(/[{}]/);
   });
+
+  // Relecture (H) : le vert BL-112 (c35aa706) ajoutait ce texte sans test ; le rouge 5a037a24 couvrait la clé de note, pas son texte.
+  it('SEANCE-0292b BL-112 (D-539) : décote de position d’un exercice sans charge dite sur les répétitions ou la durée, jamais la charge', () => {
+    const text = progressionNoteText({ key: 'notePositionValues', params: { rank: 2, cut: 7 } }, 1);
+    expect(text).toBe('Répétitions ou durée réduites de 7 % : 2ᵉ exercice de ce muscle dans la séance.');
+    expect(text).not.toMatch(/[{}]|[Cc]harge/);
+  });
 });
