@@ -84,7 +84,7 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Génération : `node scripts/content/build-ciqual.mjs <dossier-des-xml>` écrit `content/food/ciqual.json` (déterministe, un aliment par ligne) ; `node scripts/content/build-ciqual.mjs --check` le valide. Les XML ne sont pas versionnés.
 - Contenu retenu par aliment : code, nom français, groupe, énergie (kcal, constituant 328, règlement UE 1169/2011), protéines (25003, N x 6,25), lipides (40000), glucides (31000), fibres (34100), pour 100 g. Une valeur absente (« - »), « traces » ou « < x » devient `null` (inconnue) : elle n'est jamais remplacée par zéro. Le code de groupe 00 (« aliment moyen ») n'a pas de nom dans la table : `group` vaut `null`.
 - Décomptes à la génération (valeurs `null`) : absentes `{kcal 143, protéines 29, lipides 20, glucides 70, fibres 70}` ; « traces » `{2, 4, 15, 134, 45}` ; « < x » `{0, 0, 166, 8, 130}`.
-- Attribution due (son affichage dans l'app n'est pas encore relevé : registre BL-107) : « Source : Anses, Table de composition nutritionnelle des aliments Ciqual 2025 (Licence Ouverte Etalab 2.0). » Elle est portée par le champ `source.attribution` du fichier.
+- Attribution due (affichée sous les résultats Ciqual de la recherche d'aliments depuis NUTRI-0291, PR #201, BL-107) : « Source : Anses, Table de composition nutritionnelle des aliments Ciqual 2025 (Licence Ouverte Etalab 2.0). » Elle est portée par le champ `source.attribution` du fichier.
 - Chargement : à la demande (import dynamique), jamais dans le paquet de départ (`src/features/nutrition/catalogue/ciqualCatalogue.ts`).
 - **H-11 reste UNVERIFIED** (D-36) : la licence est lue dans les métadonnées de l'entrepôt, aucun constat d'Ali ; pas de CONFIRMED depuis une lecture.
 
