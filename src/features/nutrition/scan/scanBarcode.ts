@@ -41,13 +41,16 @@ export function createBarcodeScan(load: BarcodeScannerLoader): BarcodeScan {
         }
         if (mine.cancelled) return { kind: 'cancelled' };
         let content: string;
+        let format: string | undefined;
         try {
-          content = (await scanner.scan({ windowed: true, formats: [...SCAN_FORMATS] })).content;
+          const result: { readonly content: string; readonly format?: unknown } = await scanner.scan({ windowed: true, formats: [...SCAN_FORMATS] });
+          content = result.content;
+          format = typeof result.format === 'string' ? result.format : undefined;
         } catch {
           return mine.cancelled ? { kind: 'cancelled' } : { kind: 'failed' };
         }
         if (mine.cancelled) return { kind: 'cancelled' };
-        const barcode = normalizeBarcode(content);
+        const barcode = normalizeBarcode(content, format === 'UPC_E' ? 'upce' : format === 'EAN_8' ? 'ean8' : undefined);
         return barcode === null ? { kind: 'unreadable' } : { kind: 'scanned', barcode };
       } finally {
         current = null;

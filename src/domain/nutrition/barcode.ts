@@ -29,13 +29,21 @@ function expandUpcE(upce: string): string | null {
 }
 
 /** Code propre ou `null` (longueur, caractères, clé de contrôle). Un code à 8 chiffres valide en EAN-8 est un EAN-8 ; sinon UPC-E. */
-export function normalizeBarcode(input: string): NormalizedBarcode | null {
+/** Format à 8 chiffres rapporté par le scanner (C-043) : lève l'ambiguïté EAN-8 / UPC-E. */
+export type EightDigitFormat = 'ean8' | 'upce';
+
+export function normalizeBarcode(input: string, format?: EightDigitFormat): NormalizedBarcode | null {
   const text = input.trim();
   if (!/^[0-9]+$/.test(text)) return null;
   if (text.length === 13 && isValidBarcode(text)) return { code: text, kind: 'ean13' };
   if (text.length === 14 && isValidBarcode(text)) return { code: text, kind: 'gtin14' };
   if (text.length === 12 && isValidBarcode(text)) return { code: `0${text}`, kind: 'upca' };
   if (text.length === 8) {
+    if (format === 'upce') {
+      const upca = expandUpcE(text);
+      return upca !== null && isValidBarcode(upca) ? { code: `0${upca}`, kind: 'upce' } : null;
+    }
+    if (format === 'ean8') return isValidBarcode(text) ? { code: text, kind: 'ean8' } : null;
     if (isValidBarcode(text)) return { code: text, kind: 'ean8' };
     const upca = expandUpcE(text);
     if (upca !== null && isValidBarcode(upca)) return { code: `0${upca}`, kind: 'upce' };

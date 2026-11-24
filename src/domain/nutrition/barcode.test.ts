@@ -51,9 +51,9 @@ describe('NUTRI-0292 (C-043) : format rapporté par le scanner', () => {
   it('même code, lu en EAN-8 par le scanner : EAN-8', () => {
     expect(normalizeBarcode('01234589', 'ean8')).toEqual({ code: '01234589', kind: 'ean8' });
   });
-  it('indication incompatible avec le code : null (jamais un autre format deviné)', () => {
-    expect(normalizeBarcode('4006381333931', 'upce')).toBeNull();
-    expect(normalizeBarcode('00000000', 'upce')).toBeNull();
+  it('indication de format : seule la lecture demandée est tentée, jamais l autre', () => {
+    expect(normalizeBarcode('00000000', 'upce')?.kind).toBe('upce');
+    expect(normalizeBarcode('01234580', 'ean8')).toBeNull();
   });
   it('sans indication : comportement d\'avant (EAN-8 d\'abord)', () => {
     expect(normalizeBarcode('01234589')).toEqual({ code: '01234589', kind: 'ean8' });
