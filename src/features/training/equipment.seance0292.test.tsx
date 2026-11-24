@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
@@ -97,6 +97,27 @@ describe('Matériel : listes de poids', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
       expect(await screen.findByRole('alert')).toHaveTextContent(/en double/);
       expect(await inventory()).toEqual(before);
+    });
+  });
+
+  describe('§ 14.3 b : matériel forcé ou interdit, modifiable', () => {
+    const full = async (): Promise<{ forced: string[]; forbidden: string[] }> => {
+      const rows = await db.driver.select<{ inventory: string }>('SELECT inventory FROM equipment_profile');
+      return JSON.parse(rows[0]?.inventory ?? '{}') as { forced: string[]; forbidden: string[] };
+    };
+    it('« Barre droite » interdite : enregistrée dans forbidden ; forcée ET interdite : refusé, rien d’écrit', async () => {
+      await editCopy();
+      const forbidden = screen.getByRole('group', { name: 'Matériel interdit (jamais proposé)' });
+      fireEvent.click(within(forbidden).getByRole('checkbox', { name: 'Barre droite' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+      await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+      expect((await full()).forbidden).toEqual(['barbell']);
+      fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
+      const forced = screen.getByRole('group', { name: 'Matériel forcé (toujours proposé)' });
+      fireEvent.click(within(forced).getByRole('checkbox', { name: 'Barre droite' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
+      expect(await screen.findByRole('alert')).toBeInTheDocument();
+      expect((await full()).forced).toEqual([]);
     });
   });
 });
