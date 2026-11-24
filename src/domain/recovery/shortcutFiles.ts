@@ -83,6 +83,17 @@ export function readRows(text: string): { readonly rows: readonly (readonly stri
   return { rows, truncated };
 }
 
+/** Validité d'un fuseau, mémorisée : un fichier de 10 000 lignes ne construit pas 10 000 formateurs Intl. */
+const zoneKnown = new Map<string, boolean>();
+const isKnownZone = (zone: string): boolean => {
+  let known = zoneKnown.get(zone);
+  if (known === undefined) {
+    known = isValidTimeZone(zone);
+    zoneKnown.set(zone, known);
+  }
+  return known;
+};
+
 /** Décalage (minutes) écrit dans la cellule ISO ; `null` pour « Z » (décalage inconnu : le fuseau de l'appareil s'applique) ou une cellule sans décalage. */
 export function offsetMinutesOf(cell: string): number | null {
   const m = /([+-])(\d{2}):?(\d{2})$/.exec(cell);
@@ -101,7 +112,7 @@ export function parseInstant(cell: string, today: string, timeZone: string): { r
   const at = Date.parse(cell);
   if (!Number.isFinite(at)) return { fail: 'bad_date' };
   // C-053 : fuseau d'appareil invalide : la ligne est rejetée (jour local incalculable), jamais une exception.
-  if (!isValidTimeZone(timeZone)) return { fail: 'no_timezone' };
+  if (!isKnownZone(timeZone)) return { fail: 'no_timezone' };
   // C-058 (D-478) : le jour est celui du fuseau où la mesure a été prise (décalage de la cellule) ; « Z » ou décalage absent : fuseau de l'appareil.
   const offsetMin = offsetMinutesOf(cell);
   const day = offsetMin !== null ? localDayAt(at, offsetMin) : utcToLocal(new Date(at).toISOString(), timeZone).date;
