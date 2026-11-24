@@ -176,3 +176,23 @@ describe('BL-117 : assiette et go-tos', () => {
     expect(within(section).queryByText('Miel local')).toBeNull();
   });
 });
+
+describe('BL-117 (relecture) : quantité de l’assiette hors bornes', () => {
+  it.each(['0', '15000', 'abc'])('« %s » : champ invalide, message dit, ajout au journal bloqué ; une valeur valide rétablit', async (bad) => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await typeQuery('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: /Skyr maison/ }));
+    fireEvent.change(await screen.findByLabelText('Quantité (g)'), { target: { value: '100' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter à l’assiette' }));
+    const plate = await screen.findByRole('region', { name: 'Assiette' });
+    const field = within(plate).getByLabelText('Quantité de Skyr maison (g)');
+    fireEvent.change(field, { target: { value: bad } });
+    expect(within(plate).getByRole('alert')).toHaveTextContent('Quantité de Skyr maison : plus de 0 et au plus 10 000 g.');
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(within(plate).getByRole('button', { name: 'Ajouter l’assiette au journal' })).toBeDisabled();
+    fireEvent.change(field, { target: { value: '120' } });
+    expect(within(plate).queryByRole('alert')).toBeNull();
+    expect(within(plate).getByRole('button', { name: 'Ajouter l’assiette au journal' })).toBeEnabled();
+  });
+});
