@@ -23,3 +23,18 @@ describe('saisie de la charge dans les specs de séance', () => {
     expect(text).toContain(String.raw`Charge( par haltère)? \(kg\)`);
   });
 });
+
+// Run CI 45376658537 : le projet iphone est du Chromium sans agent iPhone (detectOs ≠ ios) ; le résumé a un « Séries » ailleurs que dans ses chiffres.
+describe('specs C-193 : ce que le navigateur de test rend vraiment', () => {
+  const read = (file: string) => readFileSync(resolve(import.meta.dirname, '..', '..', file), 'utf8');
+  it('séance : les chiffres du résumé sont ciblés par leur dt exact', () => {
+    const text = read('tests/e2e/C193-seance-clavier.spec.ts');
+    expect(text).not.toContain("getByText('Séries')");
+    expect(text).toContain('.ct-summary__kpi');
+  });
+  it('récupération : texte du navigateur de test (os ≠ ios) dans les deux projets, sans scénario iPhone inatteignable', () => {
+    const text = read('tests/e2e/C193-degrades.spec.ts');
+    expect(text).not.toContain('Aucune donnée de récupération importée');
+    expect(text).not.toContain('Ouvrir Apple Santé');
+  });
+});
