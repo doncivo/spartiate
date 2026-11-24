@@ -164,6 +164,7 @@ export type ExplanationNoteKey =
   | 'noteReferenceOffGrid'
   | 'noteReferenceBelowGrid'
   | 'notePosition'
+  | 'notePositionValues'
   | 'noteBodyweightUnknown'
   | 'noteAssistanceHeld';
 
@@ -186,7 +187,8 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).
   // FIX-ASSIST : assistance maintenue malgré une réduction ; dite en note quand la phrase principale ne le dit pas déjà.
   if (p.reasons.includes('assistance-held') && p.headline !== 'inactivity' && p.headline !== 'recovery-low') notes.push({ key: 'noteAssistanceHeld', params: {} });
-  if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
+  // BL-112 : exercice sans charge, la décote porte sur les répétitions ou les secondes (le lest est inchangé).
+  if (p.reasons.includes('position-discount') && p.headline !== 'position') notes.push({ key: isUnloaded(p) ? 'notePositionValues' : 'notePosition', params: { rank: p.positionRank ?? 1, cut: percent(p.positionCut ?? 0) } });
   return notes;
 }
 

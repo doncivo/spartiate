@@ -1,7 +1,7 @@
 import { ENGINE_VERSION, REASON_ORDER, withExerciseOverrides, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, compareInstants, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
-import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isLowRecovery, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
+import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isFatigued, isLowRecovery, isStalled, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
 import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDown, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { HistorySet, MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
@@ -527,7 +527,7 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const metric: 'bodyweight-reps' | 'time' = timed ? 'time' : 'bodyweight-reps';
   const reasons = new Set<ReasonCode>();
   type Core = Omit<Prescription, 'reasons' | 'engineVersion' | 'activeConfig' | 'metric' | 'options' | 'deload' | 'rirTarget' | 'inactivityCut'> &
-    Partial<Pick<Prescription, 'deload' | 'rirTarget'>>;
+    Partial<Pick<Prescription, 'deload' | 'rirTarget' | 'options' | 'positionRank' | 'positionCut'>>;
   const finish = (p: Core): Prescription => ({
     options: [],
     deload: false,
@@ -592,8 +592,39 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const easy = last.difficulty === 'easy' || (minRir !== null && minRir >= config.easyRirAtLeast);
   const grid = ballastLoads(input.equipment);
 
-  const result = (headline: PrescriptionHeadline, loadKg: number, values: readonly number[], ladder: number | null, extra: Partial<Pick<Prescription, 'deload' | 'rirTarget'>> = {}): Prescription =>
-    finish({ ...empty, status: 'prescribed', headline, sets: values.map((reps) => ({ reps, loadKg })), loadKg, deltaKg: roundKg(loadKg - lest), reference, ladderSetIndex: ladder, confidence, ...extra });
+  // BL-112 (D-539) : fatigue et stagnation comme pour un exercice chargé (constraints.ts), sur les valeurs (répétitions ou secondes) au même
+  // lest. Fatigue : valeurs maintenues, choix « −2 répétitions » (aucun pour un chronométré) ; stagnation : deux choix (variante, autre plage),
+  // la progression continue. Choix jamais appliqués d'office.
+  const fatigued = isFatigued(valid, config);
+  const stalled = isStalled(valid, config);
+  if (fatigued) reasons.add('fatigue-drop');
+  if (stalled) reasons.add('stall');
+  const stallOptions = stalled ? [{ kind: 'stall-variant', loadKg: null, reps: null } as const, { kind: 'stall-range', loadKg: null, reps: null } as const] : [];
+  // BL-112 (D-539) : décote de position sur les valeurs (répétitions ou secondes) × multiplicateur relatif au rang de la séance de référence,
+  // arrondies vers le bas, au moins 1 ; le lest est inchangé ; jamais une hausse.
+  const rank = Math.max(1, Math.floor(input.positionRank ?? 1));
+  const lastRank = Math.max(1, Math.floor(input.lastPositionRank ?? rank));
+  const positionFactor = Math.min(1, positionMultiplier(rank, config) / positionMultiplier(lastRank, config));
+  const result = (headline: PrescriptionHeadline, loadKg: number, values: readonly number[], ladder: number | null, extra: Partial<Pick<Prescription, 'deload' | 'rirTarget' | 'options'>> = {}): Prescription => {
+    const cutValues = positionFactor < 1 - EPS ? values.map((v) => Math.max(1, Math.floor(v * positionFactor + EPS))) : values;
+    const cut = cutValues.some((v, i) => v < (values[i] ?? v));
+    if (cut) reasons.add('position-discount');
+    return finish({
+      ...empty,
+      status: 'prescribed',
+      headline,
+      sets: cutValues.map((reps) => ({ reps, loadKg })),
+      loadKg,
+      deltaKg: roundKg(loadKg - lest),
+      reference,
+      ladderSetIndex: ladder,
+      confidence,
+      options: [...(extra.options ?? []), ...stallOptions],
+      ...(extra.deload !== undefined ? { deload: extra.deload } : {}),
+      ...(extra.rirTarget !== undefined ? { rirTarget: extra.rirTarget } : {}),
+      ...(cut ? { positionRank: rank, positionCut: 1 - positionFactor } : {}),
+    });
+  };
 
   // 4. Contraintes (avant la progression, qu'elles suspendent) : deload, puis pause, puis récupération basse.
   const muscle = input.muscleLastWorkedAt ?? null;
@@ -614,6 +645,11 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   }
   if (paused) return result('inactivity', lest, refValues, null);
   if (low) return result('recovery-low', lest, refValues, null);
+  if (fatigued) {
+    const fewer = refValues.map((v) => Math.max(1, v - config.fatigueRepsCut));
+    const options = !timed && fewer.some((v, i) => v < (refValues[i] ?? v)) ? [{ kind: 'fatigue-reps', loadKg: lest, reps: fewer } as const] : [];
+    return result('fatigue', lest, refValues, null, { options });
+  }
 
   // 3. Progression.
   const extraValue = (index: number, value: number): number[] => refValues.map((v, i) => (i === index ? value : v));

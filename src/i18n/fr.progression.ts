@@ -83,6 +83,7 @@ export const progressionFr = {
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
   noteAssistanceHeld: 'Exercice assisté : l’assistance est maintenue, la réduire alourdirait l’exercice.',
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
+  notePositionValues: 'Répétitions ou durée réduites de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
   notePosition: 'Charge réduite de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',
   noteGridToVerify: 'Charges calculées sur du matériel à vérifier en salle (profil de matériel).',
   noteReferenceBelowGrid: 'La charge de ta dernière séance ({load}) est sous la plus petite charge de ce profil : aucune charge n’est proposée au-dessus, saisis celle que tu utilises.',
