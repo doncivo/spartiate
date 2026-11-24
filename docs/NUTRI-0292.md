@@ -303,3 +303,11 @@ l'état final est toujours la dernière valeur. (4) BL-117 : l'assiette du Journ
 | Mineurs : double appui « Enregistrer en recette », alias de `RestTargetForm`, provenance typée des habituels (`lastTime` gardé : `pickRecent` attend un `RecentFood` complet), date dans la clé de file des prises | — | 7886ba9e |
 
 - Bundle : `npm run test:bundle` (190 tests verts) ; mesure normalisée de départ 182 931 octets (référence main 183 842), inchangée par ces corrections.
+
+## Relecture sync-icloud (D-26), d3ba3739 : approuvée
+
+- Moteur et schéma de synchro intacts (src/sync, src/domain/sync, src-tauri/src/sync : diff vide ; registre des migrations 0001 à 0022 inchangé).
+- BL-142 : `muscle_group` sans liste de valeurs (longueur 1 à 64) ; clé `muscle|date|muscle_id`, unicité (date, muscle_id) : le nouveau libellé ne crée ni identifiant ni doublon ; un appareil en 0.29.1 reçoit et applique sans erreur ; aucun code ne relit `muscle_group` (moteur reparti de `muscle_id`).
+- D-561 : seul l'appareil `recoveryWriter` écrit `recovery_day` ; chaque jour réécrit au plus une fois ; aucun conflit HLC ; `engine_version = 2` admis par la contrainte `>= 1` d'un appareil en 0.29.1.
+- C-100 et BL-117 : `scan` admis par la contrainte de 0008 et le catalogue ; `recipe` et `recipe_ingredient` capturées par les déclencheurs de 0009 et présentes au catalogue.
+- Aucun test de non-régression de synchro à ajouter (protocole, catalogue et déclencheurs inchangés). Remarque : `muscleGroupLabel.ts` sans appelant hors de ses tests.
