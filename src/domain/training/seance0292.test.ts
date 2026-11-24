@@ -14,8 +14,9 @@ import { prescribe } from './prescribe';
 import { recoverySplit } from './recoverySplit';
 import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName } from './programDay';
 import { replayWorkout } from './replay';
+import { strengthScore, type StrengthExercise, type StrengthStandards } from './strengthScore';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
-import type { ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
+import type { ExerciseSession, ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
 
 /**
  * SEANCE-0292 (lot 0.29.2, partie A : moteur et génération) : une section par ligne du registre (docs/SEANCE-0292.md). Fixtures
@@ -255,5 +256,29 @@ describe('SEANCE-0292 C-021 : Recovery Split, seuil comparé à la valeur mesur�
       [50, 'ready'],
       [49, 'spare'],
     ]);
+  });
+});
+
+describe('SEANCE-0292 C-023 : Strength Score, à score égal la borne départage (« > 99 » l’emporte sur « 99 »)', () => {
+  const LIGHT = { upToKg: 80, sampleSize: 1000, kg: [50, 60, 80, 100, 120, 130, 150] };
+  const standards: StrengthStandards = {
+    percentiles: [10, 25, 50, 75, 90, 95, 99],
+    lifts: [
+      { key: 'bench', sourceLift: 'bench_press', groups: ['chest'], totalLoad: false, male: [LIGHT], female: [LIGHT] },
+      { key: 'incline-bench', sourceLift: 'incline_bench_press', groups: ['chest'], totalLoad: false, male: [{ ...LIGHT, kg: [40, 50, 60, 70, 80, 90, 100] }], female: [LIGHT] },
+    ],
+  };
+  const ex = (id: string, key: string, history: readonly ExerciseSession[]): StrengthExercise => ({ id, nameFr: `Nom ${id}`, key, history });
+  const score = (exercises: StrengthExercise[]) => strengthScore({ sex: 'male', bodyweightKg: 75, standards, exercises }).groups.find((g) => g.group === 'chest');
+
+  it('développé couché à 99 pile (1RM 150 kg) et incliné au-delà de la table (« > 99 ») : le groupe dit « > 99 »', () => {
+    const chest = score([ex('b', 'bench', [session(2, 100, [15])]), ex('i', 'incline-bench', [session(2, 100, [15])])]);
+    expect(chest).toMatchObject({ kind: 'value', score: 99, bound: 'above' });
+  });
+
+  it('à 10 : « 10 » l’emporte sur « < 10 »', () => {
+    // Incliné : 1RM 39 kg (30 × 9), sous sa table (« < 10 ») ; couché : 1RM 50 kg pile (37,5 × 10), son 10e centile.
+    const chest = score([ex('i', 'incline-bench', [session(2, 30, [9])]), ex('b', 'bench', [session(2, 37.5, [10])])]);
+    expect(chest).toMatchObject({ kind: 'value', score: 10, bound: null });
   });
 });
