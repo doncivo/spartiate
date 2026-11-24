@@ -24,7 +24,7 @@ Branche `SEANCE-0292` depuis `origin/main` (`3de66bf6`). Aucune migration, aucun
 7. C-014 : étant donné un instant de validation illisible, alors le replay le traite comme absent (ordre par position, repos inconnu, compté
    dans `missingInstants`).
 8. C-015 : étant donné un exercice qui n'a que des échauffements dans un groupe, alors il n'en est pas membre.
-9. C-016 : `isCompletedWorkSet` ne compte que les séries de travail et chronométrées.
+9. C-016 : `isCompletedWorkSet` ne compte que les séries de travail et chronométrées (relecture A : fonction morte, supprimée, `0f49bac0`).
 10. C-017 (D-473) : la rotation ignore une dernière séance dont le jour a été vidé ou qui a été supprimée (règle figée par un test).
 11. C-019 : un jour de la semaine non entier est ignoré ; « Lundi2 », « Lundi_x » ne sont pas un lundi (mot entier).
 12. C-021 : le seuil « à ménager » se compare à la valeur mesurée (49,6 % : à ménager, affiché 50 %).
@@ -136,19 +136,36 @@ seuls : déjà vus en 0.29.1, aucun lien avec ce lot.
 À faire par la relecture du lot (agent distinct) ; points relus ici : C-007 bornée (`MAX_LOADS`), C-025 sans effet quand les formats sont
 identiques (`Z`), C-013 n'altère pas les lignes `routine` (test dédié), § 11 sans surcharge = même objet de configuration (aucun effet).
 
+Relecture 1 à froid, partie A (agent distinct, plage `3de66bf6..daa11408`) : à corriger, un point important documentaire et quatre mineurs.
+
+| Point | Gravité | Suite | Commit |
+|---|---|---|---|
+| C-006 : arrondi vers le bas étendu à la décharge I2 × 0,8 du cycle de 5 semaines (`prescribe.ts:278-280`), contre D-269 (1) | important | D-530 proposée, cite `seance0292.test.ts:53` ; aucun changement de code | `3f4aa90b` |
+| `seance0292.test.ts:112` et `:120` : test en double | mineur | un seul gardé | `a5bace2e` |
+| C-016 : `isCompletedWorkSet` sans appelant en production | mineur | supprimée (fonction morte), tests retirés ; justification ci-dessous | `0f49bac0` |
+| C-025 : `compareInstants` non transitif quand un seul instant est lisible (`estimate1rm.ts:151`) | mineur | illisible toujours après les lisibles ; rouge constaté puis vert (cycle a < b < c < a) | `c8bb4e7f` |
+| C-177 : propriété du plafond qui sort tôt sans mesure (`prescribe.c177.property.test.ts:83`) | mineur | compteur minimal (50 cas mesurés sur 200 tirés ; relevés 98 à 115) ; rouge constaté au seuil 1000 | `08a2d239` |
+| § 11 « fait en partie » (surcharges sans stockage) | constat | inchangé : part en données et synchro | — |
+
+C-016, justification de la suppression : chaque décompte de séries de travail a déjà sa règle, aucun ne veut « validée + saisie conforme +
+travail ou chronométrée » sur une `WorkoutSet` : `routineDiff` compte la structure (séries non supprimées de travail et chronométrées, validées
+ou non, D-513) ; `summarizeWorkout.validatedWorkSets`, affiché « Séries » au résumé et sur la carte partagée, compte les validées hors
+échauffement, dégressives comprises (voulu : la brancher retirerait les dégressives du résumé sans décision) ; le 1RM et `prescribe` lisent des
+`HistorySet` (`setKind === 'work'`, `minCompletedFraction`). Une fonction exportée sans appelant donnait une fausse garantie : supprimée.
+
 ## Statuts proposés
 
 | ID | Statut |
 |---|---|
 | C-004 | fait (SEANCE-0292, D-511) |
-| C-006 | fait (SEANCE-0292) |
+| C-006 | fait (SEANCE-0292, D-530 proposée : écart avec D-269 (1)) |
 | C-007 | fait (SEANCE-0292, D-508) |
 | C-010 | fait (SEANCE-0292, D-513) |
 | C-012 | fait en choix prudent (SEANCE-0292, D-506 ; Q-9 reste ouverte) |
 | C-013 | fait (SEANCE-0292, D-472) |
 | C-014 | fait (SEANCE-0292) |
 | C-015 | fait (SEANCE-0292) |
-| C-016 | fait (SEANCE-0292) |
+| C-016 | fait (SEANCE-0292 : `isCompletedWorkSet` supprimée, sans appelant, relecture A) |
 | C-017 | fait : règle figée par un test (D-473) |
 | C-019 | fait (SEANCE-0292) |
 | C-021 | fait (SEANCE-0292) |
@@ -329,6 +346,17 @@ laissée à la CI. e2e non lancés (CI).
 publiée) et ne redessine pas la séance ; C-080 `useKeyboardSelect` garde l'écriture immédiate au doigt (tests existants inchangés) ; C-082
 borne la page à 100 et ne lit plus une séance à la fois ; D-519 ne crée aucun champ (relecture sync-icloud demandée, valeur publiée
 nouvelle) ; § 10.3 ne demande rien sur le PC.
+
+Relecture 1 à froid, partie B (agent distinct, plage `2dc11eee..f6dd64c4`) : à corriger, trois mineurs (BL-141 → BL-160 déjà fait, `dfdb821a`).
+
+| Point | Gravité | Suite | Commit |
+|---|---|---|---|
+| `fr.training.ts:171` : commentaire « (C-066) 12,16 » orphelin sur la clé de C-081 | mineur | déplacé au-dessus de `errorWeightSeparator` | `679e6c01` |
+| `SetRow.tsx:156` : enregistrement différé (1 s) annulé au démontage | mineur | saisie enregistrée au démontage (`flushRef`, gardes inchangées : rien si rien de tapé) ; rouge constaté puis vert | `3e2b2ddf` |
+| `ReplaceExercise.tsx:67` : échec de lecture des gênes ignoré | mineur | texte i18n `replaceInjuriesUnread` (« Gênes déclarées illisibles : les remplaçants proposés n’en tiennent pas compte. ») ; rouge constaté puis vert | `8eab6371` |
+
+Tests locaux après corrections : src/domain/training (69 fichiers, 908 verts), src/features/training/session (45 fichiers, 237 verts), src/i18n
+et ReplaceRace (29 fichiers, 246 verts) ; `tsc --noEmit` et `eslint` sur les fichiers touchés : propres.
 
 ## Statuts proposés (partie B)
 
