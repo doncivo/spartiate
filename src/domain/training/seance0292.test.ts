@@ -282,3 +282,20 @@ describe('SEANCE-0292 C-023 : Strength Score, à score égal la borne départage
     expect(chest).toMatchObject({ kind: 'value', score: 10, bound: null });
   });
 });
+
+describe('SEANCE-0292 C-024 (vérification) : tractions, la charge saisie est le lest ; le Strength Score ajoute le poids de corps une fois', () => {
+  const ROW = { upToKg: null, sampleSize: 1000, kg: [50, 60, 80, 100, 120, 130, 150] };
+  const standards: StrengthStandards = {
+    percentiles: [10, 25, 50, 75, 90, 95, 99],
+    lifts: [{ key: 'pull-up', sourceLift: 'pullup', groups: ['back'], totalLoad: true, male: [ROW], female: [ROW] }],
+  };
+  const lift = (lestKg: number) => {
+    const back = strengthScore({ sex: 'male', bodyweightKg: 80, standards, exercises: [{ id: 'pull-up', nameFr: 'Tractions', key: 'pull-up', history: [session(2, lestKg, [15])] }] }).groups.find((g) => g.group === 'back');
+    return back?.kind === 'value' ? back.lift.oneRmKg : null;
+  };
+
+  it('lest 0 × 15 à 80 kg : 1RM sur 80 kg (120) ; lest 10 × 15 : sur 90 kg (135), jamais 80 + 80', () => {
+    expect(lift(0)).toBe(120);
+    expect(lift(10)).toBe(135);
+  });
+});
