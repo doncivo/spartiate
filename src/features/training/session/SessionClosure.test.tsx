@@ -123,7 +123,7 @@ describe('« Terminer la séance »', () => {
     expect(await one('SELECT ended_at FROM workout')).toEqual({ ended_at: null });
   });
 
-  it('clôture : résumé (durée, séries, volume hors dégressive) ; séance close en base, repos et Live Activity arrêtés ; aucune question de routine sans écart', async () => {
+  it('clôture : résumé (durée, séries, volume hors dégressive) ; séance close en base, repos et Live Activity arrêtés ; série prévue changée en dégressive : écart de routine', async () => {
     // Une série dégressive validée avant le montage : elle compte dans les séries, pas dans le volume (§ 13.5).
     const workout = await db.data.transaction(async (r) => (await r.workouts()).start({ source: 'routine', routineId: u(1), dayId: u(2) }));
     const first = workout.sets[0];
@@ -149,7 +149,9 @@ describe('« Terminer la séance »', () => {
     expect(within(summary).getByText('Séries').nextElementSibling).toHaveTextContent('4');
     expect(within(summary).getByText('Volume (kg)').nextElementSibling).toHaveTextContent(/^1\s417,5$/);
     expect(within(summary).getByText(/Hors échauffement, séries dégressives, partielles et chronométrées/)).toBeInTheDocument();
-    expect(within(summary).queryByText('Mettre à jour la routine ?')).toBeNull();
+    // SEANCE-0292 (C-010) : attente changée ; une série de travail prévue changée en dégressive ne compte plus dans la structure (2 séries de
+    // travail du développé couché au lieu de 3) : la question est posée. « Aucune question sans écart » reste couvert par closure.test.ts (« aucun écart : la question n’est pas posée »).
+    expect(within(summary).getByText('Mettre à jour la routine ?')).toBeInTheDocument();
     expect(await one('SELECT ended_at, rest_timer_end_at FROM workout')).toEqual({ ended_at: '2026-11-09T17:30:00.000Z', rest_timer_end_at: null });
     expect(f.calls.ends).toBeGreaterThanOrEqual(1);
     expect(f.calls.cancel).toBeGreaterThanOrEqual(1);
@@ -248,7 +250,8 @@ describe('« Mettre à jour la routine ? » (§ 13.8)', () => {
 });
 
 describe('après la clôture', () => {
-  it('« Fermer » revient aux options de départ ; la séance close se copie (historique réel)', async () => {
+  // SEANCE-0292 (BL-160, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée) ; « Nouvelle séance » propose la copie.
+  it('« Fermer » revient à l’accueil ; la séance close se copie depuis « Nouvelle séance » (historique réel)', async () => {
     openSession();
     await startFromRoutine();
     for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
@@ -256,9 +259,43 @@ describe('après la clôture', () => {
     await validateNext(ROW, '50', '9');
     fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
     fireEvent.click(within(await summaryRegion()).getByRole('button', { name: 'Fermer le résumé' }));
+    await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
     fireEvent.click(await screen.findByRole('button', { name: /^Copier « Haut A »/ }));
     expect((await screen.findAllByText('Dernière fois : 60 kg × 8')).length).toBe(2);
     expect(await count('SELECT COUNT(*) AS n FROM workout WHERE ended_at IS NULL AND source = ?', ['copy'])).toBe(1);
+  });
+});
+
+describe('SEANCE-0292 (BL-160) : après « Fermer le résumé », l’onglet Entraînement montre son accueil', () => {
+  it('« Fermer le résumé » ramène à l’accueil de l’Entraînement ; un appui sur l’onglet ne laisse pas « Nouvelle séance »', async () => {
+    openSession();
+    await startFromRoutine();
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Terminer' }));
+    fireEvent.click(within(await summaryRegion()).getByRole('button', { name: 'Fermer le résumé' }));
+    expect(await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' })).toBeInTheDocument();
+    act(() => useNavigationStore.getState().goToTab('today'));
+    act(() => useNavigationStore.getState().goToTab('training'));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'training' });
+  });
+});
+
+describe('SEANCE-0292 (§ 10.3) : notifications demandées en fin de première séance', () => {
+  it('autorisation pas encore décidée (iPhone) : aucune demande pendant la séance ; demandée une fois à la clôture', async () => {
+    const f = fakes();
+    let requests = 0;
+    let decided = false;
+    const notifier: TimerNotifier = { ...f.notifier, permission: async () => (decided ? 'granted' : 'undetermined'), requestPermission: async () => (requests++, (decided = true), 'granted') };
+    openSession({ ...f, notifier });
+    await startFromRoutine();
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    expect(requests).toBe(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Terminer' }));
+    await summaryRegion();
+    await waitFor(() => expect(requests).toBe(1));
   });
 });
 
@@ -312,7 +349,9 @@ describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’a
   it('« Fermer le résumé » est une réponse : la question ne revient pas', async () => {
     await closeWithoutRowing();
     fireEvent.click(screen.getByRole('button', { name: 'Fermer le résumé' }));
-    await startOptions();
+    // SEANCE-0292 (BL-160, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée), la question ne revient pas.
+    await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
+    expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
     await reopen();
     await startOptions();
     expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();

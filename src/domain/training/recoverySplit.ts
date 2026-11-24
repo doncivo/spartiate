@@ -32,8 +32,10 @@ export function recoverySplit(muscleIds: readonly string[], rows: readonly { rea
   const byId = new Map(rows.map((r) => [r.muscleId, r.percent]));
   return muscleIds.map((muscleId) => {
     const raw = byId.get(muscleId);
-    const percent = typeof raw === 'number' && Number.isFinite(raw) && raw >= 0 && raw <= 100 ? Math.round(raw) : null;
-    const readiness: MuscleReadiness = percent === null ? 'unknown' : percent < RECOVERY_SPLIT_CONFIG.spareBelowPercent ? 'spare' : 'ready';
+    const measured = typeof raw === 'number' && Number.isFinite(raw) && raw >= 0 && raw <= 100 ? raw : null;
+    // C-021 : seuil comparé à la valeur mesurée (49,6 % reste « à ménager »), l'arrondi ne sert qu'à l'affichage.
+    const percent = measured === null ? null : Math.round(measured);
+    const readiness: MuscleReadiness = measured === null ? 'unknown' : measured < RECOVERY_SPLIT_CONFIG.spareBelowPercent ? 'spare' : 'ready';
     return { muscleId, percent, readiness };
   });
 }

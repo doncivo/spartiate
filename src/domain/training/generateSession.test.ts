@@ -78,7 +78,8 @@ describe('critère 1 : muscles du split en vigueur, aucun exercice incompatible'
     const s = generateSession(input({ equipment: GYM_NO_CABLE }));
     expect(ids(s)).toEqual(['bench-barbell', 'row-barbell', 'incline-dumbbell', 'pulldown-machine', 'lateral-raise-dumbbell', 'curl-barbell', 'overhead-ext-dumbbell']);
     const pulldown = s.exercises[3];
-    expect(pulldown).toMatchObject({ origin: 'substitution', substitutionReason: 'equipment', sourceExerciseId: 'lat-pulldown', repMin: 8, repMax: 12, restSec: 120, sets: 3, exerciseName: 'Tirage vertical machine' });
+    // SEANCE-0292 (C-013, D-472) : attente changée ; un exercice placé par la génération prend la plage de son type (polyarticulaire 5–10), plus celle de la ligne (8–12).
+    expect(pulldown).toMatchObject({ origin: 'substitution', substitutionReason: 'equipment', sourceExerciseId: 'lat-pulldown', repMin: 5, repMax: 10, restSec: 120, sets: 3, exerciseName: 'Tirage vertical machine' });
     expect(s.omitted).toEqual([]);
   });
 
@@ -213,9 +214,10 @@ describe('critère 3 : variété Consistent / Balanced / Varied', () => {
     const w4 = week(4);
     expect(w4.rotationPeriod).toBe(1);
     expect(ids(w4)).toEqual([...ROUTINE_IDS.slice(0, 5), 'curl-cable', 'overhead-ext-dumbbell']);
+    // SEANCE-0292 (C-013, D-472) : attente changée ; une rotation est placée par la génération, plage de l'isolation (8–15) au lieu de 8–12.
     expect(w4.exercises.slice(5).map((e) => [e.origin, e.sourceExerciseId, e.repMin, e.repMax, e.sets])).toEqual([
-      ['rotation', 'curl-barbell', 8, 12, 2],
-      ['rotation', 'pushdown-cable', 8, 12, 2],
+      ['rotation', 'curl-barbell', 8, 15, 2],
+      ['rotation', 'pushdown-cable', 8, 15, 2],
     ]);
     for (const w of [5, 6, 7]) expect(ids(week(w))).toEqual(ids(w4));
     expect(ids(week(8))).toEqual([...ROUTINE_IDS.slice(0, 5), 'curl-dumbbell', 'pushdown-cable']);

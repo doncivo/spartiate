@@ -89,8 +89,9 @@ export function circuitsOf(sets: readonly WorkoutSet[]): CircuitInfo[] {
   for (const s of sorted) if (s.circuitId) byId.set(s.circuitId, [...(byId.get(s.circuitId) ?? []), s]);
   const out: CircuitInfo[] = [];
   for (const [circuitId, members] of byId) {
-    // Ordre du tour : première série de travail de chaque exercice (un échauffement ne change pas l'ordre).
-    const exerciseIds = [...new Set([...members.filter(isWork), ...members].map((s) => s.exerciseId))];
+    // Ordre du tour : première série de travail de chaque exercice (un échauffement ne change pas l'ordre). C-015 : un exercice qui n'a que
+    // des échauffements dans le groupe n'en est pas membre.
+    const exerciseIds = [...new Set(members.filter(isWork).map((s) => s.exerciseId))];
     if (exerciseIds.length < CIRCUIT_MIN_EXERCISES) continue;
     const rounds = Math.max(...exerciseIds.map((e) => members.filter((s) => s.exerciseId === e && isWork(s)).length));
     const lastExercise = exerciseIds[exerciseIds.length - 1] as string;

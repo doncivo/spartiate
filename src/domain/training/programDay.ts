@@ -42,7 +42,7 @@ export type ProgramDayChoice =
   /** FIX-PROGRAMME (C-063) : la séance du jour est déjà faite aujourd'hui ; le prochain jour prévu est donné (au plus tôt demain). */
   | { readonly kind: 'done'; readonly dayId: string; readonly nextDayId: string; readonly nextWeekday: Weekday };
 
-const hasWeekday = (d: ProgramDayLike): d is ProgramDayLike & { readonly weekday: number } => typeof d.weekday === 'number' && d.weekday >= 1 && d.weekday <= 7;
+const hasWeekday = (d: ProgramDayLike): d is ProgramDayLike & { readonly weekday: number } => typeof d.weekday === 'number' && Number.isInteger(d.weekday) && d.weekday >= 1 && d.weekday <= 7;
 
 /**
  * PROG-04 (D-316) : si au moins un jour garni de la routine porte un jour de la semaine, la séance du jour est celle du jour de la semaine de
@@ -75,7 +75,8 @@ const WEEKDAY_NAMES = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samed
 
 /** PROG-04 (D-317) : jour de la semaine d'un nom de jour qui COMMENCE par « Lundi », « Mardi »… (mot entier, casse indifférente) ; sinon `null`. */
 export function weekdayFromDayName(name: string): Weekday | null {
-  const word = /^\s*([a-zA-Z]+)(?![a-zA-ZÀ-ɏ])/.exec(name)?.[1]?.toLowerCase();
+  // C-019 : « mot entier » : ni lettre, ni chiffre, ni « _ » juste après (« Lundi2 », « Lundi_x » ne sont pas un lundi).
+  const word = /^\s*([a-zA-Z]+)(?![\p{L}\p{N}_])/u.exec(name)?.[1]?.toLowerCase();
   const index = word === undefined ? -1 : (WEEKDAY_NAMES as readonly string[]).indexOf(word);
   return index < 0 ? null : ((index + 1) as Weekday);
 }

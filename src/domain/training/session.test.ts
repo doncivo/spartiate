@@ -6,7 +6,6 @@ import {
   entryOf,
   extendRestEnd,
   groupByExercise,
-  isCompletedWorkSet,
   planFromPastWorkout,
   planFromRoutineDay,
   restEndAt,
@@ -47,16 +46,6 @@ describe('validateSetEntry : bornes de la saisie', () => {
     expect(validateSetEntry(entry({ durationSec: null }), 'timed')).toContain('duration');
     expect(validateSetEntry({ reps: null, loadKg: null, durationSec: 0, rir: null }, 'timed')).toContain('duration');
     expect(validateSetEntry({ reps: null, loadKg: null, durationSec: 36_001, rir: null }, 'timed')).toContain('duration');
-  });
-});
-
-describe('série de travail réussie : jamais par défaut', () => {
-  it('une série non validée ou d’échauffement n’est pas une série de travail réussie', () => {
-    expect(isCompletedWorkSet(setRow(0))).toBe(false);
-    expect(isCompletedWorkSet(setRow(0, { reps: 8, loadKg: 60 }))).toBe(false);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'warmup', done: true, reps: 8, loadKg: 40 }))).toBe(false);
-    expect(isCompletedWorkSet(setRow(0, { done: true, reps: 8, loadKg: 60 }))).toBe(true);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'timed', done: true, durationSec: 45 }))).toBe(true);
   });
 });
 

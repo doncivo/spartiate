@@ -1,6 +1,6 @@
-import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
+import { ENGINE_VERSION, REASON_ORDER, withExerciseOverrides, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
-import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
+import { analyzeHistory, compareInstants, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isLowRecovery, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
 import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { HistorySet, MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
@@ -88,7 +88,9 @@ const reducedHeadline = (c: ActiveConstraints): PrescriptionHeadline => (c.deloa
 type Defaulted = 'options' | 'deload' | 'rirTarget' | 'inactivityCut';
 
 export function prescribe(input: PrescribeInput): Prescription {
-  const { config, target } = input;
+  // § 11 : constantes ajustables par exercice (surcharges bornées), tracées dans `activeConfig`.
+  const config = withExerciseOverrides(input.config, input.exercise.configOverrides);
+  const { target } = input;
   const reasons = new Set<ReasonCode>();
   const base = { engineVersion: ENGINE_VERSION, activeConfig: config };
   const finish = (p: Omit<Prescription, 'reasons' | 'engineVersion' | 'activeConfig' | Defaulted> & Partial<Pick<Prescription, Defaulted>>): Prescription => ({
@@ -127,11 +129,11 @@ export function prescribe(input: PrescribeInput): Prescription {
   const estimates = analysis.estimates;
   const current = current1rmFromSessions(estimates.slice(0, config.recencyWeights.length), config);
   const confidence = confidenceOf(estimates, input.now, config);
-  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || s.endedAt > max ? s.endedAt : max), null);
+  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || compareInstants(s.endedAt, max) > 0 ? s.endedAt : max), null);
 
   // 3. Référence : la décision d'Ali postérieure à la dernière séance l'emporte.
   const decision = input.lastDecision;
-  if (decision !== null && (latestEnd === null || decision.decidedAt > latestEnd)) {
+  if (decision !== null && (latestEnd === null || compareInstants(decision.decidedAt, latestEnd) > 0)) {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
@@ -196,11 +198,12 @@ export function prescribe(input: PrescribeInput): Prescription {
   // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
   // travaillé ; une séance sans aucune série faite ne compte pas).
   const muscle = input.muscleLastWorkedAt ?? null;
-  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
   const evaluated = activeConstraints({
     estimates,
-    lastWorkedAt: muscle !== null && (worked === null || muscle > worked) ? muscle : worked,
+    lastWorkedAt: muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked,
     now: input.now,
+    ...(input.utcOffsetMinutes !== undefined ? { utcOffsetMinutes: input.utcOffsetMinutes } : {}),
     deload: input.deload === true,
     recovery: input.recovery,
     config,
@@ -272,7 +275,8 @@ export function prescribe(input: PrescribeInput): Prescription {
         ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }
         : discountOnly && available !== null
           ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
-          : constraints.redDay
+          : // C-006 (D-269) : décharge arrondie vers le bas comme la journée rouge, sans répétition ajoutée.
+            constraints.redDay || constraints.deload
             ? snapDownAtLeastMin(reduced.targetKg, reduced.reps, available, refLoad, config)
             : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
@@ -349,7 +353,11 @@ export function prescribe(input: PrescribeInput): Prescription {
   if (increase !== null) {
     const cap = Math.max(current, reference.e1rmKg) * (1 + config.maxGainPerSession);
     const fits = (loadKg: number, reps: readonly number[]): boolean => epley(totalLoad(loadKg, body), Math.max(...reps)) <= cap + 1e-9;
-    const snapped = snapToEquipment(increase.targetKg, increase.reps, available, config);
+    // C-004 (§ 11.3 « < 0,4 → provisoire, hausse ≤ 1 cran ») : en confiance provisoire, le recalibrage « Facile » est borné au cran suivant
+    // de la grille (sans grille : cran supposé `unknownIncrementKg`) ; entre 0,4 et 0,6, il reste entier (§ 11.2.5).
+    const oneStep = available === null ? refLoad + config.unknownIncrementKg : nextLoadAbove(refLoad, available);
+    const bounded = draft.recalibration !== null && confidence < config.provisionalBelow && oneStep !== null && increase.targetKg > oneStep + EPS;
+    const snapped = bounded ? { loadKg: oneStep, reps: increase.reps, extraRep: false } : snapToEquipment(increase.targetKg, increase.reps, available, config);
     // Assisté (FIX-ASSIST) : la « hausse » est une assistance plus faible, jamais au-dessus de la référence.
     const snappedLoad = assisted ? Math.min(snapped.loadKg, refLoad) : Math.max(snapped.loadKg, refLoad);
     if (draft.recalibration !== null && snappedLoad <= refLoad + EPS) {
@@ -361,7 +369,9 @@ export function prescribe(input: PrescribeInput): Prescription {
       draft = hold('rep-ladder', plusOne(reference.reps, index), index);
     } else if (fits(snappedLoad, snapped.reps)) {
       if (snapped.extraRep) reasons.add('snap-extra-rep');
-      draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps };
+      // C-004 : recalibrage borné, le 1RM relevé suit la charge retenue (pas les +5 % entiers).
+      const recalibration = bounded && draft.recalibration !== null ? { at: draft.recalibration.at, estimated1rmKg: current * (snappedLoad / refLoad) } : draft.recalibration;
+      draft = { ...draft, loadKg: snappedLoad, reps: snapped.reps, recalibration };
     } else {
       // Au-delà du garde-fou : la charge inférieure (la référence), et l'échelle de répétitions continue au-delà du haut de plage.
       reasons.add('gain-capped');
@@ -487,7 +497,8 @@ function unloadedLadderIndex(values: readonly number[], goal: number): number {
 }
 
 export function prescribeUnloaded(input: PrescribeInput): Prescription {
-  const { config, target } = input;
+  const config = withExerciseOverrides(input.config, input.exercise.configOverrides);
+  const { target } = input;
   const timed = input.exercise.metric === 'time';
   const metric: 'bodyweight-reps' | 'time' = timed ? 'time' : 'bodyweight-reps';
   const reasons = new Set<ReasonCode>();
@@ -507,7 +518,7 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const empty = { deltaKg: null, reference: null, ladderSetIndex: null, estimated1rmKg: null, recalibration: null } as const;
 
   // 1. Validation (ordre chronologique stable : fin, puis identifiant).
-  const ordered = [...input.history].sort((a, b) => (a.endedAt < b.endedAt ? -1 : a.endedAt > b.endedAt ? 1 : a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0));
+  const ordered = [...input.history].sort((a, b) => compareInstants(a.endedAt, b.endedAt) || (a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0));
   const valid: SessionEstimate[] = [];
   let latestPartial = false;
   for (const session of ordered) {
@@ -525,11 +536,11 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   }
   if (latestPartial) reasons.add('partial-session-ignored');
   const confidence = confidenceOf(valid, input.now, config);
-  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || s.endedAt > max ? s.endedAt : max), null);
+  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || compareInstants(s.endedAt, max) > 0 ? s.endedAt : max), null);
 
   // 2. Référence : la décision d'Ali postérieure à la dernière séance l'emporte.
   const decision = input.lastDecision;
-  if (decision !== null && (latestEnd === null || decision.decidedAt > latestEnd)) {
+  if (decision !== null && (latestEnd === null || compareInstants(decision.decidedAt, latestEnd) > 0)) {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
@@ -562,9 +573,9 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
 
   // 4. Contraintes (avant la progression, qu'elles suspendent) : deload, puis pause, puis récupération basse.
   const muscle = input.muscleLastWorkedAt ?? null;
-  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
-  const lastWorked = muscle !== null && (worked === null || muscle > worked) ? muscle : worked;
-  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now), config) > 0;
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
+  const lastWorked = muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked;
+  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now, input.utcOffsetMinutes), config) > 0;
   const low = isLowRecovery(input.recovery, config);
   if (paused) reasons.add('inactivity-discount');
   if (low) reasons.add('recovery-low');

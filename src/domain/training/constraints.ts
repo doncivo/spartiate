@@ -80,8 +80,14 @@ export function inactivityCut(daysOff: number, config: ProgressionConfig): numbe
   return Math.min(config.detrainFloor, Math.round(weeks * config.detrainWeeklyCut * 1e6) / 1e6);
 }
 
-export function daysBetween(from: string, to: string): number {
-  return (Date.parse(to) - Date.parse(from)) / DAY_MS;
+/**
+ * C-025 : jours civils entre deux instants, dans le fuseau de décalage `utcOffsetMinutes` (0 : UTC), et non des tranches de 24 h (la veille
+ * à 20 h puis le lendemain à 18 h : un jour). Instant illisible : NaN (aucune décote).
+ */
+export function daysBetween(from: string, to: string, utcOffsetMinutes = 0): number {
+  const shift = (Number.isFinite(utcOffsetMinutes) ? utcOffsetMinutes : 0) * 60_000;
+  const day = (iso: string): number => Math.floor((Date.parse(iso) + shift) / DAY_MS);
+  return day(to) - day(from);
 }
 
 /** Séries de deload : moitié arrondie en dessous, au moins une (D-72 point 9). */
@@ -117,6 +123,8 @@ export interface ConstraintContext {
   readonly estimates: readonly SessionEstimate[];
   readonly lastWorkedAt: string | null;
   readonly now: string;
+  /** C-025 : décalage du fuseau local en minutes (absent : UTC), pour compter l'inactivité en jours civils. */
+  readonly utcOffsetMinutes?: number;
   readonly deload: boolean;
   readonly recovery: RecoverySnapshot | null | undefined;
   readonly config: ProgressionConfig;
@@ -129,7 +137,7 @@ export function activeConstraints(ctx: ConstraintContext): ActiveConstraints {
   return {
     fatigue: isFatigued(ctx.estimates, config),
     stall: isStalled(ctx.estimates, config),
-    inactivityCut: ctx.lastWorkedAt === null ? 0 : inactivityCut(daysBetween(ctx.lastWorkedAt, ctx.now), config),
+    inactivityCut: ctx.lastWorkedAt === null ? 0 : inactivityCut(daysBetween(ctx.lastWorkedAt, ctx.now, ctx.utcOffsetMinutes), config),
     deload: ctx.deload,
     lowRecovery: isLowRecovery(ctx.recovery, config),
     redDay: ctx.recovery?.redDay === true && isLowRecovery(ctx.recovery, config),

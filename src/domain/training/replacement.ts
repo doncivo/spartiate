@@ -5,7 +5,7 @@ import { isExerciseCompatible } from './equipment';
 import { FALLBACK_LOAD_STEP_KG, loadGrid, roundKg } from './loadGrid';
 import { primaryMuscle } from './prescribe';
 import type { WorkoutSet } from './session';
-import type { EquipmentInventory, Exercise, ProgressionEquipment } from './types';
+import type { EquipmentInventory, Exercise, ExercisePattern, ProgressionEquipment } from './types';
 
 /**
  * SESS-01a (§ 13.2 « Remplacer », § 14.1 alternatives, § 11.3 arrondi ; règle proposée en décision) : candidats de remplacement d'un exercice en
@@ -108,6 +108,11 @@ export interface ReplacementCandidatesInput<T extends Exercise> {
   readonly present: ReadonlySet<string>;
   /** Groupe musculaire d'affichage (`exerciseGroup`). */
   readonly groupOf: (exercise: T) => string | null;
+  /**
+   * SEANCE-0292 (BL-121, D-525) : gênes actives (`injuryAvoidance`) : patterns douloureux et exercices qui sollicitent un muscle gêné, jamais
+   * proposés en remplacement (comme dans la séance proposée) ; leur nombre est rendu (`avoided`) pour le dire. Absent : aucune gêne.
+   */
+  readonly avoid?: { readonly patterns: readonly ExercisePattern[]; readonly exerciseIds: readonly string[] };
   /** Nombre de semblables au plus (défaut 12). */
   readonly limit?: number;
 }
@@ -118,10 +123,14 @@ const byName = (a: Exercise, b: Exercise): number => a.nameFr.localeCompare(b.na
  * Alternatives de la fiche d'abord (ordre du JSON), puis exercices du même groupe musculaire (même pattern, puis même type, puis le reste ; par
  * nom) ; tous compatibles avec le profil, ni écartés ni déjà dans la séance. Sans groupe connu : même muscle principal.
  */
-export function replacementCandidates<T extends Exercise>(input: ReplacementCandidatesInput<T>): { readonly alternatives: readonly T[]; readonly similar: readonly T[] } {
+export function replacementCandidates<T extends Exercise>(input: ReplacementCandidatesInput<T>): { readonly alternatives: readonly T[]; readonly similar: readonly T[]; readonly avoided: number } {
   const { of, library, profile, excluded, present, groupOf } = input;
   const byId = new Map(library.map((e) => [e.id, e]));
-  const usable = (e: T): boolean => e.id !== of.id && !excluded.has(e.id) && !present.has(e.id) && isExerciseCompatible(e, profile);
+  const avoidPatterns = new Set<string>(input.avoid?.patterns ?? []);
+  const avoidIds = new Set(input.avoid?.exerciseIds ?? []);
+  const painful = (e: T): boolean => avoidPatterns.has(e.pattern) || avoidIds.has(e.id);
+  const eligible = (e: T): boolean => e.id !== of.id && !excluded.has(e.id) && !present.has(e.id) && isExerciseCompatible(e, profile);
+  const usable = (e: T): boolean => eligible(e) && !painful(e);
   const alternativeIds = of.origin === 'embedded' ? (of.alternatives ?? []) : [];
   const alternatives = [...new Set(alternativeIds)].map((id) => byId.get(id)).filter((e): e is T => e !== undefined && usable(e));
   const taken = new Set(alternatives.map((e) => e.id));
@@ -133,6 +142,8 @@ export function replacementCandidates<T extends Exercise>(input: ReplacementCand
     .filter((e) => !taken.has(e.id) && usable(e) && sameGroup(e))
     .sort((a, b) => rank(a) - rank(b) || byName(a, b))
     .slice(0, input.limit ?? 12);
-  return { alternatives, similar };
+  const candidateIds = new Set([...alternativeIds, ...library.filter((e) => sameGroup(e)).map((e) => e.id)]);
+  const avoided = library.filter((e) => candidateIds.has(e.id) && eligible(e) && painful(e)).length;
+  return { alternatives, similar, avoided };
 }
 

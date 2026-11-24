@@ -1,7 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { tonnageKg, workoutDurationSec, type Workout } from '../../../domain/training';
+import { tonnageKg, workoutDurationSec, type Workout, type WorkoutWithSets } from '../../../domain/training';
 import { CATALOG_ASSISTED_IDS, isAssistedEquipment } from '../../../domain/training/assisted';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import { formatClock, formatDay, formatVolume, tTraining } from '../../../i18n/trainingText';
@@ -21,7 +21,8 @@ import './History.css';
  * figure jamais (elle reste locale, D-27).
  */
 
-const HISTORY_LIMIT = 50;
+/** SEANCE-0292 (C-082) : page du journal ; « Afficher les séances plus anciennes » lit la suivante (aucune séance hors d'atteinte). */
+const HISTORY_PAGE = 50;
 
 interface Item {
   readonly workout: Workout;
@@ -30,20 +31,19 @@ interface Item {
   readonly volumeKg: number;
 }
 
-type ListLoad = { readonly status: 'loading' } | { readonly status: 'error' } | { readonly status: 'ready'; readonly items: readonly Item[] };
+type ListLoad = { readonly status: 'loading' } | { readonly status: 'error' } | { readonly status: 'ready'; readonly items: readonly Item[]; readonly more: boolean };
 
-async function readList(access: DataAccess): Promise<Item[]> {
+async function readList(access: DataAccess, pages: number): Promise<{ items: Item[]; more: boolean }> {
   const repo = await access.repos.workouts();
-  const closed = await repo.listClosed(HISTORY_LIMIT);
+  // Pages lues chacune en deux requêtes (séances puis séries), et une séance de plus pour savoir s'il en reste.
+  const full: WorkoutWithSets[] = [];
+  for (let p = 0; p < pages; p += 1) full.push(...(await repo.closedPage(HISTORY_PAGE, p * HISTORY_PAGE)));
+  const more = full.length === HISTORY_PAGE * pages && (await repo.closedPage(1, HISTORY_PAGE * pages)).length > 0;
   // BL-090 : assistés hors volume comme au résumé de séance (FIX-ASSIST) : catalogue et personnalisés avec la machine, supprimés compris.
   const customs = await (await access.repos.exercises()).list({ includeDeleted: true });
   const assisted = new Set([...CATALOG_ASSISTED_IDS, ...customs.filter((c) => isAssistedEquipment(c.equipment)).map((c) => c.id)]);
-  const full = await Promise.all(closed.map((w) => repo.getClosed(w.id)));
-  return full.flatMap((w) =>
-    w === null
-      ? []
-      : [{ workout: w, durationSec: workoutDurationSec(w), sets: w.sets.filter((s) => s.done && s.setKind !== 'warmup').length, volumeKg: tonnageKg(w.sets, assisted) }],
-  );
+  const items = full.map((w) => ({ workout: w, durationSec: workoutDurationSec(w), sets: w.sets.filter((s) => s.done && s.setKind !== 'warmup').length, volumeKg: tonnageKg(w.sets, assisted) }));
+  return { items, more };
 }
 
 export function HistoryView({ data, access }: { readonly data: TrainingData; readonly access: DataAccess }) {
@@ -51,6 +51,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const [pages, setPages] = useState(1);
   const synced = useSyncedData(['workout', 'workout_set']);
   const navigate = useNavigationStore((s) => s.navigate);
   const listHeading = useRef<HTMLHeadingElement>(null);
@@ -59,8 +60,8 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
     let live = true;
     void (async () => {
       try {
-        const items = await readList(access);
-        if (live) setLoad({ status: 'ready', items });
+        const { items, more } = await readList(access, pages);
+        if (live) setLoad({ status: 'ready', items, more });
       } catch {
         if (live) setLoad((now) => (now.status === 'ready' ? now : { status: 'error' }));
       }
@@ -68,7 +69,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
     return () => {
       live = false;
     };
-  }, [access, version, synced]);
+  }, [access, version, synced, pages]);
 
   const back = (message: string | null): void => {
     setSelected(null);
@@ -141,6 +142,11 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
           ))}
         </ul>
       )}
+      {load.status === 'ready' && load.more ? (
+        <button type="button" className="ct-training__link" onClick={() => setPages((n) => n + 1)}>
+          {tTraining('historyMore')}
+        </button>
+      ) : null}
     </div>
   );
 }

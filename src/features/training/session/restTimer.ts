@@ -23,7 +23,8 @@ export interface RestTimerDeps {
   readonly texts: { readonly label: string; readonly finishedLabel: string; readonly notificationTitle: string; readonly notificationBody: string };
 }
 
-export type RestNotificationOutcome = 'scheduled' | 'denied' | 'unavailable' | 'failed';
+/** SEANCE-0292 (§ 10.3) : `undetermined` : autorisation pas encore demandée (elle l'est à la fin de la première séance, `askPermission`). */
+export type RestNotificationOutcome = 'scheduled' | 'denied' | 'undetermined' | 'unavailable' | 'failed';
 export type RestLiveOutcome = 'started' | 'unavailable' | 'failed' | 'unsupported';
 
 export interface RestReport extends RestTimer {
@@ -49,6 +50,11 @@ export interface RestTimerController {
   resume(): Promise<RestResume>;
   /** Abandon de la séance : notification annulée, activité fermée (l'échéance est effacée par `discard`). */
   stop(): Promise<void>;
+  /**
+   * SEANCE-0292 (§ 10.3, D-526) : fin de séance sur l'iPhone : l'autorisation des notifications est demandée si elle n'a jamais été décidée
+   * (donc à la fin de la première séance) ; décidée ou PC : rien. Jamais d'erreur.
+   */
+  askPermission(): Promise<void>;
 }
 
 /** Longueur maximale du libellé accepté par le plugin live-activity. */
@@ -62,8 +68,9 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
 
   async function notify(endMs: number, onlyIfMissing: boolean): Promise<RestNotificationOutcome> {
     if (!ios) return 'unavailable';
-    let permission = await notifier.permission();
-    if (permission === 'undetermined') permission = await notifier.requestPermission();
+    // SEANCE-0292 (§ 10.3) : aucune demande au repos ; tant qu'elle n'est pas décidée, le repos reste dans l'app (mode dégradé).
+    const permission = await notifier.permission();
+    if (permission === 'undetermined') return 'undetermined';
     if (permission === 'unavailable') return 'unavailable';
     if (permission !== 'granted') return 'denied';
     if (onlyIfMissing && (await notifier.isPending())) return 'scheduled';
@@ -128,6 +135,15 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
 
     async stop() {
       await closeSystem();
+    },
+
+    async askPermission() {
+      if (!ios) return;
+      try {
+        if ((await notifier.permission()) === 'undetermined') await notifier.requestPermission();
+      } catch {
+        // Demande impossible : le repos reste dans l'app ; elle sera refaite à la fin de la séance suivante.
+      }
     },
   };
 }

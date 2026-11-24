@@ -1,6 +1,6 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
 import { REPS_MAX, RIR_MAX } from './routineRules';
-import type { Difficulty, RoutineExerciseSpec } from './types';
+import type { Difficulty, ExerciseMetric, RoutineExerciseSpec } from './types';
 
 /**
  * Séance active (PRD § 13.1–13.4, 13.7–13.8 ; I1-02, D-27, D-71). Module pur, sans horloge ni stockage : le temps est toujours un argument.
@@ -129,9 +129,29 @@ export function validateSetEntry(entry: SetEntry, kind: SetKind): SetEntryIssue[
   return issues;
 }
 
-/** Série de travail réussie : validée, hors échauffement, avec une saisie conforme. */
-export function isCompletedWorkSet(set: WorkoutSet): boolean {
-  return set.done && set.setKind !== 'warmup' && validateSetEntry(entryOf(set), set.setKind).length === 0;
+/**
+ * SEANCE-0292 (C-078, D-521) : saisie en cours d'une série à faire gardée en base (séance ouverte, jamais publiée avant la clôture). Seuls les
+ * champs lisibles et dans leurs bornes sont gardés (vide : null) ; un champ illisible n'écrit rien. La série reste à faire.
+ */
+export function draftEntryPatch(fields: { readonly [K in keyof SetEntry]?: number | null | undefined }): Partial<SetEntry> {
+  const out: { -readonly [K in keyof SetEntry]?: number | null } = {};
+  for (const key of ['reps', 'loadKg', 'durationSec', 'rir'] as const) {
+    const value = fields[key];
+    if (value === undefined) continue;
+    const probe: SetEntry = { reps: null, loadKg: null, durationSec: null, rir: null, [key]: value };
+    if (value === null || validateSetBounds(probe).length === 0) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * SEANCE-0292 (C-072, D-520) : correction d'une série validée. Un exercice à charge (`load-reps`) dont la série avait une charge ne la perd
+ * pas à la correction (vider la charge la sortirait du tonnage et du 1RM sans le dire) ; la modifier reste permis. Les autres métriques (lest,
+ * assistance, durée) peuvent revenir à vide.
+ */
+export type CorrectionIssue = 'load-cleared';
+export function correctionIssues(before: SetEntry, after: SetEntry, metric: ExerciseMetric): CorrectionIssue[] {
+  return metric === 'load-reps' && before.loadKg !== null && after.loadKg === null ? ['load-cleared'] : [];
 }
 
 /** Valeurs actuellement saisies (jamais les cibles). */

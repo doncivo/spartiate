@@ -96,6 +96,11 @@ export interface WorkoutRepository {
   listClosed(limit?: number): Promise<readonly Workout[]>;
   /** PROGRES-a (Progrès) : séances closes non supprimées commencées à partir de `fromIso` (compris), avec leurs séries vivantes ; début croissant. Lecture seule. */
   closedSince(fromIso: IsoDateTime): Promise<readonly WorkoutWithSets[]>;
+  /**
+   * SEANCE-0292 (C-082, § 13.8) : page du journal, séances closes non supprimées de la plus récente à la plus ancienne, avec leurs séries
+   * vivantes, en deux lectures ; `offset` séances sautées, `limit` de 1 à 100. Lecture seule.
+   */
+  closedPage(limit: number, offset: number): Promise<readonly WorkoutWithSets[]>;
   /** PROGRES-b (constance) : début de chaque séance close non supprimée, du plus ancien au plus récent ; une colonne, lecture seule. */
   closedStarts(): Promise<readonly IsoDateTime[]>;
   /** Ajoute un exercice en fin de séance ; déjà présent : `'conflict'`. Retourne la séance. */
@@ -138,7 +143,10 @@ export interface WorkoutRepository {
   updateSet(setId: string, patch: SetPatch): Promise<WorkoutSet>;
   /** Valide la série : écrit `done = 1` et `done_at` avec la saisie fusionnée ; refusée (`'invalid'`) si la saisie ne passe pas `validateSetEntry`. */
   validateSet(setId: string, entry?: SetEntryInput): Promise<WorkoutSet>;
-  /** Remet la série à faire (saisie conservée). */
+  /**
+   * Remet la série à faire (saisie conservée). SEANCE-0292 (C-072, D-519) : une série validée rouverte est datée `corrected_at` (correction
+   * tracée, § 13.4 ; publiée avec la séance close comme une correction du journal) ; les valeurs d'avant ne sont pas gardées.
+   */
   unvalidateSet(setId: string): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
   /**

@@ -15,6 +15,8 @@ export const cardioFr = {
   dateLabel: 'Date',
   timeLabel: 'Heure de début',
   durationLabel: 'Durée (min ou h:mm:ss)',
+  /** SEANCE-0292 (C-083). */
+  durationHint: 'La virgule vaut « : » (45,30 : 45 min 30 s).',
   distanceLabel: 'Distance (km, facultative)',
   avgHrLabel: 'FC moyenne (bpm, facultative)',
   rpeLabel: 'Ressenti (1 à 10)',
@@ -73,6 +75,10 @@ export const cardioFr = {
   gpsDenied: 'Localisation refusée : saisis la séance à la main, ou autorise Spartiate dans Réglages › Confidentialité › Service de localisation.',
   gpsUnavailable: 'GPS indisponible pour l’instant : saisis la séance à la main.',
   gpsLost: 'Signal GPS perdu : le suivi continue, la distance reprendra avec le signal.',
+  /** SEANCE-0292 (C-078). */
+  gpsPending: 'Un suivi GPS est prêt, mais une saisie est en cours.',
+  gpsPendingReplace: 'Remplacer par le suivi GPS',
+  gpsPendingKeep: 'Garder ma saisie',
   gpsReported: 'Durée et distance reportées : vérifie le ressenti, puis enregistre.',
   gpsPaused: 'Suivi interrompu : l’app est passée en arrière-plan. La durée continue, la distance reprend au retour.',
   // ERGO-02 : suivi en cours selon l'aperçu (Cardio-apres) ; une donnée absente s'écrit « — » avec sa raison.
