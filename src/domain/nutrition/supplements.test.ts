@@ -92,9 +92,9 @@ describe('isDueOn et dueIntakes', () => {
 
 describe('constance (D-211)', () => {
   const a = sup({ times: [t('08:00'), t('20:00')], since: d('2026-11-01') });
-  it('prises cochées / prises dues sur la période, depuis la création ; une prise d’une heure non prévue ne compte pas', () => {
+  it('prises cochées / prises dues sur la période, depuis la création ; une prise d’une heure changée couvre le créneau libre du jour (C-091)', () => {
     const intakes = [take(a, '2026-11-08', '08:00'), take(a, '2026-11-08', '20:00'), take(a, '2026-11-09', '08:00'), take(a, '2026-11-09', '13:00')];
-    expect(supplementAdherence([a], intakes, d('2026-11-08'), d('2026-11-09'))).toEqual({ due: 4, taken: 3, ratio: 0.75 });
+    expect(supplementAdherence([a], intakes, d('2026-11-08'), d('2026-11-09'))).toEqual({ due: 4, taken: 4, ratio: 1 });
   });
   it('aucune prise due : ratio null (jamais un faux zéro)', () => {
     expect(supplementAdherence([sup({ active: false })], [], d('2026-11-01'), d('2026-11-07'))).toEqual({ due: 0, taken: 0, ratio: null });
