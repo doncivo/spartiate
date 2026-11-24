@@ -23,6 +23,7 @@ export function normalizeText(text: string): string {
     .normalize('NFD')
     .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '')
     .toLowerCase()
+    .replace(/ß/g, 'ss')
     .replace(/œ/g, 'oe')
     .replace(/æ/g, 'ae')
     .replace(/[^a-z0-9]+/g, ' ')

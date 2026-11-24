@@ -79,8 +79,12 @@ export function createFoodRepository(db: SqlExecutor, stamper: WriteStamper, ids
     if (taken !== undefined) throw new RepositoryError('conflict', table, id);
     return id;
   };
-  const offRows = async (barcode: string): Promise<FoodRow[]> =>
-    (await db.select<FoodRow>("SELECT * FROM food WHERE barcode = ? AND source = 'off' AND deleted_at IS NULL", [barcode])).sort(newestFirst);
+  /** C-045 : un UPC-A (12 chiffres) et son EAN-13 (zéro en tête) désignent le même produit. */
+  const barcodeForms = (barcode: string): string[] => (barcode.length === 12 ? [barcode, `0${barcode}`] : barcode.length === 13 && barcode.startsWith('0') ? [barcode, barcode.slice(1)] : [barcode]);
+  const offRows = async (barcode: string): Promise<FoodRow[]> => {
+    const forms = barcodeForms(barcode);
+    return (await db.select<FoodRow>(`SELECT * FROM food WHERE barcode IN (${forms.map(() => '?').join(', ')}) AND source = 'off' AND deleted_at IS NULL`, forms)).sort(newestFirst);
+  };
 
   const writeValues = (draft: FoodDraft): (string | number | null)[] => [
     draft.source,
@@ -159,7 +163,7 @@ export function createFoodRepository(db: SqlExecutor, stamper: WriteStamper, ids
 
     async findByBarcode(barcode) {
       if (!isValidBarcode(barcode)) return null;
-      const own = (await db.select<FoodRow>("SELECT * FROM food WHERE barcode = ? AND source = 'custom' AND deleted_at IS NULL ORDER BY updated_at DESC, id LIMIT 1", [barcode]))[0];
+      const own = (await db.select<FoodRow>(`SELECT * FROM food WHERE barcode IN (${barcodeForms(barcode).map(() => '?').join(', ')}) AND source = 'custom' AND deleted_at IS NULL ORDER BY updated_at DESC, id LIMIT 1`, barcodeForms(barcode)))[0];
       if (own) return toFood(own);
       const off = (await offRows(barcode))[0];
       return off ? toFood(off) : null;
