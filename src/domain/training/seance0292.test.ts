@@ -11,6 +11,7 @@ import { estimateExerciseSec, estimateSessionSec, generateSession } from './gene
 import type { GenerationEquipment } from './generationTypes';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
+import { nextProgramDay } from './programDay';
 import { replayWorkout } from './replay';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
 import type { ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
@@ -199,5 +200,26 @@ describe('SEANCE-0292 C-015 : circuit, un exercice n’en est membre que par ses
 
   it('A en travail, B en échauffement seulement : aucun groupe', () => {
     expect(circuitsOf([c('w', 'b', 0, 'warmup'), c('a1', 'a', 1), c('a2', 'a', 2)])).toEqual([]);
+  });
+});
+
+describe('SEANCE-0292 C-017 (D-473) : une dernière séance vidée ou supprimée revient dans la rotation (règle figée)', () => {
+  const d = (id: string, dayOrder: number, exercises: readonly unknown[] = ['x']) => ({ id, dayOrder, exercises });
+  const w = (routineDayId: string) => ({ routineId: 'r', routineDayId });
+
+  it('A, B, C ; A puis C faits : A, le jour qui suit C (rotation ordinaire)', () => {
+    expect(nextProgramDay([d('A', 0), d('B', 1), d('C', 2)], [w('C'), w('A')], 'r')).toBe('A');
+  });
+
+  it('C fait puis vidé de ses exercices dans la routine : la séance de C ne compte plus, la rotation repart de A (B proposé)', () => {
+    expect(nextProgramDay([d('A', 0), d('B', 1), d('C', 2, [])], [w('C'), w('A')], 'r')).toBe('B');
+  });
+
+  it('séance de C supprimée (absente des séances closes, `listClosed` écarte `deleted_at`) : la rotation repart de A (B proposé)', () => {
+    expect(nextProgramDay([d('A', 0), d('B', 1), d('C', 2)], [w('A')], 'r')).toBe('B');
+  });
+
+  it('aucune séance restante : premier jour garni', () => {
+    expect(nextProgramDay([d('A', 0, []), d('B', 1), d('C', 2)], [], 'r')).toBe('B');
   });
 });
