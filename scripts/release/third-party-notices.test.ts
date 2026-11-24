@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 // @ts-expect-error module JavaScript sans déclaration de types
 import { NOTICES_PATH, renderNotices } from './third-party-notices.mjs';
 
@@ -65,5 +66,19 @@ describe('BL-043 : la vérification est en CI et dans les builds', () => {
   it('build-windows.yml et build-ios.yml exigent le fichier dans dist/', () => {
     expect(read('.github/workflows/build-windows.yml')).toContain('dist/THIRD-PARTY-NOTICES.txt');
     expect(read('.github/workflows/build-ios.yml')).toContain('dist/THIRD-PARTY-NOTICES.txt');
+  });
+});
+
+describe('BL-043 (relecture) : --check s\'exécute là où node_modules existe', () => {
+  it('le job de tests.yml qui lance --check installe Node et les dépendances npm', () => {
+    const workflow = parse(readFileSync(resolve(root, '.github/workflows/tests.yml'), 'utf8')) as { jobs: Record<string, { steps: { uses?: string; run?: string }[] }> };
+    const jobs = Object.entries(workflow.jobs).filter(([, job]) => job.steps.some((s) => s.run?.includes('third-party-notices.mjs --check')));
+    expect(jobs).toHaveLength(1);
+    const steps = jobs[0]?.[1].steps ?? [];
+    const check = steps.findIndex((s) => s.run?.includes('third-party-notices.mjs --check'));
+    const install = steps.findIndex((s) => /^npm ci\b/.test(s.run ?? ''));
+    expect(steps.some((s) => s.uses?.includes('actions/setup-node'))).toBe(true);
+    expect(install, 'npm ci avant --check').toBeGreaterThanOrEqual(0);
+    expect(install).toBeLessThan(check);
   });
 });
