@@ -100,12 +100,11 @@ describe('aucun conseil de supprimer ou de réinstaller l’app (C-110, C-181)',
 // fichiers (découpage aux non-lettres et aux majuscules internes : `FOO_NOM`, `forNom`, `d'Nom`, `nom-complet` sont des mots « nom ») et des chemins.
 const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f52110d4';
 const PLACE_LENGTH = 6;
-const ALL_TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|plist|svg|sql)$/;
-const placeFiles = tracked.filter((f) => f !== SELF && !/(^|\/)(package-lock\.json|Cargo\.lock)$/.test(f) && !/^docs\/archive\//.test(f));
+const placeFiles = tracked.filter((f) => f !== SELF && !/^docs\/archive\//.test(f));
 /** Fichiers dont le contenu est lu par la garde du lieu. */
-const placeScanned = placeFiles.filter((f) => ALL_TEXT.test(f));
 /** Binaire : un octet nul dans les 8 000 premiers octets. */
 const isBinary = (f: string): boolean => readFileSync(resolve(root, f)).subarray(0, 8000).includes(0);
+const placeScanned = placeFiles.filter((f) => !isBinary(f));
 const hashed = new Map<string, boolean>();
 function isPlaceWord(word: string): boolean {
   let known = hashed.get(word);
