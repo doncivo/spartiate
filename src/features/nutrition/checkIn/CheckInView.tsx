@@ -326,6 +326,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
       </div>
       {proposal.initial ? <p className="ct-nutrition__muted">{tNutrition('proposalInitial')}</p> : null}
       <ProposalTable proposal={proposal} restFrom={restPlan?.rest.kcal} />
+      <p className="ct-nutrition__muted">{tNutrition('checkInCurrentNote', { from: formatDayMonth(addDays(period.weekEnd, -6)), to: formatDayMonth(period.weekEnd) })}</p>
 
       <div className="ct-checkin__why">
       <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>

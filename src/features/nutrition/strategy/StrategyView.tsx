@@ -112,10 +112,18 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   }, [data]);
 
   async function update(next: NutritionPrefs): Promise<void> {
+    const previous = prefs;
     setPrefs(next);
     setError(null);
     try {
       await saveNutritionPrefs(data, next);
+    } catch {
+      // C-104 : l'écriture a échoué : l'écran revient à la valeur enregistrée (jamais un réglage affiché sans être gardé).
+      setPrefs(previous);
+      setError(tNutrition('writeError'));
+      return;
+    }
+    try {
       await onChanged();
     } catch {
       setError(tNutrition('writeError'));
@@ -327,6 +335,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
                 </p>
                 <p className="ct-nutrition__muted">
                   {describeDecision(record)}
+                  {targetDecidedOn(record) === null ? '' : ` · ${tNutrition('historyDecided', { date: formatDayMonth(targetDecidedOn(record) ?? record.weekStart) })}`}
                   {record.engineVersion === null ? '' : ` · ${tNutrition('historyVersion', { n: record.engineVersion })}`}
                 </p>
               </li>

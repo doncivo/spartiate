@@ -357,6 +357,7 @@ export const nutritionFr = {
   historyAuto: 'Proposition du moteur · acceptée',
   historyAutoRefused: 'Proposition du moteur · refusée',
   historyManual: 'Manuelle · acceptée',
+  historyDecided: 'décidée le {date}',
   historyVersion: 'moteur v{n}',
   // ERGO-03 : Stratégie groupée (Style, Objectif, Cible, Jours de repos, Historique), une ligne par réglage.
   groupStyle: 'Style',
@@ -390,6 +391,7 @@ export const nutritionFr = {
   checkInStatTrendMissing: 'pas de pesée récente',
   checkInStatKeptMissing: 'aucun jour complet',
   checkInTableCurrent: 'Actuel',
+  checkInCurrentNote: '« Actuel » : la cible en vigueur pendant la semaine analysée (du {from} au {to}), pas forcément celle d’aujourd’hui.',
   checkInTableProposed: 'Proposé',
   checkInTableDelta: 'Écart',
   checkInBound: 'borne ± 150 kcal',
