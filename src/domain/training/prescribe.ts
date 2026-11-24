@@ -272,7 +272,8 @@ export function prescribe(input: PrescribeInput): Prescription {
         ? { loadKg: refLoad, reps: reduced.reps, extraRep: false }
         : discountOnly && available !== null
           ? snapDiscount(refLoad, reduced.targetKg, reduced.reps, available, config)
-          : constraints.redDay
+          : // C-006 (D-269) : décharge arrondie vers le bas comme la journée rouge, sans répétition ajoutée.
+            constraints.redDay || constraints.deload
             ? snapDownAtLeastMin(reduced.targetKg, reduced.reps, available, refLoad, config)
             : snapToEquipment(reduced.targetKg, reduced.reps, available, config);
     if (snapped.extraRep) reasons.add('snap-extra-rep');
