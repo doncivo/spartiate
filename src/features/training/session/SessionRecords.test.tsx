@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import { recordsOfSet } from '../../../domain/training/sessionRecords';
@@ -140,13 +140,12 @@ describe('§ 17.1 a : records signalés en séance', () => {
     fireEvent.change(within(second).getByLabelText('Répétitions'), { target: { value: '8' } });
     fireEvent.click(within(second).getByRole('button', { name: 'Valider la série' }));
     expect(await within(second).findByText('50 kg × 8')).toBeInTheDocument();
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50));
-    });
-    expect(release).not.toBeNull();
+    // Aucun délai fixe (relecture de SEANCE-0292b) : on attend que la lecture des records de la première série soit en attente,
+    // puis on la libère et on vide la file des microtâches (la réponse ancienne doit être ignorée par le jeton).
+    await waitFor(() => expect(release).not.toBeNull());
     await act(async () => {
       release?.();
-      await new Promise((r) => setTimeout(r, 50));
+      for (let i = 0; i < 10; i += 1) await Promise.resolve();
     });
     expect(screen.queryByText(/^Record/)).toBeNull();
     expect(haptics.calls).not.toContainEqual({ type: 'impact', style: 'heavy' });

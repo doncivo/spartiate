@@ -194,3 +194,5 @@ Relecture 2 : à faire sur le run CI de ce lot.
 - § 17.1 a : fait (D-540) ; C-191 : reste BL-114 à BL-116.
 - § 13.3 b : à faire, reste D-541 (notifications, ios-mobile ; Swift si `extend30`).
 - H-1 : vérifié en partie (gravl.h1.test.ts ; Q-15, Q-16). § 13.2 a : inchangé, attend Q-12.
+
+Relecture 2 (à froid) : un point important, deux attentes fixes de 50 ms dans SessionRecords.test.tsx (rouge E) : remplacées par une attente de la lecture en cours (waitFor) et un vidage des microtâches ; le test échoue toujours avec ActiveSession.tsx d'avant ca8ced2d (rejoué le 24/11) et passe avec. Run CI 45457468235 vert sur fa154930.
