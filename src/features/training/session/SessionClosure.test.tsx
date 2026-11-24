@@ -264,6 +264,23 @@ describe('après la clôture', () => {
   });
 });
 
+describe('SEANCE-0292 (§ 10.3) : notifications demandées en fin de première séance', () => {
+  it('autorisation pas encore décidée (iPhone) : aucune demande pendant la séance ; demandée une fois à la clôture', async () => {
+    const f = fakes();
+    let requests = 0;
+    let decided = false;
+    const notifier: TimerNotifier = { ...f.notifier, permission: async () => (decided ? 'granted' : 'undetermined'), requestPermission: async () => (requests++, (decided = true), 'granted') };
+    openSession({ ...f, notifier });
+    await startFromRoutine();
+    for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
+    expect(requests).toBe(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Terminer' }));
+    await summaryRegion();
+    await waitFor(() => expect(requests).toBe(1));
+  });
+});
+
 describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’app a été fermée pendant le résumé', () => {
   const question = () => screen.findByRole('group', { name: 'Mettre à jour la routine ?' });
   async function closeWithoutRowing(): Promise<void> {
