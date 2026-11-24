@@ -18,3 +18,17 @@ describe('rappel de coucher et saut d\'heure', () => {
     expect(r.items.map((i) => i.fireAt)).toEqual(['2026-03-29T08:00']);
   });
 });
+
+/**
+ * C-062 (c), défaut confirmé à la relecture : le 29/03/2026 (Paris), un rappel de 02:30 n'existe pas et se déclenche à 03:30. Un recalcul à 03:10 comparait
+ * 02:30 > 03:10 en heure flottante : rappel jugé passé alors qu'il se déclenche dans 20 minutes, donc perdu.
+ */
+describe('rappel de coucher dans l\'heure sautée (zone connue)', () => {
+  const zoned = (now: string) => planRecoveryNotifications({ now: now as LocalDateTime, bedtime: true, morning: false, bedtimeTime: '03:00', morningReady: false, zone: 'Europe/Paris' });
+  it('recalcul à 03:10 le jour du saut : le rappel de 02:30 (déclenché à 03:30) est gardé', () => {
+    expect(zoned('2026-03-29T03:10').items.map((i) => i.fireAt)).toContain('2026-03-29T02:30');
+  });
+  it('recalcul à 03:40 : il est bien passé', () => {
+    expect(zoned('2026-03-29T03:40').items.map((i) => i.fireAt)).not.toContain('2026-03-29T02:30');
+  });
+});
