@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { GEN_LIBRARY, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc } from '../types';
 import { routineDiff } from './closure';
+import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
+import { estimateExerciseSec, estimateSessionSec, generateSession } from './generateSession';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
-import type { ProgressionEquipment, RoutineDay } from './types';
+import type { ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
 
 /**
  * SEANCE-0292 (lot 0.29.2, partie A : moteur et génération) : une section par ligne du registre (docs/SEANCE-0292.md). Fixtures
@@ -119,5 +122,26 @@ describe('SEANCE-0292 C-016 : isCompletedWorkSet ne compte ni dégressive ni par
     expect(isCompletedWorkSet(setRow(0, { setKind: 'drop', done: true, reps: 8, loadKg: 40 }))).toBe(false);
     expect(isCompletedWorkSet(setRow(0, { setKind: 'partial', done: true, reps: 5, loadKg: 70 }))).toBe(false);
     expect(isCompletedWorkSet(setRow(0, { setKind: 'warmup', done: true, reps: 8, loadKg: 40 }))).toBe(false);
+  });
+});
+
+describe('SEANCE-0292 C-012 : durée d’une série chronométrée = sa durée cible, pas 45 s (§ 12.1, Q-9 option B en choix prudent)', () => {
+  const plankDay: RoutineDaySpec = { name: 'Gainage', dayOrder: 1, exercises: [{ exerciseId: 'plank', exerciseName: 'Planche', sets: 3, repMin: 60, repMax: 60, rir: null, restSec: 60, position: 0 }] };
+
+  it('planche 3 × 60 s, repos 60 s : 300 s (3 × 60 + 2 × 60), pas 255 s', () => {
+    const s = generateSession(genInput({}, { split: 'full-body', days: [plankDay] }));
+    expect(s.status).toBe('ready');
+    expect(s.exercises[0]?.estimatedSec).toBe(300);
+    expect(s.estimatedSec).toBe(300);
+  });
+
+  it('estimateSessionSec avec la métrique des exercices : même durée que la génération ; sans métrique : 45 s par série (comme avant)', () => {
+    const metricOf = (id: string) => GEN_LIBRARY.find((e) => e.id === id)?.metric;
+    expect(estimateSessionSec(plankDay.exercises, GEN_CONFIG, metricOf)).toBe(300);
+    expect(estimateSessionSec(plankDay.exercises, GEN_CONFIG)).toBe(255);
+  });
+
+  it('exercice à charge : 45 s par série, inchangé', () => {
+    expect(estimateExerciseSec(3, 60, GEN_CONFIG)).toBe(255);
   });
 });
