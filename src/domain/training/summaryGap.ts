@@ -7,7 +7,7 @@ import type { WorkoutSet } from './session';
  * Cible d'un exercice : la décision tracée de la séance (charge et répétitions retenues), sinon la première charge cible de ses séries de travail
  * (aucune cible de répétitions). Séries comptées hors échauffement ; charge faite = la plus lourde des séries de travail validées (exercice
  * assisté, BL-140 : la MOINS assistée, la plus dure ; `assisted` : identifiants fournis par l'appelant, catalogue et personnalisés) ; écart de
- * répétitions = somme, série par série, des répétitions faites moins les répétitions retenues. Sans cible : aucun écart (jamais inventé).
+ * répétitions = somme, série faite par série faite, des répétitions faites moins les répétitions retenues de la série de même rang (BL-141). Sans cible : aucun écart (jamais inventé).
  */
 
 export interface GapTarget {
@@ -42,7 +42,9 @@ export function prescriptionGaps(sets: readonly WorkoutSet[], targets: ReadonlyM
     const repsDelta =
       reps.length === 0 || done.length === 0
         ? null
-        : done.reduce((sum, s, i) => sum + ((s.reps ?? 0) - (reps[i] ?? reps[reps.length - 1] ?? 0)), 0);
+        : // BL-141 : chaque série faite est comparée à la série retenue de même rang dans l'exercice (série prévue), pas à son rang parmi les
+          // séries faites ; au-delà des séries retenues, à la dernière.
+          own.reduce((sum, s, i) => (s.done ? sum + ((s.reps ?? 0) - (reps[i] ?? reps[reps.length - 1] ?? 0)) : sum), 0);
     return {
       exerciseId,
       exerciseName: own[0]?.exerciseName ?? exerciseId,
