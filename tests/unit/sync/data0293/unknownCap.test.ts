@@ -40,6 +40,8 @@ describe('plafond des champs gardés : abandon signalé (BL-040)', () => {
         [`7a1b0c2d-0000-4000-8000-00000000000${String(n)}`, hlc(n)],
       );
     }
+    await a!.cycle();
+    // Le plafond s'applique à l'entretien, après le calcul des avertissements du cycle : le signal se lève au cycle suivant.
     const status = await a!.cycle();
     expect(a!.logger.entries.filter((e) => e.event === 'cap-dropped')).toHaveLength(1);
     expect(await a!.driver.select('SELECT COUNT(*) AS n FROM sync_unknown')).toEqual([{ n: 2 }]);
