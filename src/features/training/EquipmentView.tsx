@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
@@ -356,14 +356,23 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
   const [message, setMessage] = useState<string | null>(null);
   const viewed = data.profiles.find((p) => p.id === viewId) ?? data.active;
   const isActive = viewed.id === data.active.id;
+  // SEANCE-0292 (C-077) : une écriture à la fois (un double appui arrive avant le redessin qui désactive les boutons).
+  const acting = useRef(false);
+  const [busy, setBusy] = useState(false);
 
   const act = async (work: () => Promise<void>, done: string): Promise<void> => {
+    if (acting.current) return;
+    acting.current = true;
+    setBusy(true);
     try {
       await work();
       await reload();
       setMessage(done);
     } catch {
       setMessage(tTraining('saveError'));
+    } finally {
+      acting.current = false;
+      setBusy(false);
     }
   };
 
@@ -423,10 +432,11 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
               {isActive && <span className="ct-training__badge">{tTraining('activeHere')}</span>}
             </p>
             <div className="ct-training__actions">
-              {!isActive && <Button onClick={() => void act(() => setActiveProfile(access, viewed.id), tTraining('activated'))}>{tTraining('activate')}</Button>}
+              {!isActive && <Button disabled={busy} onClick={() => void act(() => setActiveProfile(access, viewed.id), tTraining('activated'))}>{tTraining('activate')}</Button>}
               {viewed.origin === 'embedded' ? (
                 <Button
                   variant="secondary"
+                  disabled={busy}
                   onClick={() => {
                     const copy = duplicateEmbeddedProfile(viewed, ids, tTraining('copyName', { name: viewed.name }));
                     void act(async () => {
@@ -449,7 +459,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
                     {tTraining('editProfile')}
                   </Button>
                   {/* ERGO-02 : une seule action rouge à l'écran ; « Activer » l'est déjà quand le profil n'est pas actif (suppression confirmée). */}
-                  <Button variant={isActive ? 'danger' : 'secondary'} onClick={() => setConfirm(true)}>
+                  <Button variant={isActive ? 'danger' : 'secondary'} disabled={busy} onClick={() => setConfirm(true)}>
                     {tTraining('deleteProfile')}
                   </Button>
                 </>
