@@ -54,7 +54,7 @@ describe('prescriptionAdherence (BL-115, D-449, D-456)', () => {
       { day: d('2026-11-16'), sets: [set({ done: false })] },
       { day: d('2026-10-13'), sets: [set({ done: false })] },
     ];
-    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 3, setsProposed: 4, setsPercent: 75, loadsHeld: 1, loadsProposed: 3, loadsPercent: 33, weeks: 4 });
+    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 3, setsProposed: 4, setsPercent: 75, setsAdded: 0, setsRemoved: 1, loadsHeld: 1, loadsProposed: 3, loadsPercent: 33, weeks: 4 });
   });
 
   it('charge au-dessus de la proposition : tenue ; échauffement, drop, partielle et série ajoutée sans cible : non proposées', () => {
@@ -70,12 +70,12 @@ describe('prescriptionAdherence (BL-115, D-449, D-456)', () => {
         ],
       },
     ];
-    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, loadsHeld: 1, loadsProposed: 1, loadsPercent: 100, weeks: 4 });
+    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, setsAdded: 0, setsRemoved: 0, loadsHeld: 1, loadsProposed: 1, loadsPercent: 100, weeks: 4 });
   });
 
   it('série chronométrée proposée (durée cible dans targetRepsMin) : comptée dans les séries, pas dans les charges', () => {
     const workouts = [{ day: d('2026-11-12'), sets: [set({ setKind: 'timed', targetRepsMin: 45, targetLoadKg: null, loadKg: null })] }];
-    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, loadsHeld: 0, loadsProposed: 0, loadsPercent: null, weeks: 4 });
+    expect(prescriptionAdherence({ workouts, today: TODAY })).toEqual({ setsDone: 1, setsProposed: 1, setsPercent: 100, setsAdded: 0, setsRemoved: 0, loadsHeld: 0, loadsProposed: 0, loadsPercent: null, weeks: 4 });
   });
 
   it('aucune série proposée dans la fenêtre : non calculée (null), jamais 0 %', () => {

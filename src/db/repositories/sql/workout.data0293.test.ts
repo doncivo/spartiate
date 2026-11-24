@@ -10,7 +10,10 @@ import { openBaseDb, type TestDb } from './testSetup';
 const DEVICE = '60000000-0000-4000-8000-000000000293' as DeviceId;
 const W = '3c5d7e9f-0000-4000-8000-000000000293';
 let db: TestDb;
-afterEach(async () => db.close());
+afterEach(async () => {
+  await (db as TestDb | undefined)?.close();
+  db = undefined as never;
+});
 
 async function openSession(sets = 2) {
   db = await openBaseDb(DEVICE, '2026-11-24T17:00:00.000Z');
