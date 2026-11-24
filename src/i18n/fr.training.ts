@@ -168,11 +168,11 @@ export const trainingFr = {
   equipmentForced: 'Matériel forcé (toujours proposé)',
   equipmentForbidden: 'Matériel interdit (jamais proposé)',
   errorProfile: 'Vérifie le profil : un nom, des nombres positifs, le minimum avant le maximum.',
-  /** SEANCE-0292 (C-066) : « 12,16 » n'est pas un poids (décimale hors des quarts de kilo). */
   /** SEANCE-0292 (C-081). */
   errorWeightDuplicate: '« {item} » est en double : un poids une seule fois par liste.',
   /** SEANCE-0292 (C-081) : disques d'un poids, saisis « 20 × 4 ». */
   plateWithCount: '{n} × {count}',
+  /** SEANCE-0292 (C-066) : « 12,16 » n'est pas un poids (décimale hors des quarts de kilo). */
   errorWeightSeparator: '« {item} » n’est pas un poids : sépare les poids par des points-virgules (ex. 12 ; 16).',
   kg: '{n} kg',
   /** ERGO-02 (D-261) : charge de deux haltères, la valeur est celle d'un haltère. */
