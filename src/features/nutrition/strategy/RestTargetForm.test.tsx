@@ -14,7 +14,7 @@ describe('RestTargetForm (C-103)', () => {
     mount(null, vi.fn());
     fireEvent.click(screen.getByRole('switch', { name: 'Cible des jours de repos' }));
     fireEvent.change(screen.getByLabelText('Écart les jours de repos (kcal en moins)'), { target: { value: '-200' } });
-    expect(screen.getByText(/Jours de repos : 2\s?400 kcal/)).toBeInTheDocument();
+    expect(screen.getByText(/Jours de repos : 2.400 kcal/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enregistrer la cible de repos' })).toBeEnabled();
   });
 

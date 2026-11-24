@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
 import {
   ALL_DAYS,
@@ -157,13 +157,24 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
     };
   }, [load, today]);
 
-  const toggleIntake = async (item: DueIntake): Promise<void> => {
-    try {
-      await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, !item.taken);
-      await afterWrite(null);
-    } catch {
-      setNotice(tSupplements('writeError'));
-    }
+  // C-103 : les appuis sont écrits dans l'ordre, chacun à partir de l'état voulu par l'appui précédent (cocher puis décocher vite finit décoché).
+  const intake = useRef<{ chain: Promise<void>; wanted: Map<string, boolean> }>({ chain: Promise.resolve(), wanted: new Map() });
+  const toggleIntake = (item: DueIntake): Promise<void> => {
+    const state = intake.current;
+    const key = `${item.supplement.id}|${item.moment}`;
+    const next = !(state.wanted.get(key) ?? item.taken);
+    state.wanted.set(key, next);
+    state.chain = state.chain.then(async () => {
+      try {
+        await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, next);
+        if (state.wanted.get(key) === next) state.wanted.delete(key);
+        await afterWrite(null);
+      } catch {
+        state.wanted.delete(key);
+        setNotice(tSupplements('writeError'));
+      }
+    });
+    return state.chain;
   };
 
   const afterWrite = async (message: string | null): Promise<void> => {

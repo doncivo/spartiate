@@ -46,6 +46,7 @@ export const nutritionFr = {
   restTargetGap: 'Écart les jours de repos (kcal en moins)',
   restTargetKcal: 'Calories les jours de repos (kcal)',
   trainingDays: 'Jours d’entraînement',
+  restTargetAboveTarget: 'La cible de repos doit rester sous celle des jours d’entraînement.',
   restTargetPreview: 'Jours de repos : {kcal} kcal, glucides {carbs} g ; protéines et lipides identiques.',
   restTargetSave: 'Enregistrer la cible de repos',
   restTargetSaved: 'Cible des jours de repos enregistrée.',

@@ -29,10 +29,14 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
   const [status, setStatus] = useState<'idle' | 'saved' | 'invalid' | 'error' | 'needsConfirm' | 'rejected'>('idle');
   const [confirmed, setConfirmed] = useState(false);
 
-  const value = parseNumber(mode === 'gap' ? gap : kcal);
+  const parsed = parseNumber(mode === 'gap' ? gap.replace(/^s*[-−–]/, '') : kcal);
+  // C-103 : « −200 » dans l'écart (libellé « kcal en moins ») veut dire 200 en moins : le signe est lu, jamais refusé en silence.
+  const value = parsed;
   const rest: Target | null =
     typeof value !== 'number' || !(value >= 0) ? null : mode === 'gap' ? restTargetFromGap(target, -value) : value > 0 ? restTargetFromKcal(target, value) : null;
-  const valid = rest !== null && rest.kcal > 0 && days.length > 0 && days.length < 7;
+  // C-103 : une cible de repos au-dessus de celle des jours d'entraînement n'est pas enregistrée (elle serait relue comme un écart de 0).
+  const aboveTarget = rest !== null && rest.kcal > target.kcal;
+  const valid = rest !== null && !aboveTarget && rest.kcal > 0 && days.length > 0 && days.length < 7;
   // FIX-PLANCHER (C-086, C-087) : plancher sur la plus basse des deux cibles ; une confirmation en vigueur n'est pas redemandée.
   const nextPlan: RestPlan | null = rest === null ? null : { rest, trainingDays: days };
   const verdict = nextPlan === null ? 'ok' : floorVerdict(target, nextPlan);
@@ -45,6 +49,8 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
 
   async function save(next: RestPlan | null): Promise<void> {
     const result = await onSave(next, confirmed);
+    // C-103 : un retrait qui échoue laisse l'interrupteur sur l'état réel (la cible existe toujours).
+    if (next === null && result !== 'saved' && result !== 'saved-partial') setEnabled(true);
     setStatus(result === 'saved' || result === 'saved-partial' ? 'saved' : result === 'confirmation-required' ? 'needsConfirm' : result === 'rejected' ? 'rejected' : 'error');
   }
 
@@ -88,7 +94,8 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
             <NumberField label={tNutrition('restTargetKcal')} value={kcal} onChange={setKcal} step="1" invalid={rest === null} />
           )}
           <WeekdayToggles label={tNutrition('trainingDays')} value={days} onToggle={toggleDay} />
-          {rest !== null ? <p className="ct-nutrition__muted">{tNutrition('restTargetPreview', { kcal: formatInt(rest.kcal), carbs: formatInt(rest.carbG) })}</p> : null}
+          {aboveTarget ? <p role="alert">{tNutrition('restTargetAboveTarget')}</p> : null}
+          {rest !== null && !aboveTarget ? <p className="ct-nutrition__muted">{tNutrition('restTargetPreview', { kcal: formatInt(rest.kcal), carbs: formatInt(rest.carbG) })}</p> : null}
           {needsBox ? (
             <label className="ct-nutrition__check">
               <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />
