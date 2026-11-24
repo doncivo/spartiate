@@ -324,7 +324,10 @@ jobs:
           [ "$APPBUILD" = "$EXTBUILD" ] || { echo "::error::CFBundleVersion différent : app $APPBUILD, extension $EXTBUILD"; exit 1; }
           plutil -convert xml1 -o "$RUNNER_TEMP/extension-info.plist" "$EXT/Info.plist"
           if grep -Eq 'UIBackgroundModes|application-groups|aps-environment' "$RUNNER_TEMP/extension-info.plist"; then echo "::error::l'extension déclare un mode de fond, un App Group ou un push"; exit 1; fi
-          codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2> "$RUNNER_TEMP/extension-entitlements.err"
+          if ! codesign -d --entitlements :- "$EXT" > "$RUNNER_TEMP/extension-entitlements.plist" 2> "$RUNNER_TEMP/extension-entitlements.err"; then
+            cat "$RUNNER_TEMP/extension-entitlements.err" >&2
+            echo "::error::codesign -d a échoué sur l'extension Live Activity"; exit 1
+          fi
           if grep -Eq 'application-groups|aps-environment|com.apple.developer.healthkit' "$RUNNER_TEMP/extension-entitlements.plist"; then echo "::error::l'extension porte un entitlement interdit"; exit 1; fi
           {
             echo "- Extension Live Activity de l'IPA finale : PlugIns/SpartiateLiveActivity.appex présente, ${EXTID} v${EXTVER}, point d'extension ${POINT}"
