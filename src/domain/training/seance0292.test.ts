@@ -3,13 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
 import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
-import type { DeviceId, Hlc } from '../types';
+import type { DeviceId, Hlc, IsoDateTime } from '../types';
 import { routineDiff } from './closure';
 import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
 import { estimateExerciseSec, estimateSessionSec, generateSession } from './generateSession';
 import type { GenerationEquipment } from './generationTypes';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
+import { replayWorkout } from './replay';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
 import type { ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
 
@@ -168,5 +169,20 @@ describe('SEANCE-0292 C-013 (D-472) : plages du § 12.1.4 pour tout exercice pla
     expect([bench?.repMin, bench?.repMax]).toEqual([6, 10]);
     const raise = s.exercises.find((e) => e.exerciseId === 'lateral-raise-dumbbell');
     expect([raise?.repMin, raise?.repMax]).toEqual([12, 15]);
+  });
+});
+
+describe('SEANCE-0292 C-014 : replay, instant de validation illisible traité comme absent (ordre par position)', () => {
+  const r = (id: string, position: number, doneAt: string | null): WorkoutSet => setRow(0, { id, position, done: true, reps: 8, loadKg: 60, doneAt: doneAt as IsoDateTime | null });
+
+  it('« pas-une-date » entre deux séries datées : placée après la série datée qui la précède par position, comptée sans instant', () => {
+    const a = r('a', 0, '2026-11-10T18:00:00.000Z');
+    const b = r('b', 1, 'pas-une-date');
+    const c = r('c', 2, '2026-11-10T18:05:00.000Z');
+    const d = r('d', 3, 'x');
+    const out = replayWorkout({ sets: [d, c, b, a] });
+    expect(out.steps.map((st) => st.set.id)).toEqual(['a', 'b', 'c', 'd']);
+    expect(out.missingInstants).toBe(2);
+    expect(out.steps[0]?.rest.deviation).toBe('unknown');
   });
 });
