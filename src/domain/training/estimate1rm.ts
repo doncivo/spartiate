@@ -106,7 +106,18 @@ export interface AnalyzeOptions {
 const REPEAT_CONFIRMS_FROM = 0.9;
 
 /** Ordre chronologique stable : fin de séance, puis identifiant. */
-const chronological = (a: ExerciseSession, b: ExerciseSession): number => (a.endedAt < b.endedAt ? -1 : a.endedAt > b.endedAt ? 1 : a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0);
+/**
+ * C-025 : ordre de deux instants ISO comparés comme instants (`2026-11-07T19:00:00+01:00` avant `2026-11-07T18:30:00Z`) ; un instant
+ * illisible garde l'ordre des chaînes d'avant. Négatif : `a` avant `b`.
+ */
+export function compareInstants(a: string, b: string): number {
+  const pa = Date.parse(a);
+  const pb = Date.parse(b);
+  if (Number.isFinite(pa) && Number.isFinite(pb)) return pa - pb;
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+const chronological = (a: ExerciseSession, b: ExerciseSession): number => compareInstants(a.endedAt, b.endedAt) || (a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0);
 
 const fatigueMark = (session: ExerciseSession): { readonly fatigueChoice?: true } => (session.fatigueChoice === true ? { fatigueChoice: true } : {});
 

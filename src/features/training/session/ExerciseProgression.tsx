@@ -276,6 +276,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         deload,
         ...(deload && load.cycleDeloadPlan !== null ? { deloadSets: load.cycleDeloadPlan.sets, deloadLoad: load.cycleDeloadPlan.load } : {}),
         positionRank,
+        // C-025 : inactivité comptée en jours civils du fuseau de l'appareil.
+        utcOffsetMinutes: -new Date(clock.nowMs()).getTimezoneOffset(),
       }),
     );
     // SESS-01d : « Fatigué » déclaré, une hausse prévue reste à la charge de référence (arrondie au matériel actif).

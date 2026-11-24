@@ -73,6 +73,8 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
               ...(options.plan?.deload === true && options.plan.deloadSets !== undefined ? { deloadSets: options.plan.deloadSets } : {}),
               ...(options.plan?.deload === true && options.plan.deloadLoad !== undefined ? { deloadLoad: options.plan.deloadLoad } : {}),
               positionRank: ranks.get(line.exerciseId) ?? 1,
+              // C-025 : même fuseau que la séance active.
+              utcOffsetMinutes: -new Date(options.nowMs).getTimezoneOffset(),
             }),
           );
           loads.set(line.id, p.status === 'prescribed' && p.loadKg !== null && p.loadKg > 0 ? p.loadKg : null);

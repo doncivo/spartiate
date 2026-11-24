@@ -30,6 +30,8 @@ export interface PrescriptionInputArgs {
   readonly deloadSets?: number;
   readonly deloadLoad?: number;
   readonly positionRank: number;
+  /** C-025 : décalage du fuseau local en minutes au moment du calcul (absent : UTC), pour l'inactivité en jours civils. */
+  readonly utcOffsetMinutes?: number;
 }
 
 export function prescriptionInputOf(a: PrescriptionInputArgs): PrescribeInput {
@@ -60,6 +62,7 @@ export function prescriptionInputOf(a: PrescriptionInputArgs): PrescribeInput {
     positionRank: a.positionRank,
     ...(a.context.lastPositionRank === null ? {} : { lastPositionRank: a.context.lastPositionRank }),
     bodyweightKg: a.context.bodyweightKg,
+    ...(a.utcOffsetMinutes !== undefined ? { utcOffsetMinutes: a.utcOffsetMinutes } : {}),
   };
 }
 

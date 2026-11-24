@@ -1,6 +1,6 @@
 import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
-import { analyzeHistory, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
+import { analyzeHistory, compareInstants, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isLowRecovery, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
 import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { HistorySet, MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
@@ -127,11 +127,11 @@ export function prescribe(input: PrescribeInput): Prescription {
   const estimates = analysis.estimates;
   const current = current1rmFromSessions(estimates.slice(0, config.recencyWeights.length), config);
   const confidence = confidenceOf(estimates, input.now, config);
-  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || s.endedAt > max ? s.endedAt : max), null);
+  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || compareInstants(s.endedAt, max) > 0 ? s.endedAt : max), null);
 
   // 3. Référence : la décision d'Ali postérieure à la dernière séance l'emporte.
   const decision = input.lastDecision;
-  if (decision !== null && (latestEnd === null || decision.decidedAt > latestEnd)) {
+  if (decision !== null && (latestEnd === null || compareInstants(decision.decidedAt, latestEnd) > 0)) {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
@@ -196,11 +196,12 @@ export function prescribe(input: PrescribeInput): Prescription {
   // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
   // travaillé ; une séance sans aucune série faite ne compte pas).
   const muscle = input.muscleLastWorkedAt ?? null;
-  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
   const evaluated = activeConstraints({
     estimates,
-    lastWorkedAt: muscle !== null && (worked === null || muscle > worked) ? muscle : worked,
+    lastWorkedAt: muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked,
     now: input.now,
+    ...(input.utcOffsetMinutes !== undefined ? { utcOffsetMinutes: input.utcOffsetMinutes } : {}),
     deload: input.deload === true,
     recovery: input.recovery,
     config,
@@ -514,7 +515,7 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const empty = { deltaKg: null, reference: null, ladderSetIndex: null, estimated1rmKg: null, recalibration: null } as const;
 
   // 1. Validation (ordre chronologique stable : fin, puis identifiant).
-  const ordered = [...input.history].sort((a, b) => (a.endedAt < b.endedAt ? -1 : a.endedAt > b.endedAt ? 1 : a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0));
+  const ordered = [...input.history].sort((a, b) => compareInstants(a.endedAt, b.endedAt) || (a.workoutId < b.workoutId ? -1 : a.workoutId > b.workoutId ? 1 : 0));
   const valid: SessionEstimate[] = [];
   let latestPartial = false;
   for (const session of ordered) {
@@ -532,11 +533,11 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   }
   if (latestPartial) reasons.add('partial-session-ignored');
   const confidence = confidenceOf(valid, input.now, config);
-  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || s.endedAt > max ? s.endedAt : max), null);
+  const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || compareInstants(s.endedAt, max) > 0 ? s.endedAt : max), null);
 
   // 2. Référence : la décision d'Ali postérieure à la dernière séance l'emporte.
   const decision = input.lastDecision;
-  if (decision !== null && (latestEnd === null || decision.decidedAt > latestEnd)) {
+  if (decision !== null && (latestEnd === null || compareInstants(decision.decidedAt, latestEnd) > 0)) {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
@@ -569,9 +570,9 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
 
   // 4. Contraintes (avant la progression, qu'elles suspendent) : deload, puis pause, puis récupération basse.
   const muscle = input.muscleLastWorkedAt ?? null;
-  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || s.endedAt > max) ? s.endedAt : max), null);
-  const lastWorked = muscle !== null && (worked === null || muscle > worked) ? muscle : worked;
-  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now), config) > 0;
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
+  const lastWorked = muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked;
+  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now, input.utcOffsetMinutes), config) > 0;
   const low = isLowRecovery(input.recovery, config);
   if (paused) reasons.add('inactivity-discount');
   if (low) reasons.add('recovery-low');
