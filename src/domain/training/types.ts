@@ -400,7 +400,7 @@ export type ReasonCode =
   | 'increment-unknown'
   // I2-04 : grille de charges tirée d'un matériel « à vérifier » du profil (information, rien n'est bloqué).
   | 'grid-to-verify'
-  // BL-106 (D-471) : charge de la référence absente de la grille du profil courant (autre salle, ou au-dessus du maximum) : prescription inchangée, signalée.
+  // BL-106 (D-496) : charge de la référence absente de la grille du profil courant (autre salle, ou au-dessus du maximum) : arrondie vers le bas à la grille, plafonnée au maximum, signalée.
   | 'reference-off-grid'
   | 'equipment-max'
   // FIX-ASSIST : exercice assisté au minimum d'assistance du matériel : aucun cran possible, échelle de répétitions.

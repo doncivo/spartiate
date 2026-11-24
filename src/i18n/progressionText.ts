@@ -14,7 +14,10 @@ export function tProgression(key: ProgressionTextKey, params?: Readonly<Record<s
  */
 export function progressionNoteText(note: { readonly key: ProgressionTextKey; readonly params: Readonly<Record<string, number>> }, held: 1 | 2 | null): string {
   const params: Record<string, string | number> = { ...note.params };
-  const load = note.params['load'];
-  if (typeof load === 'number') params['load'] = tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: String(load).replace('.', ',') });
+  // SEANCE-0292b (D-496) : la charge retenue « kept » s'écrit comme « load ».
+  for (const name of ['load', 'kept'] as const) {
+    const kg = note.params[name];
+    if (typeof kg === 'number') params[name] = tProgression(held === 2 ? 'loadPair' : 'loadSingle', { load: String(kg).replace('.', ',') });
+  }
   return tProgression(note.key, params);
 }

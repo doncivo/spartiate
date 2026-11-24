@@ -2,7 +2,7 @@ import { ENGINE_VERSION, REASON_ORDER, withExerciseOverrides, type ProgressionCo
 import { confidenceOf } from './confidence';
 import { analyzeHistory, compareInstants, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isLowRecovery, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
-import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
+import { gridToVerify, loadGrid, nextLoadAbove, nextLoadBelow, roundKg, snapDiscount, snapDown, snapDownAtLeastMin, snapToEquipment } from './loadGrid';
 import type { HistorySet, MuscleWeight, PrescribeInput, PrescribedSet, Prescription, PrescriptionHeadline, PrescriptionReference, ReasonCode } from './types';
 
 /**
@@ -189,11 +189,37 @@ export function prescribe(input: PrescribeInput): Prescription {
   const grid = loadGrid(input.exercise.equipment, input.equipment);
   // I2-04 : grille tirée d'un matériel « à vérifier » du profil : dit dans la phrase, la proposition est inchangée.
   if (gridToVerify(input.exercise.equipment, input.equipment)) reasons.add('grid-to-verify');
-  // La charge de la référence est disponible par définition (Ali l'a soulevée), même hors grille (paire d'haltères en plus).
-  const available = grid === null ? null : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
-  // BL-106 (D-471) : la référence reste « disponible » (elle a été soulevée), mais si la grille du profil courant ne la contient pas (changement
-  // de salle, maximum dépassé), la phrase le dit pour qu'Ali vérifie ; aucun arrondi tant qu'Ali n'a pas tranché.
+  // BL-106 (D-496, Ali le 24/11, remplace D-471) : charge de la référence absente de la grille du profil courant (changement de salle, maximum
+  // dépassé, paire hors grille) : la proposition est arrondie VERS LE BAS à la grille et plafonnée au maximum du matériel (sous le minimum :
+  // la charge minimale, D-536), et la note le dit. Assisté exclu (l'assistance saisie n'est pas une charge du matériel).
   const offGrid = grid !== null && !assisted && refLoad > 0 && !grid.loads.some((kg) => Math.abs(kg - refLoad) < EPS);
+  // Hors grille, seule la grille du profil est disponible ; sinon la référence s'y ajoute (assistance hors palier, D-471 historique).
+  const available = grid === null ? null : offGrid ? [...grid.loads].sort((a, b) => a - b) : [...new Set([...grid.loads, refLoad])].sort((a, b) => a - b);
+  /** D-496 : charge ramenée sur la grille du profil (vers le bas, plafond au maximum) ; inchangée sur la grille ou sans écart de grille. */
+  const gridLoad = (kg: number): number => (grid === null || !offGrid || grid.loads.some((g) => Math.abs(g - kg) < EPS) ? kg : snapDown(kg, grid.loads));
+  /** Idem, la raison « reference-off-grid » est ajoutée si la charge bouge (la note le dit). */
+  const toGrid = (kg: number): number => {
+    const kept = gridLoad(kg);
+    if (Math.abs(kept - kg) >= EPS) reasons.add('reference-off-grid');
+    return kept;
+  };
+  // D-536 (choix prudent) : référence SOUS la plus petite charge du profil, aucune charge de la grille n'est en dessous ; la charge minimale
+  // serait une hausse au-delà du plafond de +10 % : rien n'est proposé (« à saisir »), la note le dit.
+  if (offGrid && grid !== null && grid.loads.length > 0 && refLoad < Math.min(...grid.loads) - EPS) {
+    reasons.add('reference-off-grid');
+    return finish({
+      status: 'to-enter',
+      headline: 'to-enter',
+      sets: Array.from({ length: target.sets }, (): PrescribedSet => ({ reps: target.repMin, loadKg: null })),
+      loadKg: null,
+      deltaKg: null,
+      reference,
+      ladderSetIndex: null,
+      estimated1rmKg: current,
+      confidence,
+      recalibration: null,
+    });
+  }
   // 6. Contraintes (I2-02) : évaluées sur l'historique validé. Dernier travail du muscle : le plus récent entre la donnée de l'appelant
   // (tous exercices) et la dernière séance de cet exercice avec au moins une série faite (deload ou séance ignorée compris : le muscle a
   // travaillé ; une séance sans aucune série faite ne compte pas).
@@ -282,9 +308,8 @@ export function prescribe(input: PrescribeInput): Prescription {
     if (snapped.extraRep) reasons.add('snap-extra-rep');
     const keptKg = roundKg(Math.min(snapped.loadKg, refLoad));
     const pos = positioned(keptKg, snapped.reps);
-    const loadKg = pos.loadKg;
-    // Revue 2 : contrainte qui laisse la charge à la référence hors grille (fatigue, petite décote gardée) : signalée comme sur le chemin ordinaire.
-    if (offGrid && Math.abs(loadKg - refLoad) < EPS) reasons.add('reference-off-grid');
+    // D-496 : contrainte qui laisse la charge à la référence hors grille (fatigue, petite décote gardée) : ramenée sur la grille, note.
+    const loadKg = toGrid(pos.loadKg);
     return finish({
       ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
       status: 'prescribed',
@@ -380,13 +405,12 @@ export function prescribe(input: PrescribeInput): Prescription {
   }
 
   const pos = positioned(roundKg(draft.loadKg), draft.reps);
-  const loadKg = pos.loadKg;
+  // D-496 : proposition restée à la charge de la référence hors grille : ramenée sur la grille (un cran de la grille n'est jamais touché).
+  const loadKg = toGrid(pos.loadKg);
   // Au plus la référence à cause de la position (la hausse est absorbée) : la raison principale est la position (la phrase ne dit pas « +x kg »).
   // Assistée : la décote fait MONTER l'assistance (la charge totale baisse) ; la position est alors la raison dès qu'elle s'applique.
   const absorbed = body !== null && body.sign < 0 ? loadKg >= refLoad - EPS : loadKg <= refLoad + EPS;
   const headline: PrescriptionHeadline = pos.cut > 0 && absorbed ? 'position' : draft.headline;
-  // Revue : signalée seulement si la proposition reste à la charge de la référence (sinon elle est déjà un cran de la grille).
-  if (offGrid && Math.abs(loadKg - refLoad) < EPS) reasons.add('reference-off-grid');
   return finish({
     ...(pos.cut > 0 ? positionFields(pos.cut) : {}),
     status: 'prescribed',
@@ -400,7 +424,7 @@ export function prescribe(input: PrescribeInput): Prescription {
     confidence,
     recalibration: headline === 'position' ? null : draft.recalibration,
     // Stagnation seule : la proposition reste celle de la double progression, les trois choix partent de la référence.
-    options: proposalOptions(constraints, pos.cut > 0 ? { loadKg, reps: pos.reps } : refPerformance, available, config, assisted),
+    options: proposalOptions(constraints, pos.cut > 0 ? { loadKg, reps: pos.reps } : { loadKg: gridLoad(refLoad), reps: reference.reps }, available, config, assisted),
   });
 }
 

@@ -42,7 +42,7 @@ describe('SEANCE-0292b BL-106 / § 12.4 (D-496) : charge d’historique hors du 
     expect(p.headline).toBe('fatigue');
     expect(p.loadKg).toBe(42.5);
     expect(p.reasons).toContain('reference-off-grid');
-    for (const o of p.options) if (o.loadKg !== null) expect(onGrid(o.loadKg)).toBe(true);
+    for (const o of p.options ?? []) if (o.loadKg !== null) expect(onGrid(o.loadKg)).toBe(true);
   });
 
   it('paire de 9 kg dans la salle par défaut (2 à 50 par 2) : 8 kg ; une charge de la grille (44 kg) n’est jamais signalée', () => {
@@ -54,10 +54,13 @@ describe('SEANCE-0292b BL-106 / § 12.4 (D-496) : charge d’historique hors du 
     expect(a.reasons).not.toContain('reference-off-grid');
   });
 
-  it('sous le minimum du matériel (4 kg, haltères à partir de 5) : la charge minimale (5 kg), note (D-536)', () => {
+  it('sous le minimum du matériel (4 kg, haltères à partir de 5) : rien n’est proposé au-dessus (« à saisir »), note (D-536)', () => {
+    // Passe module : la charge minimale (5 kg, +25 %) violait le plafond de +10 % (propriétés du moteur) ; vecteur révisé, D-536.
     const p = prescribe(input({ exercise: CURL, history: [session(3, 4, [8, 8, 8])], target: target(8, 10), equipment: SALLE_B }));
-    expect(p.loadKg).toBe(5);
-    expect(explanationNotes(p)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 4, kept: 5 } });
+    expect(p.status).toBe('to-enter');
+    expect(p.loadKg).toBeNull();
+    expect(p.sets.every((s) => s.loadKg === null)).toBe(true);
+    expect(explanationNotes(p)).toContainEqual({ key: 'noteReferenceBelowGrid', params: { load: 4 } });
   });
 
   it('monotonie et déterminisme : de 30 à 60 kg par 0,1, la proposition est toujours sur la grille et ne dépasse jamais la référence hors hausse', () => {

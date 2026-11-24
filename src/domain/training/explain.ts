@@ -162,6 +162,7 @@ export type ExplanationNoteKey =
   | 'noteOutlierHeld'
   | 'noteGridToVerify'
   | 'noteReferenceOffGrid'
+  | 'noteReferenceBelowGrid'
   | 'notePosition'
   | 'noteBodyweightUnknown'
   | 'noteAssistanceHeld';
@@ -177,7 +178,9 @@ export function explanationNotes(p: Prescription): { readonly key: ExplanationNo
   // FIX-ABERR (C-005) : séance aberrante non confirmée, référence plafonnée à la séance d'avant.
   if (p.reasons.includes('outlier-excluded')) notes.push({ key: 'noteOutlierHeld', params: { ratio: percent(p.activeConfig.outlierRatio) } });
   if (p.reasons.includes('grid-to-verify')) notes.push({ key: 'noteGridToVerify', params: {} });
-  if (p.reasons.includes('reference-off-grid') && p.reference !== null) notes.push({ key: 'noteReferenceOffGrid', params: { load: p.reference.loadKg } });
+  // D-496 : charge ramenée sur la grille du profil (« kept ») ; sous la charge minimale du profil (D-536) : rien n’est proposé.
+  if (p.reasons.includes('reference-off-grid') && p.reference !== null)
+    notes.push(p.loadKg === null ? { key: 'noteReferenceBelowGrid', params: { load: p.reference.loadKg } } : { key: 'noteReferenceOffGrid', params: { load: p.reference.loadKg, kept: p.loadKg } });
   // Poids du corps inconnu (REV-01) : le 1RM et les écarts sont calculés sur le seul lest, ce que la phrase dit.
   if (p.reasons.includes('bodyweight-unknown')) notes.push({ key: 'noteBodyweightUnknown', params: {} });
   // Position (REV-01 constat 6) : dite en note quand la raison principale est autre (la charge reste au-dessus de la référence).

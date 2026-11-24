@@ -386,11 +386,11 @@ describe('cas limites (passe qa-test)', () => {
     expect(p.reasons).toEqual(['history-reference', 'top-reached', 'increment-unknown']);
   });
 
-  it('paire d’haltères hors grille (9 kg) : la référence reste disponible ; +5 % → 9 kg, charge inchangée → échelle de répétitions (I4-08)', () => {
+  it('paire d’haltères hors grille (9 kg) : +5 % → 9,45 kg, sous le cran suivant (10) → échelle de répétitions (I4-08), ramenée à 8 kg (D-496)', () => {
     const p = prescribe(input({ exercise: CURL, history: [session(3, 9, [10, 10, 10], { difficulty: 'easy' })], target: target(8, 12) }));
-    expect(p.loadKg).toBe(9);
+    // SEANCE-0292b (BL-106) : test qui figeait D-471 (charge gardée hors grille) réécrit : D-496, arrondi vers le bas à la grille, signalé.
+    expect(p.loadKg).toBe(8);
     expect(reps(p)).toEqual([11, 10, 10]);
-    // BL-106 (D-471) : 9 kg absent de la grille du profil : prescription inchangée, signalée (« vérifie qu’elle existe ici »).
     expect(p.reasons).toEqual(['history-reference', 'rep-ladder', 'reference-off-grid']);
   });
 

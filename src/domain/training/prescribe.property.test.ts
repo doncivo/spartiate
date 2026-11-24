@@ -80,6 +80,11 @@ describe('propriétés du moteur', () => {
         const p = prescribe(x);
         if (p.reference === null || p.loadKg === null) return;
         if (p.reasons.some((r) => CONSTRAINTS.has(r))) return;
+        // SEANCE-0292b (BL-106, D-496) : référence hors de la grille du profil, ramenée au cran inférieur de la grille (seule baisse permise).
+        if (p.reasons.includes('reference-off-grid')) {
+          expect(p.loadKg).toBeLessThan(p.reference.loadKg);
+          return;
+        }
         expect(p.loadKg).toBeGreaterThanOrEqual(p.reference.loadKg);
         if (p.headline === 'rep-ladder' || p.headline === 'hold-hard' || p.headline === 'extra-rep') expect(p.loadKg).toBe(p.reference.loadKg);
         expect(p.sets).toHaveLength(x.target.sets);
