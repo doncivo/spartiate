@@ -701,21 +701,23 @@ struct GatedVault {
     gate_next_read: AtomicBool,
 }
 
-impl SecretVault for Arc<GatedVault> {
+struct GatedHandle(Arc<GatedVault>);
+
+impl SecretVault for GatedHandle {
     fn set(&self, _: &str, secret: &str) -> Result<(), VaultError> {
-        *self.value.lock().unwrap() = Some(secret.to_owned());
+        *self.0.value.lock().unwrap() = Some(secret.to_owned());
         Ok(())
     }
     fn get(&self, _: &str) -> Result<Option<String>, VaultError> {
-        let read = self.value.lock().unwrap().clone();
-        if self.gate_next_read.swap(false, Ordering::SeqCst) {
-            self.read_done.send(()).unwrap();
-            let _ = self.release.lock().unwrap().recv();
+        let read = self.0.value.lock().unwrap().clone();
+        if self.0.gate_next_read.swap(false, Ordering::SeqCst) {
+            self.0.read_done.send(()).unwrap();
+            let _ = self.0.release.lock().unwrap().recv();
         }
         Ok(read)
     }
     fn delete(&self, _: &str) -> Result<(), VaultError> {
-        *self.value.lock().unwrap() = None;
+        *self.0.value.lock().unwrap() = None;
         Ok(())
     }
 }
@@ -730,7 +732,7 @@ fn data_0293_c142_a_read_racing_a_write_never_leaves_a_stale_cache() {
         release: Mutex::new(release_rx),
         gate_next_read: AtomicBool::new(true),
     });
-    let cached = Arc::new(CachedVault::new(Box::new(gated.clone())));
+    let cached = Arc::new(CachedVault::new(Box::new(GatedHandle(gated.clone()))));
     // Lecture 1 : lit « ancienne » dans le Trousseau puis attend.
     let reader = {
         let cached = cached.clone();
