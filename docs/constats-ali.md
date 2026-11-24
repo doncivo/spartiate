@@ -163,6 +163,7 @@ Ces constats demandent les deux appareils : coche-les après avoir fait le geste
 
 ### Documents (sans appareil, à lire)
 
+- [ ] **H-11 (licence Ciqual, BL-156)** — lis la section « Licence — table Ciqual de l'Anses » de docs/licences.md et la page de l'entrepôt citée (DOI 10.57745/RDMHWY) : la licence indiquée est bien la Licence Ouverte Etalab 2.0 ; dans Nutrition › Rechercher un aliment, tape « pomme » : l'attribution Ciqual est écrite sous les résultats. Date : ____
 - [ ] **H-9** — relis dans `docs/licences.md` la section « Médias d'exercices » : sources, licences et attributions. Puis, sur l'iPhone, vérifie que l'attribution s'affiche sous une image (légende). Date : ____ Version : ____
 - [ ] **H-37 (normes du Strength Score)** — lis la documentation de la source des normes (FitnessVolt, citée dans `docs/licences.md`) : elle dit ce que mesurent les charges publiées (1RM ou charge totale). À défaut, compare un de tes scores avec la page de la source pour le même 1RM. Date : ____ Version : ____
 - [ ] **H-8 (contenu)** — relis la bibliothèque (150 exercices) au regard de tes routines et programmes : les exercices qui te manquent ou qui te gênent sont notés. Date : ____ Version : ____
@@ -192,6 +193,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | --- | --- |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-157 | Les deux appareils › Synchro |
+| H-11 | Les deux appareils › Documents |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |
 | BL-014 | PC › Séance |
