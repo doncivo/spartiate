@@ -1,6 +1,6 @@
 import { Download, Trash2, Undo2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { migrations } from '../../../db/migrations';
+import { migrationManifest } from '../../../db/migrations/manifest';
 import { t } from '../../../i18n';
 import { formatDayMonth, formatTime } from '../../../i18n/format';
 import { tLogs } from '../../../i18n/logsText';
@@ -105,7 +105,7 @@ export function LogsScreen({ journal: injected, version }: LogsScreenProps = {})
         const code = typeof error === 'object' && error !== null ? (error as { code?: unknown }).code : undefined;
         return { unavailable: typeof code === 'string' && /^[a-z0-9-]+$/i.test(code) ? code : 'io' };
       });
-      const file = buildLogExport(all, { version: appVersion, os: container.platform.os, schemaVersion: migrations.at(-1)?.version ?? 0, now: new Date(container.clock.nowMs()), report });
+      const file = buildLogExport(all, { version: appVersion, os: container.platform.os, schemaVersion: migrationManifest.at(-1)?.version ?? 0, now: new Date(container.clock.nowMs()), report });
       const outcome = await saveFile(container.files, { suggestedName: file.name, mime: 'text/plain', data: new TextEncoder().encode(file.text) }, 'logs-export');
       if (outcome.status === 'saved') setExported(true);
       if (outcome.status === 'failed') setExportFailure({ code: outcome.code, tooLarge: outcome.tooLarge });

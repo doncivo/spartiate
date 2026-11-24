@@ -13,7 +13,7 @@ const planOf = (migrations: readonly Migration[], load: () => Promise<readonly M
   entries: migrations.map((m) => ({ version: m.version, name: m.name, checksum: migrationChecksum(m) })),
   load,
 });
-const clock = createManualClock(new Date('2026-11-24T10:00:00.000Z'));
+const clock = createManualClock('2026-11-24T10:00:00.000Z');
 
 describe('migrate avec un plan (instructions chargées à la demande)', () => {
   it('base à jour : load() n’est jamais appelé', async () => {

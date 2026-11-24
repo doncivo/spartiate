@@ -5,10 +5,10 @@ import type { DeviceId } from '../../domain/types';
 import type { SqlDriver } from '../../db/driver';
 import { createBackupBeforeMigration, MigrationBackupError, type MigrationBackup } from '../../db/migrationBackup';
 import { DbStepError, JournalModeError, describeError, errorName, type DbOpenStep } from '../../db/errorText';
-import { migrate, SchemaNewerThanApp, type Migration } from '../../db/migrator';
+import { latestVersion, migrate, SchemaNewerThanApp, type Migration, type MigrationPlan } from '../../db/migrator';
 import { classifyLaunch, shouldRecordLaunch, type LaunchKind } from '../../domain/appUpdate';
 import { publishedAppVersion, readAppVersion, type AppVersionRead } from '../../platform/appVersion';
-import { migrations } from '../../db/migrations';
+import { migrationPlan } from '../../db/migrations/manifest';
 import type { SyncCatalogue } from '../../domain/sync/syncTables';
 import { createDataAccess, createStorage, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
 import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
@@ -44,7 +44,7 @@ export interface BootstrapDatabaseOptions {
   /** Port de sauvegarde avant migration ; celui de la plateforme par défaut (aucun en navigateur de dev). */
   readonly backup?: ((db: SqlDriver) => Promise<MigrationBackup | undefined>) | undefined;
   /** Migrations de l'app ; remplaçables en test seulement (version N+1 avec une migration de test, I-06). */
-  readonly migrations?: readonly Migration[] | undefined;
+  readonly migrations?: readonly Migration[] | MigrationPlan | undefined;
   /** I-06 : version de l'app lue avant l'ouverture, jointe au diagnostic d'échec (null : illisible). */
   readonly appVersion?: string | null | undefined;
 }
@@ -63,7 +63,7 @@ export async function bootstrapDatabase(
   const { setDbStatus } = useAppStore.getState();
   setDbStatus('loading');
   let db: SqlDriver | undefined;
-  const list = options.migrations ?? migrations;
+  const list = options.migrations ?? migrationPlan;
   // 0.2.1 : étape en cours, mise à jour avant chaque appel (diagnostic affiché sous app.dbError).
   let step: DbOpenStep = 'load';
   let migration: number | undefined;
@@ -116,7 +116,7 @@ export async function bootstrapDatabase(
       logFailure('db', `connexion invalidée (${errorName(poisonError)})`);
       useAppStore.getState().setDbStatus('error', {
         detail: message,
-        failure: { phase: 'start', step: 'connection-poisoned', errorName: errorName(poisonError), message, kind: 'connection-poisoned', ...(options.appVersion === undefined ? {} : { appVersion: options.appVersion }), schemaVersion, appSchemaVersion: list.at(-1)?.version ?? 0 },
+        failure: { phase: 'start', step: 'connection-poisoned', errorName: errorName(poisonError), message, kind: 'connection-poisoned', ...(options.appVersion === undefined ? {} : { appVersion: options.appVersion }), schemaVersion, appSchemaVersion: latestVersion(list) },
       });
     });
     setDbStatus('ready');
@@ -132,7 +132,7 @@ export async function bootstrapDatabase(
     logFailure('db', `ouverture impossible (${failedStep}${migration === undefined ? '' : ` ${String(migration)}`}) : ${errorName(error)}: ${message}`);
     // I-04 / I-06 : ligne sans contenu (numéro et nom de l'erreur seulement).
     if (kind === 'migration') logFailure('db', `migration ${String(migration ?? '?')} impossible (${errorName(error)})`);
-    if (kind === 'schema-newer') logFailure('db', `schema-newer ${String(schemaVersion ?? '?')} ${String(list.at(-1)?.version ?? 0)}`);
+    if (kind === 'schema-newer') logFailure('db', `schema-newer ${String(schemaVersion ?? '?')} ${String(latestVersion(list))}`);
     setDbStatus('error', {
       detail: message,
       backupFailed: error instanceof MigrationBackupError,
@@ -146,7 +146,7 @@ export async function bootstrapDatabase(
         kind,
         ...(options.appVersion === undefined ? {} : { appVersion: options.appVersion }),
         schemaVersion,
-        appSchemaVersion: list.at(-1)?.version ?? 0,
+        appSchemaVersion: latestVersion(list),
         updateBackup: kind === 'schema-newer' ? null : updateBackup,
       },
     });
@@ -217,7 +217,7 @@ export interface BootstrapAppOptions {
   /** Version de l'app (I-06) ; `readAppVersion` par défaut (PC et iPhone). */
   readonly appVersion?: () => Promise<AppVersionRead>;
   /** Voir BootstrapDatabaseOptions.migrations (tests seulement). */
-  readonly migrations?: readonly Migration[];
+  readonly migrations?: readonly Migration[] | MigrationPlan;
 }
 
 /**
@@ -254,9 +254,9 @@ const readOnlyStamper: WriteStamper = {
 /** Développement et e2e seulement : migrations de test ajoutées à la suite des vraies (I-06, mise à jour N vers N+1 simulée). */
 const devExtraMigrations = (): readonly Migration[] | undefined => (import.meta.env.DEV ? (globalThis as { __ctExtraMigrations?: readonly Migration[] }).__ctExtraMigrations : undefined);
 
-const withDevExtras = (): readonly Migration[] | undefined => {
+const withDevExtras = async (): Promise<readonly Migration[] | undefined> => {
   const extra = devExtraMigrations();
-  return extra ? [...migrations, ...extra] : undefined;
+  return extra ? [...(await migrationPlan.load()), ...extra] : undefined;
 };
 
 export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<AppContainer | undefined> {
@@ -269,9 +269,9 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
   // I-06 : version lue AVANT l'ouverture (diagnostic d'échec, synchro, « À propos ») ; ne rejette jamais.
   startupTracker.begin('appVersion');
   const appVersion = await (options.appVersion ?? readAppVersion)();
-  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? withDevExtras(), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
+  const driver = await bootstrapDatabase(options.open ?? devOpen, { clock: options.clock, backup: options.backup, migrations: options.migrations ?? (await withDevExtras()), catalogue: (options.storage ?? SYNC_STORAGE).catalogue, appVersion: appVersion.version });
   if (!driver) return undefined;
-  const list = options.migrations ?? migrations;
+  const list = options.migrations ?? migrationPlan;
   // I5-01 (§ 9.1) : l'iPhone seul écrit les résumés de récupération ; le PC les lit (écriture locale écartée, événement fixe sans valeur).
   const storage = options.storage ?? createStorage(SYNC_STORAGE.catalogue, { recoveryWriter: detectOs() === 'ios', onIgnoredWrite: (event) => logFailure('recovery', event) });
   const factory = storage.repositories;
@@ -320,7 +320,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
             deviceId,
             devicePlatform: detectOs() === 'ios' ? 'ios' : 'windows',
             appVersion: publishedAppVersion(appVersion),
-            sv: list.at(-1)?.version ?? 1,
+            sv: latestVersion(list) || 1,
           }),
         )
       : null;

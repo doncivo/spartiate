@@ -18,6 +18,30 @@ export interface Migration {
   readonly statements: readonly string[];
 }
 
+/** Identité d'une migration sans ses instructions : de quoi savoir ce qui est appliqué et détecter une migration modifiée. */
+export interface MigrationEntry {
+  readonly version: number;
+  readonly name: string;
+  readonly checksum: string;
+}
+
+/**
+ * DATA-0292 : plan de migration. `entries` (version, nom, somme de contrôle) suffit à savoir s'il y a du travail ; `load` rend les migrations
+ * complètes (instructions) et n'est appelé QUE s'il y en a à appliquer. L'app ne garde au départ que le manifeste ; le SQL est chargé à la demande.
+ */
+export interface MigrationPlan {
+  readonly entries: readonly MigrationEntry[];
+  readonly load: () => Promise<readonly Migration[]>;
+}
+
+/** Dernière version d'un tableau de migrations ou d'un plan (0 si vide). */
+export function latestVersion(source: readonly Migration[] | MigrationPlan): number {
+  const list: readonly { readonly version: number }[] = isPlan(source) ? source.entries : source;
+  return list.at(-1)?.version ?? 0;
+}
+
+const isPlan = (source: readonly Migration[] | MigrationPlan): source is MigrationPlan => !Array.isArray(source);
+
 export type AppliedMigration = {
   readonly version: number;
   readonly name: string;
@@ -140,18 +164,21 @@ export async function readAppliedMigrations(db: SqlExecutor): Promise<AppliedMig
  */
 export async function migrate(
   db: SqlDriver,
-  migrations: readonly Migration[],
+  source: readonly Migration[] | MigrationPlan,
   options: MigrateOptions = {},
 ): Promise<MigrateReport> {
-  validateMigrations(migrations);
+  const plan: MigrationPlan = isPlan(source)
+    ? source
+    : (validateMigrations(source), { entries: source.map((m) => ({ version: m.version, name: m.name, checksum: migrationChecksum(m) })), load: () => Promise.resolve(source) });
+  validateMigrations(plan.entries.map((e) => ({ ...e, statements: [''] })));
   const clock = options.clock ?? systemClock;
   const onStep = options.onStep ?? (() => undefined);
 
   onStep({ kind: 'schema' });
   await ensureMigrationsTable(db);
   const applied = await readAppliedMigrations(db);
-  const known = new Map(migrations.map((m) => [m.version, m]));
-  const lastKnown = migrations.at(-1)?.version ?? 0;
+  const known = new Map(plan.entries.map((e) => [e.version, e]));
+  const lastKnown = latestVersion(plan);
   const lastApplied = applied.reduce((max, row) => Math.max(max, row.version), 0);
   options.onSchemaRead?.({ current: lastApplied, known: lastKnown });
   if (lastApplied > lastKnown) throw new SchemaNewerThanApp(lastApplied, lastKnown);
@@ -161,13 +188,15 @@ export async function migrate(
     if (!migration) {
       throw new MigrationError(`Base en version ${String(row.version)}, inconnue de cette version de l'app`);
     }
-    if (migrationChecksum(migration) !== row.checksum) {
+    if (migration.checksum !== row.checksum) {
       throw new MigrationError(`Migration ${String(row.version)} modifiée après application`);
     }
   }
 
   const done = new Set(applied.map((row) => row.version));
-  const pending = migrations.filter((m) => !done.has(m.version));
+  const pendingEntries = plan.entries.filter((e) => !done.has(e.version));
+  // Instructions chargées seulement s'il y a du travail ; chacune doit correspondre à la somme de contrôle du plan (manifeste périmé : refus avant toute écriture).
+  const pending = pendingEntries.length === 0 ? [] : await loadPending(plan, pendingEntries);
   if (pending.length > 0 && options.beforeApply) {
     onStep({ kind: 'backup' });
     await options.beforeApply(pending, { fromVersion: applied.at(-1)?.version ?? 0 });
@@ -184,14 +213,24 @@ export async function migrate(
     });
   }
 
-  const last = migrations.at(-1);
   const report: MigrateReport = {
     applied: pending.map((m) => m.version),
-    currentVersion: last ? last.version : 0,
+    currentVersion: latestVersion(plan),
   };
   if (options.afterApply) {
     onStep({ kind: 'afterApply' });
     await options.afterApply(db, report);
   }
   return report;
+}
+
+async function loadPending(plan: MigrationPlan, entries: readonly MigrationEntry[]): Promise<Migration[]> {
+  const loaded = new Map((await plan.load()).map((m) => [m.version, m]));
+  return entries.map((entry) => {
+    const migration = loaded.get(entry.version);
+    if (!migration || migrationChecksum(migration) !== entry.checksum) {
+      throw new MigrationError(`Migration ${String(entry.version)} absente ou différente du manifeste`);
+    }
+    return migration;
+  });
 }
