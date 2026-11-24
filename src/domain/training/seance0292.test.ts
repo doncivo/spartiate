@@ -11,6 +11,7 @@ import { estimateExerciseSec, estimateSessionSec, generateSession } from './gene
 import type { GenerationEquipment } from './generationTypes';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
+import { recoverySplit } from './recoverySplit';
 import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName } from './programDay';
 import { replayWorkout } from './replay';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
@@ -239,5 +240,20 @@ describe('SEANCE-0292 C-019 : jour de la semaine entier ; nom de jour « mot ent
     expect(weekdayFromDayName('Lundi — Poussée')).toBe(1);
     expect(weekdayFromDayName('lundi')).toBe(1);
     expect(weekdayFromDayName('Mardi: tirage')).toBe(2);
+  });
+});
+
+describe('SEANCE-0292 C-021 : Recovery Split, seuil comparé à la valeur mesurée, pas à l’arrondi', () => {
+  it('49,6 % : à ménager (affiché 50 %) ; 50 % : prêt ; 49,4 % : à ménager', () => {
+    const split = recoverySplit(['a', 'b', 'c'], [
+      { muscleId: 'a', percent: 49.6 },
+      { muscleId: 'b', percent: 50 },
+      { muscleId: 'c', percent: 49.4 },
+    ]);
+    expect(split.map((m) => [m.percent, m.readiness])).toEqual([
+      [50, 'spare'],
+      [50, 'ready'],
+      [49, 'spare'],
+    ]);
   });
 });
