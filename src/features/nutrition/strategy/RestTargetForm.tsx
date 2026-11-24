@@ -29,7 +29,7 @@ export function RestTargetForm({ target, plan, defaultDays, onSave }: { readonly
   const [status, setStatus] = useState<'idle' | 'saved' | 'invalid' | 'error' | 'needsConfirm' | 'rejected'>('idle');
   const [confirmed, setConfirmed] = useState(false);
 
-  const parsed = parseNumber(mode === 'gap' ? gap.replace(/^s*[-−–]/, '') : kcal);
+  const parsed = parseNumber(mode === 'gap' ? gap.replace(/^\s*[-−–]/, '') : kcal);
   // C-103 : « −200 » dans l'écart (libellé « kcal en moins ») veut dire 200 en moins : le signe est lu, jamais refusé en silence.
   const value = parsed;
   const rest: Target | null =
