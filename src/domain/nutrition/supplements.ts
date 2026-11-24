@@ -120,7 +120,7 @@ export function settledIntakes(supplements: readonly Supplement[], intakes: read
   const orphans = new Map<string, number>();
   for (const supplement of supplements) {
     if (!isDueOn(supplement, date)) continue;
-    const exact = new Set(supplement.times as string[]);
+    const exact = new Set<string>(supplement.times);
     orphans.set(supplement.id, intakes.filter((i) => i.supplementId === supplement.id && i.date === date && !exact.has(i.moment)).length);
   }
   return due.map((item) => {
