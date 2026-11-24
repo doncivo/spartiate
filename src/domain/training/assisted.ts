@@ -18,3 +18,16 @@ export const CATALOG_ASSISTED_IDS: ReadonlySet<string> = new Set(['pull-up-assis
  * sur le catalogue. Records du résumé et de la fiche : aucun repérage d'aberrante sur le lest seul (prudent, le poids de corps n'y est pas lu).
  */
 export const CATALOG_BODYWEIGHT_LOAD_IDS: ReadonlySet<string> = new Set(['push-up-weighted', 'pull-up-weighted']);
+
+/**
+ * SEANCE-0292 (C-071, D-501) : sens du champ de charge d'une série. `ballast` : lest seul, le poids de corps est compté à part (métrique
+ * `bodyweight-reps` ou fraction de poids de corps déclarée : tractions, dips, pompes lestées) ; `assistance` : assistance de la machine
+ * (assisté) ; `load` : charge soulevée. Saisir le poids total dans un champ « lest » doublerait le poids de corps (C-024).
+ */
+export type LoadField = 'load' | 'ballast' | 'assistance';
+
+export function loadFieldOf(exercise: { readonly id: string; readonly metric: string; readonly equipment: readonly string[]; readonly bodyweightFraction: number | null }): LoadField {
+  if (isAssistedEquipment(exercise.equipment) || CATALOG_ASSISTED_IDS.has(exercise.id)) return 'assistance';
+  if (exercise.metric === 'bodyweight-reps' || (exercise.bodyweightFraction ?? 0) > 0) return 'ballast';
+  return 'load';
+}

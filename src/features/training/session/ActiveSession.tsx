@@ -5,6 +5,7 @@ import {
   REST_CHOICES_SEC,
   circuitsOf,
   groupByExercise,
+  loadFieldOf,
   restAfterCircuitSet,
   restRemainingMs,
   restSecondsFor,
@@ -617,6 +618,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     current={set.id === currentSetId}
                     loads={loads}
                     held={held}
+                    loadField={exercise === undefined ? 'load' : loadFieldOf(exercise)}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}

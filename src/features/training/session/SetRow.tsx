@@ -3,7 +3,7 @@ import { isFailureSet, setKindChoiceOf, type SetKindChoice } from '../../../doma
 import { tSession } from '../../../i18n/trainingSessionText';
 import { Check, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
+import { defaultEntry, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon } from '../../../ui';
@@ -72,6 +72,8 @@ export interface SetRowProps {
   readonly loads?: readonly number[] | null;
   /** ERGO-02 (D-261) : haltères tenus (2 : « 2 × 26 kg », saisie « par haltère ») ; null : charge affichée telle quelle. */
   readonly held?: Held;
+  /** SEANCE-0292 (C-071) : sens du champ de charge (`loadFieldOf`) ; absent : charge soulevée. */
+  readonly loadField?: LoadField;
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
@@ -102,7 +104,9 @@ function outlierText(outlier: OutlierAsk, held: Held): string {
   return tTraining(outlier.perDumbbell ? 'sessionPlausibleAskDumbbell' : 'sessionPlausibleAsk', { load, body, multiple: formatNumber(outlier.multiple) });
 }
 
-export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
+
+export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
@@ -205,7 +209,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const steps = current && !timed;
   // ERGO-02 (D-261) : deux haltères, le libellé « 2 × 26 kg » suit la saisie et le « − / + » ; la valeur saisie reste celle d'un haltère.
   const pairLoad = held === 2 ? parseNumber(draft.load) : null;
-  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>) => (
+  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>, describedBy?: string) => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
       <input
@@ -214,6 +218,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
         inputMode={mode}
         enterKeyHint="done"
         autoComplete="off"
+        aria-describedby={describedBy}
         value={draft[key]}
         onChange={(e) => {
           setAsk(null);
@@ -255,7 +260,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal', loadRef)}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : LOAD_LABEL[loadField], 'decimal', loadRef, loadField === 'ballast' && held !== 2 ? `${set.id}-load-help` : undefined)}
             {pairLoad === null ? null : (
               <output className="ct-session__pair ct-session__num" aria-live="polite">
                 {formatExerciseLoad(pairLoad, 2)}
@@ -284,6 +289,11 @@ export function SetRow({ set, number, current = false, loads = null, held = null
               {tTraining('sessionValidate')}
             </button>
           </div>
+          {loadField === 'ballast' && held !== 2 ? (
+            <p id={`${set.id}-load-help`} className="ct-training__muted">
+              {tTraining('sessionLoadBallastHint')}
+            </p>
+          ) : null}
           <p id={`${set.id}-kind-help`} className="ct-training__muted">
             {tTraining('sessionKindHelp')}
           </p>

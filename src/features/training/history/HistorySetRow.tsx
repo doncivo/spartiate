@@ -1,7 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
-import { SET_KINDS, validateSetBounds, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
+import { SET_KINDS, validateSetBounds, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
@@ -48,11 +48,15 @@ export interface HistorySetRowProps {
   readonly timedExercise: boolean;
   /** ERGO-02 (D-261) : haltères tenus (2 : « 2 × 26 kg », correction « par haltère ») ; null : charge affichée telle quelle. */
   readonly held?: Held;
+  /** SEANCE-0292 (C-071) : sens du champ de charge (`loadFieldOf`) ; absent : charge soulevée. */
+  readonly loadField?: LoadField;
   readonly busy: boolean;
   readonly onCorrect: (patch: SetCorrection) => Promise<boolean>;
 }
 
-export function HistorySetRow({ set, number, timedExercise, held = null, busy, onCorrect }: HistorySetRowProps) {
+const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
+
+export function HistorySetRow({ set, number, timedExercise, held = null, loadField = 'load', busy, onCorrect }: HistorySetRowProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [issue, setIssue] = useState<string | null>(null);
   const label = set.setKind === 'warmup' ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -142,7 +146,7 @@ export function HistorySetRow({ set, number, timedExercise, held = null, busy, o
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal')}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : LOAD_LABEL[loadField], 'decimal')}
             {draft.kind === 'timed' || timedExercise ? field('duration', 'sessionDuration', 'numeric') : field('reps', 'sessionReps', 'numeric')}
             {field('rir', 'sessionRir', 'numeric')}
           </div>

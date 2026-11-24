@@ -328,6 +328,11 @@ export const trainingFr = {
   kindPartial: 'Partielle',
   kindTimed: 'Chronométrée',
   sessionLoad: 'Charge (kg)',
+  /** SEANCE-0292 (C-071) : exercice au poids du corps ou lesté, la saisie est le lest seul. */
+  sessionLoadBallast: 'Lest (kg)',
+  sessionLoadBallastHint: 'Poids du corps non compris : 0 ou vide, sans lest.',
+  /** SEANCE-0292 (C-071) : exercice assisté, la saisie est l’assistance. */
+  sessionLoadAssistance: 'Assistance (kg)',
   /** ERGO-02 (D-261) : deux haltères, la saisie reste la charge d'un haltère ; le libellé « 2 × 26 kg » est affiché à côté. */
   sessionLoadPerDumbbell: 'Charge par haltère (kg)',
   sessionReps: 'Répétitions',
