@@ -21,7 +21,7 @@ describe('démarrage : garde de synchro (échec fermé)', () => {
     await migrate(real, migrations);
     const db = { ...real, select: (sql: string, params?: never) => (sql.includes('FROM sync_guard') ? Promise.reject(new Error('disque illisible')) : real.select(sql, params)) } as typeof real;
     const container = await bootstrapApp({ ...common, open: () => Promise.resolve(db) });
-    expect(container).toBeNull();
+    expect(container ?? null).toBeNull();
     expect(useAppStore.getState().dbStatus).toBe('error');
     expect(useAppStore.getState().dbErrorDetail ?? '').toContain('disque illisible');
   });

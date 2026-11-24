@@ -297,10 +297,9 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
     const launch = await at('readLaunch', () => readLaunch(boot.settings, appVersion, storedDeviceId !== null));
     // ADR 0011 section 3.2 (audit M10) : la garde de la synchro est vide au démarrage, y compris après une restauration P-04 (qui relance
     // l'app). Une ligne trouvée (base copiée à chaud) est supprimée et journalisée.
-    startupTracker.begin('sync.assertGuardEmpty');
-    const strayGuards = await Promise.resolve()
-      .then(() => data.repos.sync.assertGuardEmpty())
-      .catch(() => 0);
+    // DATA-0293 (BL-094, BL-031, BL-030) : échec FERMÉ. Une garde illisible n'est plus lue comme « zéro » : une garde orpheline rendrait muettes toutes les captures
+    // (écritures jamais publiées) ; le démarrage échoue avec son étape, la base reste intacte et l'app propose les recours habituels.
+    const strayGuards = await at('sync.assertGuardEmpty', () => data.repos.sync.assertGuardEmpty());
     if (strayGuards > 0) logFailure('sync', `garde trouvée au démarrage : ${String(strayGuards)}`);
     const notificationClock = options.notificationClock ?? systemNotificationClock;
     const runtime = at('detectRuntime', () => detectRuntime());
