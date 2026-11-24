@@ -56,15 +56,19 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
   const from = exerciseOf(block.exerciseId);
   const present = useMemo(() => new Set(workout.sets.filter((s) => s.deletedAt === null).map((s) => s.exerciseId)), [workout.sets]);
 
-  // SEANCE-0292 (BL-121) : gênes déclarées (table publiée) appliquées au remplacement comme à la séance proposée ; illisibles : aucune.
+  // SEANCE-0292 (BL-121) : gênes déclarées (table publiée) appliquées au remplacement comme à la séance proposée ; illisibles : aucune, et
+  // un texte le dit (relecture B : jamais d’échec silencieux).
   const [injuries, setInjuries] = useState<InjuriesValue>({ v: 1, items: [] });
+  const [injuriesUnread, setInjuriesUnread] = useState(false);
   useEffect(() => {
     let alive = true;
     loadInjuries(access.repos).then(
       (read) => {
         if (alive) setInjuries(read);
       },
-      () => undefined,
+      () => {
+        if (alive) setInjuriesUnread(true);
+      },
     );
     return () => {
       alive = false;
@@ -191,6 +195,11 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
       {list('replaceSimilar', candidates.similar)}
       {candidates.alternatives.length + candidates.similar.length === 0 && <p className="ct-session__muted">{tSession('replaceNone')}</p>}
       {candidates.avoided > 0 && <p className="ct-session__muted">{tPlural(tSession, candidates.avoided, 'replaceAvoidedOne', 'replaceAvoided')}</p>}
+      {injuriesUnread && (
+        <p className="ct-session__muted" role="status">
+          {tSession('replaceInjuriesUnread')}
+        </p>
+      )}
       <Button variant="secondary" disabled={busy} expanded={searching} onClick={() => setSearching((v) => !v)}>
         {tSession(searching ? 'replaceSearchClose' : 'replaceSearch')}
       </Button>

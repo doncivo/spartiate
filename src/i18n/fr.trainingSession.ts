@@ -13,6 +13,8 @@ export const trainingSessionFr = {
   /** SEANCE-0292 (BL-121) : remplaçants écartés par une gêne déclarée. */
   replaceAvoidedOne: 'Un exercice écarté à cause d’une gêne déclarée.',
   replaceAvoided: 'Exercices écartés à cause d’une gêne déclarée : {n}.',
+  /** SEANCE-0292 (BL-121, relecture B) : lecture des gênes en échec, filtre non appliqué. */
+  replaceInjuriesUnread: 'Gênes déclarées illisibles : les remplaçants proposés n’en tiennent pas compte.',
   replaceSearch: 'Chercher dans la bibliothèque',
   replaceSearchClose: 'Fermer la recherche',
   replaceChosen: 'Par « {name} »',
