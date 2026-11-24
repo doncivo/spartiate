@@ -33,4 +33,13 @@ describe('prescriptionGaps', () => {
     const gaps = prescriptionGaps([s('bench', { loadKg: 82.5 }), s('bench', { loadKg: 80 }), s('bench', { deletedAt: 'x' as WorkoutSet['deletedAt'] })], new Map([['bench', { loadKg: 80, reps: [8, 8] }]]));
     expect(gaps[0]).toMatchObject({ plannedSets: 2, doneSets: 2, doneLoadKg: 82.5, loadDeltaKg: 2.5, repsDelta: 0 });
   });
+
+  it('SEANCE-0292b BL-140 : exercice assisté, charge faite = la série la MOINS assistée (la plus dure), écart dans ce sens', () => {
+    n = 0;
+    const sets = [s('pull-up-assisted', { loadKg: 30 }), s('pull-up-assisted', { loadKg: 25 }), s('pull-up-assisted', { loadKg: 35 })];
+    const gaps = prescriptionGaps(sets, new Map([['pull-up-assisted', { loadKg: 30, reps: [8, 8, 8] }]]), new Set(['pull-up-assisted']));
+    expect(gaps[0]).toMatchObject({ doneLoadKg: 25, loadDeltaKg: -5 });
+    // Exercice ordinaire : toujours la plus lourde.
+    expect(prescriptionGaps(sets, new Map())[0]).toMatchObject({ doneLoadKg: 35 });
+  });
 });
