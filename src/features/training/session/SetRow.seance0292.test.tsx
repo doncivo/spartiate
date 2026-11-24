@@ -75,3 +75,22 @@ describe('C-080 : type de série parcouru au clavier', () => {
     expect(onKind).toHaveBeenCalledWith('warmup');
   });
 });
+
+describe('C-078 (relecture B) : saisie gardée au démontage de la ligne', () => {
+  it('charge tapée puis ligne démontée avant la seconde de délai et sans sortie du champ : la saisie est enregistrée', () => {
+    const onDraft = vi.fn();
+    const { unmount } = row({ onDraft });
+    fireEvent.change(screen.getByLabelText('Charge (kg)'), { target: { value: '62,5' } });
+    expect(onDraft).not.toHaveBeenCalled();
+    unmount();
+    expect(onDraft).toHaveBeenCalledTimes(1);
+    expect(onDraft).toHaveBeenCalledWith({ loadKg: 62.5, reps: null, rir: null });
+  });
+
+  it('rien de tapé : le démontage n’écrit rien', () => {
+    const onDraft = vi.fn();
+    const { unmount } = row({ onDraft });
+    unmount();
+    expect(onDraft).not.toHaveBeenCalled();
+  });
+});

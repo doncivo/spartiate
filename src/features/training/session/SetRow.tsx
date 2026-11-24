@@ -156,6 +156,8 @@ export function SetRow({ set, number, current = false, loads = null, held = null
     const id = setTimeout(() => flushRef.current(), 1000);
     return () => clearTimeout(id);
   }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps -- relance du délai à chaque frappe seulement
+  // Relecture B : la ligne démontée (exercice changé, écran quitté) avant la seconde de délai enregistre la saisie au lieu de la perdre.
+  useEffect(() => () => flushRef.current(), []);
   // SEANCE-0292 (C-080) : type de série parcouru au clavier écrit une fois (Entrée ou sortie du champ), pas à chaque flèche.
   const kindSelect = useKeyboardSelect(setKindChoiceOf(set), (next) => onKind(next as SetKindChoice));
   const warmup = set.setKind === 'warmup';
