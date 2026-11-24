@@ -94,8 +94,12 @@ export function parseInstant(cell: string, today: string, timeZone: string): { r
   return { at, day };
 }
 
-function parseNumber(raw: string, unitCell: string | undefined, units: readonly string[]): { readonly value: number } | Fail {
-  const m = VALUE.exec(raw);
+/** Un nombre entier de pas écrit avec séparateurs de milliers (« 12,345 », « 1.234 », « 1,234,567 ») : séparateurs retirés (C-057, H-25 : format réel non constaté). */
+const THOUSANDS = /^\d{1,3}(?:[.,]\d{3})+(?=\s|$)/;
+
+function parseNumber(raw: string, unitCell: string | undefined, units: readonly string[], integerOnly = false): { readonly value: number } | Fail {
+  const text = integerOnly ? raw.replace(THOUSANDS, (digits) => digits.replace(/[.,]/g, '')) : raw;
+  const m = VALUE.exec(text);
   if (m === null) return { fail: 'bad_value' };
   const unit = (unitCell !== undefined && unitCell !== '' ? unitCell : m[2] ?? '').toLowerCase();
   if (unit !== '' && !units.includes(unit)) return { fail: 'bad_unit' };
@@ -123,7 +127,7 @@ function parseSamples(
   text: string,
   today: string,
   timeZone: string,
-  spec: { readonly units: readonly string[]; readonly range: readonly [number, number]; /** Arrondi au dixième (HRV, FC au repos). */ readonly tenth?: boolean },
+  spec: { readonly units: readonly string[]; readonly range: readonly [number, number]; /** Arrondi au dixième (HRV, FC au repos). */ readonly tenth?: boolean; /** Quantité entière (pas) : séparateurs de milliers admis. */ readonly integer?: boolean },
 ): ShortcutSamples {
   const { rows, truncated } = readRows(text);
   const counter = new Counter();
@@ -139,7 +143,7 @@ function parseSamples(
       counter.add(instant.fail);
       continue;
     }
-    const num = parseNumber(cells[1] ?? '', cells[2], spec.units);
+    const num = parseNumber(cells[1] ?? '', cells[2], spec.units, spec.integer === true);
     if (isFail(num)) {
       counter.add(num.fail);
       continue;
@@ -191,7 +195,7 @@ export interface ShortcutSteps extends ShortcutParseReport {
 
 /** `pas.csv` : un échantillon par ligne, sommés par jour local (voir l'en-tête du module). */
 export function parseShortcutSteps(text: string, today: string, timeZone: string): ShortcutSteps {
-  const r = parseSamples(text, today, timeZone, { units: ['count', 'pas', 'steps'], range: [0, STEPS_MAX_PER_LINE] });
+  const r = parseSamples(text, today, timeZone, { units: ['count', 'pas', 'steps'], range: [0, STEPS_MAX_PER_LINE], integer: true });
   const byDay = new Map<string, number>();
   for (const s of r.samples) byDay.set(s.day, (byDay.get(s.day) ?? 0) + Math.round(s.value));
   const { samples: _samples, ...report } = r;
