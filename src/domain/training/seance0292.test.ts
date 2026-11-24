@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
 import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
-import type { DeviceId, Hlc, IsoDateTime } from '../types';
+import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../types';
 import { circuitsOf } from './circuit';
 import { routineDiff } from './closure';
 import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
@@ -11,7 +11,7 @@ import { estimateExerciseSec, estimateSessionSec, generateSession } from './gene
 import type { GenerationEquipment } from './generationTypes';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
-import { nextProgramDay } from './programDay';
+import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName } from './programDay';
 import { replayWorkout } from './replay';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
 import type { ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
@@ -221,5 +221,23 @@ describe('SEANCE-0292 C-017 (D-473) : une dernière séance vidée ou supprimée
 
   it('aucune séance restante : premier jour garni', () => {
     expect(nextProgramDay([d('A', 0, []), d('B', 1), d('C', 2)], [], 'r')).toBe('B');
+  });
+});
+
+describe('SEANCE-0292 C-019 : jour de la semaine entier ; nom de jour « mot entier » (D-317)', () => {
+  const day = (id: string, dayOrder: number, weekday: number | null) => ({ id, dayOrder, weekday, exercises: [{}] });
+
+  it('jour de la semaine 2,5 : ignoré (pas un jour rattaché), jamais rendu comme prochain jour', () => {
+    expect(routineTrainingDays([day('a', 0, 2.5), day('b', 1, 4)])).toEqual([4]);
+    const choice = programDayFor([day('a', 0, 2.5), day('b', 1, 4)], [], 'r', '2026-11-24' as LocalDate);
+    expect(choice).toEqual({ kind: 'rest', nextDayId: 'b', nextWeekday: 4 });
+  });
+
+  it('« Lundi2 », « Lundi_x » : aucun jour ; « Lundi — Poussée », « lundi » : lundi', () => {
+    expect(weekdayFromDayName('Lundi2')).toBeNull();
+    expect(weekdayFromDayName('Lundi_x')).toBeNull();
+    expect(weekdayFromDayName('Lundi — Poussée')).toBe(1);
+    expect(weekdayFromDayName('lundi')).toBe(1);
+    expect(weekdayFromDayName('Mardi: tirage')).toBe(2);
   });
 });
