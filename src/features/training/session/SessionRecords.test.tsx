@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import { recordsOfSet } from '../../../domain/training/sessionRecords';
 import type { DeviceId } from '../../../domain/types';
@@ -11,6 +11,7 @@ import type { TimerNotifier } from '../../../platform/notifications/timerNotific
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
+import { loadTrainingContent } from '../content';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -33,6 +34,23 @@ const mount = (data: DataAccess = db.data) => {
     </AppContainerProvider>,
   );
 };
+
+// Intermittence (relecture, 76d1feb7) : les `findBy` (1 s) attendaient aussi la PREMIÈRE importation des modules à la demande (contenu JSON,
+// progression, contrôle d'aberration à la validation, journée rouge…), transformée à froid pendant le test : sur un poste chargé, l'écran
+// restait « Chargement… » ou la série validée n'était pas encore écrite. Préchauffées ici (précédent : Circuit.test.tsx), aucun délai allongé.
+beforeAll(async () => {
+  await Promise.all([
+    loadTrainingContent(),
+    import('./ActiveSession'),
+    import('./ExerciseProgression'),
+    import('./outlierCheck'),
+    import('./redDayState'),
+    import('./RecoverySession'),
+    import('./ExerciseExtras'),
+    import('../media/ExerciseMedia'),
+    import('./WorkoutSummary'),
+  ]);
+});
 
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
