@@ -256,13 +256,12 @@ describe('critère 4 : modes Guidé, Libre, Maison ; Importé indisponible', () 
     expect(upper.omitted.map((o) => [o.exerciseId, o.reason])).toEqual([['lat-pulldown', 'equipment']]);
   });
 
-  it('Libre : variantes Variable, Fixe et Statique sans effet distinct (D-73) ; le split n’est pas exigé', () => {
-    const out = (['variable', 'fixe', 'statique'] as const).map((libreVariant) => generateSession(input({}, { mode: 'libre', libreVariant, split: 'full-body' })));
-    expect(out[0]?.status).toBe('ready');
-    expect(out[0]?.groups).toEqual([]);
-    expect(out[0]?.dayKind).toBeNull();
-    expect(out[1]?.exercises).toEqual(out[0]?.exercises);
-    expect(out[2]?.exercises).toEqual(out[0]?.exercises);
+  // SEANCE-0292b (§ 12.3) : test qui figeait D-73 (1) (variantes sans effet distinct) réécrit : variantes retirées (D-497).
+  it('Libre : le split n’est pas exigé (variantes Variable, Fixe et Statique retirées, D-497)', () => {
+    const out = generateSession(input({}, { mode: 'libre', split: 'full-body' }));
+    expect(out.status).toBe('ready');
+    expect(out.groups).toEqual([]);
+    expect(out.dayKind).toBeNull();
   });
 });
 

@@ -11,8 +11,7 @@ import type { EquipmentInventory, EquipmentProfileKind, Exercise, ExerciseKind, 
  */
 
 export const PROGRAM_MODES = ['guide', 'libre', 'maison', 'importe'] as const;
-/** Variantes de Libre nommées au § 12.3 ; sans effet distinct tant qu'Ali ne les a pas définies (D-73 point 1). */
-export const LIBRE_VARIANTS = ['variable', 'fixe', 'statique'] as const;
+// D-497 (Ali, 24/11, amende le § 12.3 et D-73 (1)) : les variantes Variable, Fixe et Statique de Libre sont retirées (jamais affichées).
 export const SPLIT_KINDS = ['full-body', 'upper-lower', 'ppl', 'custom'] as const;
 /** Jour d'un split : groupes musculaires du jour (`config.splitGroups`), `custom` = groupes affectés par Ali. */
 export const SPLIT_DAY_KINDS = ['full-body', 'upper', 'lower', 'push', 'pull', 'legs', 'custom'] as const;
@@ -20,7 +19,6 @@ export const VARIETY_LEVELS = ['consistent', 'balanced', 'varied'] as const;
 export const SET_STYLES = ['straight', 'pyramid', 'reverse'] as const;
 
 export type ProgramMode = (typeof PROGRAM_MODES)[number];
-export type LibreVariant = (typeof LIBRE_VARIANTS)[number];
 export type SplitKind = (typeof SPLIT_KINDS)[number];
 export type SplitDayKind = (typeof SPLIT_DAY_KINDS)[number];
 export type VarietyLevel = (typeof VARIETY_LEVELS)[number];
@@ -29,7 +27,6 @@ export type SetStyle = (typeof SET_STYLES)[number];
 /** Paramètres du programme pour la génération (éphémères en I3-01 : choisis à l'écran, jamais enregistrés). */
 export interface GenerationProgram {
   readonly mode: ProgramMode;
-  readonly libreVariant: LibreVariant | null;
   readonly split: SplitKind;
   /** Custom : groupes affectés par Ali (`chest`, `back`…), un tableau par jour de la routine, dans l'ordre des jours. Ignoré sinon. */
   readonly customDays: readonly (readonly string[])[];
