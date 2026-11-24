@@ -31,7 +31,9 @@ export function dayExertion(workouts: readonly RecoveryWorkout[], day: string, t
   const cfg = RECOVERY_CONFIG.exertion;
   let load = 0;
   for (const w of workouts) {
-    if (dayOf(Date.parse(w.endedAt), timeZone) !== day) continue;
+    const ended = Date.parse(w.endedAt);
+    // C-051 : une séance à date illisible est ignorée (jamais une exception qui prive le jour de son résumé).
+    if (!Number.isFinite(ended) || dayOf(ended, timeZone) !== day) continue;
     for (const s of w.sets) {
       if (!s.completed || s.isWarmup || s.kg === null || s.reps === null || s.kg < 0 || s.reps <= 0) continue;
       load += s.kg * s.reps * cfg.difficultyFactor[s.difficulty ?? 'ok'];
