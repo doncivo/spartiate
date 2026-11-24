@@ -418,7 +418,11 @@ fn text_field(product: &Value, key: &str) -> Option<String> {
 
 /// Texte numérique en notation à point (C-046) : quand les deux séparateurs sont présents, le dernier est la virgule décimale et l'autre
 /// sépare les milliers ; un même séparateur répété sépare les milliers ; un séparateur unique reste décimal (« 1,5 » vaut 1,5).
-fn decimal_text(text: &str) -> Option<String> {
+fn decimal_text(text: &str, energy: bool) -> Option<String> {
+    // Relecture C-046 : pour l'énergie (kJ et kcal), 1 à 3 chiffres suivis d'exactement 3 chiffres (« 2,252 », « 2.252 ») sont des milliers.
+    if energy && is_thousands_group(text) {
+        return Some(text.replace([',', '.'], ""));
+    }
     let Some(last) = text.rfind(['.', ',']) else {
         return Some(text.to_owned());
     };
@@ -440,10 +444,21 @@ fn decimal_text(text: &str) -> Option<String> {
     Some(out)
 }
 
-fn number_of(value: &Value) -> Option<f64> {
+/// « 2,252 » ou « 2.252 » : 1 à 3 chiffres, un séparateur, exactement 3 chiffres (une énergie n'a pas de millièmes).
+fn is_thousands_group(text: &str) -> bool {
+    let Some((head, tail)) = text.split_once(['.', ',']) else {
+        return false;
+    };
+    (1..=3).contains(&head.len())
+        && head.bytes().all(|b| b.is_ascii_digit())
+        && tail.len() == 3
+        && tail.bytes().all(|b| b.is_ascii_digit())
+}
+
+fn number_of(value: &Value, energy: bool) -> Option<f64> {
     let number = match value {
         Value::Number(n) => n.as_f64()?,
-        Value::String(s) => decimal_text(s.trim())?.parse::<f64>().ok()?,
+        Value::String(s) => decimal_text(s.trim(), energy)?.parse::<f64>().ok()?,
         _ => return None,
     };
     number.is_finite().then_some(number)
@@ -465,7 +480,10 @@ fn parse_product_object(product: &Value, fallback_code: Option<&str>) -> Option<
     let mut nutriments = BTreeMap::new();
     if let Some(source) = object.get("nutriments").and_then(Value::as_object) {
         for key in NUTRIMENT_KEYS {
-            if let Some(number) = source.get(key).and_then(number_of) {
+            if let Some(number) = source
+                .get(key)
+                .and_then(|v| number_of(v, key.starts_with("energy-")))
+            {
                 nutriments.insert(key.to_owned(), number);
             }
         }
