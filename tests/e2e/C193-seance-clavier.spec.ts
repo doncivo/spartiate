@@ -64,7 +64,9 @@ test('séance au clavier : exercice ajouté, séries saisies puis Entrée, clôt
 
   // Séance close : l'historique d'Entraînement la liste, « Reprendre la séance » n'est plus proposé.
   await summary.getByRole('button', { name: 'Fermer le résumé' }).click();
+  // Le résumé fermé laisse l'écran « Nouvelle séance » (constaté en CI, run 45379435573) : retour à l'entraînement.
   await nav(page, 'Entraînement').click();
+  await page.getByRole('button', { name: 'Retour à l’entraînement' }).click();
   await expect(page.getByRole('button', { name: 'Reprendre la séance' })).toHaveCount(0);
   await page.getByRole('radio', { name: 'Journal', exact: true }).click();
   await expect(page.getByText('2 séries').first()).toBeVisible();
