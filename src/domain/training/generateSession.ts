@@ -14,7 +14,7 @@ import type {
 import { primaryMuscle } from './prescribe';
 import { dayGroups, modeRules, recurringSlotCount, rotationPeriod, splitDayKind, validateSplit } from './programModes';
 import { SETS_MAX } from './routineRules';
-import type { Exercise, RoutineDaySpec, RoutineExerciseSpec } from './types';
+import type { Exercise, ExerciseMetric, RoutineDaySpec, RoutineExerciseSpec } from './types';
 
 /**
  * Génération de séance (PRD § 12.1, § 12.3, § 12.4 ; I3-01 ; D-73). Fonction pure et déterministe : seule l'horloge injectée (`now`) date la
@@ -40,15 +40,32 @@ interface Slot {
 
 const WARNING_ORDER: readonly GenerationWarning[] = ['duplicate-in-routine', 'off-split-in-routine', 'over-budget', 'under-budget'];
 
-/** Durée estimée d'un exercice : 45 s par série + repos entre séries consécutives (D-73 point 4). */
-export function estimateExerciseSec(sets: number, restSec: number, config: GenerationConfig): number {
+/**
+ * Durée estimée d'un exercice : 45 s par série (`setSec` : durée d'une série chronométrée) + repos entre séries consécutives (D-73 point 4).
+ */
+export function estimateExerciseSec(sets: number, restSec: number, config: GenerationConfig, setSec: number = config.secondsPerSet): number {
   if (!(sets > 0)) return 0;
-  return sets * config.secondsPerSet + (sets - 1) * Math.max(0, restSec);
+  return sets * setSec + (sets - 1) * Math.max(0, restSec);
 }
 
-/** Durée estimée de lignes de routine telles qu'écrites. */
-export function estimateSessionSec(lines: readonly Pick<RoutineExerciseSpec, 'sets' | 'restSec'>[], config: GenerationConfig): number {
-  return lines.reduce((sum, l) => sum + estimateExerciseSec(l.sets, l.restSec, config), 0);
+/**
+ * C-012 (Q-9 option B, choix prudent D-489) : durée d'une série d'un exercice chronométré = sa durée cible (haut de la plage, en secondes) ;
+ * 45 s pour les autres métriques ou une cible illisible.
+ */
+export function setDurationSec(metric: ExerciseMetric | undefined, repMax: number, config: GenerationConfig): number {
+  return metric === 'time' && Number.isFinite(repMax) && repMax > 0 ? repMax : config.secondsPerSet;
+}
+
+/** Durée estimée de lignes de routine telles qu'écrites ; `metricOf` absent : 45 s par série (métrique inconnue). */
+export function estimateSessionSec(
+  lines: readonly (Pick<RoutineExerciseSpec, 'sets' | 'restSec'> & Partial<Pick<RoutineExerciseSpec, 'exerciseId' | 'repMax'>>)[],
+  config: GenerationConfig,
+  metricOf?: (exerciseId: string) => ExerciseMetric | undefined,
+): number {
+  return lines.reduce((sum, l) => {
+    const metric = metricOf !== undefined && l.exerciseId !== undefined ? metricOf(l.exerciseId) : undefined;
+    return sum + estimateExerciseSec(l.sets, l.restSec, config, setDurationSec(metric, l.repMax ?? 0, config));
+  }, 0);
 }
 
 /**
@@ -221,7 +238,8 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
   }
   // PROG-01 : dernière semaine de travail à partir du 2e cycle, RIR 1 sur les exercices d'isolation.
   const rirOf = (slot: Slot): number | null => (slot.chosen.kind === 'isolation' && input.week?.isolationRir !== undefined ? input.week.isolationRir : (input.week?.rir ?? slot.line.rir));
-  const estimate = (slot: Slot): number => estimateExerciseSec(slot.sets, slot.line.restSec, config);
+  // C-012 : un remplaçant ou une rotation garde la métrique de la ligne (`candidates`) : la cible de la ligne vaut pour lui.
+  const estimate = (slot: Slot): number => estimateExerciseSec(slot.sets, slot.line.restSec, config, setDurationSec(slot.chosen.metric, slot.line.repMax, config));
   const total = (): number => slots.reduce((sum, s) => sum + estimate(s), 0);
 
   // 7. Budget temps.
