@@ -86,7 +86,8 @@ describe('propriétés du moteur', () => {
         if (p.reasons.includes('reference-off-grid')) {
           const grid = loadGrid(x.exercise.equipment, x.equipment);
           expect(grid).not.toBeNull();
-          const below = (grid?.loads ?? []).filter((kg) => kg <= p.reference!.loadKg + 1e-9);
+          const refKg = p.reference.loadKg;
+          const below = (grid?.loads ?? []).filter((kg) => kg <= refKg + 1e-9);
           expect(below.length).toBeGreaterThan(0);
           expect(p.loadKg).toBe(Math.max(...below));
           expect(p.loadKg).toBeLessThanOrEqual(Math.max(...(grid?.loads ?? [])));
