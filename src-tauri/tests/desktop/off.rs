@@ -508,6 +508,8 @@ async fn energy_thousands_without_decimal_part() {
         ("12,345", 12345.0, 12.345),
         ("2,5", 2.5, 2.5),
         ("1234,5", 1234.5, 1234.5),
+        ("0,500", 0.5, 0.5),
+        ("0.418", 0.418, 0.418),
     ] {
         let mock = start_mock(move |_| reply(200, &kj(text)));
         let out = client_for(&mock.base).product(BARCODE).await.unwrap();
