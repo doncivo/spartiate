@@ -363,11 +363,6 @@
       "raison": "Migration DATA-0292 (BL-138, D-489), additive : deux UPDATE de réglages locaux qui rattachent l'ancien identifiant du profil de matériel par défaut au nouveau, inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0021."
     },
     {
-      "fichier": "src/domain/training/legacyProfile.ts",
-      "story": "LOT-29-DATA0292",
-      "raison": "Constantes et fonction pures (identifiant du profil par défaut, ancien identifiant reconstruit, rattachement) lues par la migration 0022 et par la lecture du profil actif et du brouillon d'onboarding au premier affichage ; moins de 1 Ko."
-    },
-    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { allExercises, backfillDumbbellExtras, canonicalEquipmentProfileId, LEGACY_DUMBBELL_EXTRAS_SOURCES, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
+import { allExercises, backfillDumbbellExtras, LEGACY_DUMBBELL_EXTRAS_SOURCES, type CustomExercise, type EquipmentProfile, type Exercise } from '../../domain/training';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { useSyncedData } from '../sync/remoteChanges';
 import { loadTrainingContent, type EmbeddedProfile, type TrainingContent } from './content';
@@ -29,7 +29,7 @@ export function resolveActiveProfile(content: TrainingContent, personal: readonl
   const all: AnyProfile[] = [...content.profiles, ...personal];
   const fallback = content.profiles.find((p) => p.id === content.defaultProfileId) ?? content.profiles[0];
   if (!fallback) throw new Error('profil de matériel par défaut absent du contenu embarqué');
-  return (storedId !== null ? all.find((p) => p.id === canonicalEquipmentProfileId(storedId)) : undefined) ?? fallback;
+  return (storedId !== null ? all.find((p) => p.id === storedId) : undefined) ?? fallback;
 }
 
 export async function readTrainingData(data: DataAccess): Promise<TrainingData> {

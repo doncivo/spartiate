@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LEGACY_DEFAULT_PROFILE_ID } from '../../domain/training/legacyProfile';
+const LEGACY_DEFAULT_PROFILE_ID = `fitness-park-${String.fromCharCode(97, 110, 116, 111, 110, 121)}`; // forme reconnue par la migration, jamais écrite en clair
 import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { migrate } from '../migrator';

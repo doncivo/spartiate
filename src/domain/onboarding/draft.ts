@@ -7,7 +7,6 @@
 import { BIRTH_YEAR_MIN, EXPERIENCES, HEIGHT_MAX_CM, HEIGHT_MIN_CM, MIN_AGE_YEARS, SEXES, WEIGHT_MAX_KG, type Experience, type Sex } from '../bodyProfile';
 import { ACTIVITY_LEVELS, type ActivityLevel } from '../nutrition/config';
 import { EXERCISE_PATTERNS, type ExercisePattern } from '../training/types';
-import { canonicalEquipmentProfileId } from '../training/legacyProfile';
 import { VARIETY_LEVELS, type VarietyLevel } from '../training/generationTypes';
 import type { Weekday } from '../types';
 import { GOAL_RATE_MAX_PCT, GOAL_RATE_MIN_PCT } from './expenditure';
@@ -125,7 +124,7 @@ export function parseDraft(raw: unknown): OnboardingDraft {
     sessionsPerWeek: integer(raw['sessionsPerWeek']),
     durationMin: integer(raw['durationMin']),
     days,
-    equipmentProfileId: typeof raw['equipmentProfileId'] === 'string' && raw['equipmentProfileId'] !== '' ? canonicalEquipmentProfileId(raw['equipmentProfileId']) : null,
+    equipmentProfileId: typeof raw['equipmentProfileId'] === 'string' && raw['equipmentProfileId'] !== '' ? raw['equipmentProfileId'] : null,
     priorities: strings(raw['priorities']),
     avoided: strings(raw['avoided']),
     painfulPatterns: strings(raw['painfulPatterns']).filter((p): p is ExercisePattern => (EXERCISE_PATTERNS as readonly string[]).includes(p)),
