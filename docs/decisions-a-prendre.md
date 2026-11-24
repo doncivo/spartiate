@@ -45,3 +45,18 @@ Recommandation : B. Conséquences : migration additive, relecture sync-icloud, a
 - B. Rester sur « Nouvelle séance » ; un nouvel appui sur l'onglet actif ramène à son accueil (règle commune à tous les onglets).
 
 Recommandation : A (moins de gestes).
+
+## Q-15 — Arrondi de la décote de position (H-1, écart G3) (SEANCE-0292b)
+
+Constat : 2ᵉ exercice du muscle, 40 kg × 0,93 = 37,2 kg. Gravl publie 37,5 kg (arrondi au plus proche, répétitions compensées dans les deux
+sens) ; Spartiate propose 35 kg et une répétition de plus (arrondi vers le bas, § 11.3 « +1 rep si l'écart dépasse 3 % »).
+- A (recommandé) : garder l'arrondi vers le bas (jamais au-dessus de la cible, règle unique du moteur). Conséquence : séance un peu plus
+  légère au 2ᵉ rang.
+- B : arrondi au plus proche avec une répétition de moins si la charge monte. Conséquence : règle d'arrondi propre à la position, ENGINE_VERSION
+  relevée.
+
+## Q-16 — Échelle après un cran (H-1, écart G2b) (SEANCE-0292b)
+
+Constat : après 8-8-8 et un cran, Gravl repart à 8-7-6 (série d'appui en tête), Spartiate au bas de la plage sur chaque série (6-6-6).
+- A (recommandé) : garder (règle D-72, figée par TESTS-FIGES). B : repartir au profil de répétitions de la première séance de l'échelle.
+
