@@ -102,3 +102,19 @@ describe('I4-07 : Journée complète (déclaration)', () => {
     expect(await within(r).findByText(/dim\. 8 nov\. : complet · 1 900 kcal/)).toBeInTheDocument();
   });
 });
+
+describe('C-099 : flèches rapides sur la déclaration', () => {
+  it('deux flèches de suite : la dernière valeur gagne (Incomplète), jamais « Complète » par erreur', async () => {
+    await seedTwoMeals(TODAY);
+    open();
+    const r = await region();
+    const none = await within(r).findByRole('radio', { name: 'Non déclarée' });
+    none.focus();
+    fireEvent.keyDown(none, { key: 'ArrowRight' });
+    fireEvent.keyDown(within(r).getByRole('radio', { name: 'Complète' }), { key: 'ArrowRight' });
+    await waitFor(async () => {
+      expect(await declared(TODAY)).toBe('incomplete');
+    });
+    expect(within(r).getByRole('radio', { name: 'Incomplète' })).toHaveAttribute('aria-checked', 'true');
+  });
+});
