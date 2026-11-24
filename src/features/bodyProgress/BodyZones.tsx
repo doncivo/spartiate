@@ -105,7 +105,7 @@ export function ZoneList({ kind, summaries, onSelect }: ZoneProps & { readonly s
               <span id={`ct-zone-value-${k}`} className="ct-bodyprogress__zonevalue">
                 {s.last === null ? <MissingValue reason={tBodyProgress('zoneNoMeasure')} /> : formatCm(s.last.value)}
               </span>
-              {s.delta === null ? (
+              {s.delta === null || s.span !== 'four-weeks' ? (
                 <>
                   <span className="ct-bodyprogress__zonedelta" aria-hidden="true">
                     {tBodyProgress('zoneNoDelta')}
