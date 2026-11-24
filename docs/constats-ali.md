@@ -159,9 +159,11 @@ Ces constats demandent les deux appareils : coche-les après avoir fait le geste
 - [ ] **BL-021 (cardio saisi sur PC)** — saisis une séance cardio sur le PC (Entraînement › Cardio, sans GPS) ; après synchro, la séance apparaît sur l'iPhone, sans tracé, avec sa durée, sa distance et son ressenti. Date : ____ Version : ____
 - [ ] **BL-015 (bandeau « appareil plus ancien »)** — provoque ce cas seulement si un appareil est resté en version précédente (sinon, note « non rencontré ») : le bandeau nomme le bon appareil à mettre à jour et ne propose rien d'autre. Date : ____ Version : ____
 - [ ] **BL-017 (routine et cible)** — après la mise à jour (0.27.0 et suivantes) : Entraînement › Routines, ta routine : chaque jour porte son jour de la semaine (un import le fait si la mise à jour ne l'a pas fait) ; un jour de la semaine lance le jour prévu pour ce jour-là ; Nutrition › Stratégie : la cible du jour est la cible en vigueur, et une cible planifiée à date future n'est pas battue par une décision antérieure. Au lancement d'un cycle, la durée proposée reprend ton dernier réglage ; en cours de cycle, un changement de durée ne s'applique qu'après confirmation. Date : ____ Version : ____
+- [ ] **BL-157 (clé de synchro après une mise à jour SideStore)** — avant une mise à jour SideStore N → N+1, note sur l'iPhone que la synchro fonctionne (Plus › Appareils et synchro : dernière synchro récente, une saisie faite sur le PC visible sur l'iPhone) ; après la mise à jour par « Mettre à jour » dans SideStore, vérifie que la synchro reprend sans redemander la clé ni l'appairage (une nouvelle saisie du PC arrive sur l'iPhone). Date : ____ Version : ____
 
 ### Documents (sans appareil, à lire)
 
+- [ ] **H-11 (licence Ciqual, BL-156)** — lis la section « Licence — table Ciqual de l'Anses » de docs/licences.md et la page de l'entrepôt citée (DOI 10.57745/RDMHWY) : la licence indiquée est bien la Licence Ouverte Etalab 2.0 ; dans Nutrition › Rechercher un aliment, tape « pomme » : l'attribution Ciqual est écrite sous les résultats. Date : ____
 - [ ] **H-9** — relis dans `docs/licences.md` la section « Médias d'exercices » : sources, licences et attributions. Puis, sur l'iPhone, vérifie que l'attribution s'affiche sous une image (légende). Date : ____ Version : ____
 - [ ] **H-37 (normes du Strength Score)** — lis la documentation de la source des normes (FitnessVolt, citée dans `docs/licences.md`) : elle dit ce que mesurent les charges publiées (1RM ou charge totale). À défaut, compare un de tes scores avec la page de la source pour le même 1RM. Date : ____ Version : ____
 - [ ] **H-8 (contenu)** — relis la bibliothèque (150 exercices) au regard de tes routines et programmes : les exercices qui te manquent ou qui te gênent sont notés. Date : ____ Version : ____
@@ -201,9 +203,11 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | BL-020 | iPhone › Séance (journée rouge) ; Les deux appareils › Synchro (favoris) |
 | BL-021 | iPhone › Cardio ; Les deux appareils › Synchro |
 | BL-132 | iPhone › Bibliothèque ; PC › Bibliothèque |
+| BL-157 | Les deux appareils › Synchro |
 | H-4 | iPhone › Séance |
 | H-8 | iPhone › Bibliothèque ; Les deux appareils › Documents |
 | H-9 | Les deux appareils › Documents |
+| H-11 | Les deux appareils › Documents |
 | H-12 | iPhone › Nutrition |
 | H-17 | iPhone › Plus |
 | H-19a | iPhone › Réglages iOS ; PC › Largeur et écrans (contrôle du texte) |
@@ -217,8 +221,11 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | H-39 | PC › Plus |
 | H-40 | iPhone › Routines ; PC › Routines |
 | H-41 | iPhone › Plus |
+| C-078 | iPhone › Entraînement › Séance |
+| C-083 | iPhone › Entraînement › Cardio |
 | C-113 | iPhone › Réglages iOS |
 | C-152 | iPhone › Plus |
+| § 10.3 | iPhone › Entraînement › Séance |
 | § 13.7 | iPhone › Séance |
 | § 23.1 h | iPhone › Recette |
 | § 23.3 | iPhone › Séance (verrouillage, visuel) |
