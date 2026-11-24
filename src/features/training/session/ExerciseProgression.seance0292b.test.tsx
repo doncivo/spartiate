@@ -85,4 +85,35 @@ describe('BL-111 : retour à la prescription précédente en séance', () => {
     await within(p).findByRole('button', { name: 'Accepter' });
     expect(within(p).queryByRole('button', { name: /Revenir à la prescription précédente/ })).toBeNull();
   });
+
+  // Relecture (D, D-543) : la cible du retour est ramenée sur la grille du profil courant (même règle que D-496 : vers le bas, plafond).
+  it('cible hors de la grille du profil (61 kg, barre par 2,5) : retour ramené à 60 kg, dit, séries remplies à 60 kg', async () => {
+    await closedWithDecision(u(4), 61, [10, 10, 10]);
+    await closedWithDecision(u(5), 63.5, [8, 8, 8]);
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: CURRENT, name: 'Haut B' });
+    await r.addExercise(CURRENT, { exerciseId: 'bench-press-barbell', exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    openSession();
+    const p = await within(await screen.findByRole('region', { name: BENCH })).findByRole('group', { name: 'Proposition' });
+    const back = await within(p).findByRole('button', { name: /Revenir à la prescription précédente/ });
+    expect(within(p).getByText(/ramenée à 60 kg/)).toBeInTheDocument();
+    fireEvent.click(back);
+    expect(await within(p).findByText('Valeurs retenues : 60 kg × 10.')).toBeInTheDocument();
+    const rows = await db.driver.select<{ load_kg: number | null; reps: number | null }>(`SELECT load_kg, reps FROM workout_set WHERE set_kind = 'work' AND workout_id = '${CURRENT}' ORDER BY position`);
+    expect(rows.map((x) => x.load_kg)).toEqual([60, 60, 60]);
+  });
+
+  it('jour de décharge : un retour qui alourdirait la séance n’est pas proposé', async () => {
+    await closedWithDecision(u(6), 60, [10, 10, 10]);
+    await closedWithDecision(u(7), 62.5, [8, 8, 8]);
+    const r = await db.data.repos.workouts();
+    await r.start({ source: 'empty', id: CURRENT, name: 'Haut B' });
+    await r.addExercise(CURRENT, { exerciseId: 'bench-press-barbell', exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
+    openSession();
+    const p = await within(await screen.findByRole('region', { name: BENCH })).findByRole('group', { name: 'Proposition' });
+    await within(p).findByRole('button', { name: /Revenir à la prescription précédente/ });
+    fireEvent.click(within(p).getByRole('button', { name: 'Deload pour cette séance' }));
+    await within(p).findByText(/Deload demandé/);
+    expect(within(p).queryByRole('button', { name: /Revenir à la prescription précédente/ })).toBeNull();
+  });
 });
