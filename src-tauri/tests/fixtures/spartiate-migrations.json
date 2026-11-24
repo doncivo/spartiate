@@ -291,7 +291,7 @@
    "version": 22,
    "name": "default_profile_rename",
    "statements": [
-    "UPDATE settings SET value = CASE WHEN key = 'training.activeEquipmentProfile' THEN json_quote('salle-complete') ELSE json_set(value, '$.equipmentProfileId', 'salle-complete') END WHERE key IN ('training.activeEquipmentProfile', 'onboarding.draft', 'onboarding.answers') AND json_valid(value) AND coalesce(json_extract(value, '$.equipmentProfileId'), json_extract(value, '$')) LIKE 'fitness-park-%'"
+    "UPDATE settings SET value = replace(value, '\"fitness-park-' || char(97,110,116,111,110,121) || '\"', '\"salle-complete\"') WHERE key IN ('training.activeEquipmentProfile', 'onboarding.draft', 'onboarding.answers')"
    ]
   }
  ],

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-const LEGACY_DEFAULT_PROFILE_ID = `fitness-park-${String.fromCharCode(97, 110, 116, 111, 110, 121)}`; // forme reconnue par la migration, jamais écrite en clair
 import type { SqlDriver } from '../driver';
 import { openSqliteWasmDriver } from '../drivers/sqliteWasm';
 import { migrate } from '../migrator';
-import { migration0022DefaultProfileRename } from './0022_default_profile_rename';
+import { LEGACY_DEFAULT_PROFILE_ID, migration0022DefaultProfileRename } from './0022_default_profile_rename';
 import { migrations } from './index';
 
 /**

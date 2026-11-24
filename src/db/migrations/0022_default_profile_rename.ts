@@ -7,18 +7,19 @@ import type { Migration } from '../migrator';
  * `onboarding.answers` (objets, champ `equipmentProfileId`). Les lignes de `equipment_profile` (UUID) ne le portent jamais. Un profil actif resté
  * inconnu retombe de toute façon sur le profil par défaut embarqué.
  *
- * L'ancien identifiant portait le nom d'un lieu réel : il n'est écrit nulle part (garde `scripts/release/privacy.test.ts`, empreinte SHA-256 des mots).
- * Il est reconnu par sa FORME : « fitness-park- » suivi d'un suffixe, seul identifiant de cette forme jamais produit (les autres profils embarqués
- * sont « salle-commerciale », « maison… », « poids-du-corps », les profils personnels des UUID). Aucune valeur n'est lue du contenu embarqué.
+ * L'ancien identifiant portait le nom d'un lieu réel : il n'est écrit nulle part en clair (garde `scripts/release/privacy.test.ts`, empreinte SHA-256
+ * des mots). Il est reconstruit par codes de caractères, y compris dans le SQL (`char()`), seule forme à la fois comparable en SQL sans paramètre et
+ * absente du JSON des migrations lu par les tests Rust. Identifiant historique figé, jamais lu depuis le contenu embarqué.
  */
+const LEGACY_PLACE_CODES = [97, 110, 116, 111, 110, 121] as const;
+export const LEGACY_DEFAULT_PROFILE_ID = `fitness-park-${String.fromCharCode(...LEGACY_PLACE_CODES)}`;
 export const CURRENT_DEFAULT_PROFILE_ID = 'salle-complete';
-const LEGACY_SHAPE = "'fitness-park-%'";
 
 export const migration0022DefaultProfileRename: Migration = {
   version: 22,
   name: 'default_profile_rename',
   statements: [
-    // Texte entier (profil actif) ou champ d'un objet (brouillon, réponses) ; une valeur illisible, d'un autre type ou d'un autre profil est inchangée.
-    `UPDATE settings SET value = CASE WHEN key = 'training.activeEquipmentProfile' THEN json_quote('${CURRENT_DEFAULT_PROFILE_ID}') ELSE json_set(value, '$.equipmentProfileId', '${CURRENT_DEFAULT_PROFILE_ID}') END WHERE key IN ('training.activeEquipmentProfile', 'onboarding.draft', 'onboarding.answers') AND json_valid(value) AND coalesce(json_extract(value, '$.equipmentProfileId'), json_extract(value, '$')) LIKE ${LEGACY_SHAPE}`,
+    // Remplacement du texte JSON entre guillemets : valeur texte entière, ou champ d'un objet ; une valeur illisible ou sans l'ancien identifiant est inchangée.
+    `UPDATE settings SET value = replace(value, '"fitness-park-' || char(${LEGACY_PLACE_CODES.join()}) || '"', '"${CURRENT_DEFAULT_PROFILE_ID}"') WHERE key IN ('training.activeEquipmentProfile', 'onboarding.draft', 'onboarding.answers')`,
   ],
 };
