@@ -1,5 +1,5 @@
 import { RECOVERY_CONFIG } from './config';
-import { utcToLocal } from '../timeZone';
+import { isValidTimeZone, utcToLocal } from '../timeZone';
 
 /**
  * Fichiers de Santé exportés par l'app Raccourcis (D-69 : HealthKit direct inaccessible avec un compte Apple gratuit). Module pur,
@@ -87,6 +87,8 @@ export function parseInstant(cell: string, today: string, timeZone: string): { r
   if (!ISO_WITH_ZONE.test(cell)) return { fail: ISO_NO_ZONE.test(cell) ? 'no_timezone' : 'bad_date' };
   const at = Date.parse(cell);
   if (!Number.isFinite(at)) return { fail: 'bad_date' };
+  // C-053 : fuseau d'appareil invalide : la ligne est rejetée (jour local incalculable), jamais une exception.
+  if (!isValidTimeZone(timeZone)) return { fail: 'no_timezone' };
   const day = utcToLocal(new Date(at).toISOString(), timeZone).date;
   if (day > today) return { fail: 'future' };
   return { at, day };
