@@ -65,7 +65,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   const { data } = container;
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [found, setFound] = useState<{ readonly query: string; readonly result: CatalogueSearchResult } | null>(null);
+  const [found, setFound] = useState<{ readonly query: string; readonly provenance: SearchProvenance | undefined; readonly result: CatalogueSearchResult } | null>(null);
   const [recents, setRecents] = useState<readonly RecentFood[] | null>(null);
   // Favoris (D-79) : liste conservée (sans les aliments disparus) et aliments retrouvés, dans le même ordre.
   const [favorites, setFavorites] = useState<{ readonly status: 'loading' | 'ready' | 'failed'; readonly kept: readonly Favorite[]; readonly foods: readonly SearchableFood[]; readonly gone: readonly string[] }>({ status: 'loading', kept: [], foods: [], gone: [] });
@@ -252,18 +252,20 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     return true;
   }
 
+  // C-092 : le filtre Perso / Ciqual / OFF part dans la recherche (avant la coupe à 50), « Tout » et « Mes recettes » cherchent partout.
+  const provenance: SearchProvenance | undefined = filter === 'all' || filter === 'recipe' ? undefined : filter;
   useEffect(() => {
     const ticket = (request.current += 1);
     if (query.trim() === '') return;
     void (async () => {
       try {
-        const result = await searchCatalogue(await data.repos.foods(), query, { now: new Date(container.clock.nowMs()).toISOString() as IsoDateTime });
-        if (ticket === request.current) setFound({ query, result });
+        const result = await searchCatalogue(await data.repos.foods(), query, { now: new Date(container.clock.nowMs()).toISOString() as IsoDateTime, ...(provenance === undefined ? {} : { provenance }) });
+        if (ticket === request.current) setFound({ query, provenance, result });
       } catch {
-        if (ticket === request.current) setFound({ query, result: { hits: [], ciqual: 'unavailable', staleOff: [] } });
+        if (ticket === request.current) setFound({ query, provenance, result: { hits: [], ciqual: 'unavailable', staleOff: [] } });
       }
     })();
-  }, [query, data, container]);
+  }, [query, provenance, data, container]);
 
   // Recettes (D-80) : lues à la demande, seulement quand elles peuvent figurer dans les résultats (filtre « Tout » ou « Mes recettes »).
   useEffect(() => {
@@ -405,7 +407,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   }
 
   // Un résultat n'est montré que pour la requête qui l'a produit (jamais celui d'une frappe précédente).
-  const result = found !== null && found.query === query ? found.result : null;
+  const result = found !== null && found.query === query && found.provenance === provenance ? found.result : null;
   const visible = (result?.hits ?? []).filter((hit) => filter === 'all' || hit.provenance === filter);
   // Recettes : seulement celles de la requête affichée ; masquées par les filtres Perso / Ciqual / OFF.
   const recipeView = recipeSearch !== null && recipeSearch.query === query && (filter === 'all' || filter === 'recipe') ? recipeSearch : null;

@@ -45,12 +45,14 @@ function score(food: SearchableFood, query: string, words: readonly string[]): n
   return 3;
 }
 
-export function searchFoods(query: string, foods: readonly SearchableFood[], options: { readonly limit?: number } = {}): SearchableFood[] {
+export function searchFoods(query: string, foods: readonly SearchableFood[], options: { readonly limit?: number; readonly provenance?: SearchProvenance } = {}): SearchableFood[] {
   const q = normalizeText(query);
   if (q.length === 0) return [];
   const words = q.split(' ');
   const hits: { readonly food: SearchableFood; readonly score: number; readonly name: string }[] = [];
   for (const food of foods) {
+    // C-092 : le filtre de provenance passe AVANT la coupe, jamais après (un produit OFF classé en dernier ne disparaît plus).
+    if (options.provenance !== undefined && food.provenance !== options.provenance) continue;
     const s = score(food, q, words);
     if (s !== null) hits.push({ food, score: s, name: normalizeText(food.name) });
   }
