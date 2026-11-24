@@ -15,7 +15,7 @@ import { recoverySplit } from './recoverySplit';
 import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName } from './programDay';
 import { replayWorkout } from './replay';
 import { strengthScore, type StrengthExercise, type StrengthStandards } from './strengthScore';
-import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
+import { type WorkoutSet, type WorkoutWithSets } from './session';
 import { warmupForExercise } from './warmup';
 import type { ExerciseSession, ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
 
@@ -115,16 +115,6 @@ describe('SEANCE-0292 C-010 : séries dégressives et partielles hors de l’éc
 
   it('séries chronométrées comptées comme travail', () => {
     expect(routineDiff(w([s(0, { setKind: 'timed', durationSec: 30 }), s(1), s(2)]), day).hasChanges).toBe(false);
-  });
-});
-
-describe('SEANCE-0292 C-016 : isCompletedWorkSet ne compte ni dégressive ni partielle comme travail', () => {
-  it('travail et chronométrée validées : oui ; dégressive, partielle, échauffement : non', () => {
-    expect(isCompletedWorkSet(setRow(0, { done: true, reps: 8, loadKg: 60 }))).toBe(true);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'timed', done: true, durationSec: 45 }))).toBe(true);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'drop', done: true, reps: 8, loadKg: 40 }))).toBe(false);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'partial', done: true, reps: 5, loadKg: 70 }))).toBe(false);
-    expect(isCompletedWorkSet(setRow(0, { setKind: 'warmup', done: true, reps: 8, loadKg: 40 }))).toBe(false);
   });
 });
 

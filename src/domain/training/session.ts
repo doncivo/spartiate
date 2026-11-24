@@ -154,11 +154,6 @@ export function correctionIssues(before: SetEntry, after: SetEntry, metric: Exer
   return metric === 'load-reps' && before.loadKg !== null && after.loadKg === null ? ['load-cleared'] : [];
 }
 
-/** Série de travail réussie : validée, de travail ou chronométrée (C-016 : ni échauffement, ni dégressive, ni partielle), saisie conforme. */
-export function isCompletedWorkSet(set: WorkoutSet): boolean {
-  return set.done && (set.setKind === 'work' || set.setKind === 'timed') && validateSetEntry(entryOf(set), set.setKind).length === 0;
-}
-
 /** Valeurs actuellement saisies (jamais les cibles). */
 export function entryOf(set: WorkoutSet): SetEntry {
   return { reps: set.reps, loadKg: set.loadKg, durationSec: set.durationSec, rir: set.rir };
