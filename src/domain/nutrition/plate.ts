@@ -12,6 +12,8 @@ import type { LocalDate, LocalTime } from '../types';
 export interface PlateItem {
   readonly food: SearchableFood;
   readonly grams: number;
+  /** C-100 : « scan » quand l'aliment vient d'un code lu par la caméra ; « search » sinon. */
+  readonly method?: 'search' | 'scan';
 }
 
 export type Plate = readonly PlateItem[];
@@ -19,13 +21,13 @@ export type Plate = readonly PlateItem[];
 const tenth = (n: number): number => Math.round(n * 10) / 10;
 
 /** Ajoute un aliment ; le même aliment cumule ses grammes. Grammes invalides ou cumul au-delà du plafond : assiette inchangée. */
-export function addToPlate(plate: Plate, food: SearchableFood, grams: number): Plate {
+export function addToPlate(plate: Plate, food: SearchableFood, grams: number, method: 'search' | 'scan' = 'search'): Plate {
   if (computeTotals(food.per100g, grams) === null) return plate;
   const existing = plate.find((i) => i.food.ref === food.ref);
-  if (existing === undefined) return [...plate, { food, grams }];
+  if (existing === undefined) return [...plate, method === 'scan' ? { food, grams, method } : { food, grams }];
   const sum = tenth(existing.grams + grams);
   if (sum > FOOD_GRAMS_MAX) return plate;
-  return plate.map((i) => (i === existing ? { food: i.food, grams: sum } : i));
+  return plate.map((i) => (i === existing ? { ...i, grams: sum } : i));
 }
 
 export const removeFromPlate = (plate: Plate, ref: string): Plate => plate.filter((i) => i.food.ref !== ref);
@@ -50,10 +52,10 @@ export function plateTotals(plate: Plate): Totals {
 export function plateEntries(plate: Plate, at: { readonly date: LocalDate; readonly time: LocalTime }): MealEntryDraft[] | null {
   if (plate.length === 0) return null;
   const drafts: MealEntryDraft[] = [];
-  for (const { food, grams } of plate) {
+  for (const { food, grams, method } of plate) {
     const totals = computeTotals(food.per100g, grams);
     if (totals === null) return null;
-    drafts.push({ date: at.date, time: at.time, foodId: food.ref, foodName: food.name.slice(0, 200), source: food.provenance, grams, ...totals, method: 'search', confidence: null });
+    drafts.push({ date: at.date, time: at.time, foodId: food.ref, foodName: food.name.slice(0, 200), source: food.provenance, grams, ...totals, method: method ?? 'search', confidence: null });
   }
   return drafts;
 }

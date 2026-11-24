@@ -136,8 +136,8 @@ export async function saveNutritionPrefs(access: DataAccess, prefs: NutritionPre
 
 export { DEFAULT_NUTRITION_PREFS };
 
-/** Entrée de journal pour `grams` d'un aliment du catalogue (méthode « search », provenance conservée) ; `null` si les grammes sont invalides. */
-export function entryFromFood(food: SearchableFood, grams: number, at: { readonly date: LocalDate; readonly time: LocalTime }): MealEntryDraft | null {
+/** Entrée de journal pour `grams` d'un aliment du catalogue (méthode « search » ou « scan » pour un code lu par la caméra, C-100 ; provenance conservée) ; `null` si les grammes sont invalides. */
+export function entryFromFood(food: SearchableFood, grams: number, at: { readonly date: LocalDate; readonly time: LocalTime }, method: 'search' | 'scan' = 'search'): MealEntryDraft | null {
   const totals = computeTotals(food.per100g, grams);
   if (totals === null) return null;
   return {
@@ -151,7 +151,7 @@ export function entryFromFood(food: SearchableFood, grams: number, at: { readonl
     proteinG: totals.proteinG,
     fatG: totals.fatG,
     carbG: totals.carbG,
-    method: 'search',
+    method,
     confidence: null,
   };
 }

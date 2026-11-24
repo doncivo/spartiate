@@ -39,6 +39,8 @@ interface Selection {
   readonly staleCause?: string;
   /** Calories recalculées depuis les kJ d'Open Food Facts (D-342). */
   readonly energyFromKj?: boolean;
+  /** C-100 : « scan » quand le code vient de la caméra. */
+  readonly method?: 'scan';
 }
 
 /** Résultat d'une saisie ou d'un scan de code, rendu sous le champ. */
@@ -97,7 +99,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
   });
 
   /** Saisie ou scan d'un code : cache d'abord, réseau seulement si la fiche manque ou a plus de 90 jours. */
-  async function lookupCode(input: string): Promise<void> {
+  async function lookupCode(input: string, method?: 'scan'): Promise<void> {
     const ticket = (lookupTicket.current += 1);
     setNotice(null);
     setScanNotice(null);
@@ -112,7 +114,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           break;
         case 'found':
           state = null;
-          chosen = { food: toSearchable(result.food), grams: '100', ...(result.via === 'stale' && result.refreshFailure ? { staleCause: offFailureCause(result.refreshFailure) } : {}), ...(result.energyFromKj ? { energyFromKj: true } : {}) };
+          chosen = { food: toSearchable(result.food), grams: '100', ...(method === 'scan' ? { method } : {}), ...(result.via === 'stale' && result.refreshFailure ? { staleCause: offFailureCause(result.refreshFailure) } : {}), ...(result.energyFromKj ? { energyFromKj: true } : {}) };
           break;
         case 'not-found':
           state = { status: 'message', text: tNutrition('barcodeNotFound', { code: result.code }), createCode: result.code };
@@ -172,7 +174,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     switch (outcome.kind) {
       case 'scanned':
         setCode(outcome.barcode.code);
-        void lookupCode(outcome.barcode.code);
+        void lookupCode(outcome.barcode.code, 'scan');
         return;
       case 'cancelled':
         return;
@@ -390,6 +392,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           food={selection.food}
           staleCause={selection.staleCause}
           energyFromKj={selection.energyFromKj === true}
+          method={selection.method ?? 'search'}
           favorite={isFavorite(favorites.kept, selection.food.ref)}
           favoritesStatus={favorites.status}
           onToggleFavorite={onToggleFavorite}
@@ -397,8 +400,8 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
           date={date}
           defaultTime={defaultTime}
           onBack={() => setSelection(null)}
-          onAddToPlate={(food, grams) => {
-            setPlate((current) => addToPlate(current, food, grams));
+          onAddToPlate={(food, grams, method) => {
+            setPlate((current) => addToPlate(current, food, grams, method));
             setSelection(null);
           }}
           onSaved={onSaved}
@@ -705,6 +708,7 @@ interface QuantityStepProps {
   readonly food: SearchableFood;
   readonly staleCause?: string | undefined;
   readonly energyFromKj?: boolean;
+  readonly method: 'search' | 'scan';
   readonly favorite: boolean;
   readonly favoritesStatus: 'loading' | 'ready' | 'failed';
   readonly onToggleFavorite: (food: SearchableFood) => Promise<boolean>;
@@ -712,13 +716,13 @@ interface QuantityStepProps {
   readonly date: LocalDate;
   readonly defaultTime: string;
   readonly onBack: () => void;
-  readonly onAddToPlate: (food: SearchableFood, grams: number) => void;
+  readonly onAddToPlate: (food: SearchableFood, grams: number, method: 'search' | 'scan') => void;
   readonly onSaved: () => void;
   readonly onClose: () => void;
 }
 
 /** Quantité d'une prise : grammes ou portions de la fiche, heure, totaux recalculés ; enregistrement après confirmation seulement. */
-function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onAddToPlate, onSaved, onClose }: QuantityStepProps) {
+function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite, favoritesStatus, onToggleFavorite, initialGrams, date, defaultTime, onBack, onAddToPlate, onSaved, onClose }: QuantityStepProps) {
   const { data } = useAppContainer();
   const [grams, setGrams] = useState(initialGrams);
   const [time, setTime] = useState(defaultTime);
@@ -748,7 +752,7 @@ function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favori
 
   const amount = parseNumber(grams);
   const totals = typeof amount === 'number' ? computeTotals(food.per100g, amount) : null;
-  const draft = typeof amount === 'number' ? entryFromFood(food, amount, { date, time: time as LocalTime }) : null;
+  const draft = typeof amount === 'number' ? entryFromFood(food, amount, { date, time: time as LocalTime }, method) : null;
   const valid = draft !== null && validateMealEntry(draft).length === 0;
 
   async function save(): Promise<void> {
@@ -847,7 +851,7 @@ function QuantityStep({ food, staleCause, energyFromKj = false, favorite, favori
         <Button type="submit" disabled={!valid || busy}>
           {tNutrition('addToJournal')}
         </Button>
-        <Button variant="secondary" disabled={!valid || typeof amount !== 'number'} onClick={() => typeof amount === 'number' && onAddToPlate(food, amount)}>
+        <Button variant="secondary" disabled={!valid || typeof amount !== 'number'} onClick={() => typeof amount === 'number' && onAddToPlate(food, amount, method)}>
           {tNutrition('plateAdd')}
         </Button>
         <Button variant="secondary" onClick={onBack}>
