@@ -1,5 +1,5 @@
 import { WEIGHT_MAX_KG } from '../bodyProfile';
-import { utcToLocal } from '../timeZone';
+import { isValidTimeZone, utcToLocal } from '../timeZone';
 
 /**
  * Pesées exportées de Santé par l'app Raccourcis (D-69 : HealthKit inaccessible avec un compte Apple gratuit). Module pur.
@@ -62,11 +62,14 @@ function parseLine(cells: readonly string[], today: string, timeZone: string): {
   if (iso === null) return null;
   const at = Date.parse(date);
   if (!Number.isFinite(at)) return null;
+  // C-053 : fuseau d'appareil invalide : ligne rejetée, jamais une exception.
+  if (!isValidTimeZone(timeZone)) return null;
   const day = utcToLocal(new Date(at).toISOString(), timeZone).date;
   if (day > today) return null;
   const value = VALUE.exec(raw);
   if (value === null) return null;
-  const unit = (unitCell ?? value[2] ?? 'kg').toLowerCase();
+  // C-054 : une 3e colonne vide vaut « pas d'unité » (comme le lecteur du dossier de Santé).
+  const unit = (unitCell !== undefined && unitCell !== '' ? unitCell : value[2] ?? 'kg').toLowerCase();
   if (unit !== 'kg' && unit !== 'lb') return null;
   const number = Number((value[1] ?? '').replace(',', '.'));
   const kg = Math.round((unit === 'lb' ? number * LB_TO_KG : number) * 100) / 100;
