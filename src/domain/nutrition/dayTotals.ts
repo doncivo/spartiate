@@ -22,7 +22,8 @@ function sumKnown(values: readonly (number | null)[]): number | null {
     if (!isKnown(v)) return null;
     total += v;
   }
-  return total;
+  // C-041 : arrondi de précaution (10^-6), les erreurs de virgule flottante ne sortent pas du total.
+  return Math.round(total * 1e6) / 1e6;
 }
 
 export function aggregateDay(
