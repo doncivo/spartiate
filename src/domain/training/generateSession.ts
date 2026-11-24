@@ -275,7 +275,9 @@ export function generateSession(input: GenerateSessionInput): GeneratedSession {
 
   // Rendu.
   const repRange = (slot: Slot): readonly [number, number] => {
-    if (slot.chosen.kind === slot.source.kind) return [slot.line.repMin, slot.line.repMax];
+    // C-013 (D-472) : une ligne de la routine garde sa plage écrite (D-86) ; tout exercice placé par la génération (substitution, rotation)
+    // prend la plage de son type (§ 12.1.4). Exercice chronométré : la cible de la ligne (secondes) reste, aucune plage de répétitions.
+    if (slot.origin === 'routine' || slot.chosen.metric === 'time') return [slot.line.repMin, slot.line.repMax];
     return slot.chosen.kind === 'compound' ? config.compoundRepRange : config.isolationRepRange;
   };
   const exercises: GeneratedExercise[] = slots.map((slot) => {

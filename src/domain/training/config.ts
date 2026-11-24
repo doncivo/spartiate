@@ -241,7 +241,7 @@ export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-lo
 // -----------------------------------------------------------------------------------------------------------------------------------
 
 /** Version des règles de génération ; incrémentée à tout changement d'une constante ci-dessous qui change une séance proposée. */
-export const GENERATION_VERSION = 2;
+export const GENERATION_VERSION = 3;
 
 export interface GenerationConfig {
   /** Temps de travail estimé par série (§ 12.1) ; le repos compte entre séries consécutives seulement (D-73 point 4). */
