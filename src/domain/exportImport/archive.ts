@@ -99,7 +99,9 @@ export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine
  */
 // PROG-01 (schéma 19) : `mesocycle` sans `next_weeks` ni `ramp_up`, `nutrition_target` sans cible de repos (archive sv 18).
 const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = {
-  workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec'],
+  // DATA-0293 (schéma 23) : `workout_set` sans distance, série ajoutée ni valeur d'avant correction, `progression_profile` sans surcharges (archives sv 22 et avant).
+  workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec', 'distance_m', 'added', 'corrected_from'],
+  progression_profile: ['config_overrides'],
   routine_exercise: ['circuit_id', 'circuit_rest_sec'],
   mesocycle: ['next_weeks', 'ramp_up'],
   nutrition_target: ['rest_kcal', 'rest_carb_g', 'training_days'],

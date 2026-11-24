@@ -213,6 +213,9 @@ Séries des séances (`workout_id` renvoie à `workout.csv`). Les séries d’un
 | `difficulty` | enum | — | oui |  |
 | `circuit_id` | text | — | oui | identifiant du groupe (superset, triset, circuit) ; vide hors groupe |
 | `circuit_rest_sec` | int | s | oui | repos entre deux exercices d’un même tour ; 0 = aucun ; vide hors groupe |
+| `distance_m` | real | m | oui | distance de la série (exercice à distance) ; vide : non saisie |
+| `added` | int | — | oui | 1 : série ajoutée en séance en plus du programme ; 0 : série prévue ; vide : séance d’avant la 0.29.3 |
+| `corrected_from` | text | — | oui | valeurs d’avant la dernière correction (JSON) ; vide : jamais corrigée |
 
 ### `csv/progression_profile.csv`
 
@@ -226,6 +229,7 @@ Estimation de 1RM par exercice, `id` = `progression|<exercice>`.
 | `confidence` | real | — | oui |  |
 | `last_easy_recalibration_at` | datetime | — | oui |  |
 | `engine_version` | int | — | non |  |
+| `config_overrides` | text | — | oui | réglages propres à l’exercice (JSON borné) ; vide : réglages communs |
 
 ### `csv/recommendation_decision.csv`
 
