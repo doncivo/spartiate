@@ -263,3 +263,27 @@ describe('FIX-0271 (D-314) : une cible prévue n’est pas battue par une décis
     expect(out?.trainingDays).toEqual([1, 2, 4, 5, 6]);
   });
 });
+
+describe('NUTRI-0292 (C-040) : horloge en avance et HLC illisible', () => {
+  const at = (iso: string): Hlc => hlcAt(Date.parse(iso), 0, '60000000-0000-4000-8000-0000000000a1');
+  const rec = (id: string, weekStart: string, kcal: number, hlc: Hlc) => ({ id, weekStart: weekStart as LocalDate, target: { kcal, proteinG: 150, fatG: 70, carbG: 250 }, accepted: true, hlc });
+
+  it('une décision datée d\'après aujourd\'hui (horloge d\'un appareil en avance) ne passe pas devant la cible prévue', () => {
+    const plan = rec('plan', '2026-11-16', 2350, at('2026-11-15T10:00:00.000Z'));
+    const ahead = rec('ahead', '2026-11-09', 3050, at('2026-11-20T10:00:00.000Z'));
+    expect(effectiveTarget([plan, ahead], '2026-11-17' as LocalDate, '2026-11-15' as LocalDate)?.id).toBe('plan');
+  });
+
+  it('la même décision reprend la main quand sa date est atteinte', () => {
+    const plan = rec('plan', '2026-11-16', 2350, at('2026-11-15T10:00:00.000Z'));
+    const ahead = rec('ahead', '2026-11-09', 3050, at('2026-11-20T10:00:00.000Z'));
+    expect(effectiveTarget([plan, ahead], '2026-11-21' as LocalDate, '2026-11-21' as LocalDate)?.id).toBe('ahead');
+  });
+
+  it('HLC illisible à prise d\'effet égale : la décision à HLC lisible l\'emporte, quel que soit l\'ordre', () => {
+    const good = rec('good', '2026-11-16', 2350, at('2026-11-16T00:00:00.000Z'));
+    const odd = rec('odd', '2026-11-16', 2000, 'illisible' as Hlc);
+    expect(effectiveTarget([good, odd], '2026-11-17' as LocalDate)?.id).toBe('good');
+    expect(effectiveTarget([odd, good], '2026-11-17' as LocalDate)?.id).toBe('good');
+  });
+});
