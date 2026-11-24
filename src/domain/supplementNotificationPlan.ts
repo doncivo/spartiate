@@ -1,5 +1,5 @@
 import { addDays } from './localDate';
-import { fireAtInstant, localDateTimeAt } from './notificationInstant';
+import { effectiveFireAt } from './notificationInstant';
 import { NOTIFICATION_LIMIT_DEFAULT } from './notificationPlan';
 import { dueIntakes, type Supplement, type SupplementIntake } from './nutrition/supplements';
 import { isLocalDateTime, type LocalDate, type LocalDateTime, type LocalTime } from './types';
@@ -39,16 +39,6 @@ export interface SupplementNotificationPlan {
 }
 
 export const supplementNotificationId = (day: LocalDate, moment: LocalTime): string => `supplement:${day}T${moment}`;
-
-/** Heure murale à laquelle l'échéance se déclenche vraiment ; fuseau absent ou invalide : l'échéance telle quelle. */
-function effectiveFireAt(fireAt: LocalDateTime, zone: string | undefined): LocalDateTime {
-  if (zone === undefined) return fireAt;
-  try {
-    return localDateTimeAt(fireAtInstant(fireAt, zone), zone);
-  } catch {
-    return fireAt;
-  }
-}
 
 export function planSupplementNotifications(input: SupplementNotificationPlanInput): SupplementNotificationPlan {
   const empty: SupplementNotificationPlan = { items: [], total: 0 };
