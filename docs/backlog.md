@@ -494,7 +494,7 @@ Lignes de l'audit du projet du 24/11 (lecture seule sur origin/main f5a1b88), re
 
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
-| BL-138 | audit du projet 24/11 (N-01) | important — l'identifiant du profil de matériel par défaut nomme un lieu réel (content/equipment-profiles/profiles.json:3, programmes, tests, CHANGELOG, fiches) ; renommage avec migration et garde privacy.test.ts étendue (D-489) | à faire (0.29.x, données et synchro, M) |
+| BL-138 | audit du projet 24/11 (N-01) | important — l'identifiant du profil de matériel par défaut nomme un lieu réel (content/equipment-profiles/profiles.json:3, programmes, tests, CHANGELOG, fiches) ; renommage avec migration et garde privacy.test.ts étendue (D-489) | fait (DATA-0292, D-489, D-531 à D-535 : identifiant neutre « salle-complete », migration 0022 des réglages locaux, garde privacy.test.ts étendue, nom de lieu retiré du dépôt hors docs/archive) |
 | BL-139 | audit du projet 24/11 (N-02) | mineur — Exertion : séries au poids du corps, chronométrées et assistées comptées 0 (exertion.ts:35, recoveryImport/index.ts:33) ; charge totale (poids de corps × fraction ± charge) et charge par minute pour le chronométré | à faire (0.29.x, nutrition et récupération, S) |
 | BL-140 | audit du projet 24/11 (N-03) | mineur — résumé de séance : « charge faite » d'un exercice assisté = série la plus assistée (summaryGap.ts:38, max au lieu de min) | à faire (0.29.x, séance et moteur, S) |
 | BL-141 | audit du projet 24/11 (N-04) | mineur — résumé de séance : répétitions comparées par rang des séries faites et non par série prévue (summaryGap.ts:43) ; apparier par setIndex | à faire (0.29.x, séance et moteur, S) |

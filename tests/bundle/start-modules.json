@@ -111,8 +111,6 @@
       "fichiers": [
         "src/db/errorText.ts",
         "src/db/migrationBackup.ts",
-        "src/db/migrations/0001_spartiate_init.ts",
-        "src/db/migrations/index.ts",
         "src/db/migrator.ts",
         "src/db/repositories/common.ts",
         "src/db/repositories/dataAccess.ts",
@@ -253,111 +251,6 @@
       "raison": "Déplacé de src/features/reminders/settingsLedger.ts (qui était dans le départ de main) vers features/app ; importé par bootstrap.ts. Même module, même rôle, aucun code ajouté."
     },
     {
-      "fichier": "src/db/migrations/0001_spartiate_init.ts",
-      "story": "BUNDLE-01",
-      "raison": "Remplace les dix-neuf migrations CircleTasks du registre (base neuve, D-23) ; une seule migration au départ, plus courte que les dix-neuf retirées."
-    },
-    {
-      "fichier": "src/db/migrations/0002_training.ts",
-      "story": "I1-01",
-      "raison": "Migration I1 (exercices personnalisés, matériel, routines ; 7,3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Les écrans, textes et contenu de l'entraînement restent hors du départ."
-    },
-    {
-      "fichier": "src/db/migrations/0003_workout.ts",
-      "story": "I1-02",
-      "raison": "Migration I1-02 (séances et séries, locales ; 3,4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. L'écran de séance, ses textes et le minuteur restent hors du départ."
-    },
-    {
-      "fichier": "src/db/migrations/0004_workout_sync.ts",
-      "story": "I1-03",
-      "raison": "Migration I1-03 (déclencheurs gardés de la publication des séances closes, 7 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le journal, le résumé et la clôture restent hors du départ."
-    },
-    {
-      "fichier": "src/db/migrations/0005_progression.ts",
-      "story": "I2-01",
-      "raison": "Migration I2-01 (tables locales progression_profile et recommendation_decision, 3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le moteur de prescription et son repository restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0006_progression_sync.ts",
-      "story": "I2-01",
-      "raison": "Migration I2-01 PR 2/2 (difficulté des séries, déclencheurs de capture des tables de progression, 5,8 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Le composant de prescription, son catalogue fr.progression, le moteur et le repository restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0007_mesocycle.ts",
-      "story": "I3-02",
-      "raison": "Migration I3-02 (table mesocycle publiée et ses deux déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. La section Cycle, son catalogue fr.trainingCycle, les règles du mésocycle et le repository restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0008_nutrition.ts",
-      "story": "I4-02",
-      "raison": "Migration I4-02 (tables food, food_portion, meal_entry et nutrition_target publiées et leurs huit déclencheurs de capture, 9 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande. Les règles de nutrition, les repositories, la recherche et le catalogue Ciqual (content/food/ciqual.json, 537 Ko) restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0009_recipes.ts",
-      "story": "I4-07",
-      "raison": "Migration I4-07 (tables day_completeness, recipe et recipe_ingredient publiées et leurs six déclencheurs de capture, 7 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 et 0008. Les écrans de recettes (RecipesView, RecipeHits, RecipeQuantityStep), leur catalogue fr.recipes, les règles et les repositories restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0010_recovery.ts",
-      "story": "I5-01",
-      "raison": "Migration I5-01 (tables recovery_day et muscle_recovery publiées avec leurs déclencheurs de capture, recovery_sample et recovery_import_state locales, 10 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0009. Le moteur de récupération, l'import des fichiers Raccourcis, l'écran et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0011_recovery_factor.ts",
-      "story": "I6-01",
-      "raison": "Migration I6-01 (table recovery_factor publiée, journal de facteurs, et ses deux déclencheurs de capture, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0010. Le dépôt, l'analyse, les écrans et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0012_body_progress.ts",
-      "story": "I6-02",
-      "raison": "Migration I6-02 (tables measurement et progress_photo publiées avec leurs quatre déclencheurs de capture, table locale progress_photo_file, 6 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0011. Les dépôts, le domaine, l'écran Corps, le sélecteur de photo et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0013_workout_circuit.ts",
-      "story": "I6-03",
-      "raison": "Migration I6-03 (deux colonnes publiées de workout_set pour les groupes de circuit, aucun déclencheur, 1 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0012. Le domaine, le dépôt, l'en-tête et le formulaire de groupe, le rejeu, l'export complet et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0014_routine_circuit.ts",
-      "story": "I6-03-b",
-      "raison": "Migration I6-03b (deux colonnes publiées de routine_exercise pour les groupes de circuit des routines et leur déclencheur de capture propre, 2 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0013. Les règles de groupe, l'en-tête et le formulaire de l'éditeur, le déroulé série par série et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0015_food_favorite.ts",
-      "story": "FIX-01-81",
-      "raison": "Migration FIX-0181 (ID écrit FIX-01-81 : l'expression STORY_ID impose deux chiffres après le tiret ; table food_favorite publiée, favoris de la recherche d'aliments synchronisés, et ses deux déclencheurs de capture, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0014. Le dépôt des favoris, la reprise des favoris locaux, la recherche et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0016_data_reset.ts",
-      "story": "RESET-01",
-      "raison": "Migration RESET-01 (table data_reset publiée, remises à zéro des données, et ses deux déclencheurs de capture, 3 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0015. L'écran « Repartir de zéro », ses textes, l'effacement (src/sync/dataReset.ts) et son dépôt restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0017_supplement.ts",
-      "story": "I6-05",
-      "raison": "Migration I6-05 (tables supplement et supplement_intake publiées, compléments et prises cochées synchronisés, et leurs quatre déclencheurs de capture, 5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0016. Le dépôt des compléments, la carte d'Aujourd'hui, la section de Nutrition, le service des rappels et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0018_cardio.ts",
-      "story": "I6-06",
-      "raison": "Migration I6-06 (table cardio_session publiée, séances cardio, ses deux déclencheurs de capture, et table locale cardio_track des tracés GPS, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0017. Le domaine du cardio, le dépôt, l’écran Cardio, la carte Cardio de Progrès, la façade et le plugin de géolocalisation et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0019_program_rest_day.ts",
-      "story": "PROG-01",
-      "raison": "Migration PROG-01 (colonnes publiées next_weeks et ramp_up de mesocycle, rest_kcal, rest_carb_g et training_days de nutrition_target, et leurs deux déclencheurs de capture propres, 4 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0018. Le domaine de la cible de repos, le type de jour, les écrans Programme et Stratégie et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
-      "fichier": "src/db/migrations/0020_routine_weekday.ts",
-      "story": "PROG-04",
-      "raison": "Migration PROG-04 (colonne publiée weekday de routine_day et déclencheur de capture propre, 2,5 Ko source) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0019. L'éditeur de routine, la saisie du jour de la semaine et ses textes restent hors du départ."
-    },
-    {
-      "fichier": "src/db/migrations/0021_exclusion_injury.ts",
-      "story": "LOT-29-SYNC0291",
-      "raison": "Migration SYNC-0291 (tables publiées exercise_exclusion et injury, leurs quatre déclencheurs de capture produits par le gabarit importé de la 0018, déjà au départ) inscrite au registre src/db/migrations/index.ts, exécutée par le migrateur avant le premier rendu : elle ne peut pas être chargée à la demande, comme 0007 à 0020. Les dépôts, la reprise des réglages locaux, les écrans de séance et de blessures et leurs textes restent hors du départ (import à la demande)."
-    },
-    {
       "fichier": "src/features/app/ShellChrome.tsx",
       "story": "BUNDLE-01",
       "raison": "SPA-009 : carte d'état de la barre latérale PC et barre supérieure (1,6 Ko source), montées dès le premier rendu de la coquille."
@@ -386,6 +279,11 @@
       "fichier": "src/platform/windowTheme.ts",
       "story": "LOT-27-FIX0272",
       "raison": "Façade platform de la barre de titre Tauri (ADR 0001, constat de l'audit 0.26.0) : code DÉPLACÉ de src/features/settings/theme.ts, déjà au départ (thème appliqué avant le premier rendu) ; aucun octet de logique ajouté, l'import Tauri reste dynamique."
+    },
+    {
+      "fichier": "src/db/migrations/manifest.ts",
+      "story": "LOT-29-DATA0292",
+      "raison": "Manifeste des migrations (version, nom, somme de contrôle) lu par le migrateur à chaque démarrage pour savoir s'il y a du travail ; remplace, au départ, le registre complet et les 22 fichiers de SQL de migration (plus de 40 Ko de source), désormais chargés à la demande seulement quand la base a des migrations à appliquer (compense la migration 0022 et allège le départ)."
     }
   ]
 }

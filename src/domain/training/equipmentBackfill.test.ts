@@ -4,19 +4,19 @@ import { loadGrid } from './loadGrid';
 import type { EquipmentInventory, EquipmentProfileInput } from './types';
 
 /**
- * I2-04 (point 1) : une copie du profil embarqué Fitness Park Antony faite avant la 0.3.0 n'a pas la paire d'haltères de 9 kg (`extraKg`).
+ * I2-04 (point 1) : une copie du profil embarqué Fitness Park faite avant la 0.3.0 n'a pas la paire d'haltères de 9 kg (`extraKg`).
  * Rattrapage À LA LECTURE (aucune migration, aucune écriture) : seul le champ manquant est ajouté ; tout le reste du profil est rendu tel
  * quel. Copie reconnue par son nom (préfixe du nom embarqué) ou par sa liste de matériel identique ; jamais pour un autre profil.
  */
 
 const AVAILABLE = ['barbell', 'ez-bar', 'dumbbell', 'kettlebell', 'flat-bench'];
 const EMBEDDED = [
-  { name: 'Fitness Park Antony', inventory: { ...emptyInventory(), available: AVAILABLE, dumbbells: { minKg: 2, maxKg: 50, stepKg: 2, extraKg: [9] } } },
+  { name: 'Fitness Park', inventory: { ...emptyInventory(), available: AVAILABLE, dumbbells: { minKg: 2, maxKg: 50, stepKg: 2, extraKg: [9] } } },
   { name: 'Maison haltères', inventory: { ...emptyInventory(), available: ['dumbbell'], dumbbells: { minKg: 2, maxKg: 20, stepKg: 2 } } },
 ];
 const copy = (over: Partial<EquipmentProfileInput> = {}, inv: Partial<EquipmentInventory> = {}): EquipmentProfileInput => ({
   id: 'b0000000-0000-4000-8000-000000000001',
-  name: 'Fitness Park Antony (copie)',
+  name: 'Fitness Park (copie)',
   kind: 'salle',
   inventory: { ...emptyInventory(), available: AVAILABLE, dumbbells: { minKg: 2, maxKg: 50, stepKg: 2 }, toVerify: ['kettlebells'] },
   increments: { barbell: 2.5, dumbbell: 2 },
@@ -48,7 +48,7 @@ describe('backfillDumbbellExtras (I2-04, paire de 9 kg)', () => {
     expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
   });
 
-  it('revue : nom d’un autre profil embarqué (« Maison haltères (copie) ») avec le matériel d’Antony : le nom l’emporte, rien d’ajouté', () => {
+  it('revue : nom d’un autre profil embarqué (« Maison haltères (copie) ») avec le matériel de la salle : le nom l’emporte, rien d’ajouté', () => {
     const stored = copy({ name: 'Maison haltères (copie)' });
     expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
   });
@@ -69,9 +69,9 @@ describe('backfillDumbbellExtras (I2-04, paire de 9 kg)', () => {
     const stored = copy({ name: 'Maison haltères (copie)' }, { available: ['dumbbell'], dumbbells: { minKg: 2, maxKg: 20, stepKg: 2 } });
     const frozen = JSON.stringify(stored);
     expect(backfillDumbbellExtras(stored, EMBEDDED)).toBe(stored);
-    const antony = copy();
-    backfillDumbbellExtras(antony, EMBEDDED);
-    expect(antony.inventory.dumbbells).toEqual({ minKg: 2, maxKg: 50, stepKg: 2 });
+    const salle = copy();
+    backfillDumbbellExtras(salle, EMBEDDED);
+    expect(salle.inventory.dumbbells).toEqual({ minKg: 2, maxKg: 50, stepKg: 2 });
     expect(JSON.stringify(stored)).toBe(frozen);
   });
 });

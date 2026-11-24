@@ -76,8 +76,10 @@ fn error_code(path: &Path) -> &'static str {
 
 /// I6-06 : version de la migration du cardio (`src/db/migrations/00NN_cardio.ts`), la dernière du registre.
 const CARDIO_VERSION: u32 = 18;
-/// SYNC-0291 : version de la migration 0021 (exercices écartés et gênes publiés), la dernière du registre.
-const LATEST_VERSION: u32 = 21;
+/// SYNC-0291 : version de la migration 0021 (exercices écartés et gênes publiés).
+const EXCLUSION_VERSION: u32 = 21;
+/// DATA-0292 : version de la migration 0022 (identifiant du profil par défaut, réglages locaux, aucun déclencheur), la dernière du registre.
+const LATEST_VERSION: u32 = 22;
 
 /// SYNC-0291 : les déclencheurs de capture des exercices écartés et des gênes n'existent qu'à partir de la version 21.
 #[test]
@@ -85,8 +87,8 @@ fn sync0291_the_exclusion_and_injury_triggers_exist_only_from_version_21() {
     for table in ["exercise_exclusion", "injury"] {
         for suffix in ["ai", "au"] {
             let name = format!("sync_{table}_{suffix}");
-            assert_eq!(trigger_body_for(&name, table, LATEST_VERSION - 1), None);
-            assert!(trigger_body_for(&name, table, LATEST_VERSION).is_some());
+            assert_eq!(trigger_body_for(&name, table, EXCLUSION_VERSION - 1), None);
+            assert!(trigger_body_for(&name, table, EXCLUSION_VERSION).is_some());
         }
     }
 }

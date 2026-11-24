@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BODYWEIGHT_ONLY, DIPS, FITNESS_PARK_ANTONY, PLANK, PUSH_UP, bwSession, daysAgo, input, target, timedSession } from '../../../tests/fixtures/training/progression';
+import { BODYWEIGHT_ONLY, DIPS, SALLE_COMPLETE, PLANK, PUSH_UP, bwSession, daysAgo, input, target, timedSession } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
 import { explainPrescription } from './explain';
 import { prescribe } from './prescribe';
@@ -56,7 +56,7 @@ describe('MOTEUR-0281a qa : cas limites', () => {
 
   it('entrée de la séance : un exercice du catalogue au poids du corps arrive au moteur en `bodyweight-reps`, assisté hors moteur', () => {
     const pushUp = { id: 'push-up', metric: 'bodyweight-reps', equipment: ['bodyweight'], kind: 'compound', bodyweightFraction: null } as unknown as Exercise;
-    const args = { exerciseId: 'push-up', exercise: pushUp, context: { history: [bwSession(3, null, [10, 10, 10])], reference: null, profile: null, lastPositionRank: null, bodyweightKg: null }, equipment: FITNESS_PARK_ANTONY, target: target(8, 15), now: daysAgo(0), recovery: null, deload: false, positionRank: 1 } as const;
+    const args = { exerciseId: 'push-up', exercise: pushUp, context: { history: [bwSession(3, null, [10, 10, 10])], reference: null, profile: null, lastPositionRank: null, bodyweightKg: null }, equipment: SALLE_COMPLETE, target: target(8, 15), now: daysAgo(0), recovery: null, deload: false, positionRank: 1 } as const;
     expect(prescribe(prescriptionInputOf(args)).metric).toBe('bodyweight-reps');
     const assisted = { ...pushUp, id: 'pull-up-assisted', equipment: ['assisted-pull-up-machine', 'pull-up-bar'] } as unknown as Exercise;
     expect(prescribe(prescriptionInputOf({ ...args, exerciseId: 'pull-up-assisted', exercise: assisted })).status).toBe('unsupported');
@@ -67,7 +67,7 @@ describe('MOTEUR-0281b qa : cas limites', () => {
   it('décision de retour transmise au moteur par l’entrée partagée (séance et carte du jour)', () => {
     const exercise = { id: 'bench-press-barbell', metric: 'load-reps', equipment: ['barbell'], kind: 'compound', bodyweightFraction: null } as unknown as Exercise;
     const reference = { decidedAt: daysAgo(1), accepted: false, loadKg: 60, reps: [10, 10, 10], revert: true };
-    const i = prescriptionInputOf({ exerciseId: exercise.id, exercise, context: { history: [], reference, profile: null, lastPositionRank: null, bodyweightKg: null }, equipment: FITNESS_PARK_ANTONY, target: target(8, 10), now: daysAgo(0), recovery: null, deload: false, positionRank: 1 });
+    const i = prescriptionInputOf({ exerciseId: exercise.id, exercise, context: { history: [], reference, profile: null, lastPositionRank: null, bodyweightKg: null }, equipment: SALLE_COMPLETE, target: target(8, 10), now: daysAgo(0), recovery: null, deload: false, positionRank: 1 });
     expect(i.lastDecision?.revert).toBe(true);
     expect(explainPrescription(prescribe(i)).key).toBe('revert');
   });
@@ -102,7 +102,7 @@ describe('MOTEUR-0281a qa : matériel de lest utilisable', () => {
   it('même règle que usableEquipment (disponible, forcé, interdit) pour la ceinture, les haltères et les kettlebells', async () => {
     const { usableEquipment } = await import('./equipment');
     const { ballastLoads } = await import('./prescribe');
-    const base = FITNESS_PARK_ANTONY.inventory;
+    const base = SALLE_COMPLETE.inventory;
     const cases = [
       { ...base, available: ['loading-belt'], toVerify: [] },
       { ...base, available: [], forced: ['dumbbell'] },
@@ -111,7 +111,7 @@ describe('MOTEUR-0281a qa : matériel de lest utilisable', () => {
     ];
     for (const inventory of cases) {
       const usable = usableEquipment({ inventory });
-      const loads = ballastLoads({ inventory, increments: FITNESS_PARK_ANTONY.increments });
+      const loads = ballastLoads({ inventory, increments: SALLE_COMPLETE.increments });
       expect(loads.length > 0).toBe(usable.has('loading-belt') || usable.has('dumbbell'));
       if (!usable.has('dumbbell') && !usable.has('loading-belt')) expect(loads).toEqual([]);
     }

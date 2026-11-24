@@ -528,22 +528,22 @@ describe('contenu embarqué réel', () => {
     for (const d of prog.days) for (const e of d.exercises) for (const g of (lib.get(e.exerciseId) as Json).equipmentGroups as string[][]) expect(g.some((id) => allowed.has(id))).toBe(true);
   });
 
-  it('FIX-0173 (D-142) : un seul profil de salle, générique, « Salle complète », par défaut ; identifiant technique conservé ; plus aucun profil par salle', () => {
+  it('FIX-0173 (D-142) : un seul profil de salle, générique, « Salle complète », par défaut ; identifiant technique « salle-complete » (D-489) ; plus aucun profil par salle', () => {
     const p = load('equipment-profiles', 'profiles.json');
-    expect(p.defaultProfileId).toBe('fitness-park-antony');
+    expect(p.defaultProfileId).toBe('salle-complete');
     expect(p.profiles.map((x: Json) => [x.id, x.name, x.kind, x.isPreset])).toEqual([
-      ['fitness-park-antony', 'Salle complète', 'salle', false],
+      ['salle-complete', 'Salle complète', 'salle', false],
       ['maison-halteres', 'Maison haltères', 'maison', true],
       ['poids-de-corps', 'Poids de corps', 'voyage', true],
     ]);
     expect(p.profiles.filter((x: Json) => x.kind === 'salle')).toHaveLength(1);
-    expect(JSON.stringify(p)).not.toMatch(/Fitness Park|Antony/);
-    for (const name of ['full-body-3j.json', 'haut-bas-4j.json', 'ppl-6j.json']) expect(load('programs', name).compatibleProfileIds, name).toEqual(['fitness-park-antony']);
+    expect(JSON.stringify(p)).not.toMatch(/Fitness Park/);
+    for (const name of ['full-body-3j.json', 'haut-bas-4j.json', 'ppl-6j.json']) expect(load('programs', name).compatibleProfileIds, name).toEqual(['salle-complete']);
   });
 
-  it('FIX-0173 (D-142) : tout exercice faisable avec l’ancien « Fitness Park Antony » ou l’ancien « Salle commerciale » reste faisable avec « Salle complète » ; lest et point d’ancrage gardés', () => {
+  it('FIX-0173 (D-142) : tout exercice faisable avec l’ancien « Fitness Park » ou l’ancien « Salle commerciale » reste faisable avec « Salle complète » ; lest et point d’ancrage gardés', () => {
     const before = JSON.parse(readFileSync(resolve(ROOT, 'tests', 'fixtures', 'training', 'salles-avant-fix-0173.json'), 'utf8')) as { profiles: { id: string; equipment: string[] }[] };
-    expect(before.profiles.map((p) => p.id)).toEqual(['fitness-park-antony', 'salle-commerciale']);
+    expect(before.profiles.map((p) => p.id)).toEqual(['salle-complete', 'salle-commerciale']);
     const salle = new Set(((load('equipment-profiles', 'profiles.json').profiles as Json[])[0] as Json).equipment as string[]);
     const feasible = (set: ReadonlySet<string>, e: Json): boolean => (e.equipmentGroups as string[][]).every((g) => g.some((id) => set.has(id)));
     const exercises = load('exercises', 'exercises.json').exercises as Json[];

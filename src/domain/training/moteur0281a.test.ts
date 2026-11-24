@@ -4,7 +4,7 @@ import {
   BODYWEIGHT_ONLY,
   DIPS,
   FARMER,
-  FITNESS_PARK_ANTONY,
+  SALLE_COMPLETE,
   PLANK,
   PUSH_UP,
   bwSession,
@@ -105,8 +105,8 @@ describe('MOTEUR-0281a : poids du corps, répétitions puis lest', () => {
     expect(ballastLoads(null).length).toBe(0);
     expect(ballastLoads(BELT_GYM).slice(0, 4)).toEqual([1.25, 2.5, 3.75, 5]);
     expect(Math.max(...ballastLoads(BELT_GYM))).toBe(35);
-    expect(ballastLoads(FITNESS_PARK_ANTONY)[0]).toBe(2);
-    const forbidden = { ...FITNESS_PARK_ANTONY, inventory: { ...FITNESS_PARK_ANTONY.inventory, forbidden: ['dumbbell'] } };
+    expect(ballastLoads(SALLE_COMPLETE)[0]).toBe(2);
+    const forbidden = { ...SALLE_COMPLETE, inventory: { ...SALLE_COMPLETE.inventory, forbidden: ['dumbbell'] } };
     expect(ballastLoads(forbidden).length).toBe(0);
   });
 });

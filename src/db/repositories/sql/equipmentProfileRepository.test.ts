@@ -41,8 +41,8 @@ describe('EquipmentProfileRepository (§ 14.3)', () => {
     await repo.create(input({ id: B, name: 'Maison', kind: 'maison', inventory: HOME_PROFILE.inventory, increments: {} }));
     expect((await repo.list()).map((p) => p.name)).toEqual(['Maison', 'Salle']);
     db.clock.advance(1_000);
-    const updated = await repo.update(A, { name: 'Salle Antony', increments: { barbell: 1.25 } });
-    expect(updated).toMatchObject({ name: 'Salle Antony', increments: { barbell: 1.25 } });
+    const updated = await repo.update(A, { name: 'Salle Salle', increments: { barbell: 1.25 } });
+    expect(updated).toMatchObject({ name: 'Salle Salle', increments: { barbell: 1.25 } });
     await expect(repo.update(A, { name: '' })).rejects.toMatchObject({ code: 'invalid' });
     await repo.softDelete(B);
     expect((await repo.list()).map((p) => p.id)).toEqual([A]);

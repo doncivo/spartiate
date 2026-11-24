@@ -7,4 +7,4 @@ export {
 } from './serializedDriver';
 export * from './migrator';
 export * from './migrationBackup';
-export { migrations } from './migrations';
+export { migrationManifest, migrationPlan } from './migrations/manifest';

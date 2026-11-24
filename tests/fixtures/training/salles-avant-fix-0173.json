@@ -2,8 +2,8 @@
   "note": "FIX-0173 : matériel figé des deux anciens profils de salle (contenu de origin/main avant 0.17.3), référence de non-régression de « Salle complète ».",
   "profiles": [
     {
-      "id": "fitness-park-antony",
-      "name": "Fitness Park Antony",
+      "id": "salle-complete",
+      "name": "Fitness Park",
       "equipment": [
         "barbell",
         "ez-bar",

@@ -4,7 +4,7 @@ import { explainPrescription } from './explain';
 import { progressionFr } from '../../i18n/fr.progression';
 import { recalibrationKept } from './decision';
 import type { Prescription, ProgressionEquipment } from './types';
-import { CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { CURL, SALLE_COMPLETE, input, session, target } from '../../../tests/fixtures/training/progression';
 
 /** I4-08 (0.9.1) : défauts du moteur relevés par relecture à froid avant la première séance réelle (docs/I4-06.md § 1.5). */
 
@@ -83,8 +83,8 @@ describe('I4-08 point 2 : décote d’inactivité arrondie au cran du matériel,
 
 describe('I4-08 point 3 : recalibrage « Facile » sans effet sur la charge = pas de recalibrage', () => {
   const capped = (maxKg: number): ProgressionEquipment => ({
-    inventory: { ...FITNESS_PARK_ANTONY.inventory, dumbbells: { minKg: 2, maxKg, stepKg: 2 }, toVerify: [] },
-    increments: FITNESS_PARK_ANTONY.increments,
+    inventory: { ...SALLE_COMPLETE.inventory, dumbbells: { minKg: 2, maxKg, stepKg: 2 }, toVerify: [] },
+    increments: SALLE_COMPLETE.increments,
   });
   const easyCurl = (maxKg: number) =>
     prescribe(input({ exercise: CURL, equipment: capped(maxKg), history: [session(2, 20, [8, 8, 8], { difficulty: 'easy' })], target: target(8, 12) }));

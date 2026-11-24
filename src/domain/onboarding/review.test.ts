@@ -19,7 +19,7 @@ const ANSWERS: OnboardingDraft = {
   experience: 'intermediate',
   sessionsPerWeek: 3,
   durationMin: 60,
-  equipmentProfileId: 'fitness-park-antony',
+  equipmentProfileId: 'salle-complete',
   priorities: ['chest'],
 };
 const CURRENT: CurrentSettings = {
@@ -30,7 +30,7 @@ const CURRENT: CurrentSettings = {
   experience: 'intermediate',
   weightKg: 75,
   activity: 'moderate',
-  equipmentProfileId: 'fitness-park-antony',
+  equipmentProfileId: 'salle-complete',
   nutritionGoal: { kind: 'gain', weeklyRateKg: 0.3 },
 };
 

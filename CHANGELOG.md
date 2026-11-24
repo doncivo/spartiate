@@ -488,7 +488,7 @@ Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de
 ## 0.3.3
 
 - Séance : la phrase de la Proposition te prévient quand les charges reposent sur du matériel marqué « à vérifier » dans ton profil (barre EZ, machine…), et quand ta dernière séance, avec moins de la moitié des séries faites, n’est pas prise en compte. La proposition elle-même ne change pas.
-- Profil de matériel Fitness Park Antony copié avant la 0.3.0 : la paire d’haltères de 9 kg est de nouveau proposée, sans rien modifier dans ton profil. Pas de mise à jour de la base.
+- Profil de matériel Fitness Park copié avant la 0.3.0 : la paire d’haltères de 9 kg est de nouveau proposée, sans rien modifier dans ton profil. Pas de mise à jour de la base.
 
 ## 0.3.2
 
@@ -514,7 +514,7 @@ Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de
 ## 0.3.0
 
 - Moteur de charges (I2), en coulisse : l’app sait maintenant calculer la prochaine charge et les prochaines répétitions de chaque exercice à partir de tes séances terminées, mais ne l’affiche pas encore (ce sera la 0.3.1). Rien ne change à l’écran.
-- Règles validées le 7 nov. : jamais de charge inventée (un exercice jamais fait reste « à saisir ») ; une répétition de plus sur une seule série tant que le haut de la plage n’est pas atteint partout (8-7-6 → 8-8-6 → 8-8-7 → 8-8-8), puis un cran de matériel ; hausse plafonnée à +10 % ; arrondi à la charge disponible juste en dessous, avec une répétition de plus si l’écart dépasse 3 % ; « Dur » bloque la hausse ; ta valeur l’emporte toujours. Les arrondis suivent ton profil de matériel (par défaut Fitness Park Antony).
+- Règles validées le 7 nov. : jamais de charge inventée (un exercice jamais fait reste « à saisir ») ; une répétition de plus sur une seule série tant que le haut de la plage n’est pas atteint partout (8-7-6 → 8-8-6 → 8-8-7 → 8-8-8), puis un cran de matériel ; hausse plafonnée à +10 % ; arrondi à la charge disponible juste en dessous, avec une répétition de plus si l’écart dépasse 3 % ; « Dur » bloque la hausse ; ta valeur l’emporte toujours. Les arrondis suivent ton profil de matériel (par défaut Fitness Park).
 - Mise à jour de la base (version 5) : deux tables vides ajoutées pour le suivi par exercice et tes choix (accepté ou modifié). Elles restent sur l’appareil pour l’instant ; leur synchro arrive avec l’affichage.
 - Mise à jour : mets à jour le PC et l’iPhone le même jour. Une app restée en 0.2.x affiche « version plus récente » et refuse une sauvegarde ou un export fait en 0.3.0, même si rien n’y est illisible pour elle.
 
@@ -551,7 +551,7 @@ Correctifs de mise en page et de cohérence, vus sur l’iPhone en 0.7.0. Pas de
 
 - Entraînement : l’onglet Entraînement s’ouvre sur trois sections, Routines, Bibliothèque et Matériel (chargées à la demande, le démarrage de l’app ne grossit pas).
 - Bibliothèque : 150 exercices (recherche en français ou par alias anglais, filtre par groupe musculaire, bascule « compatibles avec mon matériel », fiche avec muscles, matériel, consignes, repos et alternatives, sans image) et exercices personnalisés (création, modification, suppression ; un exercice supprimé reste affiché par son nom dans les routines et l’historique).
-- Matériel : profil « Fitness Park Antony » utilisé par défaut, trois autres profils de départ, duplication d’un profil pour le modifier ; le profil actif reste propre à l’appareil.
+- Matériel : profil « Fitness Park » utilisé par défaut, trois autres profils de départ, duplication d’un profil pour le modifier ; le profil actif reste propre à l’appareil.
 - Routines : les 4 programmes de départ (Haut / Bas 4 j, Full Body 3 j, PPL 6 j, Maison haltères 3 j) s’ajoutent en une fois et se modifient (jours, exercices, séries, plages de répétitions, repos, RIR, ordre) ; un exercice incompatible avec le matériel actif est signalé sans bloquer.
 - Données : migration 0002 (exercices personnalisés, profils de matériel, routines) ; ces tables se synchronisent entre le PC et l’iPhone, les exercices embarqués restent hors de la base. Les sauvegardes du PC acceptent le schéma 2. Le contenu des exercices et des programmes est à relire par Ali (docs/i1-01-contenu-a-relire.md).
 - Mise à jour : mets à jour le PC et l’iPhone le même jour, sans restauration ni nouvel appairage entre les deux.
