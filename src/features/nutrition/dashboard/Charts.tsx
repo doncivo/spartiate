@@ -2,7 +2,7 @@ import type { ImputedKcalDay, TrendPoint } from '../../../domain/nutrition';
 import type { LocalDate } from '../../../domain/types';
 import { formatDayShort, formatInt, tNutrition } from '../../../i18n/nutritionText';
 import type { DayBar } from './model';
-import { trendScale } from './model';
+import { pointsOutOfFrame, trendScale } from './model';
 
 /**
  * Graphiques du dashboard (I4-03, critère 5) : SVG sans dépendance, calculés en O(n) sur 7 et 28 jours (budget < 300 ms). Les jours sans
@@ -57,16 +57,20 @@ export function TrendChart({ points, endDate }: { readonly points: readonly Tren
   const { startDate, spanDays, min, max } = trendScale(points, endDate);
   const dayIndex = (d: LocalDate): number => Math.round((Date.parse(`${d}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / 86_400_000);
   const x = (d: LocalDate): number => PAD + (dayIndex(d) / (spanDays - 1)) * (W - 2 * PAD);
-  const y = (kg: number): number => H - PAD - ((kg - min) / (max - min)) * (H - 2 * PAD);
+  const y = (kg: number): number => H - PAD - ((Math.min(max, Math.max(min, kg)) - min) / (max - min)) * (H - 2 * PAD);
+  const clipped = pointsOutOfFrame(points, { startDate, spanDays, min, max });
   const line = points.map((p) => `${String(x(p.date))},${String(y(p.trend))}`).join(' ');
   return (
-    <svg className="ct-nutrition__chart" viewBox={`0 0 ${String(W)} ${String(H)}`} role="img" aria-label={tNutrition('trendChartLabel')}>
+    <>
+      <svg className="ct-nutrition__chart" viewBox={`0 0 ${String(W)} ${String(H)}`} role="img" aria-label={tNutrition('trendChartLabel')}>
       <line className="ct-nutrition__chart-base" x1={PAD} x2={W - PAD} y1={H - PAD} y2={H - PAD} />
       {points.map((p) => (
         <circle key={p.date} className={p.outlier ? 'ct-nutrition__dot ct-nutrition__dot--outlier' : 'ct-nutrition__dot'} cx={x(p.date)} cy={y(p.kg)} r={2.5} />
       ))}
       {points.length > 1 ? <polyline className="ct-nutrition__trend-line" points={line} /> : null}
       <circle className="ct-nutrition__trend-end" cx={x(points[points.length - 1]?.date ?? endDate)} cy={y(points[points.length - 1]?.trend ?? min)} r={4} />
-    </svg>
+      </svg>
+      {clipped > 0 ? <p className="ct-nutrition__muted">{tNutrition('trendClipped', { n: clipped })}</p> : null}
+    </>
   );
 }

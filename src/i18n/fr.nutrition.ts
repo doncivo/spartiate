@@ -271,6 +271,7 @@ export const nutritionFr = {
   imputedWeightLine: 'Aujourd’hui sans pesée : poids estimé à {kg} kg (la tendance), à ± {spread} kg près. Ce n’est pas une mesure.',
   barsLegendImputed: 'Barre en tirets : jour non logué, estimé.',
   trendTitle: 'Tendance de poids · 28 jours',
+  trendClipped: 'Pesées hors du cadre : {n} (dessinées au bord, écartées de l’échelle).',
   trendChartLabel: 'Tendance du poids sur 28 jours',
   trendValue: '{n} kg',
   trendSlope: '{n} kg / sem.',
