@@ -133,7 +133,7 @@ export function validateSetEntry(entry: SetEntry, kind: SetKind): SetEntryIssue[
  * SEANCE-0292 (C-078, D-521) : saisie en cours d'une série à faire gardée en base (séance ouverte, jamais publiée avant la clôture). Seuls les
  * champs lisibles et dans leurs bornes sont gardés (vide : null) ; un champ illisible n'écrit rien. La série reste à faire.
  */
-export function draftEntryPatch(fields: { readonly [K in keyof SetEntry]?: number | null }): Partial<SetEntry> {
+export function draftEntryPatch(fields: { readonly [K in keyof SetEntry]?: number | null | undefined }): Partial<SetEntry> {
   const out: { -readonly [K in keyof SetEntry]?: number | null } = {};
   for (const key of ['reps', 'loadKg', 'durationSec', 'rir'] as const) {
     const value = fields[key];
