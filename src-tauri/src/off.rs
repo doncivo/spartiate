@@ -449,7 +449,9 @@ fn is_thousands_group(text: &str) -> bool {
     let Some((head, tail)) = text.split_once(['.', ',']) else {
         return false;
     };
+    // « 0,500 » n'est pas 500 : un premier groupe qui commence par 0 est une décimale.
     (1..=3).contains(&head.len())
+        && !head.starts_with('0')
         && head.bytes().all(|b| b.is_ascii_digit())
         && tail.len() == 3
         && tail.bytes().all(|b| b.is_ascii_digit())
