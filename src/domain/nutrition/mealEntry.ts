@@ -134,6 +134,13 @@ export function validateMealEntry(draft: MealEntryDraft, options: { readonly use
 }
 
 /** Entrée vue par le moteur (D-74 point 1 : la date civile enregistrée avec l'entrée, sans conversion). */
-export function toMealEntryInput(draft: Pick<MealEntryDraft, 'date' | 'time' | 'kcal' | 'proteinG' | 'fatG' | 'carbG'>): MealEntryInput {
-  return { date: draft.date, time: draft.time, kcal: draft.kcal, proteinG: draft.proteinG, fatG: draft.fatG, carbG: draft.carbG };
+export function toMealEntryInput(
+  draft: Pick<MealEntryDraft, 'date' | 'time' | 'kcal' | 'proteinG' | 'fatG' | 'carbG'> & Partial<Pick<MealEntryDraft, 'foodName' | 'method' | 'source' | 'foodId'>>,
+): MealEntryInput {
+  const input: MealEntryInput = { date: draft.date, time: draft.time, kcal: draft.kcal, proteinG: draft.proteinG, fatG: draft.fatG, carbG: draft.carbG };
+  // C-039 (D-476) : le total du jour importé de Santé couvre la journée entière.
+  if (draft.foodName !== undefined && draft.method !== undefined && draft.source !== undefined && draft.foodId !== undefined && isRenphoDayEntry({ foodName: draft.foodName, method: draft.method, source: draft.source, foodId: draft.foodId })) {
+    return { ...input, dayTotal: true };
+  }
+  return input;
 }

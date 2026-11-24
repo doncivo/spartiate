@@ -69,11 +69,12 @@ export function aggregateDay(
     reasons.push('declared-incomplete');
   } else {
     origin = 'inferred';
-    const enough = own.length >= NUTRITION_CONFIG.inferredMinEntries;
-    const wide = spanHours >= NUTRITION_CONFIG.inferredMinSpanHours;
+    const importedTotal = own.length === 1 && own[0]?.dayTotal === true && kcal !== null;
+    const enough = importedTotal || own.length >= NUTRITION_CONFIG.inferredMinEntries;
+    const wide = importedTotal || spanHours >= NUTRITION_CONFIG.inferredMinSpanHours;
     if (enough && wide) {
       state = 'complete';
-      reasons.push('inferred-complete');
+      reasons.push(importedTotal ? 'imported-day-total' : 'inferred-complete');
     } else {
       state = 'partial';
       if (!enough) reasons.push('too-few-entries');

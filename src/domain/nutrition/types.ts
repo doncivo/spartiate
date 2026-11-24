@@ -9,6 +9,8 @@ export interface MealEntryInput {
   readonly proteinG: number | null;
   readonly fatG: number | null;
   readonly carbG: number | null;
+  /** Total du jour importé de Santé (C-039, D-476) : une seule entrée qui couvre toute la journée. */
+  readonly dayTotal?: boolean;
 }
 
 export type DayState = 'complete' | 'partial' | 'unknown';
@@ -20,6 +22,7 @@ export type DayReason =
   | 'declared-incomplete'
   | 'declared-without-entries'
   | 'inferred-complete'
+  | 'imported-day-total'
   | 'too-few-entries'
   | 'span-too-short'
   | 'no-entries'
