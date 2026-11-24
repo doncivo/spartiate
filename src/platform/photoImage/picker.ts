@@ -1,4 +1,4 @@
-import { PHOTO_MAX_BYTES, photoTargetSize } from '../../domain/bodyProgress/measurements';
+import { PHOTO_MAX_BYTES, photoSourceAccepted, photoTargetSize } from '../../domain/bodyProgress/measurements';
 
 /**
  * Choix d'une photo de progression (I6-02, D-99) par le sélecteur d'image du navigateur intégré (`<input type="file" accept="image/*">`) : sur iPhone,
@@ -38,6 +38,7 @@ function toJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Uint8Array>
 export async function pickPhotoJpeg(): Promise<Uint8Array | null> {
   const file = await chooseFile();
   if (!file) return null;
+  if (!photoSourceAccepted(file.size)) throw new Error('fichier trop gros');
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   try {
     const size = photoTargetSize(bitmap.width, bitmap.height);

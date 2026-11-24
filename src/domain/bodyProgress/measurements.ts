@@ -87,6 +87,10 @@ export const photoFileName = (id: string): string => `${id}.jpg`;
 
 export const isPhotoFileName = (name: string): boolean => name.length <= PHOTO_FILE_NAME_MAX && PHOTO_FILE_RE.test(name);
 
+/** Plafond du fichier source choisi (C-047) : refusé avant tout décodage, un fichier énorme ne passe pas en mémoire. */
+export const PHOTO_SOURCE_MAX_BYTES = 40_000_000;
+export const photoSourceAccepted = (sizeBytes: number): boolean => Number.isFinite(sizeBytes) && sizeBytes > 0 && sizeBytes <= PHOTO_SOURCE_MAX_BYTES;
+
 /** Un fichier est-il un JPEG (marque de début 0xFF 0xD8) ? Seule vérification faite : l'image est produite par l'app (réduite, recodée en JPEG). */
 export const looksLikeJpeg = (bytes: Uint8Array): boolean => bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8;
 

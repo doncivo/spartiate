@@ -80,7 +80,8 @@ export async function resolveBarcode(deps: OffDeps, input: string): Promise<Barc
     return staleOrFail(failureOf(error));
   }
   const raw = response.found ? response.products.find((p) => normalizeBarcode(p.code)?.code === code) : undefined;
-  if (raw === undefined) return { kind: 'not-found', code };
+  // C-047 : une fiche déjà gardée (périmée) n'est pas perdue parce qu'OFF ne connaît plus le produit.
+  if (raw === undefined) return existing ? staleOrFail({ kind: 'bad-response' }) : { kind: 'not-found', code };
   const converted = offProductToDraft(raw, deps.now);
   if (!converted.ok) return { kind: 'refused', code, reason: converted.reason };
   try {
