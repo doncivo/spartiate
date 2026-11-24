@@ -4,6 +4,12 @@
  */
 export const recoveryFr = {
   title: 'Récupération',
+  muscleGroup_arms: 'Bras',
+  muscleGroup_shoulders: 'Épaules',
+  muscleGroup_core: 'Tronc',
+  muscleGroup_chest: 'Torse',
+  muscleGroup_back: 'Dos',
+  muscleGroup_legs: 'Jambes',
   loading: 'Chargement de la récupération…',
   loadFailed: 'Lecture impossible des données de récupération.',
   retry: 'Réessayer',

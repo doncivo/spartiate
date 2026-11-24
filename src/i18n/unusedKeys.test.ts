@@ -42,6 +42,7 @@ const WHITELIST: readonly string[] = [
   'fr.recovery.ts:resting_hr_*', // idem, contributeur FC de repos : up, flat, down
   'fr.recovery.ts:sleep_*', // idem, contributeur sommeil : up, down
   'fr.programImport.ts:note_*', // ProgramImportView : tImport(`note_${note.code}`), une par ImportNote (seconds, rir-range)
+  'fr.recovery.ts:muscleGroup_*', // muscleGroupLabel.ts : recoveryFr[`muscleGroup_${group}`], un libellé par groupe musculaire neutre (BL-142)
   'fr.recovery.ts:explain_*', // RecoveryToday : tRecovery(`explain_${k}`), un par code d'explication du score
   'fr.tracking.ts:stepsReason_*', // TrackingTodayCard / TrackingProgress : tTracking(`stepsReason_${reason}`), une par StepsTodayReason
   'fr.tracking.ts:issue_*', // TrackingProgress : tTracking(`issue_${issue}`), une par GoalTextIssue
