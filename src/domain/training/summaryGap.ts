@@ -5,7 +5,8 @@ import type { WorkoutSet } from './session';
  * SESS-01e (§ 13.5 « Résumé : … écart ») : écart de la séance faite à la prescription, par exercice, dans l'ordre de la séance. Module pur.
  *
  * Cible d'un exercice : la décision tracée de la séance (charge et répétitions retenues), sinon la première charge cible de ses séries de travail
- * (aucune cible de répétitions). Séries comptées hors échauffement ; charge faite = la plus lourde des séries de travail validées ; écart de
+ * (aucune cible de répétitions). Séries comptées hors échauffement ; charge faite = la plus lourde des séries de travail validées (exercice
+ * assisté, BL-140 : la MOINS assistée, la plus dure ; `assisted` : identifiants fournis par l'appelant, catalogue et personnalisés) ; écart de
  * répétitions = somme, série par série, des répétitions faites moins les répétitions retenues. Sans cible : aucun écart (jamais inventé).
  */
 
@@ -25,7 +26,9 @@ export interface ExerciseGap {
   readonly repsDelta: number | null;
 }
 
-export function prescriptionGaps(sets: readonly WorkoutSet[], targets: ReadonlyMap<string, GapTarget>): ExerciseGap[] {
+const NONE: ReadonlySet<string> = new Set();
+
+export function prescriptionGaps(sets: readonly WorkoutSet[], targets: ReadonlyMap<string, GapTarget>, assisted: ReadonlySet<string> = NONE): ExerciseGap[] {
   const live = sets.filter((s) => (s.deletedAt ?? null) === null && s.setKind !== 'warmup').sort((a, b) => a.position - b.position);
   const order = [...new Set(live.map((s) => s.exerciseId))];
   return order.map((exerciseId) => {
@@ -34,7 +37,7 @@ export function prescriptionGaps(sets: readonly WorkoutSet[], targets: ReadonlyM
     const target = targets.get(exerciseId);
     const targetLoadKg = target?.loadKg ?? own.find((s) => s.targetLoadKg !== null)?.targetLoadKg ?? null;
     const loads = done.map((s) => s.loadKg).filter((kg): kg is number => kg !== null);
-    const doneLoadKg = loads.length > 0 ? Math.max(...loads) : null;
+    const doneLoadKg = loads.length === 0 ? null : assisted.has(exerciseId) ? Math.min(...loads) : Math.max(...loads);
     const reps = target?.reps ?? [];
     const repsDelta =
       reps.length === 0 || done.length === 0
