@@ -270,6 +270,9 @@ jobs:
           cargo tree --locked --target aarch64-apple-ios -e normal,build --prefix none > "$RUNNER_TEMP/tree-ios.txt"
           cd ..
           node scripts/release/cargo-audit-gate.mjs "$RUNNER_TEMP/audit.json" "$RUNNER_TEMP/tree-windows.txt" "$RUNNER_TEMP/tree-ios.txt"
+      # BL-043 : les avis de licence livrés (public/THIRD-PARTY-NOTICES.txt) correspondent à package-lock.json et à Cargo.lock.
+      - name: Avis de licence à jour
+        run: node scripts/release/third-party-notices.mjs --check
       # CI-PUB (C-175, PRD 23.2, D-47) : dépendances npm livrées (hors développement), alertes hautes ou critiques refusées.
       # Lit package-lock.json seulement (aucune installation, aucun secret) ; Node est préinstallé sur le runner.
       - name: npm audit

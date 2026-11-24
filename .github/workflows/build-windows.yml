@@ -153,6 +153,8 @@ jobs:
           VERSION=$(node scripts/release/check-version.mjs)
           DIR=src-tauri/target/release/bundle/nsis
           EXE="Spartiate_${VERSION}_x64-setup.exe"
+          # BL-043 : avis de licence des composants tiers, copiés de public/ dans dist/ (embarqué dans l'exécutable de l'installeur).
+          test -s dist/THIRD-PARTY-NOTICES.txt || { echo "::error::dist/THIRD-PARTY-NOTICES.txt absent ou vide"; exit 1; }
           test -f "${DIR}/${EXE}" || { echo "::error::Installeur absent : ${DIR}/${EXE}"; ls -l "${DIR}" || true; exit 1; }
           rm -rf dist-release && mkdir dist-release
           cp "${DIR}/${EXE}" dist-release/
