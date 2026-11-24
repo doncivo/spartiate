@@ -140,6 +140,7 @@ export const nutritionFr = {
   onlineRefused: 'Produits ignorés (sans valeurs nutritives exploitables) : {n}.',
   offAttribution: 'Source : Open Food Facts, contributeurs d’Open Food Facts (licence ODbL).',
   offAttributionShort: 'Open Food Facts · ODbL',
+  staleCauseCache: 'valeurs du cache, sans recherche en ligne',
   offStaleFiche: 'Fiche de plus de 90 jours, non rafraîchie ({cause}) : vérifie les valeurs.',
   offMissing: 'Valeurs manquantes chez Open Food Facts : {list}. Elles restent inconnues (—), jamais 0.',
   missingKcal: 'calories',

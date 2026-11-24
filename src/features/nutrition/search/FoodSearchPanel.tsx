@@ -318,6 +318,14 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
     }
   };
 
+  // C-102 : dans une étape (quantité, recette), Échap revient à la recherche ; il ne ferme toute la recherche que depuis la liste.
+  const backOnEscape = (back: () => void) => (event: KeyboardEvent): void => {
+    if (event.key === 'Escape') {
+      event.stopPropagation();
+      back();
+    }
+  };
+
   // Flèches haut / bas : de la zone de recherche aux résultats et entre eux (clavier PC) ; Entrée active le bouton ciblé.
   const moveFocus = (event: KeyboardEvent): void => {
     if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
@@ -377,7 +385,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   if (recipeSelection) {
     return (
-      <div className="ct-nutrition__panel ct-flat" onKeyDown={closeOnEscape}>
+      <div className="ct-nutrition__panel ct-flat" onKeyDown={backOnEscape(() => setRecipeSelection(null))}>
         <Suspense
           fallback={
             <p role="status" className="ct-nutrition__muted">
@@ -393,7 +401,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
 
   if (selection) {
     return (
-      <div className="ct-nutrition__panel ct-flat" onKeyDown={closeOnEscape}>
+      <div className="ct-nutrition__panel ct-flat" onKeyDown={backOnEscape(() => setSelection(null))}>
         <QuantityStep
           food={selection.food}
           staleCause={selection.staleCause}
@@ -625,7 +633,7 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose }: FoodSea
             <ul className="ct-nutrition__list">
               {visible.map((hit) => (
                 <li key={hit.ref}>
-                  <button type="button" data-hit className="ct-nutrition__hit" onClick={() => { setNotice(null); supersedeLookup(); setSelection({ food: hit, grams: '100' }); }}>
+                  <button type="button" data-hit className="ct-nutrition__hit" onClick={() => { setNotice(null); supersedeLookup(); setSelection({ food: hit, grams: '100', ...(result.staleOff.includes(hit.ref) ? { staleCause: tNutrition('staleCauseCache') } : {}) }); }}>
                     <span className="ct-nutrition__hit-name">
                       {hit.name}
                       {hit.brand ? <span className="ct-nutrition__muted"> · {hit.brand}</span> : null}
@@ -776,7 +784,10 @@ function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite
   const amount = parseNumber(grams);
   const totals = typeof amount === 'number' ? computeTotals(food.per100g, amount) : null;
   const draft = typeof amount === 'number' ? entryFromFood(food, amount, { date, time: time as LocalTime }, method) : null;
-  const valid = draft !== null && validateMealEntry(draft).length === 0;
+  const issues = draft === null ? null : validateMealEntry(draft);
+  const valid = issues !== null && issues.length === 0;
+  // C-102 : une heure invalide est dite comme telle, jamais « quantité invalide ».
+  const timeInvalid = issues?.includes('time-invalid') === true;
 
   async function save(): Promise<void> {
     if (!valid || draft === null || busy) return;
@@ -865,7 +876,11 @@ function QuantityStep({ food, staleCause, energyFromKj = false, method, favorite
         <strong className="ct-nutrition__num">{totals === null ? tNutrition('unknown') : tNutrition('kcalValue', { n: orDash(totals.kcal, formatInt) })}</strong>
         {totals === null ? null : <MacroLine p={orDash(totals.proteinG)} c={orDash(totals.carbG)} f={orDash(totals.fatG)} />}
       </div>
-      {!valid && grams !== '' ? (
+      {timeInvalid ? (
+        <p role="alert" className="ct-nutrition__warning">
+          {tNutrition('timeInvalid')}
+        </p>
+      ) : !valid && grams !== '' ? (
         <p role="alert" className="ct-nutrition__warning">
           {tNutrition('quantityInvalid')}
         </p>
