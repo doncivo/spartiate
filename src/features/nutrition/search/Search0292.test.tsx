@@ -80,3 +80,32 @@ describe('C-101 : erreurs dites (§ 18.3)', () => {
     await waitFor(() => expect(within(r).queryByRole('alert')).toBeNull());
   });
 });
+
+describe('C-102 : heure invalide, fiche périmée, Échap', () => {
+  it('heure vidée : « Indique une heure valide. », jamais « quantité invalide »', async () => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await typeQuery('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: /Skyr maison/ }));
+    fireEvent.change(await screen.findByLabelText('Heure'), { target: { value: '' } });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Indique une heure valide.');
+    expect(screen.queryByText(/quantité en grammes/)).toBeNull();
+  });
+
+  it('fiche OFF périmée choisie dans la liste : l’avertissement « plus de 90 jours » est dit', async () => {
+    await (await db.data.repos.foods()).cacheOff({ source: 'off', barcode: '4006381333931', name: 'Skyr périmé', brand: null, per100g: per, fetchedAt: '2026-06-01T08:00:00.000Z' as never });
+    await openSearch();
+    await typeQuery('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: /Skyr périmé/ }));
+    expect(await screen.findByText(/Fiche de plus de 90 jours/)).toBeInTheDocument();
+  });
+
+  it('Échap sur la quantité revient à la recherche (elle ne se ferme pas)', async () => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await typeQuery('skyr');
+    fireEvent.click(await screen.findByRole('button', { name: /Skyr maison/ }));
+    fireEvent.keyDown(await screen.findByLabelText('Quantité (g)'), { key: 'Escape' });
+    expect(await screen.findByRole('searchbox', { name: 'Nom de l’aliment' })).toBeInTheDocument();
+  });
+});
