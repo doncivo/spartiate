@@ -5,6 +5,7 @@ import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/tra
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../types';
 import { circuitsOf } from './circuit';
+import { compareInstants } from './estimate1rm';
 import { routineDiff } from './closure';
 import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
 import { estimateExerciseSec, estimateSessionSec, generateSession } from './generateSession';
@@ -317,6 +318,18 @@ describe('SEANCE-0292 C-025 : inactivité en jours civils ; instants comparés c
     );
     expect(p.headline).toBe('decision');
     expect(p.loadKg).toBe(90);
+  });
+
+  it('ordre total (relecture A) : un instant illisible toujours après les lisibles, aucun cycle a < b < c < a', () => {
+    const a = '2026-11-07T19:00:00+01:00'; // 18:00Z
+    const b = '2026-11-07T18:30:00Z';
+    const c = '2026-11-07T18:45:00?'; // illisible ; entre b et a dans l'ordre des chaînes
+    expect(compareInstants(a, b)).toBeLessThan(0);
+    expect(compareInstants(b, c)).toBeLessThan(0);
+    expect(compareInstants(a, c)).toBeLessThan(0);
+    expect(compareInstants(c, a)).toBeGreaterThan(0);
+    expect(compareInstants(c, '2026-11-07T18:44:00?')).toBeGreaterThan(0);
+    expect([c, b, a].sort(compareInstants)).toEqual([a, b, c]);
   });
 });
 

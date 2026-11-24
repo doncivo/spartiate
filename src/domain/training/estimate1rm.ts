@@ -108,12 +108,15 @@ const REPEAT_CONFIRMS_FROM = 0.9;
 /** Ordre chronologique stable : fin de séance, puis identifiant. */
 /**
  * C-025 : ordre de deux instants ISO comparés comme instants (`2026-11-07T19:00:00+01:00` avant `2026-11-07T18:30:00Z`) ; un instant
- * illisible garde l'ordre des chaînes d'avant. Négatif : `a` avant `b`.
+ * illisible vient toujours après les lisibles (ordre total, relecture A) ; deux illisibles gardent l'ordre des chaînes. Négatif : `a` avant `b`.
  */
 export function compareInstants(a: string, b: string): number {
   const pa = Date.parse(a);
   const pb = Date.parse(b);
-  if (Number.isFinite(pa) && Number.isFinite(pb)) return pa - pb;
+  const oka = Number.isFinite(pa);
+  const okb = Number.isFinite(pb);
+  if (oka && okb) return pa - pb;
+  if (oka !== okb) return oka ? -1 : 1;
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
