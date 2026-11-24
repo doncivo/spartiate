@@ -449,6 +449,8 @@ export const trainingFr = {
   historyCorrected: 'corrigée',
   historyCorrect: 'Corriger',
   historyCorrectSave: 'Enregistrer la correction',
+  /** SEANCE-0292 (C-072). */
+  historyErrorLoadCleared: 'La charge ne peut pas être vidée : saisis la charge réellement soulevée.',
   historyCorrectionSaved: 'Correction enregistrée. Elle sera synchronisée avec ton autre appareil.',
   historyCorrectError: 'La correction n’a pas pu être enregistrée. Réessaie.',
   historyDelete: 'Supprimer la séance',

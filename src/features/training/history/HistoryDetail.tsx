@@ -211,6 +211,7 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
                         timedExercise={exercise?.metric === 'time'}
                         held={heldOf(block.exerciseId)}
                         loadField={exercise === undefined ? 'load' : loadFieldOf(exercise)}
+                        {...(exercise === undefined ? {} : { metric: exercise.metric })}
                         busy={busy}
                         onCorrect={(patch) => correct(set.id, patch)}
                       />

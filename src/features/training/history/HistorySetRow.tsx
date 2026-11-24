@@ -1,7 +1,7 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
-import { SET_KINDS, validateSetBounds, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
+import { SET_KINDS, correctionIssues, entryOf, validateSetBounds, validateSetEntry, type ExerciseMetric, type LoadField, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
@@ -50,13 +50,15 @@ export interface HistorySetRowProps {
   readonly held?: Held;
   /** SEANCE-0292 (C-071) : sens du champ de charge (`loadFieldOf`) ; absent : charge soulevée. */
   readonly loadField?: LoadField;
+  /** SEANCE-0292 (C-072) : métrique de l'exercice (bibliothèque) ; à charge, la correction ne vide pas la charge. Absent : aucune règle. */
+  readonly metric?: ExerciseMetric;
   readonly busy: boolean;
   readonly onCorrect: (patch: SetCorrection) => Promise<boolean>;
 }
 
 const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
 
-export function HistorySetRow({ set, number, timedExercise, held = null, loadField = 'load', busy, onCorrect }: HistorySetRowProps) {
+export function HistorySetRow({ set, number, timedExercise, held = null, loadField = 'load', metric, busy, onCorrect }: HistorySetRowProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [issue, setIssue] = useState<string | null>(null);
   const label = set.setKind === 'warmup' ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -88,6 +90,10 @@ export function HistorySetRow({ set, number, timedExercise, held = null, loadFie
     const issues = set.done ? validateSetEntry(entry, current.kind) : validateSetBounds(entry);
     if (issues.length > 0) {
       setIssue(tTraining(issues.includes('empty') ? 'sessionErrorEmpty' : issues.length === 1 && issues[0] === 'duration' && entry.durationSec === null ? 'sessionErrorDuration' : 'sessionErrorValues'));
+      return;
+    }
+    if (metric !== undefined && correctionIssues(entryOf(set), entry, metric).length > 0) {
+      setIssue(tTraining('historyErrorLoadCleared'));
       return;
     }
     setIssue(null);

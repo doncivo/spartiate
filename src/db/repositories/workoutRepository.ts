@@ -138,7 +138,10 @@ export interface WorkoutRepository {
   updateSet(setId: string, patch: SetPatch): Promise<WorkoutSet>;
   /** Valide la série : écrit `done = 1` et `done_at` avec la saisie fusionnée ; refusée (`'invalid'`) si la saisie ne passe pas `validateSetEntry`. */
   validateSet(setId: string, entry?: SetEntryInput): Promise<WorkoutSet>;
-  /** Remet la série à faire (saisie conservée). */
+  /**
+   * Remet la série à faire (saisie conservée). SEANCE-0292 (C-072, D-502) : une série validée rouverte est datée `corrected_at` (correction
+   * tracée, § 13.4 ; publiée avec la séance close comme une correction du journal) ; les valeurs d'avant ne sont pas gardées.
+   */
   unvalidateSet(setId: string): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
   /**

@@ -1,6 +1,6 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
 import { REPS_MAX, RIR_MAX } from './routineRules';
-import type { Difficulty, RoutineExerciseSpec } from './types';
+import type { Difficulty, ExerciseMetric, RoutineExerciseSpec } from './types';
 
 /**
  * Séance active (PRD § 13.1–13.4, 13.7–13.8 ; I1-02, D-27, D-71). Module pur, sans horloge ni stockage : le temps est toujours un argument.
@@ -127,6 +127,16 @@ export function validateSetEntry(entry: SetEntry, kind: SetKind): SetEntryIssue[
     issues.push('empty');
   }
   return issues;
+}
+
+/**
+ * SEANCE-0292 (C-072, D-503) : correction d'une série validée. Un exercice à charge (`load-reps`) dont la série avait une charge ne la perd
+ * pas à la correction (vider la charge la sortirait du tonnage et du 1RM sans le dire) ; la modifier reste permis. Les autres métriques (lest,
+ * assistance, durée) peuvent revenir à vide.
+ */
+export type CorrectionIssue = 'load-cleared';
+export function correctionIssues(before: SetEntry, after: SetEntry, metric: ExerciseMetric): CorrectionIssue[] {
+  return metric === 'load-reps' && before.loadKg !== null && after.loadKg === null ? ['load-cleared'] : [];
 }
 
 /** Série de travail réussie : validée, de travail ou chronométrée (C-016 : ni échauffement, ni dégressive, ni partielle), saisie conforme. */
