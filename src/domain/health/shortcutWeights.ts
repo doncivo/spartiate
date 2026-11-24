@@ -49,7 +49,8 @@ export function parseShortcutWeights(text: string, today: string, timeZone: stri
       continue;
     }
     const previous = byDay.get(parsed.day);
-    if (previous === undefined || parsed.at > previous.at) byDay.set(parsed.day, { measuredAt: new Date(parsed.at).toISOString(), kg: parsed.kg, at: parsed.at });
+    // C-055 : au même instant, le plus grand poids gagne (indépendant de l'ordre des lignes).
+    if (previous === undefined || parsed.at > previous.at || (parsed.at === previous.at && parsed.kg > previous.kg)) byDay.set(parsed.day, { measuredAt: new Date(parsed.at).toISOString(), kg: parsed.kg, at: parsed.at });
   }
   const weights = [...byDay.values()].sort((a, b) => a.at - b.at).map(({ measuredAt, kg }) => ({ measuredAt, kg }));
   return { weights, rejected, truncated };
