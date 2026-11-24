@@ -19,7 +19,7 @@ import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositori
 import { formatDayMonthYear } from '../../i18n/format';
 import { formatCm, tBodyProgress, type BodyProgressTextKey } from '../../i18n/bodyProgressText';
 import { logFailure } from '../../platform/desktop/log';
-import { pickPhotoJpeg } from '../../platform/photoImage/picker';
+import { PhotoTooLargeError, pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
 import { Button, ConfirmDialog } from '../../ui';
 import { MissingValue } from '../../ui/MissingValue';
@@ -177,8 +177,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
       await (await container.data.repos.progressPhotos()).add(todayLocal(container.clock), bytes);
       setPhotoMessage({ alert: false, text: tBodyProgress('photoAdded') });
       refresh();
-    } catch {
-      setPhotoMessage({ alert: true, text: tBodyProgress('photoFailed') });
+    } catch (error) {
+      setPhotoMessage({ alert: true, text: tBodyProgress(error instanceof PhotoTooLargeError ? 'photoTooLarge' : 'photoFailed') });
     } finally {
       setAdding(false);
     }

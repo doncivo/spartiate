@@ -91,6 +91,7 @@ export const bodyProgressFr = {
   photoAdd: 'Ajouter une photo',
   photoAdding: 'Enregistrement de la photo…',
   photoAdded: 'Photo enregistrée sur cet appareil.',
+  photoTooLarge: 'Cette image dépasse 40 Mo. Choisis une image plus légère.',
   photoFailed: 'Photo impossible à enregistrer. Choisis une autre image.',
   photosEmpty: 'Aucune photo.',
   photoAlt: 'Photo du {date}',

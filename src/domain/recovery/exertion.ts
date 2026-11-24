@@ -31,9 +31,9 @@ export function setTotalLoadKg(s: RecoverySet): number | null {
 
 /** Répétitions comptées d'une série : ses répétitions, ou (chronométrée, BL-139) ses minutes × `timedRepsPerMinute` ; `null` sans l'un ni l'autre. */
 export function setRepetitions(s: RecoverySet): number | null {
-  if (s.reps !== null && s.reps > 0) return s.reps;
+  if (s.reps !== null && Number.isFinite(s.reps) && s.reps > 0) return s.reps;
   const duration = s.durationSec ?? null;
-  if (s.reps === null && duration !== null && Number.isFinite(duration) && duration > 0) return (duration / 60) * RECOVERY_CONFIG.exertion.timedRepsPerMinute;
+  if ((s.reps === null || !Number.isFinite(s.reps)) && duration !== null && Number.isFinite(duration) && duration > 0) return (duration / 60) * RECOVERY_CONFIG.exertion.timedRepsPerMinute;
   return null;
 }
 

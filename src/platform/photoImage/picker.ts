@@ -35,10 +35,18 @@ function toJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Uint8Array>
   });
 }
 
+/** Fichier source de plus de 40 Mo : refusé avant tout décodage (C-047) ; l'écran dit la limite. */
+export class PhotoTooLargeError extends Error {
+  constructor() {
+    super('fichier trop gros');
+    this.name = 'PhotoTooLargeError';
+  }
+}
+
 export async function pickPhotoJpeg(): Promise<Uint8Array | null> {
   const file = await chooseFile();
   if (!file) return null;
-  if (!photoSourceAccepted(file.size)) throw new Error('fichier trop gros');
+  if (!photoSourceAccepted(file.size)) throw new PhotoTooLargeError();
   const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   try {
     const size = photoTargetSize(bitmap.width, bitmap.height);

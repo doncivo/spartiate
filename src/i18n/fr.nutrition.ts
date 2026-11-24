@@ -424,7 +424,7 @@ export const nutritionFr = {
   reasonNoWeight: 'Aucune pesée : le poids de tendance est inconnu.',
   reasonNoTdee: 'Dépense inconnue : renseigne ton profil et ton niveau d’activité (Stratégie).',
   reasonNoGoalRate: 'Objectif sans rythme : indique un rythme en kg par semaine dans Stratégie, ou choisis « maintien ».',
-  reasonCoverage:'Au moins 4 jours complets et 2 pesées par semaine, sur 2 semaines consécutives.',
+  reasonCoverage: 'Au moins 4 jours complets et 2 pesées par semaine, sur 2 semaines consécutives.',
   weekCoverage: 'Semaine {n} : {days} · {weighIns}',
   checkInManual: 'Style manuel : le moteur ne propose rien.',
   checkInManualHint: 'Fixe ta cible dans Stratégie, ou choisis un autre style.',
