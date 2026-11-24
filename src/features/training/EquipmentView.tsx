@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../i18n/trainingText';
@@ -166,10 +166,20 @@ const listText = (values: readonly number[]): string => values.map(formatNumber)
 
 /** SEANCE-0292 (C-066) : liste lue par le domaine (`parseWeightList`) ; refus : message qui nomme l'élément fautif. */
 type ListRead = { readonly values: readonly number[] | null; readonly error: string | null };
+const listError = (issue: 'invalid' | 'separator' | 'duplicate', item: string): string | null =>
+  issue === 'separator' ? tTraining('errorWeightSeparator', { item }) : issue === 'duplicate' ? tTraining('errorWeightDuplicate', { item }) : null;
 function parseList(text: string): ListRead {
   const read = parseWeightList(text);
-  if (read.ok) return { values: read.values, error: null };
-  return { values: null, error: read.issue === 'separator' ? tTraining('errorWeightSeparator', { item: read.item }) : null };
+  return read.ok ? { values: read.values, error: null } : { values: null, error: listError(read.issue, read.item) };
+}
+
+/** SEANCE-0292 (C-081) : disques par côté avec leur nombre (« 20 × 4 ; 10 »), relus tels quels. */
+type Plates = readonly { readonly weightKg: number; readonly count: number }[];
+const platesText = (plates: Plates): string =>
+  plates.map((p) => (p.count > 1 ? tTraining('plateWithCount', { n: formatNumber(p.weightKg), count: p.count }) : formatNumber(p.weightKg))).join(' ; ');
+function parsePlates(text: string): { readonly plates: Plates | null; readonly error: string | null } {
+  const read = parsePlateList(text);
+  return read.ok ? { plates: read.plates, error: null } : { plates: null, error: listError(read.issue, read.item) };
 }
 
 interface EditProps {
@@ -188,16 +198,16 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   const [dMin, setDMin] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.minKg) : '');
   const [dMax, setDMax] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.maxKg) : '');
   const [dStep, setDStep] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.stepKg) : '');
-  const [plates, setPlates] = useState(listText(inv.platesPerSideKg.map((p) => p.weightKg)));
+  const [plates, setPlates] = useState(platesText(inv.platesPerSideKg));
   const [kettlebells, setKettlebells] = useState(listText(inv.kettlebellsKg));
   const [increments, setIncrements] = useState<Readonly<Record<string, string>>>(Object.fromEntries(INCREMENT_KEYS.map(([key]) => [key, profile.increments[key] === undefined ? '' : formatNumber(profile.increments[key])])));
   const [toVerify, setToVerify] = useState<readonly string[]>(inv.toVerify ?? []);
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
-    const plateRead = parseList(plates);
+    const plateRead = parsePlates(plates);
     const kbRead = parseList(kettlebells);
-    const plateList = plateRead.values;
+    const plateList = plateRead.plates;
     const kbList = kbRead.values;
     const anyDumbbell = [dMin, dMax, dStep].some((t) => t.trim() !== '');
     const dumbbells = anyDumbbell ? { minKg: parseNumber(dMin) ?? Number.NaN, maxKg: parseNumber(dMax) ?? Number.NaN, stepKg: parseNumber(dStep) ?? Number.NaN } : null;
@@ -210,13 +220,12 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       if (value === null) badIncrement = true;
       else inc[key] = value;
     }
-    const previousCounts = new Map(inv.platesPerSideKg.map((p) => [p.weightKg, p.count]));
     const inventory: EquipmentInventory = {
       ...inv,
       available,
       bodyweight,
       dumbbells,
-      platesPerSideKg: (plateList ?? []).map((weightKg) => ({ weightKg, count: previousCounts.get(weightKg) ?? 1 })),
+      platesPerSideKg: plateList ?? [],
       kettlebellsKg: kbList ?? [],
       toVerify,
     };
@@ -461,8 +470,8 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
             setConfirm(false);
             const target = viewed;
             void act(async () => {
+              // SEANCE-0292 (C-081) : le dépôt efface le réglage local du profil actif dans la même transaction.
               await (await access.repos.equipmentProfiles()).softDelete(target.id);
-              if (isActive) await access.repos.settings.set('training.activeEquipmentProfile', null);
               setViewId(data.content.defaultProfileId);
             }, tTraining('profileDeleted'));
           }}

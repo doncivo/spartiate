@@ -5,7 +5,7 @@
  * dit, jamais devinée.
  */
 
-export type WeightListIssue = 'invalid' | 'separator';
+export type WeightListIssue = 'invalid' | 'separator' | 'duplicate';
 
 export type WeightListResult = { readonly ok: true; readonly values: readonly number[] } | { readonly ok: false; readonly issue: WeightListIssue; readonly item: string };
 
@@ -33,7 +33,37 @@ export function parseWeightList(text: string): WeightListResult {
     if (item === '') continue;
     const read = parseWeightItem(item);
     if (!read.ok) return { ok: false, issue: read.issue, item };
+    if (values.includes(read.value)) return { ok: false, issue: 'duplicate', item };
     values.push(read.value);
   }
   return { ok: true, values };
+}
+
+/** SEANCE-0292 (C-081, D-500) : nombre de disques d'un poids par côté, au plus (au-delà : saisie fautive). */
+export const MAX_PLATES_PER_WEIGHT = 20;
+
+export type PlateListResult =
+  | { readonly ok: true; readonly plates: readonly { readonly weightKg: number; readonly count: number }[] }
+  | { readonly ok: false; readonly issue: WeightListIssue; readonly item: string };
+
+const COUNT_RE = /^(.+?)\s*[×xX*]\s*(\d+)$/;
+
+/**
+ * SEANCE-0292 (C-081, D-500) : disques par côté, « 20 × 4 ; 10 » (quatre disques de 20 kg par côté, un de 10) ; « x » ou « * » valent « × » ;
+ * sans nombre : un disque. Nombre de 1 à 20 ; poids en double refusé.
+ */
+export function parsePlateList(text: string): PlateListResult {
+  const plates: { weightKg: number; count: number }[] = [];
+  for (const raw of text.split(';')) {
+    const item = raw.trim();
+    if (item === '') continue;
+    const m = COUNT_RE.exec(item);
+    const read = parseWeightItem(m ? (m[1] ?? '') : item);
+    if (!read.ok) return { ok: false, issue: read.issue, item };
+    const count = m ? Number(m[2]) : 1;
+    if (!Number.isInteger(count) || count < 1 || count > MAX_PLATES_PER_WEIGHT) return { ok: false, issue: 'invalid', item };
+    if (plates.some((p) => p.weightKg === read.value)) return { ok: false, issue: 'duplicate', item };
+    plates.push({ weightKg: read.value, count });
+  }
+  return { ok: true, plates };
 }

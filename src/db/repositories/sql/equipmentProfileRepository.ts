@@ -1,7 +1,7 @@
 import type { WriteStamper } from '../../../domain/hlc';
 import { emptyInventory, validateEquipmentProfile, type EquipmentProfile, type EquipmentProfileInput, type EquipmentProfileKind } from '../../../domain/training';
 import { isId } from '../../../domain/types';
-import type { SqlExecutor, SqlRow } from '../../driver';
+import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { parseIncrements, parseInventory } from '../../parse/equipmentJson';
 import { decodeJson } from '../../parse/jsonText';
 import { RepositoryError, type ReadOptions } from '../common';
@@ -32,6 +32,12 @@ function encode(input: EquipmentProfileInput): { inventory: string; increments: 
   const increments = parseIncrements(input.increments);
   if (inventory === null || increments === null) throw new RepositoryError('invalid', 'equipment_profile', input.id);
   return { inventory: JSON.stringify(inventory), increments: JSON.stringify(increments) };
+}
+
+/** SEANCE-0292 (C-081) : d'un seul tenant ; dans une transaction de l'appelant, exécuté tel quel (comme cardioRepository). */
+function atomic<T>(db: SqlExecutor, fn: (x: SqlExecutor) => Promise<T>): Promise<T> {
+  const driver = db as Partial<SqlDriver>;
+  return typeof driver.transaction === 'function' ? driver.transaction(fn) : fn(db);
 }
 
 export function createEquipmentProfileRepository(db: SqlExecutor, stamper: WriteStamper): EquipmentProfileRepository {
@@ -90,8 +96,13 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
 
     async softDelete(id) {
       await live(id);
-      const stamp = stamper.next();
-      await db.execute('UPDATE equipment_profile SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      // SEANCE-0292 (C-081) : profil supprimé et, s'il était actif sur cet appareil, réglage local effacé, dans une même transaction.
+      await atomic(db, async (x) => {
+        const stamp = stamper.next();
+        await x.execute('UPDATE equipment_profile SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+        const local = createSettingsRepository(x, stamper);
+        if ((await local.get('training.activeEquipmentProfile')) === id) await local.set('training.activeEquipmentProfile', null);
+      });
     },
 
     get,
