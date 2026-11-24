@@ -18,7 +18,7 @@ export const syncFolderFr = {
   forgetLabel: 'Oublier le dossier de synchronisation',
   forgetTitle: 'Oublier le dossier de synchro ?',
   forgetDescription:
-    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. Pour retirer aussi la clé de synchronisation, choisis « Oublier le dossier et la clé » : sans elle, les données d’iCloud Drive deviennent illisibles ici (garde ta clé de secours).',
+    'Cet appareil ne se synchronisera plus ; ses données restent sur l’appareil. Pour retirer aussi la clé de synchronisation, choisis « Oublier le dossier et la clé ». Sans elle, les données d’iCloud Drive deviennent illisibles ici (garde ta clé de secours).',
   forgetFolder: 'Oublier le dossier',
   forgetFolderAndKey: 'Oublier le dossier et la clé',
   errorUnsafe: 'Ce dossier ne peut pas servir à la synchronisation : choisis-en un autre',

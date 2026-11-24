@@ -9,7 +9,6 @@ import { importCsvFr } from './fr.importCsv';
 import { syncEngineFr } from './fr.syncEngine';
 import { syncFolderFr, syncKeyFr } from './fr.syncFolder';
 import { syncConflictsFr } from './fr.syncConflicts';
-import { syncFieldFr } from './fr.syncField';
 import { syncVersionFr } from './fr.syncVersion';
 import { syncPairingFr } from './fr.syncPairing';
 import { syncForgetFr } from './fr.syncForget';
@@ -109,7 +108,7 @@ export const fr = {
   appearance: appearanceFr,
   // Synchronisation : section `status` (lot Y2 ; `restore` est à part, `fr.syncRestore.ts`, chargé à la demande) ; `folder` et `key` viennent du lot Y1 ;
   // lot Y3 : `conflicts` et `field` (Y-04), `version` (Y-07), `pairing` (Y-06) ; lot Y4 : `forget` (Y-10), `reset` (Y-11) ; chacune dans son fichier.
-  sync: { ...syncEngineFr, folder: syncFolderFr, key: syncKeyFr, conflicts: syncConflictsFr, field: syncFieldFr, version: syncVersionFr, pairing: syncPairingFr, forget: syncForgetFr, reset: syncResetFr },
+  sync: { ...syncEngineFr, folder: syncFolderFr, key: syncKeyFr, conflicts: syncConflictsFr, version: syncVersionFr, pairing: syncPairingFr, forget: syncForgetFr, reset: syncResetFr },
   reminders: {
     status: remindersStatusFr,
   },

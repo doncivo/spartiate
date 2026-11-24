@@ -3,6 +3,7 @@ import { MODIFIED_MARKER } from '../../domain/sync/merge';
 import type { SyncColumn, SyncTable } from '../../domain/sync/syncTables';
 import type { DeviceId } from '../../domain/types';
 import { t, tDynamic, type MessageKey } from '../../i18n';
+import { syncFieldFr } from '../../i18n/fr.syncField';
 import { tBody } from '../../i18n/bodyText';
 import { formatDayMonth, formatTime } from '../../i18n/format';
 import type { SyncStatus } from '../../platform/sync/types';
@@ -23,7 +24,9 @@ export const CONFLICT_TEXT_MAX = 80;
 export const fieldKey = (table: Pick<SyncTable, 'name'>, column: Pick<SyncColumn, 'name'>): string => `sync.field.${table.name}.${column.name}`;
 
 export function fieldLabel(table: Pick<SyncTable, 'name'>, column: Pick<SyncColumn, 'name'>): string {
-  return tDynamic(fieldKey(table, column) as MessageKey);
+  // DATA-0293 : libellés lus dans leur module (hors du catalogue principal, donc hors du JavaScript de départ) ; clé absente : la clé elle-même, comme avant.
+  const labels: Readonly<Record<string, string>> | undefined = (syncFieldFr as Readonly<Record<string, Readonly<Record<string, string>>>>)[table.name];
+  return labels?.[column.name] ?? fieldKey(table, column);
 }
 
 /** Texte entre les guillemets de la langue (`sync.conflicts.quoted`), tronqué à 80 caractères (points de code, jamais une moitié d'emoji). */
