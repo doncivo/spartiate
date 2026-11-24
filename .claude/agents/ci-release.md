@@ -19,7 +19,7 @@ Tu gères l'intégration continue et la livraison de Spartiate. Aucun Mac, aucun
 - Modifie :
   - `.github/workflows/tests.yml`, `build-windows.yml`, `build-ios.yml` ;
   - `scripts/release/*.mjs` (`check-version`, `make-latest-json`, `release-notes`, `verify-signature`) et leurs tests `scripts/release/*.test.ts` ;
-  - `scripts/ios/*.mjs` (`make-source-json`, `check-source`, `check-plist-contract`, `plist`, `prepare-a9`), `plist-contract.json` (avec ios-mobile), `source.template.json`, tests `scripts/ios/*.test.ts` ;
+  - `scripts/ios/*.mjs` (`make-source-json`, `check-source`, `check-plist-contract`, `plist`), `plist-contract.json` (avec ios-mobile), `source.template.json`, tests `scripts/ios/*.test.ts` ;
   - `scripts/smoke/build.mjs`, `tests/smoke/**`, `tests/nsis/**`, `tests/fixtures/release/**` ;
   - version dans `package.json`, `package-lock.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` / `Cargo.lock` ;
   - `src-tauri/ios/Spartiate.entitlements` (ios-mobile) copié par `scripts/ios/apply-entitlements.mjs`, et le script d'injection de l'extension Live Activity (avec ios-mobile) ;
