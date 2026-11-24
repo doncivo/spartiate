@@ -45,6 +45,8 @@ interface Screen {
   readonly date: Date;
   readonly dark?: boolean;
   readonly element?: string;
+  /** C-193 : crochets de développement posés avant l'ouverture de l'app (faux de signature, par exemple). */
+  readonly init?: (page: Page) => Promise<void>;
   readonly prepare?: (page: Page, testInfo: { project: { name: string } }) => Promise<void>;
 }
 
@@ -163,6 +165,82 @@ SCREENS.push(
 );
 
 /**
+ * C-193 (PRD § 18.5 et § 23.1, une paire par onglet à chaque largeur) : Progrès, séance active, résumé de séance, fiche d'exercice, matériel,
+ * journal et dashboard nutrition sur PC, routines sur PC. Les planches sont celles de docs/maquettes/ ; les paires sont relues par un humain.
+ */
+const startSession = async (page: Page): Promise<void> => {
+  await goTab('Entraînement')(page);
+  await page.getByRole('button', { name: 'Commencer une séance' }).click();
+  await page.getByRole('button', { name: 'Séance vide' }).click();
+  await page.getByRole('heading', { level: 2, name: 'Séance libre' }).waitFor();
+  await page.getByRole('button', { name: 'Ajouter un exercice' }).click();
+  const picker = page.getByRole('region', { name: 'Ajouter un exercice à la séance' });
+  await picker.getByLabel('Rechercher un exercice').fill('marteau');
+  await picker.getByRole('button', { name: /^Curl marteau$/ }).click();
+  await page.getByRole('region', { name: 'Curl marteau' }).waitFor();
+};
+const validateFirstSet = async (page: Page): Promise<void> => {
+  const set = page.getByRole('region', { name: 'Curl marteau' }).getByRole('group', { name: /^Série/ }).filter({ has: page.getByRole('button', { name: 'Valider la série' }) }).first();
+  await set.getByLabel('Charge (kg)', { exact: true }).fill('17,5');
+  await set.getByLabel('Répétitions', { exact: true }).fill('10');
+  await set.getByLabel('Répétitions', { exact: true }).press('Enter');
+  await page.getByText('1 / 3 séries validées').waitFor();
+};
+const goActiveSession = async (page: Page): Promise<void> => {
+  await startSession(page);
+  await validateFirstSet(page);
+};
+const goSummary = async (page: Page): Promise<void> => {
+  await goActiveSession(page);
+  await page.getByRole('button', { name: 'Terminer la séance' }).click();
+  await page.getByRole('alertdialog', { name: 'Terminer la séance ?' }).getByRole('button', { name: 'Terminer', exact: true }).click();
+  await page.getByRole('region', { name: 'Résumé de la séance' }).waitFor();
+};
+const goFirstExercise = async (page: Page): Promise<void> => {
+  await goTraining('Bibliothèque')(page);
+  await page.locator('.ct-training__row').first().click();
+  await page.waitForTimeout(300);
+};
+SCREENS.push(
+  { name: 'Progres', mockup: 'iPhone-Progres.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: async (page) => { await seedWeights(page); await goTab('Progrès')(page); } },
+  { name: 'PC-Progres', mockup: 'PC-Progres.html', viewport: PC, date: SUNDAY, dark: true, prepare: async (page) => { await seedWeights(page); await goTab('Progrès')(page); } },
+  { name: 'Seance-active', mockup: 'iPhone-Seance.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: goActiveSession },
+  { name: 'PC-Seance-active', mockup: 'PC-Seance.html', viewport: PC, date: SUNDAY, dark: true, prepare: goActiveSession },
+  { name: 'Seance-resume', mockup: 'iPhone-Resume.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: goSummary },
+  { name: 'Entrainement-fiche', mockup: 'iPhone-Fiche.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: goFirstExercise },
+  { name: 'PC-Entrainement-fiche', mockup: 'PC-Fiche.html', viewport: PC, date: SUNDAY, dark: true, prepare: goFirstExercise },
+  { name: 'PC-Entrainement-routines', mockup: 'PC-Routine.html', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining() },
+  { name: 'PC-Entrainement-materiel', mockup: 'PC-Materiel.html', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining('Matériel') },
+  { name: 'PC-Nutrition-journal', mockup: 'PC-Journal.html', viewport: PC, date: SUNDAY, dark: true, prepare: goNutrition() },
+  { name: 'PC-Nutrition-dashboard', mockup: 'PC-Dashboard.html', viewport: PC, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
+);
+
+/**
+ * C-193 (PRD § 18.3, états dégradés) : « en apprentissage » (base vide, aucune donnée de récupération), signature expirée dans moins de
+ * 24 h et signature expirée (faux de signature de développement, comme tests/e2e/I-02.spec.ts). Les autres lignes de § 18.3 (iCloud absent,
+ * conflit, IA, Live Activity, verrouillage, crash) n'ont pas de scène dans le navigateur de test : leurs tests sont listés dans docs/CI-0292.md.
+ */
+const SIGNATURE_DATE = new Date('2026-10-08T07:00:00Z'); // 09:00 à Paris
+const withSigningFakes = async (page: Page): Promise<void> => {
+  await page.addInitScript(() => {
+    (globalThis as { __ctNotificationsFake?: boolean }).__ctNotificationsFake = true;
+    (globalThis as { __ctSigningFake?: boolean }).__ctSigningFake = true;
+  });
+};
+const expireSignatureAt = (expiresAt: string) => async (page: Page): Promise<void> => {
+  await page.evaluate((value) => {
+    (window as unknown as { __ctSigning?: { source: { expireAt(at: string): void } } }).__ctSigning?.source.expireAt(value);
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, expiresAt);
+  await page.locator('.ct-status-banner').waitFor();
+};
+SCREENS.push(
+  { name: 'Degrade-apprentissage', mockup: 'iPhone-Degrade-Apprentissage.html', viewport: PHONE, date: WEDNESDAY, dark: true },
+  { name: 'Degrade-signature-24h', mockup: 'iPhone-Degrade-Signature.html', viewport: PHONE, date: SIGNATURE_DATE, dark: true, init: withSigningFakes, prepare: expireSignatureAt('2026-10-08T23:30:00Z') },
+  { name: 'Degrade-signature-expiree', mockup: 'iPhone-Degrade-Signature.html', viewport: PHONE, date: SIGNATURE_DATE, dark: true, init: withSigningFakes, prepare: expireSignatureAt('2026-10-08T06:00:00Z') },
+);
+
+/**
  * I3-07 : les 8 écrans de l'onboarding (Plus › Profil et poids › Revoir mes réglages), à 440 × 956 et 1 440 × 900. Seule la planche
  * iPhone-Onboarding.html (écran 6, Priorités) existe : les autres écrans suivent son gabarit (consigné dans docs/I3-07.md et D-110).
  */
@@ -205,6 +283,7 @@ for (const screen of SCREENS) {
     });
     const page = await context.newPage();
     await page.clock.setFixedTime(screen.date);
+    await screen.init?.(page);
     await openToday(page);
     await screen.prepare?.(page, { project: { name: phone ? 'iphone' : 'pc' } });
     await captureApp(page, screen.name, screen.element);

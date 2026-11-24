@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
  */
 const root = resolve(import.meta.dirname, '..', '..');
 const spec = readFileSync(resolve(root, 'tests/visual/capture.spec.ts'), 'utf8');
-const scenes = [...spec.matchAll(/name: '([^']+)'(?:, mockup: '([^']+)')?/g)].map((m) => ({ name: m[1] as string, mockup: m[2] }));
+const scenes = [...spec.matchAll(/{ name: '([^']+)', (?:mockup: '([^']+)', )?viewport:/g)].map((m) => ({ name: m[1] as string, mockup: m[2] }));
 const names = new Set(scenes.map((s) => s.name));
 
 describe('C-193 : scènes de npm run visual', () => {
