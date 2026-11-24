@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId, LocalDate, LocalTime } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -116,5 +116,53 @@ describe('C-099 : flèches rapides sur la déclaration', () => {
       expect(await declared(TODAY)).toBe('incomplete');
     });
     expect(within(r).getByRole('radio', { name: 'Incomplète' })).toHaveAttribute('aria-checked', 'true');
+  });
+});
+
+describe('C-099 (relecture) : choix pendant la relecture, choix sur un autre jour', () => {
+  it('un choix fait pendant la relecture qui suit l’écriture est écrit aussi (dernière valeur gagnante)', async () => {
+    await seedTwoMeals(TODAY);
+    const original = db.data.repos.mealEntries.bind(db.data.repos);
+    let armed = false;
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.spyOn(db.data.repos, 'mealEntries').mockImplementation(async () => {
+      if (armed) await gate;
+      return original();
+    });
+    open();
+    const r = await region();
+    const none = await within(r).findByRole('radio', { name: 'Non déclarée' });
+    armed = true;
+    fireEvent.click(within(r).getByRole('radio', { name: 'Complète' }));
+    await waitFor(async () => expect(await declared(TODAY)).toBe('complete'));
+    fireEvent.click(within(r).getByRole('radio', { name: 'Incomplète' }));
+    release();
+    armed = false;
+    await waitFor(async () => expect(await declared(TODAY)).toBe('incomplete'));
+    expect(within(r).getByRole('radio', { name: 'Incomplète' })).toHaveAttribute('aria-checked', 'true');
+    void none;
+  });
+
+  it('un choix par jour : changer de jour pendant la file n’écrit jamais sur l’ancien jour', async () => {
+    await seedTwoMeals(TODAY);
+    await seedTwoMeals(YESTERDAY);
+    const repo = await db.data.repos.dayCompleteness();
+    const original = repo.declare.bind(repo);
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    vi.spyOn(db.data.repos, 'dayCompleteness').mockResolvedValue({ ...repo, declare: async (...args: Parameters<typeof original>) => { await gate; return original(...args); } });
+    open();
+    const r = await region();
+    fireEvent.click(await within(r).findByRole('radio', { name: 'Complète' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Jour précédent' }));
+    fireEvent.click(await within(r).findByRole('radio', { name: 'Incomplète' }));
+    release();
+    await waitFor(async () => expect(await declared(YESTERDAY)).toBe('incomplete'));
+    expect(await declared(TODAY)).toBe('complete');
   });
 });
