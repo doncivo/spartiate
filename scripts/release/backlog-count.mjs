@@ -2,7 +2,7 @@
 /* global console, process */
 // BL-147 (audit du projet du 24/11, N-10) : compteur unique des lignes ouvertes de docs/backlog.md.
 // `node scripts/release/backlog-count.mjs` écrit la ligne à citer telle quelle dans docs/reprise.md
-// (scripts/release/backlogCount.test.ts vérifie que la reprise cite le compte exact).
+// (scripts/release/backlogCount.test.ts vérifie que la reprise cite le compte exact et qu'aucun statut « à faire » n'est mal formé).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -20,6 +20,7 @@ export function countBacklog(text) {
   let partial = 0;
   let decide = 0;
   let constat = 0;
+  const unknown = [];
   for (const line of text.split('\n')) {
     const status = statusOf(line);
     if (status === null) continue;
@@ -31,8 +32,9 @@ export function countBacklog(text) {
     } else if (status.startsWith('fait en partie')) partial += 1;
     else if (status.startsWith('à trancher par Ali')) decide += 1;
     else if (status.startsWith("constat d'Ali à faire")) constat += 1;
+    else if (status.startsWith('à faire')) unknown.push(line.split(' | ')[0].slice(2));
   }
-  return { todo, byModule, partial, decide, constat };
+  return { todo, byModule, partial, decide, constat, unknown };
 }
 
 export function formatCount(c) {

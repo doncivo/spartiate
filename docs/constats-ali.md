@@ -192,8 +192,6 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | ID | Sections |
 | --- | --- |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
-| BL-157 | Les deux appareils › Synchro |
-| H-11 | Les deux appareils › Documents |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |
 | BL-014 | PC › Séance |
@@ -205,9 +203,11 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | BL-020 | iPhone › Séance (journée rouge) ; Les deux appareils › Synchro (favoris) |
 | BL-021 | iPhone › Cardio ; Les deux appareils › Synchro |
 | BL-132 | iPhone › Bibliothèque ; PC › Bibliothèque |
+| BL-157 | Les deux appareils › Synchro |
 | H-4 | iPhone › Séance |
 | H-8 | iPhone › Bibliothèque ; Les deux appareils › Documents |
 | H-9 | Les deux appareils › Documents |
+| H-11 | Les deux appareils › Documents |
 | H-12 | iPhone › Nutrition |
 | H-17 | iPhone › Plus |
 | H-19a | iPhone › Réglages iOS ; PC › Largeur et écrans (contrôle du texte) |
@@ -221,8 +221,11 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | H-39 | PC › Plus |
 | H-40 | iPhone › Routines ; PC › Routines |
 | H-41 | iPhone › Plus |
+| C-078 | iPhone › Entraînement › Séance |
+| C-083 | iPhone › Entraînement › Cardio |
 | C-113 | iPhone › Réglages iOS |
 | C-152 | iPhone › Plus |
+| § 10.3 | iPhone › Entraînement › Séance |
 | § 13.7 | iPhone › Séance |
 | § 23.1 h | iPhone › Recette |
 | § 23.3 | iPhone › Séance (verrouillage, visuel) |
