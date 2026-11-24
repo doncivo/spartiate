@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { WorkoutSet } from '../../../domain/training';
 import * as training from '../../../domain/training';
@@ -50,5 +50,28 @@ describe('C-071 : tractions et dips, le champ dit « lest » (le poids de corps 
     second.unmount();
     row({});
     expect(screen.getByLabelText('Charge (kg)')).toBeInTheDocument();
+  });
+});
+
+describe('C-080 : type de série parcouru au clavier', () => {
+  it('flèches dans « Type » : rien n’est écrit pendant le parcours ; écrit une fois, la dernière valeur, à la sortie du champ', () => {
+    const onKind = vi.fn();
+    row({ onKind });
+    const select = screen.getByLabelText('Type de série');
+    for (const value of ['failure', 'warmup', 'drop']) {
+      fireEvent.keyDown(select, { key: 'ArrowDown' });
+      fireEvent.change(select, { target: { value } });
+    }
+    expect(onKind).not.toHaveBeenCalled();
+    fireEvent.blur(select);
+    expect(onKind).toHaveBeenCalledTimes(1);
+    expect(onKind).toHaveBeenCalledWith('drop');
+  });
+
+  it('choix au doigt ou à la souris (sans flèche) : écrit aussitôt, comme avant', () => {
+    const onKind = vi.fn();
+    row({ onKind });
+    fireEvent.change(screen.getByLabelText('Type de série'), { target: { value: 'warmup' } });
+    expect(onKind).toHaveBeenCalledWith('warmup');
   });
 });
