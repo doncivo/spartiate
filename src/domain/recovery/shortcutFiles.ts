@@ -83,15 +83,30 @@ export function readRows(text: string): { readonly rows: readonly (readonly stri
   return { rows, truncated };
 }
 
-export function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string } | Fail {
+/** Décalage (minutes) écrit dans la cellule ISO ; `null` pour « Z » (décalage inconnu : le fuseau de l'appareil s'applique) ou une cellule sans décalage. */
+export function offsetMinutesOf(cell: string): number | null {
+  const m = /([+-])(\d{2}):?(\d{2})$/.exec(cell);
+  if (m === null) return null;
+  const minutes = Number(m[2]) * 60 + Number(m[3]);
+  return m[1] === '-' ? -minutes : minutes;
+}
+
+/** Jour civil d'un instant pour un décalage fixe en minutes (D-478 : fuseau de la mesure). */
+export function localDayAt(atMs: number, offsetMin: number): string {
+  return new Date(atMs + offsetMin * 60_000).toISOString().slice(0, 10);
+}
+
+export function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string; readonly offsetMin: number | null } | Fail {
   if (!ISO_WITH_ZONE.test(cell)) return { fail: ISO_NO_ZONE.test(cell) ? 'no_timezone' : 'bad_date' };
   const at = Date.parse(cell);
   if (!Number.isFinite(at)) return { fail: 'bad_date' };
   // C-053 : fuseau d'appareil invalide : la ligne est rejetée (jour local incalculable), jamais une exception.
   if (!isValidTimeZone(timeZone)) return { fail: 'no_timezone' };
-  const day = utcToLocal(new Date(at).toISOString(), timeZone).date;
+  // C-058 (D-478) : le jour est celui du fuseau où la mesure a été prise (décalage de la cellule) ; « Z » ou décalage absent : fuseau de l'appareil.
+  const offsetMin = offsetMinutesOf(cell);
+  const day = offsetMin !== null ? localDayAt(at, offsetMin) : utcToLocal(new Date(at).toISOString(), timeZone).date;
   if (day > today) return { fail: 'future' };
-  return { at, day };
+  return { at, day, offsetMin };
 }
 
 /** Un nombre entier de pas écrit avec séparateurs de milliers (« 12,345 », « 1.234 », « 1,234,567 ») : séparateurs retirés (C-057, H-25 : format réel non constaté). */
@@ -116,6 +131,8 @@ export interface ShortcutSample {
   /** Jour local de l'appareil. */
   readonly day: string;
   readonly value: number;
+  /** Décalage horaire (minutes) où la mesure a été prise ; `null` s'il est inconnu (« Z »). À enregistrer avec la mesure (colonne à ajouter, voir la fiche NUTRI-0292). */
+  readonly offsetMin: number | null;
 }
 
 export interface ShortcutSamples extends ShortcutParseReport {
@@ -159,10 +176,10 @@ function parseSamples(
       continue;
     }
     seen.add(key);
-    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value, at: instant.at });
+    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value, offsetMin: instant.offsetMin, at: instant.at });
   }
   samples.sort((a, b) => a.at - b.at);
-  return { ...counter.report(truncated), samples: samples.map(({ measuredAt, day, value }) => ({ measuredAt, day, value })) };
+  return { ...counter.report(truncated), samples: samples.map(({ measuredAt, day, value, offsetMin }) => ({ measuredAt, day, value, offsetMin })) };
 }
 
 /** `hrv.csv` : SDNN en ms. */
