@@ -1,4 +1,4 @@
-import { ENGINE_VERSION, REASON_ORDER, type ProgressionConfig } from './config';
+import { ENGINE_VERSION, REASON_ORDER, withExerciseOverrides, type ProgressionConfig } from './config';
 import { confidenceOf } from './confidence';
 import { analyzeHistory, compareInstants, current1rmFromSessions, epley, totalLoad, type BodyLoad, type SessionEstimate } from './estimate1rm';
 import { activeConstraints, daysBetween, deloadSetCount, inactivityCut, isLowRecovery, proposalOptions, reducedTarget, reduces, type ActiveConstraints } from './constraints';
@@ -88,7 +88,9 @@ const reducedHeadline = (c: ActiveConstraints): PrescriptionHeadline => (c.deloa
 type Defaulted = 'options' | 'deload' | 'rirTarget' | 'inactivityCut';
 
 export function prescribe(input: PrescribeInput): Prescription {
-  const { config, target } = input;
+  // § 11 : constantes ajustables par exercice (surcharges bornées), tracées dans `activeConfig`.
+  const config = withExerciseOverrides(input.config, input.exercise.configOverrides);
+  const { target } = input;
   const reasons = new Set<ReasonCode>();
   const base = { engineVersion: ENGINE_VERSION, activeConfig: config };
   const finish = (p: Omit<Prescription, 'reasons' | 'engineVersion' | 'activeConfig' | Defaulted> & Partial<Pick<Prescription, Defaulted>>): Prescription => ({
@@ -495,7 +497,8 @@ function unloadedLadderIndex(values: readonly number[], goal: number): number {
 }
 
 export function prescribeUnloaded(input: PrescribeInput): Prescription {
-  const { config, target } = input;
+  const config = withExerciseOverrides(input.config, input.exercise.configOverrides);
+  const { target } = input;
   const timed = input.exercise.metric === 'time';
   const metric: 'bodyweight-reps' | 'time' = timed ? 'time' : 'bodyweight-reps';
   const reasons = new Set<ReasonCode>();

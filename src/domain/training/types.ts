@@ -1,5 +1,5 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
-import type { ProgressionConfig } from './config';
+import type { ProgressionConfig, TunableKey } from './config';
 import type { SetKind } from './session';
 
 /**
@@ -316,6 +316,8 @@ export interface ProgressionExercise {
   readonly bodyweightFraction?: number | null;
   /** Exercice assisté : la charge saisie est l'assistance, retranchée du poids de corps porté. */
   readonly assisted?: boolean;
+  /** § 11 (SEANCE-0292) : constantes du moteur propres à cet exercice, bornées par `TUNABLE_BOUNDS` (config.ts) ; absentes : celles du moteur. */
+  readonly configOverrides?: Readonly<Partial<Record<TunableKey, number>>>;
 }
 
 /**
