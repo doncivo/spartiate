@@ -1,5 +1,5 @@
 import { tPlural } from '../../../i18n/plural';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
@@ -89,7 +89,9 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [declBusy, setDeclBusy] = useState(false);
+  // C-099 : choix affiché tout de suite ; les écritures sont mises en file, la dernière valeur gagne (jamais une valeur intermédiaire laissée).
+  const [wantedDecl, setWantedDecl] = useState<DeclarationChoice | null>(null);
+  const declWrite = useRef<{ running: boolean; latest: DeclarationChoice | null }>({ running: false, latest: null });
   const isToday = date === snapshot.today;
 
   useEffect(() => {
@@ -130,19 +132,30 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
 
   /** Déclare (complète / incomplète) ou efface (« Non déclarée ») la journée affichée ; la relecture du snapshot met à jour dashboard et dépense. */
   async function chooseDeclaration(next: DeclarationChoice): Promise<void> {
-    if (declBusy) return;
-    setDeclBusy(true);
+    const queue = declWrite.current;
+    queue.latest = next;
+    setWantedDecl(next);
+    if (queue.running) return;
+    queue.running = true;
+    const day = date;
     try {
       const repo = await data.repos.dayCompleteness();
-      if (next === 'none') await repo.clear(date);
-      else await repo.declare(date, next);
+      let written: DeclarationChoice | null = null;
+      while (queue.latest !== null && queue.latest !== written) {
+        const value: DeclarationChoice = queue.latest;
+        if (value === 'none') await repo.clear(day);
+        else await repo.declare(day, value);
+        written = value;
+      }
       setError(null);
       setVersion((v) => v + 1);
       await onChanged();
     } catch {
       setError(tNutrition('dayDeclError'));
     } finally {
-      setDeclBusy(false);
+      queue.running = false;
+      queue.latest = null;
+      setWantedDecl(null);
     }
   }
 
@@ -221,8 +234,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
           <div className="ct-nutrition__declaration">
             <SegmentedControl<DeclarationChoice>
               label={tNutrition('dayDeclLabel')}
-              value={declaration ?? 'none'}
-              disabled={declBusy}
+              value={wantedDecl ?? declaration ?? 'none'}
               onChange={(next) => void chooseDeclaration(next)}
               options={[
                 { value: 'none', label: tNutrition('dayDeclNone') },
