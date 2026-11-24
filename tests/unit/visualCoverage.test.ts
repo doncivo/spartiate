@@ -41,3 +41,13 @@ describe('C-193 : scènes de npm run visual', () => {
     expect(scenes.length).toBe(names.size);
   });
 });
+
+describe('C-193 (relecture 1, point 6) : préparation de la fiche d\'exercice', () => {
+  const start = spec.indexOf('const goFirstExercise');
+  const block = spec.slice(start, spec.indexOf('};', start) + 2);
+  it('attend le titre de la fiche, jamais un délai fixe', () => {
+    expect(start).toBeGreaterThan(0);
+    expect(block).not.toContain('waitForTimeout');
+    expect(block).toContain('.ct-sheet__title');
+  });
+});
