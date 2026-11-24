@@ -333,33 +333,28 @@ describe('SEANCE-0292 C-025 : inactivité en jours civils ; instants comparés c
   });
 });
 
-describe('SEANCE-0292 C-026 (vérification, défaut avéré) : une décision postérieure à la dernière séance reste soumise aux réductions', () => {
+describe('SEANCE-0292 C-026 (vérification) : une décision postérieure à la dernière séance est rendue sans contrainte (I2-02, question Q-11)', () => {
+  // Test rouge 2e4894f6 réécrit : la règle « l'entrée d'Ali l'emporte, jamais modulée » est voulue (I2-02, constraints.test.ts et redDay.test.ts
+  // la figent) ; la réduire en décharge, pause ou journée rouge change une règle de progression : question Q-11 à Ali (docs/SEANCE-0292.md).
   const hist = [session(3, 100, [8, 8, 8])];
   const decision = { decidedAt: daysAgo(1), accepted: false, loadKg: 90, reps: [8, 8, 8] };
 
-  it('sans contrainte : la décision est reprise telle quelle (90 kg × 8, 8, 8)', () => {
-    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10) }));
-    expect(p.headline).toBe('decision');
-    expect(p.loadKg).toBe(90);
-  });
-
-  it('semaine de décharge : séries ÷ 2 et charge × 0,8 de la décision (72 kg arrondi vers le bas au cran de barre : 70 kg), décharge dite', () => {
-    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), deload: true }));
-    expect(p.headline).toBe('deload');
-    expect(p.deload).toBe(true);
-    expect(p.loadKg).toBe(70);
-    expect(p.sets).toHaveLength(1);
-    expect(p.reasons).toContain('decision-reference');
-    expect(p.reference?.loadKg).toBe(90);
-  });
-
-  it('journée rouge acceptée : × 0,95 arrondi vers le bas (85 kg) ; pause de 3 semaines : décote d’inactivité', () => {
+  it('sans contrainte, en décharge, en journée rouge : la décision est reprise telle quelle (90 kg × 8, 8, 8)', () => {
+    const plain = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10) }));
+    const deload = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), deload: true }));
     const red = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), recovery: { recovery: 20, sleepHours: null, restingHrDelta: null, redDay: true } }));
-    expect(red.headline).toBe('recovery-low');
-    expect(red.loadKg).toBe(85);
-    const old = [session(30, 100, [8, 8, 8])];
-    const paused = prescribe(input({ exercise: BENCH, history: old, lastDecision: { ...decision, decidedAt: daysAgo(29) }, target: target(8, 10) }));
-    expect(paused.reasons).toContain('inactivity-discount');
-    expect(paused.loadKg).toBeLessThan(90);
+    for (const p of [plain, deload, red]) {
+      expect(p.headline).toBe('decision');
+      expect(p.loadKg).toBe(90);
+      expect(p.sets.map((x) => x.reps)).toEqual([8, 8, 8]);
+      expect(p.reasons).toEqual(['decision-reference']);
+    }
+  });
+
+  it('décision antérieure à la dernière séance : la séance est la référence, les contraintes s’appliquent (décharge : 80 kg, une série)', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: { ...decision, decidedAt: daysAgo(4) }, target: target(8, 10), deload: true }));
+    expect(p.headline).toBe('deload');
+    expect(p.loadKg).toBe(80);
+    expect(p.sets).toHaveLength(1);
   });
 });
