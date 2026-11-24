@@ -18,3 +18,12 @@ describe('C-051 : séance à date illisible', () => {
     expect(dayExertion([{ endedAt: '', sets: [set()] }], '2026-11-07', TZ).value).toBe(0);
   });
 });
+
+describe('relecture A : répétitions infinies', () => {
+  it('une série à répétitions infinies ne rend jamais une Exertion infinie : ignorée comme une valeur illisible', () => {
+    const w: RecoveryWorkout = { endedAt: '2026-11-07T17:00:00.000Z', sets: [set({ reps: Number.POSITIVE_INFINITY }), set()] };
+    const r = dayExertion([w], '2026-11-07', TZ);
+    expect(Number.isFinite(r.value)).toBe(true);
+    expect(r.value).toBe(dayExertion([{ ...w, sets: [set()] }], '2026-11-07', TZ).value);
+  });
+});

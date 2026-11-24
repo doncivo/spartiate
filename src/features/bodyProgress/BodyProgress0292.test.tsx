@@ -80,3 +80,17 @@ describe('C-105', () => {
     expect((screen.getByLabelText('Date') as HTMLInputElement).value).toBe('2026-11-13');
   });
 });
+
+describe('photo trop grosse (relecture A, C-047)', () => {
+  it('le message dit la limite de 40 Mo, pas un échec générique', async () => {
+    viewport(false);
+    const { PhotoTooLargeError } = await import('../../platform/photoImage/picker');
+    render(
+      <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, privacyShield: createFakePrivacyShield() })}>
+        <BodyProgress pickPhoto={() => Promise.reject(new PhotoTooLargeError())} />
+      </AppContainerProvider>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /Ajouter une photo/ }));
+    expect(await screen.findByText(/40 Mo/)).toBeInTheDocument();
+  });
+});
