@@ -94,34 +94,34 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-032 | audit Claude 0.27.0 | important — correction des grammes d'une entrée : arrondis cumulés enregistrés | fait (FIX-SAISIE-NUTRI) |
 | C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | fait (FIX-SAISIE-NUTRI) |
 | C-034 | audit Claude 0.27.0 | important — Quick Add sans borne ni contrôle de cohérence des macros | fait (FIX-SAISIE-NUTRI) |
-| C-035 | audit Claude 0.27.0 | mineur — rappel de complément perdu le jour du passage à l'heure d'été | à faire (0.29.x, nutrition et récupération, S) |
+| C-035 | audit Claude 0.27.0 | mineur — rappel de complément perdu le jour du passage à l'heure d'été | fait (NUTRI-0292) |
 | C-036 | audit Claude 0.27.0 | important — lissage de la dépense sur 7 jours (§ 15.1) jamais appliqué | fait (D-357 ; preuve NUTRI-a, 0.28.1, D-397) |
-| C-037 | audit Claude 0.27.0 | mineur — cible de repos : glucides ramenés à 0 sans recalcul des kcal ; floor contre round | à faire (0.29.x, nutrition et récupération, S) |
-| C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | à faire (0.29.x, nutrition et récupération, S) : D-475 (Ali, 24/11), test qui fige |
-| C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | à faire (0.29.x, nutrition et récupération, S) : D-476 (Ali, 24/11) |
-| C-040 | audit Claude 0.27.0 | mineur — horloge en avance : décision future qui passe devant une cible prévue ; HLC illisible mal classé | à faire (0.29.x, nutrition et récupération, S) |
-| C-041 | audit Claude 0.27.0 | mineur — totaux du jour non arrondis (erreurs de virgule flottante) | à faire (0.29.x, nutrition et récupération, S) |
-| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | à faire (0.29.x, nutrition et récupération, S) : D-477 (Ali, 24/11) |
-| C-043 | audit Claude 0.27.0 | mineur — code à 8 chiffres toujours lu en EAN-8 ; format rapporté par le scanner non transmis | à faire (0.29.x, nutrition et récupération, S) |
-| C-044 | audit Claude 0.27.0 | mineur — recette : `servings` à 0 donne Infinity ; recette vide acceptée avec une entrée toute nulle | à faire (0.29.x, nutrition et récupération, S) |
-| C-045 | audit Claude 0.27.0 | mineur — UPC-A sur 12 chiffres non retrouvé dans le cache ; normalisation de « ß » fautive | à faire (0.29.x, nutrition et récupération, S) |
-| C-046 | audit Claude 0.27.0 | mineur — `off.rs` : virgule de milliers lue comme décimale | à faire (0.29.x, nutrition et récupération, S) |
-| C-047 | audit Claude 0.27.0 | amélioration — photo sans plafond de taille avant décodage ; fiche OFF périmée perdue sur « not-found » | à faire (0.29.x, nutrition et récupération, S) |
-| C-048 | audit Claude 0.27.0 | mineur, à vérifier — « Pris » silencieux si l'heure a changé ; file d'actions tronquée qui recoche une prise | à faire (0.29.x, nutrition et récupération, M) |
+| C-037 | audit Claude 0.27.0 | mineur — cible de repos : glucides ramenés à 0 sans recalcul des kcal ; floor contre round | fait (NUTRI-0292) |
+| C-038 | audit Claude 0.27.0 | à vérifier — premier check-in sans cible en cours : couverture non contrôlée (D-74) | fait (NUTRI-0292, D-475 : comportement conservé, figé par un test) |
+| C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | fait (NUTRI-0292, D-476, D-547 ; Q-26) |
+| C-040 | audit Claude 0.27.0 | mineur — horloge en avance : décision future qui passe devant une cible prévue ; HLC illisible mal classé | fait (NUTRI-0292) |
+| C-041 | audit Claude 0.27.0 | mineur — totaux du jour non arrondis (erreurs de virgule flottante) | fait (NUTRI-0292) |
+| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | fait en partie (NUTRI-0292, D-477) : reste « traces » dans le contenu Ciqual (import et contenu, Q-20) |
+| C-043 | audit Claude 0.27.0 | mineur — code à 8 chiffres toujours lu en EAN-8 ; format rapporté par le scanner non transmis | fait (NUTRI-0292) |
+| C-044 | audit Claude 0.27.0 | mineur — recette : `servings` à 0 donne Infinity ; recette vide acceptée avec une entrée toute nulle | fait (NUTRI-0292) |
+| C-045 | audit Claude 0.27.0 | mineur — UPC-A sur 12 chiffres non retrouvé dans le cache ; normalisation de « ß » fautive | fait (NUTRI-0292) |
+| C-046 | audit Claude 0.27.0 | mineur — `off.rs` : virgule de milliers lue comme décimale | fait (NUTRI-0292, D-563 : kJ et kcal) |
+| C-047 | audit Claude 0.27.0 | amélioration — photo sans plafond de taille avant décodage ; fiche OFF périmée perdue sur « not-found » | fait (NUTRI-0292) |
+| C-048 | audit Claude 0.27.0 | mineur, à vérifier — « Pris » silencieux si l'heure a changé ; file d'actions tronquée qui recoche une prise | fait (NUTRI-0292) |
 | C-049 | audit Claude 0.27.0 | important — baseline : exclusion des aberrantes (> 2,5 σ) inopérante sur 7 ou 8 nuits | fait (FIX-RECUP) |
 | C-050 | audit Claude 0.27.0 | important — heure de coucher proposée avancée de 3 h par une nuit non valide | fait (FIX-RECUP) |
-| C-051 | audit Claude 0.27.0 | mineur — Exertion : une séance à date illisible fait planter le résumé du jour | à faire (0.29.x, nutrition et récupération, S) |
+| C-051 | audit Claude 0.27.0 | mineur — Exertion : une séance à date illisible fait planter le résumé du jour | fait (NUTRI-0292) |
 | C-052 | audit Claude 0.27.0 | important — `pas.csv` : totaux partiels qui écrasent les totaux complets | fait (FIX-RECUP) |
-| C-053 | audit Claude 0.27.0 | mineur — fuseau invalide : exception au lieu d'un rejet | à faire (0.29.x, nutrition et récupération, S) |
-| C-054 | audit Claude 0.27.0 | mineur — pesée à 3e colonne vide rejetée au sélecteur, acceptée par le lecteur du dossier | à faire (0.29.x, nutrition et récupération, S) |
-| C-055 | audit Claude 0.27.0 | mineur — deux pesées au même instant : la dernière ligne du fichier gagne | à faire (0.29.x, nutrition et récupération, S) |
-| C-056 | audit Claude 0.27.0 | mineur, à vérifier — fichier Santé remplacé tronqué accepté (valeur coupée lue) | à faire (0.29.x, nutrition et récupération, S) |
-| C-057 | audit Claude 0.27.0 | amélioration, à vérifier (H-25) — séparateur de milliers anglais lu comme décimale dans `pas.csv` | à faire (0.29.x, nutrition et récupération, S) |
-| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | à faire (0.29.x, nutrition et récupération, M) : D-478 (Ali, 24/11) |
-| C-059 | audit Claude 0.27.0 | mineur — nuit du jour non soumise au seuil de 180 min pour le score | à faire (0.29.x, nutrition et récupération, S) |
-| C-060 | audit Claude 0.27.0 | mineur — baseline à σ = 0 ou HRV absente classée niveau B (libellé seulement) | à faire (0.29.x, nutrition et récupération, S) |
-| C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | à faire (0.29.x, nutrition et récupération, S) : D-479 (Ali, 24/11) |
-| C-062 | audit Claude 0.27.0 | à vérifier — récupération musculaire figée au calcul ; cardio importé non retiré (§ 16.3) ; rappel à heure inexistante | à faire (0.29.x, nutrition et récupération, M) |
+| C-053 | audit Claude 0.27.0 | mineur — fuseau invalide : exception au lieu d'un rejet | fait (NUTRI-0292) |
+| C-054 | audit Claude 0.27.0 | mineur — pesée à 3e colonne vide rejetée au sélecteur, acceptée par le lecteur du dossier | fait (NUTRI-0292) |
+| C-055 | audit Claude 0.27.0 | mineur — deux pesées au même instant : la dernière ligne du fichier gagne | fait (NUTRI-0292) |
+| C-056 | audit Claude 0.27.0 | mineur, à vérifier — fichier Santé remplacé tronqué accepté (valeur coupée lue) | fait (NUTRI-0292 : limite connue, figée par un test ; Q-18) |
+| C-057 | audit Claude 0.27.0 | amélioration, à vérifier (H-25) — séparateur de milliers anglais lu comme décimale dans `pas.csv` | fait (NUTRI-0292) |
+| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | fait en partie (NUTRI-0292, D-478, D-551) : reste la colonne utc_offset_min de recovery_sample (données et synchro) |
+| C-059 | audit Claude 0.27.0 | mineur — nuit du jour non soumise au seuil de 180 min pour le score | fait (NUTRI-0292) |
+| C-060 | audit Claude 0.27.0 | mineur — baseline à σ = 0 ou HRV absente classée niveau B (libellé seulement) | fait (NUTRI-0292 : comportement conservé, figé par un test ; Q-19) |
+| C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | fait (NUTRI-0292, D-479 ; Q-21) |
+| C-062 | audit Claude 0.27.0 | à vérifier — récupération musculaire figée au calcul ; cardio importé non retiré (§ 16.3) ; rappel à heure inexistante | fait (NUTRI-0292, D-498, D-562 : rappels comparés à leur heure réelle) |
 | C-063 | audit Claude 0.27.0 | important — séance du jour proposée de nouveau après avoir été faite | fait (FIX-PROGRAMME) |
 | C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | fait (FIX-PROGRAMME) |
 | C-065 | audit Claude 0.27.0 | important — échanger deux jours de la semaine dans l'éditeur de routine échoue | fait (FIX-PROGRAMME) |
@@ -129,7 +129,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-067 | audit Claude 0.27.0 | important — suivi GPS en cours perdu (mémoire seule) et « Abandonner » sans confirmation | fait en partie ; reste : Confirmation d'abandon faite (FIX-COQUILLE, PR #170) ; reste le brouillon persistant du suivi GPS (mémoire React seule, D-222) (0.29.x, séance et moteur, M) |
 | C-068 | audit Claude 0.27.0 | important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier | fait en partie ; reste : Séance faite (FIX-COQUILLE, PR #170) ; reste le focus du journal des facteurs : RecoveryToday.tsx:318 clé avec hlc qui remonte la carte (0.29.x, nutrition et récupération, S) |
 | C-069 | audit Claude 0.27.0 | important — « Accepter » peut écraser une série déjà validée | fait (SEANCE-0292, PR #206) |
-| C-070 | audit Claude 0.27.0 | important — texte faux « Musculation seule, cardio non compté » | à faire (0.29.x, nutrition et récupération, S) |
+| C-070 | audit Claude 0.27.0 | important — texte faux « Musculation seule, cardio non compté » | fait (NUTRI-0292) |
 | C-071 | audit Claude 0.27.0 | important — tractions et dips : champ « Charge (kg) » sans dire « lest » | fait (SEANCE-0292, PR #206, D-518) ; ferme le double compte de C-024 |
 | C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | fait en partie ; reste : valeur d'avant la correction, à trancher par Ali (Q-13), puis données et synchro ; date de correction faite (SEANCE-0292, PR #206, D-519, D-520) |
 | C-073 | audit Claude 0.27.0 | important — brouillon de routine abandonné sans confirmation ; retraits de jour et d'exercice non confirmés | fait (FIX-COQUILLE) |
@@ -149,23 +149,23 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-087 | audit Claude 0.27.0 | important — cible confirmée sous 1 200 kcal : cible de repos impossible à ajouter ou retirer | fait (FIX-PLANCHER) |
 | C-088 | audit Claude 0.27.0 | important — tableau de bord : un jour de repos compté sur la cible d'entraînement | fait (FIX-PLANCHER) |
 | C-089 | audit Claude 0.27.0 | important, à vérifier — photos « supprimées sans retour possible » encore présentes dans les sauvegardes | fait (FIX-CONFID-IOS) |
-| C-090 | audit Claude 0.27.0 | important — « +5 cm en 4 semaines » faux sur un historique espacé | à faire (0.29.x, nutrition et récupération, S) |
-| C-091 | audit Claude 0.27.0 | important — compléments : changer une heure efface la constance passée | à faire (0.29.x, nutrition et récupération, M) |
-| C-092 | audit Claude 0.27.0 | important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats | à faire (0.29.x, nutrition et récupération, S) |
-| C-093 | audit Claude 0.27.0 | mineur — tendance du poids : échelle étirée par une pesée aberrante | à faire (0.29.x, nutrition et récupération, S) |
+| C-090 | audit Claude 0.27.0 | important — « +5 cm en 4 semaines » faux sur un historique espacé | fait (NUTRI-0292) |
+| C-091 | audit Claude 0.27.0 | important — compléments : changer une heure efface la constance passée | fait (NUTRI-0292, D-553) |
+| C-092 | audit Claude 0.27.0 | important — recherche : produit Open Food Facts masqué par la coupe à 50 résultats | fait (NUTRI-0292) |
+| C-093 | audit Claude 0.27.0 | mineur — tendance du poids : échelle étirée par une pesée aberrante | fait (NUTRI-0292) |
 | C-094 | audit Claude 0.27.0 | important — mesure corporelle supprimée d'un geste, sans confirmation ni annulation | fait (FIX-COQUILLE) |
 | C-095 | audit Claude 0.27.0 | important, à vérifier — virgule décimale dans les champs numériques de la nutrition (WebKit, WebView2) | fait (FIX-SAISIE-NUTRI) |
 | C-096 | audit Claude 0.27.0 | important — journal ouvert après minuit : saisie rattachée à la veille | fait (FIX-SAISIE-NUTRI) |
 | C-097 | audit Claude 0.27.0 | important — saisie enregistrée sur un autre jour que celui de l'ouverture | fait (FIX-SAISIE-NUTRI) |
 | C-098 | audit Claude 0.27.0 | important — supprimer une autre entrée efface le formulaire en cours | fait (FIX-SAISIE-NUTRI) |
-| C-099 | audit Claude 0.27.0 | mineur — déclaration de journée écrite à chaque flèche (« Complète » enregistrée par erreur) | à faire (0.29.x, nutrition et récupération, S) |
-| C-100 | audit Claude 0.27.0 | mineur — prise issue d'un code scanné enregistrée en méthode « search » | à faire (0.29.x, nutrition et récupération, S) |
-| C-101 | audit Claude 0.27.0 | mineur — erreurs masquées en recherche, journal et compléments (§ 18.3) | à faire (0.29.x, nutrition et récupération, S) |
-| C-102 | audit Claude 0.27.0 | mineur — heure invalide signalée « quantité invalide » ; fiche OFF périmée sans avertissement ; Échap ferme tout | à faire (0.29.x, nutrition et récupération, S) |
-| C-103 | audit Claude 0.27.0 | mineur — cocher puis décocher vite laisse coché ; « −200 » refusé sans message ; champ heure en 12 h | à faire (0.29.x, nutrition et récupération, S) |
-| C-104 | audit Claude 0.27.0 | mineur — check-in : colonne « Actuel » déroutante ; historique sans « décidée le » ; préférences sans retour | à faire (0.29.x, nutrition et récupération, S) |
-| C-105 | audit Claude 0.27.0 | mineur — « Taille » ambigu (tour ou hauteur) ; silhouette de Corps sans rôle ni clavier, zones trop petites | à faire (0.29.x, nutrition et récupération, M) |
-| C-106 | audit Claude 0.27.0 | amélioration — anglicismes (Dashboard, loggé, Cache OFF) ; deux réglages « Objectif » ; catalogues hérités au départ | à faire (0.29.x, nutrition et récupération, S) |
+| C-099 | audit Claude 0.27.0 | mineur — déclaration de journée écrite à chaque flèche (« Complète » enregistrée par erreur) | fait (NUTRI-0292, D-558) |
+| C-100 | audit Claude 0.27.0 | mineur — prise issue d'un code scanné enregistrée en méthode « search » | fait (NUTRI-0292, D-556 : méthode « scan », admise par le CHECK de 0008) |
+| C-101 | audit Claude 0.27.0 | mineur — erreurs masquées en recherche, journal et compléments (§ 18.3) | fait (NUTRI-0292) |
+| C-102 | audit Claude 0.27.0 | mineur — heure invalide signalée « quantité invalide » ; fiche OFF périmée sans avertissement ; Échap ferme tout | fait (NUTRI-0292) |
+| C-103 | audit Claude 0.27.0 | mineur — cocher puis décocher vite laisse coché ; « −200 » refusé sans message ; champ heure en 12 h | fait en partie (NUTRI-0292, D-557) : reste le champ heure en 12 h sur l’iPhone, à constater (Q-24) |
+| C-104 | audit Claude 0.27.0 | mineur — check-in : colonne « Actuel » déroutante ; historique sans « décidée le » ; préférences sans retour | fait (NUTRI-0292) |
+| C-105 | audit Claude 0.27.0 | mineur — « Taille » ambigu (tour ou hauteur) ; silhouette de Corps sans rôle ni clavier, zones trop petites | fait en partie (NUTRI-0292) : restent les zones de la silhouette, la date de la photo et le sélecteur sans cancel (Q-25) |
+| C-106 | audit Claude 0.27.0 | amélioration — anglicismes (Dashboard, loggé, Cache OFF) ; deux réglages « Objectif » ; catalogues hérités au départ | fait en partie (NUTRI-0292, D-559) : restent « Corps sans tendance ni dépense » dans Progrès, la fusion des objectifs (Q-23) et fr.capture.ts au départ (coquille) |
 | C-107 | audit Claude 0.27.0 | important — export simple : l'aide annonce profil, pesées et thème, l'archive contient toutes les données corporelles | fait (FIX-EXPORT) |
 | C-108 | audit Claude 0.27.0 | important — « Repartir de zéro » : la liste effacée omet compléments, prises, cardio et tracés GPS | fait (FIX-EXPORT) |
 | C-109 | audit Claude 0.27.0 | important — archive postérieure à « Repartir de zéro » qui ramène les données effacées | fait (FIX-EXPORT, D-334, horizon dans le manifeste) |
@@ -184,10 +184,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-122 | audit Claude 0.27.0 | mineur — clavier global : répétition et composition ignorées ; Ctrl+/ démonte l'onboarding en revue | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-123 | audit Claude 0.27.0 | mineur — capture globale des erreurs installée tard ; extrait de message gardé ; timeZoneWatcher silencieux | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-124 | audit Claude 0.27.0 | mineur — date de la barre PC figée la nuit ; état hérité (spaces, projects) jamais posé | à faire (0.29.x, coquille, iOS et qualité, S) |
-| C-125 | audit Claude 0.27.0 | mineur — objectif à rythme sans rythme ni poids : cible écrite à « maintien » sans le dire | à faire (0.29.x, nutrition et récupération, S) |
+| C-125 | audit Claude 0.27.0 | mineur — objectif à rythme sans rythme ni poids : cible écrite à « maintien » sans le dire | fait (NUTRI-0292, D-548) |
 | C-126 | audit Claude 0.27.0 | mineur — alerte d'échec de mise à jour non fermable ; bandeau de signature retiré sur lecture en échec | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-127 | audit Claude 0.27.0 | mineur — « Remplacer » sans seconde confirmation ; thème importé non appliqué ; dates d'export en UTC | à faire (0.29.x, coquille, iOS et qualité, S) |
-| C-128 | audit Claude 0.27.0 | mineur, à vérifier — import corps et nutrition : un refus annule toute la transaction à chaque import | à faire (0.29.x, nutrition et récupération, S) |
+| C-128 | audit Claude 0.27.0 | mineur, à vérifier — import corps et nutrition : un refus annule toute la transaction à chaque import | fait (NUTRI-0292 : refus journalisés et affichés) |
 | C-129 | audit Claude 0.27.0 | mineur — promesses sans catch (notifications de récupération, synchro) ; « en cours » annoncé trop tôt | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-130 | audit Claude 0.27.0 | mineur — réinitialisation sans rechargement si `syncNow` ne répond pas ; aucune sauvegarde après effacement | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-131 | audit Claude 0.27.0 | mineur — format 12 h encore proposé ; boîtes natives au vouvoiement ; « Logs » et « Journaux » mêlés | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -282,7 +282,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | fait (PROGRES-0291, PR #197, D-448, D-455) |
 | BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | fait (PROGRES-0291, PR #197, D-449, D-456 ; reste à trancher : BL-135) |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.29.x, coquille, iOS et qualité, S) |
-| BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | à faire (0.29.x, nutrition et récupération, M) |
+| BL-117 | NUTRI (D-396) | Go-tos du § 15.3, assiette enregistrable en recette, grammes modifiables et heure propre dans l'assiette, assiette gardée à la fermeture de la recherche | fait (NUTRI-0292, D-560 ; Q-22) |
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | fait (COQUILLE-0291, PR #198, D-450, D-459 ; restes BL-136) |
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | fait (SYNC-0291, PR #200, D-447, D-464 à D-469) |
@@ -399,7 +399,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 15.3 b | PRD § 15.3 | absent — assiette (C-194) | fait en partie ; reste : assiette livrée (NUTRI-c, D-396, #180) ; enregistrement en recette, grammes, heure, conservation restent (BL-117) (0.29.x, nutrition et récupération, M) |
 | § 15.5 | PRD § 15.5 | partiel — tableau de bord (C-088) | fait (audit 0.29.1 : cible du jour au tableau de bord (FIX-PLANCHER, D-340, #165)) |
 | § 16.1 C | PRD § 16.1 | partiel — niveau C : zone cible jamais affichée (C-191) | fait (audit 0.29.1 : zone cible affichée (PROGRES-c, D-393, #179)) |
-| § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | à faire (0.29.x, nutrition et récupération, S) : C-061 tranché par Ali (D-479) |
+| § 16.3 a | PRD § 16.3 | partiel — baseline 14 nuits, 7 minimum, > 2,5 σ (C-049, C-061) | fait (NUTRI-0292 : C-061, D-479 ; C-049 en FIX-RECUP) |
 | § 16.3 b | PRD § 16.3 | partiel — Exertion par zones FC remplacée par minutes × ressenti (D-88, D-220) | reporté : zones FC sans HealthKit direct (D-69) |
 | § 16.3 c | PRD § 16.3 | partiel — zone cible ≥ 66 / 34–65 / ≤ 33 calculée et stockée, non affichée (C-191) | fait (PROGRES-c, D-393) |
 | § 16.3 d | PRD § 16.3 | partiel — récupération par muscle : cardio importé non retiré (C-062) | fait (D-498, Ali, 24/11, Q-3 : le cardio importé ne charge aucun muscle ; § 16.3 et § 16.6 amendés ; D-364 close) |
@@ -495,10 +495,10 @@ Lignes de l'audit du projet du 24/11 (lecture seule sur origin/main f5a1b88), re
 | ID | Origine | Description (une ligne) | Statut |
 |---|---|---|---|
 | BL-138 | audit du projet 24/11 (N-01) | important — l'identifiant du profil de matériel par défaut nomme un lieu réel (content/equipment-profiles/profiles.json:3, programmes, tests, CHANGELOG, fiches) ; renommage avec migration et garde privacy.test.ts étendue (D-489) | fait (DATA-0292, D-489, D-531 à D-535 : identifiant neutre « salle-complete », migration 0022 des réglages locaux, garde privacy.test.ts étendue, nom de lieu retiré du dépôt hors docs/archive) |
-| BL-139 | audit du projet 24/11 (N-02) | mineur — Exertion : séries au poids du corps, chronométrées et assistées comptées 0 (exertion.ts:35, recoveryImport/index.ts:33) ; charge totale (poids de corps × fraction ± charge) et charge par minute pour le chronométré | à faire (0.29.x, nutrition et récupération, S) |
+| BL-139 | audit du projet 24/11 (N-02) | mineur — Exertion : séries au poids du corps, chronométrées et assistées comptées 0 (exertion.ts:35, recoveryImport/index.ts:33) ; charge totale (poids de corps × fraction ± charge) et charge par minute pour le chronométré | fait (NUTRI-0292, D-546) |
 | BL-140 | audit du projet 24/11 (N-03) | mineur — résumé de séance : « charge faite » d'un exercice assisté = série la plus assistée (summaryGap.ts:38, max au lieu de min) | fait (SEANCE-0292b) |
 | BL-141 | audit du projet 24/11 (N-04) | mineur — résumé de séance : répétitions comparées par rang des séries faites et non par série prévue (summaryGap.ts:43) ; apparier par setIndex | fait (SEANCE-0292b) |
-| BL-142 | audit du projet 24/11 (N-05) | mineur — libellés français utilisés comme clés dans src/domain/recovery/config.ts:96-130 ; clés neutres, libellés dans src/i18n | à faire (0.29.x, nutrition et récupération, S) |
+| BL-142 | audit du projet 24/11 (N-05) | mineur — libellés français utilisés comme clés dans src/domain/recovery/config.ts:96-130 ; clés neutres, libellés dans src/i18n | fait (NUTRI-0292, D-552) |
 | BL-143 | audit du projet 24/11 (N-06) | mineur — Réglages PC : poids retrouvé en cherchant « kg » dans un texte formaté (SettingsScreenPc.tsx:53) ; passer la valeur structurée | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-144 | audit du projet 24/11 (N-07) | amélioration — CSP : style-src 'unsafe-inline' (tauri.conf.json:32) à justifier ou retirer, avec BL-002 | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-145 | audit du projet 24/11 (N-08) | amélioration — 17 tests franchissent les couches ADR 0001 (ex. prescribe.review.test.ts:5, injuryKinds.test.ts:2-4, serializedDriver.a008.test.ts:5-6) ; fixtures dans tests/fixtures ou garde ESLint étendue aux tests avec exceptions motivées | à faire (0.29.x, coquille, iOS et qualité, S) |
