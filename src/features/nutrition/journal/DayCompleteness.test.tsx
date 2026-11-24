@@ -98,7 +98,7 @@ describe('I4-07 : Journée complète (déclaration)', () => {
     fireEvent.click(await within(r).findByRole('button', { name: 'Jour précédent' }));
     fireEvent.click(await within(r).findByRole('radio', { name: 'Complète' }));
     expect(await within(r).findByText('Journée complète (déclarée)')).toBeInTheDocument();
-    fireEvent.click(within(r).getByRole('radio', { name: 'Dashboard' }));
+    fireEvent.click(within(r).getByRole('radio', { name: 'Tableau de bord' }));
     expect(await within(r).findByText(/dim\. 8 nov\. : complet · 1 900 kcal/)).toBeInTheDocument();
   });
 });

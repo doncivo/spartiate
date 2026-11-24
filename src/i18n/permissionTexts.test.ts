@@ -68,10 +68,4 @@ describe('textes des autorisations (I-05 critère 9)', () => {
     );
   });
 
-  it('indication de la caméra du scan : la phrase de la fiche, sans dépendre d’un état', () => {
-    expect(fr.scan.cameraHint.text).toBe(
-      'Pour photographier une liste, autorise la caméra : iOS te le demandera la première fois. Si rien ne se passe, ouvre Réglages › Spartiate › Caméra.',
-    );
-    expect(fr.scan.cameraHint.openSettings).toBe('Ouvrir les réglages');
-  });
 });

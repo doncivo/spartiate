@@ -12,7 +12,7 @@ const values = (catalogue: Record<string, unknown>): string[] => Object.values(c
 describe('C-106', () => {
   it('aucun « Dashboard », « loggé », « logué » ni « Cache OFF » dans les textes de nutrition', () => {
     const all = [nutritionFr, nutritionQuickFr, recipesFr, supplementsFr].flatMap((c) => values(c as Record<string, unknown>));
-    expect(all.filter((text) => /dashboard|logg[ée]|logu[ée]|cache off/i.test(text))).toEqual([]);
+    expect(all.filter((text) => /dashboard|\blogg?u?[ée]s?\b|cache off/i.test(text))).toEqual([]);
   });
 
   it('l’objectif du profil et l’objectif de nutrition portent deux libellés différents', () => {

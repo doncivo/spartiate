@@ -79,7 +79,7 @@ describe('Check-in : proposition (CheckIn-apres)', () => {
     expect(within(r).getByText('objectif maintien · couverture suffisante')).toBeInTheDocument();
   });
 
-  it('résumé de la semaine en quatre cases : tendance, jours loggés, apports, dépense', async () => {
+  it('résumé de la semaine en quatre cases : tendance, jours saisis, apports, dépense', async () => {
     await seedHistory(true);
     open();
     const r = await region();
@@ -87,7 +87,7 @@ describe('Check-in : proposition (CheckIn-apres)', () => {
     const summary = within(r).getByRole('group', { name: 'Résumé de la semaine' });
     expect(within(summary).getByText('kg tendance')).toBeInTheDocument();
     expect(within(summary).getByText('7/7')).toBeInTheDocument();
-    expect(within(summary).getByText('jours loggés')).toBeInTheDocument();
+    expect(within(summary).getByText('jours saisis')).toBeInTheDocument();
     expect(within(summary).getByText(fr(2400))).toBeInTheDocument();
     expect(within(summary).getByText('kcal apports')).toBeInTheDocument();
     expect(within(summary).getByText('kcal dépense')).toBeInTheDocument();

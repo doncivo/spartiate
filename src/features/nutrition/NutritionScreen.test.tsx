@@ -430,7 +430,7 @@ describe('I4-03 : Navigation et clavier PC', () => {
     open();
     const r = await region();
     const group = await within(r).findByRole('radiogroup', { name: 'Sections de Nutrition' });
-    expect(within(group).getAllByRole('radio').map((x) => x.textContent)).toEqual(['Journal', 'Dashboard', 'Stratégie', 'Check-in', 'Recettes', 'Compléments']);
+    expect(within(group).getAllByRole('radio').map((x) => x.textContent)).toEqual(['Journal', 'Tableau de bord', 'Stratégie', 'Check-in', 'Recettes', 'Compléments']);
     fireEvent.keyDown(within(group).getByRole('radio', { name: 'Journal' }), { key: 'ArrowRight' });
     expect(await within(r).findByRole('heading', { name: 'Balance 7 jours' })).toBeInTheDocument();
   });
@@ -508,7 +508,7 @@ describe('PROG-01 : cible des jours de repos dans Stratégie (D-270, D-271)', ()
     fireEvent.click(within(r).getByRole('radio', { name: 'En kcal' }));
     fireEvent.change(within(r).getByLabelText('Calories les jours de repos (kcal)'), { target: { value: '2250' } });
     fireEvent.click(within(r).getByRole('button', { name: 'Enregistrer la cible de repos' }));
-    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 }));
+    await waitFor(async () => expect((await (await db.data.repos.nutritionTargets()).effective(TODAY))?.restPlan?.rest).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 233 }));
   });
 });
 

@@ -52,11 +52,11 @@ test('Entraînement : chaque onglet est visible (≥ 44 px), même avec la Bibli
 });
 
 test('Nutrition : chaque onglet est visible (≥ 44 px) et un clic change d’écran', async ({ page }) => {
-  const names = ['Journal', 'Dashboard', 'Stratégie', 'Check-in', 'Recettes'] as const;
+  const names = ['Journal', 'Tableau de bord', 'Stratégie', 'Check-in', 'Recettes'] as const;
   await nav(page, 'Nutrition').click();
   await expectTabsUsable(page, names);
-  await page.getByRole('radio', { name: 'Dashboard', exact: true }).click();
-  await expect(page.getByRole('radio', { name: 'Dashboard', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('radio', { name: 'Tableau de bord', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Tableau de bord', exact: true })).toHaveAttribute('aria-checked', 'true');
   await expectTabsUsable(page, names);
   await page.getByRole('radio', { name: 'Journal', exact: true }).click();
   await expect(page.getByRole('radio', { name: 'Journal', exact: true })).toHaveAttribute('aria-checked', 'true');

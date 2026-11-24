@@ -1,4 +1,3 @@
-import { scanFr } from './fr.scan';
 import { captureFr } from './fr.capture';
 import { notificationsFr, remindersStatusFr } from './fr.notifications';
 import { appearanceFr } from './fr.appearance';
@@ -226,7 +225,6 @@ export const fr = {
   routines: routinesFr,
   events: eventsFr,
   capture: captureFr,
-  scan: scanFr,
   shortcutsUi: shortcutsUiFr,
   backup: backupFr,
   importCsv: importCsvFr,

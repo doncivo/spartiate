@@ -62,7 +62,7 @@ describe('familles de compteurs', () => {
 describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () => {
   const dir = fileURLToPath(new URL('.', import.meta.url));
   /** Catalogues d'écrans retirés par SPA-001b ou bancs legacy (D-67) : hors périmètre, la liste ne peut que se réduire. */
-  const RETIRED = new Set(['fr.importCsv.ts', 'fr.scan.ts', 'fr.events.ts', 'fr.capture.ts', 'fr.notifications.ts', 'fr.syncField.ts', 'fr.syncCarryReport.ts', 'fr.ts']);
+  const RETIRED = new Set(['fr.importCsv.ts', 'fr.events.ts', 'fr.capture.ts', 'fr.notifications.ts', 'fr.syncField.ts', 'fr.syncCarryReport.ts', 'fr.ts']);
   /** Exceptions justifiées « fichier:clé ». */
   const ALLOWED = new Set([
     'fr.circuit.ts:headline', // n exercices ≥ 2 par construction (un circuit en compte au moins 2)

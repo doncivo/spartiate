@@ -16,12 +16,11 @@ const i18n = fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Catalogues exclus du garde, une raison par fichier (même liste que RETIRED de plural.test.ts). Les cinq hérités de CircleTasks n'ont
- * plus d'écran depuis SPA-001b (fonctions retirées) mais restent liés à l'arbre `fr.ts` ; leur retrait est un ticket à part (fr.scan et
+ * plus d'écran depuis SPA-001b (fonctions retirées) mais restent liés à l'arbre `fr.ts` ; leur retrait est un ticket à part (fr.scan retiré en C-106 ;
  * fr.capture : « Supprimer » à l'inventaire SPA-001b, lot a, non exécuté).
  */
 const EXCLUDED: ReadonlyMap<string, string> = new Map([
   ['fr.importCsv.ts', 'hérité de CircleTasks (import CSV de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
-  ['fr.scan.ts', 'hérité de CircleTasks (scan de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
   ['fr.events.ts', 'hérité de CircleTasks (Événements), sans écran depuis SPA-001b, encore importé par fr.ts'],
   ['fr.capture.ts', 'hérité de CircleTasks (capture rapide), sans écran depuis SPA-001b, encore importé par fr.ts'],
   ['fr.notifications.ts', 'hérité de CircleTasks (rappels de tâches), sans écran depuis SPA-001b, encore importé par fr.ts'],
