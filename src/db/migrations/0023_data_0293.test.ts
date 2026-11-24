@@ -104,4 +104,20 @@ describe('migration 0023 : data_0293 (DATA-0293)', () => {
     await db.execute('UPDATE workout_set SET added = 1, distance_m = 400, corrected_from = ? WHERE id = ?', ['{"reps":8}', u(2)]);
     expect(await outbox(db, 'workout_set')).toEqual([]);
   });
+
+  it('workout_set : corrected_from d’une séance CLOSE capturé champ par champ (correction tracée publiée) ; garde de synchro : rien', async () => {
+    const db = await dbAt(23);
+    await workout(db, u(1));
+    await wset(db, u(2), u(1));
+    await db.execute('UPDATE workout SET ended_at = ?, hlc = ? WHERE id = ?', [AT, h(2), u(1)]);
+    await db.execute('DELETE FROM sync_outbox');
+    await db.execute('DELETE FROM sync_field_clock');
+    await db.execute('UPDATE workout_set SET corrected_from = ?, updated_at = ?, hlc = ? WHERE id = ?', ['{"reps":8}', AT, h(5), u(2)]);
+    expect(await outbox(db, 'workout_set')).toEqual(['corrected_from']);
+    expect(await db.select("SELECT hlc, base_hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND field = 'corrected_from'")).toEqual([{ hlc: h(5), base_hlc: h(1) }]);
+    await db.execute('DELETE FROM sync_outbox');
+    await db.execute('INSERT INTO sync_guard (id) VALUES (1)');
+    await db.execute('UPDATE workout_set SET corrected_from = NULL, hlc = ? WHERE id = ?', [h(6), u(2)]);
+    expect(await outbox(db, 'workout_set')).toEqual([]);
+  });
 });
