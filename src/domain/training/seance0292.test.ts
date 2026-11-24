@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
+import type { DeviceId, Hlc } from '../types';
+import { routineDiff } from './closure';
 import { loadGrid } from './loadGrid';
 import { prescribe } from './prescribe';
-import type { ProgressionEquipment } from './types';
+import type { WorkoutSet, WorkoutWithSets } from './session';
+import type { ProgressionEquipment, RoutineDay } from './types';
 
 /**
  * SEANCE-0292 (lot 0.29.2, partie A : moteur et génération) : une section par ligne du registre (docs/SEANCE-0292.md). Fixtures
@@ -74,5 +78,27 @@ describe('SEANCE-0292 C-007 : grille de barre limitée aux disques réellement m
     const p = prescribe(input({ exercise: BENCH, history: [session(3, 25, [10, 10, 10])], target: target(8, 10), equipment: home([{ weightKg: 20, count: 1 }, { weightKg: 2.5, count: 1 }]) }));
     expect(p.loadKg).toBe(25);
     expect(p.reasons).toContain('gain-capped');
+  });
+});
+
+describe('SEANCE-0292 C-010 : séries dégressives et partielles hors de l’écart de routine (§ 13.8)', () => {
+  const meta = { createdAt: T0, updatedAt: T0, deletedAt: null, deviceId: 'd' as DeviceId, hlc: 'h' as Hlc };
+  const line = (id: string, exerciseId: string, sets: number, position: number) => ({ id, routineDayId: 'day', exerciseId, exerciseName: `Nom ${exerciseId}`, sets, repMin: 6, repMax: 10, rir: 2, restSec: 150, position, ...meta });
+  const day: RoutineDay = { id: 'day', routineId: 'r', name: 'Haut A', dayOrder: 0, exercises: [line('l1', 'bench-press-barbell', 3, 0)], ...meta };
+  const w = (sets: WorkoutSet[]): WorkoutWithSets => ({ ...workoutRow({ routineId: 'r', routineDayId: 'day', source: 'routine' }), sets });
+  const s = (i: number, over: Partial<WorkoutSet> = {}): WorkoutSet => setRow(i, { done: true, reps: 8, loadKg: 60, ...over });
+
+  it('3 séries de travail + 1 dégressive + 1 partielle : aucun écart (la routine garde 3 séries)', () => {
+    const diff = routineDiff(w([s(0), s(1), s(2), s(3, { setKind: 'drop', loadKg: 40 }), s(4, { setKind: 'partial', loadKg: 70 })]), day);
+    expect(diff.hasChanges).toBe(false);
+  });
+
+  it('2 séries de travail + 1 dégressive : 3 → 2 (la dégressive ne compense pas la série retirée)', () => {
+    const diff = routineDiff(w([s(0), s(1), s(2, { setKind: 'drop', loadKg: 40 })]), day);
+    expect(diff.setsChanged).toEqual([{ lineId: 'l1', exerciseId: 'bench-press-barbell', exerciseName: 'Nom bench-press-barbell', from: 3, to: 2 }]);
+  });
+
+  it('séries chronométrées comptées comme travail', () => {
+    expect(routineDiff(w([s(0, { setKind: 'timed', durationSec: 30 }), s(1), s(2)]), day).hasChanges).toBe(false);
   });
 });
