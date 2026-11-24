@@ -33,6 +33,7 @@ const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
   'no-weight': 'reasonNoWeight',
   'no-tdee': 'reasonNoTdee',
   'insufficient-coverage': 'reasonCoverage',
+  'no-goal-rate': 'reasonNoGoalRate',
 };
 const CLAMP_KEY: Readonly<Record<Clamp, NutritionTextKey>> = { 'max-weekly-delta': 'whyClampDelta', 'max-loss-rate': 'whyClampLoss', floor: 'whyClampFloor' };
 const WARNING_KEY: Readonly<Record<CheckInWarning, NutritionTextKey>> = {
