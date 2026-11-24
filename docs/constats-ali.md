@@ -189,7 +189,8 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.1) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.2) :
 
-- [ ] **C-103 (champ heure, Q-24)** — iPhone, Nutrition › compléments › modifier l'heure d'une prise : le champ « Heure » s'affiche en 24 h (jamais AM / PM). Si tu vois AM / PM, réponds à Q-24. Date : ____ Version : ____
+- [ ] **C-103 (champ heure, Q-24)** — iPhone, Journal › Rechercher › choisir un aliment : le champ « Heure » s'affiche en 24 h (jamais AM / PM). Si tu vois AM / PM, réponds à Q-24. Date : ____ Version : ____
+- [ ] **Migration 22** — premier lancement après la mise à jour, sur chaque appareil → Plus › Journaux : aucune erreur de migration ; une sauvegarde « Avant mise à jour » existe ; ton profil de matériel « Salle complète » est toujours le profil actif. Date : ____ Version : ____
 - [ ] **C-105 (silhouette, Q-25)** — iPhone, Progrès › Corps : toucher le cou, les épaules et la poitrine de la silhouette sélectionne bien la zone touchée, sans en prendre une voisine. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)

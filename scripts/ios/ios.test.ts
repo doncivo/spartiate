@@ -13,7 +13,7 @@ import { checkPlistContract, validateContract } from './check-plist-contract.mjs
 // @ts-expect-error script .mjs sans déclaration de types
 import { applyEntitlements, DURABLE_SOURCE, GENERATED_DEST, validateEntitlements } from './apply-entitlements.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
-import { buildSource, ipaUrlFor, loadTemplate, minOSVersionFromConf, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
+import { buildSource, ipaUrlFor, loadTemplate, minOSVersionFromConf, redactPlace, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
 
 type Json = Record<string, unknown>;
 type Version = { version: string; buildVersion?: string; date: string; localizedDescription: string; downloadURL: string; size: number; sha256?: string; minOSVersion: string };
@@ -266,6 +266,40 @@ describe('make-source-json (source SideStore)', () => {
     expect(app.iconURL).toBeTruthy();
     expect(app.versions.map((v) => v.version)).toEqual(['0.1.1', '0.1.0']);
     expect(app.versions[1]).toEqual(published.apps[0]?.versions[0]);
+  });
+
+  // REL-0.29.2 (D-489, complément d'audit) : les notes déjà publiées d'anciennes versions portaient le nom d'un lieu réel (l'identifiant du
+  // profil par défaut et son nom affiché) ; la publication suivante les réécrit, jamais à la main. Témoins construits, le nom n'est pas écrit.
+  it('retire le nom du lieu des notes des versions déjà publiées, sans toucher au reste', () => {
+    const word = String.fromCharCode(97, 110, 116, 111, 110, 121);
+    const cap = word.charAt(0).toUpperCase() + word.slice(1);
+    const old = (v: string, d: string) => ({ version: v, date: '2026-11-06T17:14:49.947Z', localizedDescription: d, downloadURL: ipaUrlFor(v), size: 10, minOSVersion: '18.0' });
+    const published = {
+      name: 'Spartiate',
+      apps: [{ name: 'Spartiate', bundleIdentifier: 'fr.spartiate.app', versions: [
+        old('0.3.3', `- Profil de matériel Club Sport ${cap} copié avant la 0.3.0 : la paire revient.`),
+        old('0.3.0', `- Arrondis (par défaut Club Sport ${cap}).\n- Base en version 5.`),
+        old('0.2.0', `- Matériel : profil « Club Sport ${cap} » utilisé par défaut.`),
+        old('0.1.0', 'Spartiate 0.1.0'),
+      ] }],
+      news: [],
+    };
+    const r = cli('0.3.4', writeTmp('published-place.json', JSON.stringify(published)));
+    const versions = (r.json?.apps[0] as App).versions;
+    const notes = versions.map((v) => v.localizedDescription ?? '');
+    // Assertions booléennes : un échec ne recopie jamais le mot dans le journal de la CI.
+    expect(notes.some((n) => n.toLowerCase().includes(word))).toBe(false);
+    expect(notes.slice(1)).toEqual([
+      '- Profil de matériel Salle complète copié avant la 0.3.0 : la paire revient.',
+      '- Arrondis (par défaut Salle complète).\n- Base en version 5.',
+      '- Matériel : profil « Salle complète » utilisé par défaut.',
+      'Spartiate 0.1.0',
+    ]);
+    expect(versions[4]).toEqual(published.apps[0]?.versions[3]);
+    // Relecture à froid : le mot suivi de deux mots à majuscule, ou placé entre eux, est retiré lui aussi.
+    expect(redactPlace(`${cap} Club Sport`).toLowerCase().includes(word)).toBe(false);
+    expect(redactPlace(`Club ${cap} Sport x`).toLowerCase().includes(word)).toBe(false);
+    expect(redactPlace('Le Club Sport X. Séance Été Ça va')).toBe('Le Club Sport X. Séance Été Ça va');
   });
 
   it('refuse un IPA dont la version, le bundle ou l’iOS minimum diffèrent, une URL ou une version invalides', () => {
