@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { EQUIPMENT_PROFILE_KINDS, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../i18n/trainingText';
@@ -163,13 +163,13 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
 }
 
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
-function parseList(text: string): number[] | null {
-  const parts = text
-    .split(';')
-    .map((p) => p.trim())
-    .filter((p) => p !== '');
-  const values = parts.map(parseNumber);
-  return values.every((v): v is number => v !== null && v > 0) ? values : null;
+
+/** SEANCE-0292 (C-066) : liste lue par le domaine (`parseWeightList`) ; refus : message qui nomme l'élément fautif. */
+type ListRead = { readonly values: readonly number[] | null; readonly error: string | null };
+function parseList(text: string): ListRead {
+  const read = parseWeightList(text);
+  if (read.ok) return { values: read.values, error: null };
+  return { values: null, error: read.issue === 'separator' ? tTraining('errorWeightSeparator', { item: read.item }) : null };
 }
 
 interface EditProps {
@@ -195,8 +195,10 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
-    const plateList = parseList(plates);
-    const kbList = parseList(kettlebells);
+    const plateRead = parseList(plates);
+    const kbRead = parseList(kettlebells);
+    const plateList = plateRead.values;
+    const kbList = kbRead.values;
     const anyDumbbell = [dMin, dMax, dStep].some((t) => t.trim() !== '');
     const dumbbells = anyDumbbell ? { minKg: parseNumber(dMin) ?? Number.NaN, maxKg: parseNumber(dMax) ?? Number.NaN, stepKg: parseNumber(dStep) ?? Number.NaN } : null;
     const inc: Record<string, number> = {};
@@ -220,7 +222,7 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
     };
     const input = { name: name.trim(), kind, inventory, increments: inc };
     if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
-      setError(tTraining('errorProfile'));
+      setError(plateRead.error ?? kbRead.error ?? tTraining('errorProfile'));
       return;
     }
     try {

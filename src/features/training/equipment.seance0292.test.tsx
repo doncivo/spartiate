@@ -1,11 +1,12 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../app/navigation';
+import { loadTrainingContent } from './content';
 import { TrainingScreen } from './TrainingScreen';
 
 /**
@@ -35,6 +36,10 @@ describe('Matériel : listes de poids', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
   };
 
+  // Contenu embarqué chargé une fois avant le premier rendu (import à la demande, coûteux à froid sous Vitest).
+  beforeAll(async () => {
+    await loadTrainingContent();
+  });
   beforeEach(async () => {
     useNavigationStore.setState(INITIAL_NAVIGATION);
     db = await openBaseDb(DEVICE, '2026-11-06T08:00:00.000Z');
