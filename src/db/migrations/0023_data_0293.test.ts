@@ -37,6 +37,10 @@ describe('migration 0023 : data_0293 (DATA-0293)', () => {
     expect(migration0023Data0293.name).toBe('data_0293');
   });
 
+  it('BL-097 : aucune contrainte d’une colonne publiée existante n’est élargie (seulement des colonnes ajoutées et des déclencheurs)', () => {
+    for (const sql of migration0023Data0293.statements) expect(sql.trim()).toMatch(/^(ALTER TABLE w+ ADD COLUMN |CREATE TRIGGER )/);
+  });
+
   it('depuis la version 22 : lignes existantes intactes, colonnes nulles, rien de mis en file', async () => {
     const db = await dbAt(22);
     await workout(db, u(1));
