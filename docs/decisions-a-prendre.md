@@ -5,73 +5,43 @@ du registre (docs/backlog.md) restées sans réponse au 24/11. Chaque question :
 Le lot continue sans la réponse : le comportement actuel reste en place tant qu'une option n'est pas choisie. Réponse attendue sous la
 forme « Q-n : option ». Une question tranchée devient une D- dans docs/decisions.md et sort de ce fichier.
 
-## Q-1 — Charge d'historique hors du matériel de la salle (BL-106, § 12.4, D-365, D-471)
 
-Après un changement de salle, la dernière charge n'existe pas dans le matériel du nouveau profil (ou dépasse son maximum).
-- A. Garder la charge et la signaler (comportement actuel, D-471).
-- B. Arrondir vers le bas à la grille du profil et plafonner au maximum du matériel, avec la note.
-- C. Arrondir au plus proche de la grille, avec la note.
+Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 (docs/decisions.md). La revue par thème des choix prudents (D-490, BL-149) sera
+ajoutée ici en sections « séance et moteur », « nutrition », « récupération », « synchro et données », « écrans », « CI et outillage ».
 
-Recommandation : B (jamais plus lourd que ce qui existe, l'échelle de répétitions reprend). Conséquence : une séance d'autre salle
-propose une charge plus légère ; aucune donnée modifiée.
+## Q-11 — Décision d'Ali postérieure à la dernière séance et réductions (C-026, SEANCE-0292)
 
-## Q-2 — Modes Variable, Fixe et Statique (§ 12.3, D-73 (1))
+Une décision (modification ou retour en arrière depuis la fiche) datée après la dernière séance de l'exercice est reprise telle quelle,
+même en semaine de décharge, après 3 semaines de pause ou un jour de journée rouge acceptée (règle I2-02 « l'entrée d'Ali l'emporte »).
+- A. Garder la règle (décision jamais modulée).
+- B. La décision devient la référence ; la décharge, la pause et la journée rouge la réduisent comme une référence d'historique.
+- C. Seule la décharge (semaine programmée) la réduit.
 
-Ces trois choix existent sans effet tant qu'ils ne sont pas définis.
-- A. Les retirer de l'écran (écart décidé au PRD).
-- B. Les définir : Variable = plages du § 12.1.4, Fixe = répétitions figées de la routine, Statique = charge figée.
-- C. Les laisser sans effet (comportement actuel).
+Recommandation : B (une semaine de décharge à pleine charge contredit le § 12.2). Conséquences : deux tests existants qui figent A
+changent d'attente ; correctif prêt hors git, à porter aussi sur les exercices au poids du corps.
 
-Recommandation : A (un choix sans effet trompe). Conséquence : § 12.3 amendé par une D-.
+## Q-12 — Pause de séance (BL-110, § 13.2 « Pause / abandonner », SEANCE-0292)
 
-## Q-3 — Cardio importé dans la récupération par muscle (§ 16.3 d, C-062, D-364, D-88)
+La durée publiée est `ended_at − started_at` : une pause qui n'en retire pas son temps n'a pas d'effet utile.
+- A. Colonnes additives `workout.paused_at` et `workout.paused_ms` (publiées avec la séance close ; anciens exports et journaux : 0) ;
+  chrono, résumé, énergie Apple Santé et replay hors pause ; repos annulé pendant la pause.
+- B. Pause locale : chrono figé à l'écran, durée publiée inchangée.
+- C. Pas de pause : « Abandonner » seulement (actuel).
 
-- A. Le cardio importé de Santé ne charge aucun muscle (comportement actuel, écart décidé).
-- B. Il charge les jambes selon minutes × ressenti, comme le cardio saisi.
+Recommandation : A. Conséquences : migration additive et relecture sync-icloud (module données et synchro), puis écran de séance.
 
-Recommandation : A tant que HealthKit direct est bloqué (pas de ressenti fiable à l'import). Conséquence : § 16.3 amendé.
+## Q-13 — Trace d'une correction de série (C-072, § 13.4, § 13.8, SEANCE-0292)
 
-## Q-4 — Déclenchement de la CI (§ 23.2 a, C-173)
+Seule la date de correction (`corrected_at`) est gardée, pas la valeur d'avant.
+- A. Garder la date seule (actuel).
+- B. Colonne additive `workout_set.corrected_from` (valeurs d'avant la dernière correction), publiée ; « corrigée : 80 → 82,5 kg ».
+- C. Table publiée de l'historique complet des corrections.
 
-- A. Sur PR et sur main seulement (comportement actuel ; documentation alignée en CI-0292).
-- B. À chaque push de toute branche, en plus des PR (runs doublés).
+Recommandation : B. Conséquences : migration additive, relecture sync-icloud, affichage au journal.
 
-Recommandation : A. Conséquence : le PRD § 23.2 dit « à chaque push de branche » ; une D- l'amende.
+## Q-14 — « Fermer le résumé » de séance (BL-160, SEANCE-0292)
 
-## Q-5 — Nutrition dans le guide Santé par Raccourcis (D-293)
+- A. Retour à l'accueil de l'Entraînement (choix prudent, fait en SEANCE-0292).
+- B. Rester sur « Nouvelle séance » ; un nouvel appui sur l'onglet actif ramène à son accueil (règle commune à tous les onglets).
 
-- A. Facultative (comportement actuel). - B. Retirée du guide. - C. Obligatoire.
-
-Recommandation : A.
-
-## Q-6 — Cible à venir montrée dans Stratégie (D-295)
-
-- A. Montrée avec sa date de début (comportement actuel). - B. Cachée jusqu'à son début.
-
-Recommandation : A.
-
-## Q-7 — « Fixer ma cible » (D-296 (1) et (3))
-
-(1) section repliée et vide à l'ouverture ; (3) confirmation demandée devant une cible future.
-- A. Garder (1) et (3) (comportement actuel). - B. Section dépliée et pré-remplie, sans confirmation.
-
-Recommandation : A.
-
-## Q-8 — Normes du Strength Score (D-310, H-37)
-
-- A. FitnessVolt (comportement actuel, H-37 UNVERIFIED). - B. Strength Level. - C. Aucun centile, score relatif à son propre historique.
-
-Recommandation : A, H-37 gardée ouverte.
-
-## Q-9 — Durée estimée d'une séance (D-73 (4), C-012)
-
-- A. 45 s par série plus le repos (actuel). - B. Durée réelle de la série pour les exercices chronométrés, 45 s pour les autres.
-- C. Moyenne de ses séances passées.
-
-Recommandation : B (traité avec C-012 si choisi). Conséquence : budget de séance plus juste pour le gainage et le cardio.
-
-## Q-10 — Exertion du cardio (D-88, D-220)
-
-- A. Minutes × ressenti (actuel, faute de zones FC). - B. Zones FC quand une FC est importée, sinon A.
-
-Recommandation : A tant que HealthKit direct est bloqué (H-3a).
+Recommandation : A (moins de gestes).

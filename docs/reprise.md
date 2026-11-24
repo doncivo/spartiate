@@ -1,6 +1,6 @@
 # Reprise — dépôt Spartiate
 
-État au 2026-11-24 : **lot 0.29.2 en cours** (docs/LOT-0.29.2.md, prompt d'Ali du 24/11, décisions D-472 à D-481 ; 188 lignes « à faire » : CI, séance et moteur, nutrition et récupération, puis tag v0.29.2 ; ensuite données et synchro, import et contenu, coquille en 0.29.3…). **v0.29.1 et ios-v0.29.1 publiées le 22/11** (source.json en 0.29.1, schéma 21 ; docs/LOT-0.29.1.md). iPhone d'Ali bloqué par SideStore depuis le 20/11 : publier reste permis. Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions jusqu'à D-481 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste ») ; questions : docs/decisions-a-prendre.md.
+État au 2026-11-24 : **lot 0.29.2 en cours** (docs/LOT-0.29.2.md et complément d'audit docs/LOT-0.29.2-audit.md ; décisions D-472 à D-505 ; 154 lignes « à faire » après #205 et #206 ; ordre : BL-138, CI, suite de séance, nutrition, tag v0.29.2). **v0.29.1 et ios-v0.29.1 publiées le 22/11** (source.json en 0.29.1, schéma 21 ; docs/LOT-0.29.1.md). iPhone d'Ali bloqué par SideStore depuis le 20/11 : publier reste permis. Fiches docs/<ticket>.md. Mémoire inter-sessions (D-52, ≤ 5 Ko). Règles : AGENTS.md et CLAUDE.md. PRD v6.3 : docs/prd/README.md. Décisions jusqu'à D-505 dans docs/decisions.md. Points ouverts : **docs/backlog.md** (D-320, seule liste de « ce qui reste ») ; questions : docs/decisions-a-prendre.md.
 
 ## Lot 0.28.0 — où on en est
 
