@@ -7,7 +7,7 @@ import type { MealEntryInput, TrendPoint, WeighIn } from '../../../domain/nutrit
 import { computeTrend } from '../../../domain/nutrition/weightTrend';
 import type { LocalDate } from '../../../domain/types';
 import type { NutritionSnapshot } from '../useCases';
-import { dashboardModel, trendScale } from './model';
+import { dashboardModel, pointsOutOfFrame, trendScale } from './model';
 
 /** I4-03 critère 5 : modèle du dashboard, pur ; les graphiques tiennent dans le budget de 300 ms. */
 const TODAY = '2026-11-09' as LocalDate;
@@ -104,5 +104,26 @@ describe('0.7.1 points 6 et 7 : tendance en apprentissage et échelle du graphiq
     const flat = trendScale([pt('2026-11-06', 80, 80)], '2026-11-08' as LocalDate);
     expect(flat.min).toBe(79.5);
     expect(flat.max).toBe(80.5);
+  });
+});
+
+describe('C-093 : échelle du graphique de tendance et pesée aberrante', () => {
+  const pt = (date: string, kg: number, trend: number, outlier = false): TrendPoint => ({ date: date as LocalDate, kg, trend, outlier });
+  const end = '2026-11-08' as LocalDate;
+
+  it('une pesée aberrante (120 kg sur une tendance de 80) n’étire pas l’échelle', () => {
+    const s = trendScale([pt('2026-11-02', 80, 80), pt('2026-11-04', 80.2, 80.04), pt('2026-11-06', 120, 80.5, true)], end);
+    expect(s.max).toBeLessThan(85);
+    expect(s.min).toBeGreaterThan(75);
+  });
+
+  it('une pesée non aberrante garde sa place dans l’échelle (rien n’est écarté sans motif)', () => {
+    const s = trendScale([pt('2026-11-02', 80, 80), pt('2026-11-06', 81.5, 80.4)], end);
+    expect(s.max).toBeGreaterThan(81.5);
+  });
+
+  it('chaque pesée hors du cadre est comptée (elle est dite à l’écran)', () => {
+    const points = [pt('2026-11-02', 80, 80), pt('2026-11-06', 120, 80.5, true), pt('2026-11-07', 60, 80.3, true)];
+    expect(pointsOutOfFrame(points, trendScale(points, end))).toBe(2);
   });
 });
