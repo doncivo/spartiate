@@ -44,10 +44,7 @@ describe('A-005 : résumé de cargo audit toujours à jour', () => {
     const treePath = join(dir, 'tree.txt');
     const summaryPath = join(dir, 'summary.md');
     writeFileSync(reportPath, JSON.stringify(report));
-    writeFileSync(treePath, 'spartiate v0.1.0 (C:\x)
-serde v1.0.0
-rustix v1.1.5
-');
+    writeFileSync(treePath, ['spartiate v0.1.0 (/x)', 'serde v1.0.0', 'rustix v1.1.5', ''].join('\n'));
     writeFileSync(summaryPath, '');
     const script = resolve(import.meta.dirname, 'cargo-audit-gate.mjs');
     const out = execFileSync(process.execPath, [script, reportPath, treePath], { encoding: 'utf8', env: { ...process.env, GITHUB_STEP_SUMMARY: summaryPath } });
