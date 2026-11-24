@@ -42,4 +42,16 @@ describe('prescriptionGaps', () => {
     // Exercice ordinaire : toujours la plus lourde.
     expect(prescriptionGaps(sets, new Map())[0]).toMatchObject({ doneLoadKg: 35 });
   });
+
+  it('SEANCE-0292b BL-141 : répétitions comparées à la série PRÉVUE de même rang (setIndex), pas au rang parmi les séries faites', () => {
+    n = 0;
+    // Prévu 10-8-6 ; la 1re série n'est pas faite, la 2e fait 8, la 3e fait 6 : aucun écart (et non 8-10 + 6-8 = -4).
+    const sets = [s('bench', { done: false, reps: null }), s('bench', { reps: 8 }), s('bench', { reps: 6 })];
+    const gaps = prescriptionGaps(sets, new Map([['bench', { loadKg: 80, reps: [10, 8, 6] }]]));
+    expect(gaps[0]).toMatchObject({ doneSets: 2, repsDelta: 0 });
+    // Série ajoutée au-delà des séries retenues : comparée à la dernière retenue.
+    n = 0;
+    const extra = [s('bench', { reps: 10 }), s('bench', { reps: 8 }), s('bench', { reps: 6 }), s('bench', { reps: 7 })];
+    expect(prescriptionGaps(extra, new Map([['bench', { loadKg: 80, reps: [10, 8, 6] }]]))[0]).toMatchObject({ repsDelta: 1 });
+  });
 });
