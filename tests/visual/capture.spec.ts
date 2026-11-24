@@ -199,7 +199,7 @@ const goSummary = async (page: Page): Promise<void> => {
 const goFirstExercise = async (page: Page): Promise<void> => {
   await goTraining('Bibliothèque')(page);
   await page.locator('.ct-training__row').first().click();
-  await page.waitForTimeout(300);
+  await page.locator('.ct-sheet__title').waitFor();
 };
 SCREENS.push(
   { name: 'Progres', mockup: 'iPhone-Progres.html', viewport: PHONE, date: SUNDAY, dark: true, prepare: async (page) => { await seedWeights(page); await goTab('Progrès')(page); } },
