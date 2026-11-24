@@ -86,3 +86,14 @@ describe('C-022 : premier point contrôlé ; allure du dernier km au-delà du pl
     expect(fn(t)).toBe(cardio.lastKmSecPerKm(t.points));
   });
 });
+
+describe('C-083 : durée saisie au pavé décimal de l’iPhone (sans « : »)', () => {
+  it('« 45,30 » et « 45.30 » valent 45:30 ; « 1,05,00 » vaut 1:05:00 ; « 45,5 » (secondes sur un chiffre) refusé ; « 45 » reste 45 min', () => {
+    expect(cardio.parseDurationText('45,30')).toEqual({ ok: true, value: 45 * 60 + 30 });
+    expect(cardio.parseDurationText('45.30')).toEqual({ ok: true, value: 45 * 60 + 30 });
+    expect(cardio.parseDurationText('1,05,00')).toEqual({ ok: true, value: 3_900 });
+    expect(cardio.parseDurationText('45,5')).toEqual({ ok: false, issue: 'format' });
+    expect(cardio.parseDurationText('45')).toEqual({ ok: true, value: 2_700 });
+    expect(cardio.parseDurationText('45:30')).toEqual({ ok: true, value: 45 * 60 + 30 });
+  });
+});

@@ -64,3 +64,14 @@ describe('C-078 : report GPS et saisie en cours', () => {
     expect(screen.queryByRole('button', { name: 'Remplacer par le suivi GPS' })).toBeNull();
   });
 });
+
+describe('C-083 : claviers de l’heure et de la durée (iPhone)', () => {
+  it('heure : sélecteur natif (type « time », 24 h) ; durée : pavé décimal (la virgule vaut « : »), aide associée', async () => {
+    mount();
+    const time = await screen.findByLabelText('Heure de début');
+    expect(time).toHaveAttribute('type', 'time');
+    const duration = screen.getByLabelText(/^Durée/);
+    expect(duration).toHaveAttribute('inputmode', 'decimal');
+    expect(duration).toHaveAccessibleDescription(/virgule/);
+  });
+});
