@@ -269,6 +269,18 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     if (live.current) onWorkout(fresh);
   }, [access, workout.id, onWorkout]);
 
+  /**
+   * SEANCE-0292 (C-078, D-521) : saisie d'une série à faire gardée en base sans redessiner la séance (la série reste à faire ; la séance
+   * ouverte n'est pas publiée). Échec : message visible, la saisie reste à l'écran.
+   */
+  async function saveDraft(setId: string, patch: Partial<SetEntry>): Promise<void> {
+    try {
+      await (await access.repos.workouts()).updateSet(setId, patch);
+    } catch {
+      if (live.current) setError(tTraining('sessionDraftError'));
+    }
+  }
+
   async function startRest(seconds: number, label?: string): Promise<void> {
     try {
       const report = await timer.start(seconds, label);
@@ -624,6 +636,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     busy={busy}
                     checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
+                    onDraft={(patch) => void saveDraft(set.id, patch)}
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
                     onKind={(kind: SetKindChoice) => void write((repo) => repo.updateSet(set.id, setKindPatch(kind, set)))}
                     onRemove={() => void write((repo) => repo.removeSet(set.id))}

@@ -3,7 +3,7 @@ import { isFailureSet, setKindChoiceOf, type SetKindChoice } from '../../../doma
 import { tSession } from '../../../i18n/trainingSessionText';
 import { Check, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { defaultEntry, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
+import { defaultEntry, draftEntryPatch, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon } from '../../../ui';
@@ -83,6 +83,11 @@ export interface SetRowProps {
    */
   readonly checkEntry?: (entry: SetEntry, kind: SetKind) => Promise<OutlierAsk | null>;
   readonly onValidate: (entry: SetEntry) => void;
+  /**
+   * SEANCE-0292 (C-078) : saisie en cours d'une série à faire, à garder en base (champs lisibles seulement) ; appelée à la sortie d'un champ et
+   * une seconde après la dernière frappe. Absent : saisie en mémoire seulement.
+   */
+  readonly onDraft?: (patch: Partial<SetEntry>) => void;
   readonly onUnvalidate: () => void;
   /** SESS-01c : `failure` = série de travail à RIR 0 (`setKindPatch`). */
   readonly onKind: (kind: SetKindChoice) => void;
@@ -106,7 +111,7 @@ function outlierText(outlier: OutlierAsk, held: Held): string {
 
 const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
 
-export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onDraft, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
@@ -132,6 +137,24 @@ export function SetRow({ set, number, current = false, loads = null, held = null
     setSynced({ key: stored, draft: next });
     if (!set.done && sameDraft(draft, synced.draft)) setDraft(next);
   }
+  // SEANCE-0292 (C-078) : la saisie d'une série à faire est gardée en base (sortie d'un champ, ou une seconde après la dernière frappe).
+  const savedDraft = useRef<Draft>(draft);
+  const flushDraft = (): void => {
+    if (onDraft === undefined || set.done || sameDraft(draft, savedDraft.current) || sameDraft(draft, synced.draft)) return;
+    savedDraft.current = draft;
+    const read = (t: string): number | null | undefined => (t.trim() === '' ? null : (parseNumber(t) ?? undefined));
+    const patch = draftEntryPatch(timed ? { loadKg: read(draft.load), durationSec: read(draft.duration), rir: read(draft.rir) } : { loadKg: read(draft.load), reps: read(draft.reps), rir: read(draft.rir) });
+    if (Object.keys(patch).length > 0) onDraft(patch);
+  };
+  const flushRef = useRef(flushDraft);
+  useEffect(() => {
+    flushRef.current = flushDraft;
+  });
+  useEffect(() => {
+    if (onDraft === undefined || set.done) return;
+    const id = setTimeout(() => flushRef.current(), 1000);
+    return () => clearTimeout(id);
+  }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps -- relance du délai à chaque frappe seulement
   const warmup = set.setKind === 'warmup';
   const target = targetText(set, timed, source, held);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -225,6 +248,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
           setDraft((now) => ({ ...now, [key]: e.target.value }));
         }}
         onKeyDown={onKey}
+        onBlur={flushDraft}
       />
     </label>
   );

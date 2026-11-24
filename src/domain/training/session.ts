@@ -130,7 +130,22 @@ export function validateSetEntry(entry: SetEntry, kind: SetKind): SetEntryIssue[
 }
 
 /**
- * SEANCE-0292 (C-072, D-503) : correction d'une série validée. Un exercice à charge (`load-reps`) dont la série avait une charge ne la perd
+ * SEANCE-0292 (C-078, D-521) : saisie en cours d'une série à faire gardée en base (séance ouverte, jamais publiée avant la clôture). Seuls les
+ * champs lisibles et dans leurs bornes sont gardés (vide : null) ; un champ illisible n'écrit rien. La série reste à faire.
+ */
+export function draftEntryPatch(fields: { readonly [K in keyof SetEntry]?: number | null }): Partial<SetEntry> {
+  const out: { -readonly [K in keyof SetEntry]?: number | null } = {};
+  for (const key of ['reps', 'loadKg', 'durationSec', 'rir'] as const) {
+    const value = fields[key];
+    if (value === undefined) continue;
+    const probe: SetEntry = { reps: null, loadKg: null, durationSec: null, rir: null, [key]: value };
+    if (value === null || validateSetBounds(probe).length === 0) out[key] = value;
+  }
+  return out;
+}
+
+/**
+ * SEANCE-0292 (C-072, D-520) : correction d'une série validée. Un exercice à charge (`load-reps`) dont la série avait une charge ne la perd
  * pas à la correction (vider la charge la sortirait du tonnage et du 1RM sans le dire) ; la modifier reste permis. Les autres métriques (lest,
  * assistance, durée) peuvent revenir à vide.
  */

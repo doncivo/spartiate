@@ -299,6 +299,8 @@ export const trainingFr = {
   sessionAbandonTitle: 'Abandonner la séance ?',
   sessionAbandonHint: 'Les séries saisies seront effacées de cet appareil.',
   sessionAbandonConfirm: 'Abandonner',
+  /** SEANCE-0292 (C-078). */
+  sessionDraftError: 'Saisie non enregistrée sur l’appareil : valide la série pour la garder.',
   sessionWriteError: 'L’enregistrement a échoué. Réessaie : rien n’est perdu de ce qui est déjà validé.',
   sessionNoExercise: 'Aucun exercice pour l’instant.',
   sessionAddExercise: 'Ajouter un exercice',
