@@ -399,10 +399,12 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
 fn sqlite_options(conn_url: &str) -> Result<sqlx::sqlite::SqliteConnectOptions, sqlx::Error> {
     use std::str::FromStr;
 
-    use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode};
+    use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous};
 
     Ok(SqliteConnectOptions::from_str(conn_url)?
         .journal_mode(SqliteJournalMode::Wal)
+        // DATA-0293 (§ 21.2 a, C-194) : en WAL, NORMAL garde la base cohérente à toute coupure (au pire la dernière transaction non checkpointée est perdue) ; FULL (défaut sqlx) ajoute un fsync par validation.
+        .synchronous(SqliteSynchronous::Normal)
         .foreign_keys(true)
         // Spartiate (FIX-CONFID-IOS, C-089) : contenu supprimé écrasé par des zéros (photo supprimée absente des pages libres). Posé ici,
         // à l'ouverture, avant l'autorisateur : la WebView ne peut ni le lire ni le changer (pragma hors de la liste blanche de `guard`).
