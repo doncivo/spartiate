@@ -16,6 +16,8 @@ declare global {
     /** P-07 : fichier que « Choisir un fichier » rendra (null : annulation) ; `__ctPickFail` : raison d'un échec de lecture. */
     __ctPick?: { name: string; text: string } | null;
     __ctPickFail?: string | null;
+    /** C-193 : archive que « Choisir une archive… » rendra (octets d'un export précédent ou d'un faux fichier) ; null : annulation. */
+    __ctPickBytes?: { name: string; bytes: number[] } | null;
   }
 }
 
@@ -37,6 +39,13 @@ export async function installFakeFiles(page: Page, options: { canSave?: boolean 
       },
       reveal: async (path: string) => {
         (window.__ctRevealed ??= []).push(path);
+      },
+      pickBytes: async () => {
+        const failure = window.__ctPickFail ?? null;
+        window.__ctPickFail = null;
+        if (failure) throw Object.assign(new Error(failure), { reason: failure });
+        const picked = window.__ctPickBytes ?? null;
+        return picked === null ? null : { name: picked.name, bytes: new Uint8Array(picked.bytes) };
       },
       pickText: async () => {
         const failure = window.__ctPickFail ?? null;
@@ -92,4 +101,11 @@ export async function failNextPick(page: Page, reason: 'too-large' | 'unreadable
   await page.evaluate((value) => {
     window.__ctPickFail = value;
   }, reason);
+}
+
+/** C-193 : archive que le prochain « Choisir une archive… » rendra (null : annulation). */
+export async function setPickBytes(page: Page, file: { name: string; bytes: number[] } | null): Promise<void> {
+  await page.evaluate((value) => {
+    window.__ctPickBytes = value;
+  }, file);
 }
