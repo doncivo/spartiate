@@ -34,6 +34,16 @@ describe('summarizeZone : dernière mesure et écart', () => {
     expect(s).toMatchObject({ span: 'since', reference: p('2026-11-01', 84), delta: -1.5 });
   });
 
+  it('C-090 : historique espacé (référence à 5 mois) : jamais « 4 semaines », l’écart dit sa date réelle', () => {
+    const s = summarizeZone([p('2026-06-01', 80), p('2026-11-01', 85)]);
+    expect(s).toMatchObject({ span: 'since', reference: p('2026-06-01', 80), delta: 5 });
+  });
+
+  it('C-090 : référence à 6 semaines (42 jours) : encore « 4 semaines » ; à 43 jours : non', () => {
+    expect(summarizeZone([p('2026-09-29', 80), p('2026-11-10', 82)]).span).toBe('four-weeks');
+    expect(summarizeZone([p('2026-09-28', 80), p('2026-11-10', 82)]).span).toBe('since');
+  });
+
   it('points donnés dans le désordre : triés par date ; écart arrondi au dixième, 0 si égal', () => {
     expect(summarizeZone([p('2026-11-10', 82.54), p('2026-11-01', 82.5)]).delta).toBe(0);
     expect(summarizeZone([p('2026-11-10', 82), p('2026-11-01', 84)]).last).toEqual(p('2026-11-10', 82));
