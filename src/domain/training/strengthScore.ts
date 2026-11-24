@@ -119,6 +119,8 @@ function oneRmOf(exercise: StrengthExercise, lift: LiftStandard, bodyweightKg: n
   return current1rmFromSessions(analyzeHistory(exercise.history, DEFAULT_PROGRESSION_CONFIG, body).estimates, DEFAULT_PROGRESSION_CONFIG);
 }
 
+const BOUND_RANK: Readonly<Record<NonNullable<ScoreBound> | 'none', number>> = { below: 0, none: 1, above: 2 };
+
 export function strengthScore(input: StrengthInput): StrengthResult {
   const { sex, bodyweightKg, standards } = input;
   const liftsByKey = new Map(standards.lifts.map((l) => [l.key, l]));
@@ -148,7 +150,8 @@ export function strengthScore(input: StrengthInput): StrengthResult {
   const groups = STRENGTH_GROUPS.map((group): GroupScore => {
     if (!standards.lifts.some((l) => l.groups.includes(group))) return none(group, 'noStandard');
     const candidates = scores.filter((s) => liftsByKey.get(s.key)?.groups.includes(group) === true);
-    const top = candidates.reduce<LiftScore | null>((t, s) => (t === null || s.score > t.score ? s : t), null);
+    // C-023 : à score égal, la borne départage (« > 99 » avant « 99 », « 10 » avant « < 10 ») ; sinon le premier dans l'ordre des normes.
+    const top = candidates.reduce<LiftScore | null>((t, s) => (t === null || s.score > t.score || (s.score === t.score && BOUND_RANK[s.bound ?? 'none'] > BOUND_RANK[t.bound ?? 'none']) ? s : t), null);
     if (top === null) return none(group, 'noSession');
     return { group, kind: 'value', score: top.score, bound: top.bound, tier: tierOf(top.score), lift: top };
   });
