@@ -79,8 +79,13 @@ function totalOf(x: PrescribeInput, loadKg: number): number {
   return body * fraction + (x.exercise.assisted === true ? -loadKg : loadKg);
 }
 
+/** Nombre minimal de cas (sur 200 tirés) où le plafond est effectivement mesuré ; relevé : 98 à 115 sur 3 tirages. */
+const MIN_MEASURED = 50;
+
 describe('C-177 : propriétés indépendantes de la sortie du moteur', () => {
   it('plafond : e1RM implicite de la proposition ≤ meilleur e1RM brut de l’historique × 1,1 (exercices chargés, hors assisté)', () => {
+    // Relecture A : la propriété sort tôt hors de son domaine ; un compteur prouve qu’elle mesure réellement assez de cas.
+    let measured = 0;
     fc.assert(
       fc.property(arbInput, (x) => {
         const p = prescribe(x);
@@ -88,8 +93,11 @@ describe('C-177 : propriétés indépendantes de la sortie du moteur', () => {
         const raw = Math.max(...x.history.flatMap((s) => s.sets.filter((t) => t.done && t.loadKg !== null && t.reps !== null).map((t) => epley(totalOf(x, t.loadKg as number), t.reps as number))));
         const implied = epley(totalOf(x, p.loadKg), Math.max(...p.sets.map((s) => s.reps)));
         expect(implied).toBeLessThanOrEqual(raw * (1 + CFG.maxGainPerSession) + 1e-6);
+        measured += 1;
       }),
+      { numRuns: 200 },
     );
+    expect(measured).toBeGreaterThanOrEqual(MIN_MEASURED);
   });
 
   it('déterminisme, au moins une série, aucune charge négative, sur tout le générateur (assisté, lesté, décharge, Recovery, position)', () => {
