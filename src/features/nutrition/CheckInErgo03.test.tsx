@@ -98,3 +98,13 @@ describe('FIX-0271 (D-314) : check-in devant une cible future', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 });
+
+describe('C-104 : colonne « Actuel » expliquée', () => {
+  it('une phrase dit de quelle cible il s’agit (celle de la semaine analysée)', async () => {
+    await seed();
+    open();
+    const r = await region();
+    await within(r).findByRole('button', { name: /^Accepter/ });
+    expect(within(r).getByText(/« Actuel » : la cible en vigueur pendant la semaine analysée/)).toBeInTheDocument();
+  });
+});

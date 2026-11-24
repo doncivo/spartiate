@@ -1,5 +1,5 @@
 import { RECOVERY_CONFIG } from './config';
-import { utcToLocal } from '../timeZone';
+import { isValidTimeZone, utcToLocal } from '../timeZone';
 
 /**
  * Fichiers de Santé exportés par l'app Raccourcis (D-69 : HealthKit direct inaccessible avec un compte Apple gratuit). Module pur,
@@ -83,17 +83,49 @@ export function readRows(text: string): { readonly rows: readonly (readonly stri
   return { rows, truncated };
 }
 
-export function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string } | Fail {
+/** Validité d'un fuseau, mémorisée : un fichier de 10 000 lignes ne construit pas 10 000 formateurs Intl. */
+const zoneKnown = new Map<string, boolean>();
+const isKnownZone = (zone: string): boolean => {
+  let known = zoneKnown.get(zone);
+  if (known === undefined) {
+    known = isValidTimeZone(zone);
+    zoneKnown.set(zone, known);
+  }
+  return known;
+};
+
+/** Décalage (minutes) écrit dans la cellule ISO ; `null` pour « Z » (décalage inconnu : le fuseau de l'appareil s'applique) ou une cellule sans décalage. */
+export function offsetMinutesOf(cell: string): number | null {
+  const m = /([+-])(\d{2}):?(\d{2})$/.exec(cell);
+  if (m === null) return null;
+  const minutes = Number(m[2]) * 60 + Number(m[3]);
+  return m[1] === '-' ? -minutes : minutes;
+}
+
+/** Jour civil d'un instant pour un décalage fixe en minutes (D-478 : fuseau de la mesure). */
+export function localDayAt(atMs: number, offsetMin: number): string {
+  return new Date(atMs + offsetMin * 60_000).toISOString().slice(0, 10);
+}
+
+export function parseInstant(cell: string, today: string, timeZone: string): { readonly at: number; readonly day: string; readonly offsetMin: number | null } | Fail {
   if (!ISO_WITH_ZONE.test(cell)) return { fail: ISO_NO_ZONE.test(cell) ? 'no_timezone' : 'bad_date' };
   const at = Date.parse(cell);
   if (!Number.isFinite(at)) return { fail: 'bad_date' };
-  const day = utcToLocal(new Date(at).toISOString(), timeZone).date;
+  // C-053 : fuseau d'appareil invalide : la ligne est rejetée (jour local incalculable), jamais une exception.
+  if (!isKnownZone(timeZone)) return { fail: 'no_timezone' };
+  // C-058 (D-478) : le jour est celui du fuseau où la mesure a été prise (décalage de la cellule) ; « Z » ou décalage absent : fuseau de l'appareil.
+  const offsetMin = offsetMinutesOf(cell);
+  const day = offsetMin !== null ? localDayAt(at, offsetMin) : utcToLocal(new Date(at).toISOString(), timeZone).date;
   if (day > today) return { fail: 'future' };
-  return { at, day };
+  return { at, day, offsetMin };
 }
 
-function parseNumber(raw: string, unitCell: string | undefined, units: readonly string[]): { readonly value: number } | Fail {
-  const m = VALUE.exec(raw);
+/** Un nombre entier de pas écrit avec séparateurs de milliers (« 12,345 », « 1.234 », « 1,234,567 ») : séparateurs retirés (C-057, H-25 : format réel non constaté). */
+const THOUSANDS = /^\d{1,3}(?:[.,]\d{3})+(?=\s|$)/;
+
+function parseNumber(raw: string, unitCell: string | undefined, units: readonly string[], integerOnly = false): { readonly value: number } | Fail {
+  const text = integerOnly ? raw.replace(THOUSANDS, (digits) => digits.replace(/[.,]/g, '')) : raw;
+  const m = VALUE.exec(text);
   if (m === null) return { fail: 'bad_value' };
   const unit = (unitCell !== undefined && unitCell !== '' ? unitCell : m[2] ?? '').toLowerCase();
   if (unit !== '' && !units.includes(unit)) return { fail: 'bad_unit' };
@@ -110,6 +142,8 @@ export interface ShortcutSample {
   /** Jour local de l'appareil. */
   readonly day: string;
   readonly value: number;
+  /** Décalage horaire (minutes) où la mesure a été prise ; `null` s'il est inconnu (« Z »). À enregistrer avec la mesure (colonne à ajouter, voir la fiche NUTRI-0292). */
+  readonly offsetMin: number | null;
 }
 
 export interface ShortcutSamples extends ShortcutParseReport {
@@ -121,7 +155,7 @@ function parseSamples(
   text: string,
   today: string,
   timeZone: string,
-  spec: { readonly units: readonly string[]; readonly range: readonly [number, number]; /** Arrondi au dixième (HRV, FC au repos). */ readonly tenth?: boolean },
+  spec: { readonly units: readonly string[]; readonly range: readonly [number, number]; /** Arrondi au dixième (HRV, FC au repos). */ readonly tenth?: boolean; /** Quantité entière (pas) : séparateurs de milliers admis. */ readonly integer?: boolean },
 ): ShortcutSamples {
   const { rows, truncated } = readRows(text);
   const counter = new Counter();
@@ -137,7 +171,7 @@ function parseSamples(
       counter.add(instant.fail);
       continue;
     }
-    const num = parseNumber(cells[1] ?? '', cells[2], spec.units);
+    const num = parseNumber(cells[1] ?? '', cells[2], spec.units, spec.integer === true);
     if (isFail(num)) {
       counter.add(num.fail);
       continue;
@@ -153,10 +187,10 @@ function parseSamples(
       continue;
     }
     seen.add(key);
-    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value, at: instant.at });
+    samples.push({ measuredAt: new Date(instant.at).toISOString(), day: instant.day, value, offsetMin: instant.offsetMin, at: instant.at });
   }
   samples.sort((a, b) => a.at - b.at);
-  return { ...counter.report(truncated), samples: samples.map(({ measuredAt, day, value }) => ({ measuredAt, day, value })) };
+  return { ...counter.report(truncated), samples: samples.map(({ measuredAt, day, value, offsetMin }) => ({ measuredAt, day, value, offsetMin })) };
 }
 
 /** `hrv.csv` : SDNN en ms. */
@@ -189,7 +223,7 @@ export interface ShortcutSteps extends ShortcutParseReport {
 
 /** `pas.csv` : un échantillon par ligne, sommés par jour local (voir l'en-tête du module). */
 export function parseShortcutSteps(text: string, today: string, timeZone: string): ShortcutSteps {
-  const r = parseSamples(text, today, timeZone, { units: ['count', 'pas', 'steps'], range: [0, STEPS_MAX_PER_LINE] });
+  const r = parseSamples(text, today, timeZone, { units: ['count', 'pas', 'steps'], range: [0, STEPS_MAX_PER_LINE], integer: true });
   const byDay = new Map<string, number>();
   for (const s of r.samples) byDay.set(s.day, (byDay.get(s.day) ?? 0) + Math.round(s.value));
   const { samples: _samples, ...report } = r;

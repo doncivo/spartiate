@@ -70,10 +70,19 @@ export function Silhouette({ kind, onSelect }: ZoneProps) {
 
 /** iPhone : une pastille par zone (cible ≥ 44 px), nom complet pour les lecteurs d'écran. */
 export function ZoneChips({ kind, onSelect }: ZoneProps) {
+  // C-105 : tabulation itinérante (une seule pastille dans l'ordre de tabulation) et flèches pour passer d'une zone à l'autre.
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
+    if (step === 0) return;
+    event.preventDefault();
+    const next = neighbourZone(kind, step);
+    onSelect(next);
+    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[MEASUREMENT_KINDS.indexOf(next)]?.focus();
+  };
   return (
-    <div className="ct-bodyprogress__chips" role="radiogroup" aria-label={tBodyProgress('kindLabel')}>
+    <div className="ct-bodyprogress__chips" role="radiogroup" aria-label={tBodyProgress('kindLabel')} onKeyDown={onKeyDown}>
       {MEASUREMENT_KINDS.map((k) => (
-        <button key={k} type="button" role="radio" aria-checked={k === kind} aria-label={tBodyProgress(KIND_TEXT[k])} className="ct-bodyprogress__chip" onClick={() => onSelect(k)}>
+        <button key={k} type="button" role="radio" aria-checked={k === kind} aria-label={tBodyProgress(KIND_TEXT[k])} tabIndex={k === kind ? 0 : -1} className="ct-bodyprogress__chip" onClick={() => onSelect(k)}>
           {tBodyProgress(SHORT_TEXT[k])}
         </button>
       ))}
@@ -105,7 +114,7 @@ export function ZoneList({ kind, summaries, onSelect }: ZoneProps & { readonly s
               <span id={`ct-zone-value-${k}`} className="ct-bodyprogress__zonevalue">
                 {s.last === null ? <MissingValue reason={tBodyProgress('zoneNoMeasure')} /> : formatCm(s.last.value)}
               </span>
-              {s.delta === null ? (
+              {s.delta === null || s.span !== 'four-weeks' ? (
                 <>
                   <span className="ct-bodyprogress__zonedelta" aria-hidden="true">
                     {tBodyProgress('zoneNoDelta')}

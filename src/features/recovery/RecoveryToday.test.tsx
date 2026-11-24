@@ -144,7 +144,7 @@ describe('cadrans', () => {
     expect(screen.getByText('HRV au-dessus de ta base')).toBeInTheDocument();
     expect(screen.getByText('FC de repos au-dessus de ta base')).toBeInTheDocument();
     expect(screen.getByText('Sommeil court : score ajusté')).toBeInTheDocument();
-    expect(screen.getByText('L’Exertion compte la musculation seule ; le cardio n’est pas compté.')).toBeInTheDocument();
+    expect(screen.getByText('Résumé calculé avant que le cardio saisi ne soit compté : l’Exertion de ce jour ne porte que sur la musculation.')).toBeInTheDocument();
     expect(screen.getByText('Estimation, pas un avis médical.')).toBeInTheDocument();
     expect(screen.getByText('Besoin : 7 h 30')).toBeInTheDocument();
   });
@@ -209,5 +209,19 @@ describe('tuile Pas', () => {
     await (await db.data.repos.recoverySamples()).recordImport({ type: 'hrv', importedAt: '2026-11-10T08:00:00.000Z', newestSampleAt: null, added: 1, duplicates: 0, rejected: 0 });
     mount();
     expect(await screen.findByText('Aucun pas importé ces 7 derniers jours.')).toBeInTheDocument();
+  });
+});
+
+/** C-070 : le cardio saisi compte dans l'Exertion (`cardioCounted`, D-220) : aucun texte ne dit le contraire. */
+describe('portée de l’Exertion (C-070)', () => {
+  it('le cadran dit que le cardio saisi est compté, jamais « non compté »', async () => {
+    await save(summary({ explanationKeys: ['exertion_cardio_not_counted'] }));
+    mount();
+    await screen.findByRole('img', { name: /Recovery : 72 sur 100/ });
+    const text = document.body.textContent ?? '';
+    expect(text).not.toMatch(/cardio non compté/);
+    expect(text).not.toMatch(/cardio n’est pas compté/);
+    expect(text).toMatch(/Musculation et cardio saisi/);
+    expect(screen.getByRole('img', { name: /Exertion : 3,5 sur 10/ }).getAttribute('aria-label') ?? '').not.toMatch(/non compté/);
   });
 });

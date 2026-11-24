@@ -79,3 +79,17 @@ describe('resolveBarcodeScanner', () => {
     setBarcodeScanner(null);
   });
 });
+
+describe('NUTRI-0292 (C-043) : le format rapporté par le plugin est transmis', () => {
+  const withFormat = (format: string) => {
+    const fake = createFakeScanner({ content: '01234589' });
+    const scanner = { ...fake.scanner, scan: async () => ({ content: '01234589', format }) };
+    return scanner;
+  };
+  it('UPC_E : développé en UPC-A', async () => {
+    expect(await createBarcodeScan(async () => withFormat('UPC_E')).run()).toEqual({ kind: 'scanned', barcode: { code: '0012345000089', kind: 'upce' } });
+  });
+  it('EAN_8 : EAN-8', async () => {
+    expect(await createBarcodeScan(async () => withFormat('EAN_8')).run()).toEqual({ kind: 'scanned', barcode: { code: '01234589', kind: 'ean8' } });
+  });
+});

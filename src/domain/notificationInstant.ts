@@ -101,3 +101,16 @@ export function pluginDate(instantMs: number, zone: string | null): string {
 export function localDateTimeAt(instantMs: number, zone: string | null): LocalDateTime {
   return pluginDate(instantMs, zone).slice(0, 16) as LocalDateTime;
 }
+
+/**
+ * Heure murale à laquelle une échéance flottante se déclenche vraiment dans `zone` (C-035, C-062) : une heure inexistante du saut d'heure d'été
+ * (02:30 le jour du passage) se déclenche une heure plus tard (03:30). Fuseau absent ou invalide : l'échéance telle quelle. Ne lève jamais.
+ */
+export function effectiveFireAt(fireAt: LocalDateTime, zone: string | undefined): LocalDateTime {
+  if (zone === undefined) return fireAt;
+  try {
+    return localDateTimeAt(fireAtInstant(fireAt, zone), zone);
+  } catch {
+    return fireAt;
+  }
+}

@@ -1,7 +1,7 @@
 import { isSingular, tPlural } from '../../i18n/plural';
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 import { todayLocal } from '../../domain/clock';
-import { recoveryZoneTier, unusualValues, type RecoveryExplanationKey, type RecoveryZoneTier, type UnusualValues } from '../../domain/recovery';
+import { RECOVERY_CONFIG, recoveryZoneTier, unusualValues, type RecoveryExplanationKey, type RecoveryZoneTier, type UnusualValues } from '../../domain/recovery';
 import type { LocalDate } from '../../domain/types';
 import type { FactorEntry, RecoveryDayRecord, RecoveryFactorRecord } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
@@ -121,7 +121,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
         : `${tRecovery('recoveryLabel')} : ${tRecovery('noScore')}. ${tRecovery(`abstain_${recovery.reason}`)} ${quality}.`;
   const exertionLabel =
     exertion.kind === 'value'
-      ? `${tRecovery('exertionLabel')} : ${formatScore(exertion.value)} ${tRecovery('outOf10')}. ${tRecovery('exertionScope')}.`
+      ? `${tRecovery('exertionLabel')} : ${formatScore(exertion.value)} ${tRecovery('outOf10')}. ${tRecovery(EXERTION_SCOPE_KEY)}.`
       : `${tRecovery('exertionLabel')} : ${tRecovery('exertionNone').toLowerCase()}.`;
   const need = tRecovery('sleepNeed', { d: formatDuration(sleep.needMinutes) });
   const sleepLabel =
@@ -161,7 +161,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
               {exertion.kind === 'value' ? formatScore(exertion.value) : '—'}
             </Dial>
             <p className="ct-recovery__name">{tRecovery('exertionLabel')}</p>
-            <p className="ct-today__muted">{exertion.kind === 'value' ? tRecovery('exertionScope') : tRecovery('exertionNone')}</p>
+            <p className="ct-today__muted">{exertion.kind === 'value' ? tRecovery(EXERTION_SCOPE_KEY) : tRecovery('exertionNone')}</p>
             {/* PROGRES-c (§ 16.3) : zone cible stockée avec le résumé, et son sens en texte (jamais la couleur seule). */}
             {s.targetZone !== null && zoneTier !== null ? (
               <>
@@ -234,6 +234,8 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
   );
 }
 
+/** C-070 : la portée affichée suit la configuration (D-220 : le cardio saisi compte), jamais un texte figé. */
+const EXERTION_SCOPE_KEY: RecoveryTextKey = RECOVERY_CONFIG.exertion.cardioCounted ? 'exertionScope' : 'exertionScopeStrengthOnly';
 const ZONE_TEXT: Readonly<Record<RecoveryZoneTier, RecoveryTextKey>> = { high: 'zoneHigh', mid: 'zoneMid', low: 'zoneLow' };
 
 export function RecoveryToday() {

@@ -38,10 +38,15 @@ export function defaultTrainingDays(routineDayCount: number | null, routineWeekd
 const carbFor = (kcal: number, proteinG: number, fatG: number): number =>
   Math.max(0, Math.round((kcal - KCAL_PER_G.protein * proteinG - KCAL_PER_G.fat * fatG) / KCAL_PER_G.carb));
 
+/** Arrondi entier sans -0 (`toEqual` distingue -0 de 0, et un -0 s'afficherait « -0 »). */
+const round = (n: number): number => Math.round(n) + 0;
+
 /** Cible de repos par un écart en kcal (négatif : moins de glucides). */
 export function restTargetFromGap(training: Target, gapKcal: number): Target {
-  const kcal = Math.round(training.kcal + gapKcal);
-  return { kcal, proteinG: training.proteinG, fatG: training.fatG, carbG: Math.max(0, Math.floor(training.carbG + gapKcal / KCAL_PER_G.carb + 1e-9)) };
+  const carbG = round(training.carbG + gapKcal / KCAL_PER_G.carb);
+  if (carbG >= 0) return { kcal: round(training.kcal + gapKcal), proteinG: training.proteinG, fatG: training.fatG, carbG };
+  // C-037 : glucides bornés à 0, les kcal suivent les macros (protéines et lipides gardés) au lieu de rester sans macros pour les porter.
+  return { kcal: Math.round(KCAL_PER_G.protein * training.proteinG + KCAL_PER_G.fat * training.fatG), proteinG: training.proteinG, fatG: training.fatG, carbG: 0 };
 }
 
 /** Cible de repos saisie en kcal : même règle que l'écart. */

@@ -35,3 +35,12 @@ describe('constancyDays', () => {
     expect(days.slice(0, 13).every((x) => x.level === 'free')).toBe(true);
   });
 });
+
+describe('constancyDays après un changement d’heure (C-091)', () => {
+  it('prises à 08:00 pendant 7 jours, heure passée à 08:30 : la bande garde ces jours « pleins »', () => {
+    const today = d('2026-11-13');
+    const days = constancyDays([supp('a', ['08:30'])], ['07', '08', '09', '10', '11', '12'].map((n) => taken('a', `2026-11-${n}`, '08:00')), today, 14);
+    expect(days.filter((x) => x.level === 'full')).toHaveLength(6);
+    expect(days.at(-1)?.level).toBe('none');
+  });
+});

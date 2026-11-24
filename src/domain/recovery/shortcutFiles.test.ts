@@ -17,8 +17,8 @@ describe('parseShortcutHrv', () => {
   it('lit le fichier de référence : virgule décimale, doublon exact écarté, rejets comptés PAR RAISON sans valeur', () => {
     const r = parseShortcutHrv(fixture('hrv.csv'), TODAY, TZ);
     expect(r.samples).toEqual([
-      { measuredAt: '2026-11-08T02:12:00.000Z', day: '2026-11-08', value: 48.5 },
-      { measuredAt: '2026-11-08T03:00:00.000Z', day: '2026-11-08', value: 52 },
+      { measuredAt: '2026-11-08T02:12:00.000Z', day: '2026-11-08', value: 48.5, offsetMin: 60 },
+      { measuredAt: '2026-11-08T03:00:00.000Z', day: '2026-11-08', value: 52, offsetMin: 60 },
     ]);
     expect(r.duplicates).toBe(1);
     expect(r.rejected).toEqual({
@@ -46,9 +46,9 @@ describe('parseShortcutHrv', () => {
     expect(parseShortcutHrv('﻿\r\n', TODAY, TZ).samples).toEqual([]);
   });
 
-  it('le jour est le jour LOCAL de l’appareil, pas celui du décalage écrit (REV-01 constat 9)', () => {
+  it('le jour est celui du fuseau où la mesure a été prise (décalage écrit), D-478 : remplace la règle du jour local de l’appareil (REV-01 constat 9)', () => {
     const r = parseShortcutHrv('2026-11-08T00:30:00+09:00;40', '2026-11-09', TZ);
-    expect(r.samples[0]?.day).toBe('2026-11-07');
+    expect(r.samples[0]?.day).toBe('2026-11-08');
   });
 
   it('tronque à MAX_LINES et le dit', () => {

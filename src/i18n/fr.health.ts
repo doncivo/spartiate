@@ -143,7 +143,7 @@ export const healthFr = {
   bodyFileTruncated: 'Fichier trop long : seules les {max} premières lignes ont été lues.',
   bodyRejectedBy: 'Lignes refusées (cette session) :',
   bodyNutritionTitle: 'Nutrition du jour',
-  bodyNutritionCounts: 'jours créés : {created} · mis à jour : {updated} · inchangés : {unchanged} · remplacés par ton journal : {superseded} · gardés par ton journal : {journal} · supprimés par toi : {deleted} · sans énergie (rien écrit) : {noEnergy}.',
+  bodyNutritionCounts: 'jours créés : {created} · mis à jour : {updated} · inchangés : {unchanged} · remplacés par ton journal : {superseded} · gardés par ton journal : {journal} · supprimés par toi : {deleted} · sans énergie (rien écrit) : {noEnergy} · refusés par l’enregistrement : {refused}.',
   bodyUnsupported: 'La lecture des fichiers Raccourcis n’est possible que dans l’app sur iPhone.',
   bodyNeedsPick: 'Cette lecture demande un geste : touche « Choisir les fichiers ».',
   bodyBusy: 'Un import est déjà en cours.',

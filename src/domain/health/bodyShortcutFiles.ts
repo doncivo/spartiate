@@ -149,7 +149,8 @@ export function parseBodyFile(name: BodyFileName, text: string, today: string, t
     }
     const current = byDay.get(instant.day);
     if (spec.mode === 'sum') byDay.set(instant.day, { value: (current?.value ?? 0) + value, at: Math.max(current?.at ?? 0, instant.at) });
-    else if (current === undefined || instant.at >= current.at) byDay.set(instant.day, { value, at: instant.at });
+    // C-055 : au même instant, la plus grande valeur gagne (le résultat ne dépend pas de l'ordre des lignes).
+    else if (current === undefined || instant.at > current.at || (instant.at === current.at && value > current.value)) byDay.set(instant.day, { value, at: instant.at });
   }
   const days: BodyDayValue[] = [];
   for (const [day, entry] of [...byDay.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {

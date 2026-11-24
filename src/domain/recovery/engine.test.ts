@@ -293,14 +293,14 @@ describe('muscleRecovery (§ 16.3, approximation)', () => {
   it('0 % à la fin de séance, linéaire jusqu’à 100 % sur 72 h (torse) : 24 h → 33 %', () => {
     const rows = muscleRecovery({ workouts: [w(six(), '2026-11-07T10:00:00.000Z')], now });
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ muscleId: 'chest', group: 'Torse', percent: 33, hours: 72, lastWorkedAt: '2026-11-07T10:00:00.000Z', readyAt: '2026-11-10T10:00:00.000Z' });
+    expect(rows[0]).toMatchObject({ muscleId: 'chest', group: 'chest', percent: 33, hours: 72, lastWorkedAt: '2026-11-07T10:00:00.000Z', readyAt: '2026-11-10T10:00:00.000Z' });
     expect(muscleRecovery({ workouts: [w(six(), now)], now })[0]?.percent).toBe(0);
     expect(muscleRecovery({ workouts: [w(six(), '2026-11-03T10:00:00.000Z')], now })[0]?.percent).toBe(100);
   });
 
   it('séries × difficulté × poids du muscle règlent la durée (jambes 96 h, poids 0,5, 6 séries → 48 h)', () => {
     const legs = six({ muscles: [{ id: 'quads', weight: 0.5 }] });
-    expect(muscleRecovery({ workouts: [w(legs, '2026-11-07T10:00:00.000Z')], now })[0]).toMatchObject({ group: 'Jambes', hours: 48, percent: 50 });
+    expect(muscleRecovery({ workouts: [w(legs, '2026-11-07T10:00:00.000Z')], now })[0]).toMatchObject({ group: 'legs', hours: 48, percent: 50 });
     const hard = six({ difficulty: 'hard' });
     expect(muscleRecovery({ workouts: [w(hard, '2026-11-07T10:00:00.000Z')], now })[0]?.hours).toBeCloseTo(72 * 1.2, 5);
   });
@@ -327,11 +327,14 @@ describe('muscleRecovery (§ 16.3, approximation)', () => {
     expect(muscleRecovery({ workouts: [], now })).toEqual([]);
   });
 
+  // BL-142 : le catalogue (content) nomme ses groupes en français ; le moteur les désigne par des identifiants neutres.
+  const NEUTRAL_OF_CATALOGUE_GROUP: Readonly<Record<string, string>> = { Bras: 'arms', Épaules: 'shoulders', Tronc: 'core', Torse: 'chest', Dos: 'back', Jambes: 'legs' };
+
   it('chaque muscle du catalogue a un groupe connu de la config', () => {
     const catalogue = JSON.parse(readFileSync(new URL('../../../content/exercises/muscles.json', import.meta.url), 'utf8')) as { muscles: { id: string; group: string }[] };
     for (const m of catalogue.muscles) {
-      expect(Object.keys(RECOVERY_CONFIG.groupRecoveryClass)).toContain(m.group);
-      expect(RECOVERY_CONFIG.muscleGroups[m.id]).toBe(m.group);
+      expect(Object.keys(RECOVERY_CONFIG.groupRecoveryClass)).toContain(RECOVERY_CONFIG.muscleGroups[m.id]);
+      expect(RECOVERY_CONFIG.muscleGroups[m.id]).toBe(NEUTRAL_OF_CATALOGUE_GROUP[m.group]);
     }
     expect(Object.keys(RECOVERY_CONFIG.muscleGroups)).toHaveLength(catalogue.muscles.length);
   });

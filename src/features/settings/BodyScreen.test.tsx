@@ -67,16 +67,16 @@ describe('Profil et poids (Plus)', () => {
 
   it('« Non renseigné » efface sexe, objectif et expérience : enregistrés en NULL, jamais un faux zéro', async () => {
     open();
-    for (const group of ['Sexe', 'Objectif', 'Expérience']) {
+    for (const group of ['Sexe', 'Objectif du profil', 'Expérience']) {
       const radios = within(await screen.findByRole('radiogroup', { name: group }));
       expect(radios.getByRole('radio', { name: 'Non renseigné' })).toBeChecked();
     }
     fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Sexe' })).getByRole('radio', { name: 'Femme' }));
-    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Objectif' })).getByRole('radio', { name: 'Maintien' }));
+    fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Objectif du profil' })).getByRole('radio', { name: 'Maintien' }));
     fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Expérience' })).getByRole('radio', { name: 'Avancé' }));
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));
     await waitFor(async () => expect(await db.driver.select('SELECT sex, goal, experience FROM profile')).toEqual([{ sex: 'female', goal: 'maintain', experience: 'advanced' }]));
-    for (const group of ['Sexe', 'Objectif', 'Expérience']) {
+    for (const group of ['Sexe', 'Objectif du profil', 'Expérience']) {
       fireEvent.click(within(screen.getByRole('radiogroup', { name: group })).getByRole('radio', { name: 'Non renseigné' }));
     }
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le profil' }));

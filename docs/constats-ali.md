@@ -185,12 +185,21 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.1) :
 
 ---
 
+## 0.29.2
+
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.2) :
+
+- [ ] **C-103 (champ heure, Q-24)** — iPhone, Nutrition › compléments › modifier l'heure d'une prise : le champ « Heure » s'affiche en 24 h (jamais AM / PM). Si tu vois AM / PM, réponds à Q-24. Date : ____ Version : ____
+- [ ] **C-105 (silhouette, Q-25)** — iPhone, Progrès › Corps : toucher le cou, les épaules et la poitrine de la silhouette sélectionne bien la zone touchée, sans en prendre une voisine. Date : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
 
 | ID | Sections |
 | --- | --- |
+| C-103 | 0.29.2 |
+| C-105 | 0.29.2 |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |

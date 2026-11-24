@@ -318,6 +318,18 @@ describe('I4-05 : scan (iPhone seulement)', () => {
     expect(off.calls).toEqual([{ kind: 'product', arg: CODE }]);
   });
 
+  it('C-100 : une prise issue d’un code scanné est enregistrée en méthode « scan »', async () => {
+    setBarcodeScanner(async () => scanner.scanner);
+    await mount({ runtime: 'tauri', os: 'ios' });
+    await openSearch();
+    fireEvent.click(screen.getByRole('button', { name: 'Scanner' }));
+    await screen.findByLabelText('Quantité (g)');
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter au journal' }));
+    const repo = await db.data.repos.mealEntries();
+    await waitFor(async () => expect(await repo.listBetween('2000-01-01' as never, '2100-01-01' as never)).toHaveLength(1));
+    expect((await repo.listBetween('2000-01-01' as never, '2100-01-01' as never)).map((e) => e.method)).toEqual(['scan']);
+  });
+
   it('annulation : retour à la recherche, scanner annulé, aucun message d’erreur', async () => {
     scanner = createFakeScanner({ hold: true });
     setBarcodeScanner(async () => scanner.scanner);

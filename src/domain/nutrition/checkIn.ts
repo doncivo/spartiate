@@ -36,7 +36,7 @@ export interface CheckInInput {
   readonly restPlan?: RestPlan | null;
 }
 
-export type CheckInReason = 'manual-style' | 'insufficient-coverage' | 'no-tdee' | 'no-weight';
+export type CheckInReason = 'manual-style' | 'insufficient-coverage' | 'no-tdee' | 'no-weight' | 'no-goal-rate';
 export type Clamp = 'max-weekly-delta' | 'max-loss-rate' | 'floor';
 
 export interface Proposal {
@@ -154,6 +154,9 @@ function proposeSingle(input: CheckInInput): CheckInResult {
   if (input.weightKg === null || !(input.weightKg > 0)) reasons.push('no-weight');
   if (input.tdee === null || !(input.tdee > 0)) reasons.push('no-tdee');
   if (coverage !== null && !coverage.sufficient) reasons.push('insufficient-coverage');
+  // C-125 : un objectif de perte ou de gain sans rythme exploitable n'est jamais lu comme « maintien » en silence.
+  const goal = input.goal;
+  if (goal.kind !== 'maintain' && !(Number.isFinite(goal.weeklyRateKg) && goal.weeklyRateKg > 0)) reasons.push('no-goal-rate');
   if (reasons.length > 0 || input.tdee === null || input.weightKg === null) {
     return result(input, 'suspended', { reasons, coverage });
   }

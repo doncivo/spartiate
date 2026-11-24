@@ -1,9 +1,9 @@
 import { tPlural } from '../../../i18n/plural';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dayTargetFor } from '../../../domain/nutrition/restDay';
 import { addDays } from '../../../domain/localDate';
 import type { LocalDate } from '../../../domain/types';
-import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals } from '../../../domain/nutrition';
+import { aggregateDay, effectiveTarget, remainingForDay, toMealEntryInput, type DayDeclaration, type DayTotals, type Plate } from '../../../domain/nutrition';
 import type { MealEntryRecord } from '../../../db/repositories/mealEntryRepository';
 import { formatTime } from '../../../i18n/format';
 import { formatDayLong, formatInt, formatTenth, orDash, tNutrition } from '../../../i18n/nutritionText';
@@ -87,9 +87,13 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
   const date = mode.kind === 'idle' ? (picked ?? snapshot.today) : mode.date;
   const formOpen = mode.kind !== 'idle';
   const entries = loaded !== null && loaded.date === date ? loaded.list : null;
+  // BL-117 : l'assiette en cours est gardée quand la recherche se ferme (rien n'est écrit avant « Ajouter l'assiette au journal »).
+  const [plate, setPlate] = useState<Plate>([]);
   const [toDelete, setToDelete] = useState<MealEntryRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [declBusy, setDeclBusy] = useState(false);
+  // C-099 : choix affiché tout de suite ; les écritures sont mises en file, la dernière valeur gagne (jamais une valeur intermédiaire laissée).
+  const [wantedDecl, setWantedDecl] = useState<Readonly<Record<string, DeclarationChoice>>>({});
+  const declWrite = useRef<{ running: boolean; wanted: Map<LocalDate, DeclarationChoice> }>({ running: false, wanted: new Map() });
   const isToday = date === snapshot.today;
 
   useEffect(() => {
@@ -121,7 +125,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
   const declaration = loaded !== null && loaded.date === date ? loaded.declaration : null;
   const day = useMemo(() => aggregateDay(date, (entries ?? []).map(toMealEntryInput), declaration ?? undefined), [date, entries, declaration]);
   // PROG-01 (D-270) : cible du type de jour (entraînement ou repos) ; sans cible de repos, la cible unique.
-  const record = effectiveTarget(snapshot.targets, date);
+  const record = effectiveTarget(snapshot.targets, date, snapshot.today);
   const dayTarget = record === null ? null : dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set());
   const target = dayTarget?.target ?? null;
   // Tant que le journal du jour n'est pas lu (chargement, échec), aucun restant n'est affiché : « — », jamais la cible entière.
@@ -130,19 +134,32 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
 
   /** Déclare (complète / incomplète) ou efface (« Non déclarée ») la journée affichée ; la relecture du snapshot met à jour dashboard et dépense. */
   async function chooseDeclaration(next: DeclarationChoice): Promise<void> {
-    if (declBusy) return;
-    setDeclBusy(true);
+    // Un choix voulu PAR JOUR : changer de jour pendant la file n'écrit jamais sur l'ancien jour ; la file reboucle après la relecture
+    // tant qu'un choix a été fait entre-temps (jamais perdu, la dernière valeur de chaque jour gagne).
+    const queue = declWrite.current;
+    const day = date;
+    queue.wanted.set(day, next);
+    setWantedDecl((current) => ({ ...current, [day]: next }));
+    if (queue.running) return;
+    queue.running = true;
     try {
       const repo = await data.repos.dayCompleteness();
-      if (next === 'none') await repo.clear(date);
-      else await repo.declare(date, next);
-      setError(null);
-      setVersion((v) => v + 1);
-      await onChanged();
+      while (queue.wanted.size > 0) {
+        for (const [wantedDay, value] of [...queue.wanted]) {
+          if (value === 'none') await repo.clear(wantedDay);
+          else await repo.declare(wantedDay, value);
+          if (queue.wanted.get(wantedDay) === value) queue.wanted.delete(wantedDay);
+        }
+        setError(null);
+        setVersion((v) => v + 1);
+        await onChanged();
+      }
     } catch {
+      queue.wanted.clear();
       setError(tNutrition('dayDeclError'));
     } finally {
-      setDeclBusy(false);
+      queue.running = false;
+      setWantedDecl({});
     }
   }
 
@@ -221,8 +238,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
           <div className="ct-nutrition__declaration">
             <SegmentedControl<DeclarationChoice>
               label={tNutrition('dayDeclLabel')}
-              value={declaration ?? 'none'}
-              disabled={declBusy}
+              value={wantedDecl[date] ?? declaration ?? 'none'}
               onChange={(next) => void chooseDeclaration(next)}
               options={[
                 { value: 'none', label: tNutrition('dayDeclNone') },
@@ -242,7 +258,7 @@ export function JournalView({ snapshot, onChanged, openSearch = false, openMeals
       ) : null}
 
       {mode.kind === 'search' ? (
-        <FoodSearchPanel date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
+        <FoodSearchPanel date={mode.date} defaultTime={defaultTime} plate={plate} onPlateChange={setPlate} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'quick' ? (
         <QuickAddForm date={mode.date} defaultTime={defaultTime} onSaved={() => void afterWrite()} onClose={() => setMode({ kind: 'idle' })} />
       ) : mode.kind === 'meals' ? (

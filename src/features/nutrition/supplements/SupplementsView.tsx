@@ -1,6 +1,6 @@
 import { tPlural } from '../../../i18n/plural';
 import { Check } from 'lucide-react';
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { addDays } from '../../../domain/localDate';
 import {
   ALL_DAYS,
@@ -99,6 +99,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
   const [formError, setFormError] = useState<SupplementsTextKey | null>(null);
   const [confirm, setConfirm] = useState<Supplement | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [remindersFailed, setRemindersFailed] = useState(false);
   const [reminders, setReminders] = useState<{ readonly enabled: boolean; readonly result: SupplementNotificationResult | null } | null>(null);
   const synced = useSyncedData(['supplement', 'supplement_intake']);
 
@@ -156,13 +157,24 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
     };
   }, [load, today]);
 
-  const toggleIntake = async (item: DueIntake): Promise<void> => {
-    try {
-      await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, !item.taken);
-      await afterWrite(null);
-    } catch {
-      setNotice(tSupplements('writeError'));
-    }
+  // C-103 : les appuis sont écrits dans l'ordre, chacun à partir de l'état voulu par l'appui précédent (cocher puis décocher vite finit décoché).
+  const intake = useRef<{ chain: Promise<void>; wanted: Map<string, boolean> }>({ chain: Promise.resolve(), wanted: new Map() });
+  const toggleIntake = (item: DueIntake): Promise<void> => {
+    const state = intake.current;
+    const key = `${item.supplement.id}|${today}|${item.moment}`;
+    const next = !(state.wanted.get(key) ?? item.taken);
+    state.wanted.set(key, next);
+    state.chain = state.chain.then(async () => {
+      try {
+        await (await data.repos.supplements()).setTaken(item.supplement.id, today, item.moment, next);
+        if (state.wanted.get(key) === next) state.wanted.delete(key);
+        await afterWrite(null);
+      } catch {
+        state.wanted.delete(key);
+        setNotice(tSupplements('writeError'));
+      }
+    });
+    return state.chain;
   };
 
   const afterWrite = async (message: string | null): Promise<void> => {
@@ -213,9 +225,16 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
   };
 
   const toggleReminders = async (enabled: boolean): Promise<void> => {
-    const m = await import('../../notifications');
-    const result = await m.supplementNotificationsFor(container).requestPermissionAndReplan({ v: 1, enabled });
-    setReminders({ enabled, result });
+    // C-101 : un échec est dit et l'interrupteur reste sur l'état réel (jamais muet, jamais un rejet perdu).
+    try {
+      const m = await import('../../notifications');
+      const result = await m.supplementNotificationsFor(container).requestPermissionAndReplan({ v: 1, enabled });
+      setRemindersFailed(false);
+      setReminders({ enabled, result });
+    } catch {
+      setRemindersFailed(true);
+      logFailure('supplements', 'reminders-toggle-failed');
+    }
   };
 
   const edit = (s: Supplement): void => {
@@ -386,6 +405,11 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
         {reminders !== null && reminders.result?.status !== 'unsupported' ? (
           <>
             <Switch checked={reminders.enabled} label={tSupplements('remindersLabel')} onChange={(enabled) => void toggleReminders(enabled)} />
+            {remindersFailed ? (
+              <p role="alert" className="ct-nutrition__warning">
+                {tSupplements('remindersError')}
+              </p>
+            ) : null}
             <p className="ct-nutrition__muted">{tSupplements('remindersHint')}</p>
           </>
         ) : null}

@@ -25,12 +25,16 @@ const dayDiff = (from: LocalDate, to: LocalDate): number => Math.round((Date.par
 export function trendScale(points: readonly TrendPoint[], endDate: LocalDate): TrendScale {
   const first = points.reduce<LocalDate | null>((acc, p) => (acc === null || p.date < acc ? p.date : acc), null);
   const spanDays = first === null ? TREND_MIN_AXIS_DAYS : Math.min(TREND_WINDOW_DAYS, Math.max(TREND_MIN_AXIS_DAYS, dayDiff(first, endDate) + 1));
-  const kgs = points.flatMap((p) => [p.kg, p.trend]);
+  // C-093 : une pesée aberrante (pondérée 0,25, hors de 2 % de la tendance) n'étire pas l'échelle ; elle est dessinée au bord et dite (`pointsOutOfFrame`).
+  const kgs = points.flatMap((p) => (p.outlier ? [p.trend] : [p.kg, p.trend]));
   const lo = kgs.length === 0 ? 0 : Math.min(...kgs);
   const hi = kgs.length === 0 ? 1 : Math.max(...kgs);
   const margin = Math.max(0.5, (hi - lo) * 0.15);
   return { startDate: addDays(endDate, -(spanDays - 1)), spanDays, min: lo - margin, max: hi + margin };
 }
+
+/** C-093 : pesées dont la valeur sort de l'échelle (aberrantes écartées de l'échelle) ; chacune est dessinée au bord du cadre et comptée dans le texte. */
+export const pointsOutOfFrame = (points: readonly TrendPoint[], scale: TrendScale): number => points.filter((p) => p.kg < scale.min || p.kg > scale.max).length;
 
 export interface DayBar {
   readonly date: LocalDate;
@@ -68,7 +72,7 @@ function targetForDay(snapshot: NutritionSnapshot): ((date: Day) => DayTarget) |
   if (!snapshot.targets.some((t) => t.restPlan !== null && t.restPlan !== undefined)) return undefined;
   const fallback = snapshot.target?.target ?? null;
   return (date) => {
-    const record = effectiveTarget(snapshot.targets, date);
+    const record = effectiveTarget(snapshot.targets, date, snapshot.today);
     if (record === null) return fallback ?? { kcal: 0, proteinG: 0, fatG: 0, carbG: 0 };
     return dayTargetFor(record.target, record.restPlan ?? null, date, snapshot.strengthDays ?? new Set()).target;
   };

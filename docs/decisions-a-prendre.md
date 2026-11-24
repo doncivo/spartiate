@@ -71,3 +71,59 @@ D-536 (Claude) répond « à saisir » (aucune charge proposée) ; ce cas n'éta
   une proposition chiffrée tout de suite ; règle nouvelle (répétitions ajustées à la baisse sur une hausse de charge, contraire au
   « reps → charge jamais dans la même prescription »), vecteurs et propriété à réécrire, `ENGINE_VERSION` relevée.
 
+
+## Q-18 — Fichier Santé tronqué en pleine valeur (C-056, NUTRI-0292)
+
+Constat : « 4000 » coupé en « 40 » est indiscernable d'une vraie valeur ; limite figée par `shortcutFiles.steps.test.ts`.
+- A : garder (limite connue). Conséquences : aucun changement ; une valeur fausse rare reste possible.
+- B (recommandé si le raccourci le permet) : le raccourci écrit toujours un saut de ligne final, l'app refuse un fichier qui n'en a pas.
+  Conséquences : guide du raccourci à modifier, constat sur l'iPhone ; les anciens fichiers sans saut de ligne sont refusés.
+
+## Q-19 — Base HRV sans dispersion ou HRV du jour absente (C-060, NUTRI-0292)
+
+- A (recommandé) : garder le niveau B (seuils absolus). Conséquences : aucun changement, comportement figé par `tonightValidity.test.ts`.
+- B : un message dédié (« base trop régulière », « HRV manquante »). Conséquences : deux textes et un état de plus à l'écran.
+
+## Q-20 — « traces » de Ciqual (C-042, D-477, NUTRI-0292)
+
+Constat : la source Ciqual écrit « traces » en `null` pour chaque nutriment ; D-477 ne parle que des lipides.
+- A : 0 g pour les lipides seulement (D-477 à la lettre). Conséquences : les autres nutriments en traces restent inconnus.
+- B (recommandé) : 0 g pour tous les nutriments. Conséquences : contenu régénéré par content-data (`scripts/content/ciqual.mjs`) en 0.29.3.
+
+## Q-21 — Libellé « Base en construction » (C-061, D-479, NUTRI-0292)
+
+- A (recommandé) : garder le même libellé pour le premier apprentissage et une base redevenue trop courte. Conséquences : aucun changement.
+- B : « en reconstruction » quand des nuits plus anciennes existent. Conséquences : un texte et une règle de plus.
+
+## Q-22 — Définition des « go-tos » (BL-117, D-560, NUTRI-0292)
+
+- A (recommandé, livré) : aliments pris au moins 3 fois sur 90 jours, 6 au plus. Conséquences : aucun changement.
+- B : les repas entiers répétés (même heure, mêmes aliments). Conséquences : règle nouvelle dans le domaine, liste plus courte.
+- C : aliments épinglés par Ali. Conséquences : un réglage et une donnée de plus (synchro à relire).
+
+## Q-23 — Deux réglages « Objectif » (C-106, NUTRI-0292)
+
+Constat : `profile.goal` (Réglages › Corps) et `nutrition.prefs.goal` (Stratégie) peuvent se contredire.
+- A (livré) : garder deux réglages aux libellés distincts. Conséquences : contradiction possible, visible.
+- B (recommandé) : Stratégie lit l'objectif du profil, le rythme reste en Stratégie. Conséquences : lecture seule, sans schéma ; avis de data-model.
+- C : Stratégie écrit aussi le profil. Conséquences : écriture d'une table publiée, relecture sync-icloud.
+
+## Q-24 — Champ « Heure » en 12 h sur l'iPhone (C-103, NUTRI-0292)
+
+À constater par Ali sur l'iPhone (docs/constats-ali.md).
+- A : garder le champ système. Conséquences : l'heure peut s'afficher en 12 h, contraire aux 24 h de la charte.
+- B (recommandé si constaté) : deux champs numériques H et M en 24 h. Conséquences : un composant de saisie de plus, tests d'écran.
+
+## Q-25 — Silhouette de Corps et date de la photo (C-105, NUTRI-0292)
+
+- Silhouette : A (recommandé) garder en complément des pastilles ; B la retirer ; C agrandir les zones (cou et épaules déplacés, rayon 11).
+  Conséquences : A aucun changement ; B les pastilles seules ; C des zones de 22 px, encore sous 44 pt.
+- Photo : A (recommandé) toujours datée du jour de l'ajout (D-99) ; B un champ de date. Conséquences : B permet d'importer d'anciennes photos.
+- Après constat sur l'iPhone.
+
+## Q-26 — Jour complet par le seul total importé de Santé (C-039, D-547, NUTRI-0292)
+
+Constat : un jour dont la seule entrée est « Renpho — total du jour » (reconnue par son nom figé) est rendu complet.
+- A (recommandé) : garder D-547. Conséquences : la dépense mesurée reste alimentée par Santé ; un renommage de l'entrée la ferait redevenir une saisie ordinaire.
+- B : complet seulement si des repas saisis existent et sont complets. Conséquences : moins de jours complets, donc moins de jours pour le TDEE mesuré.
+- C : comme A, mais l'entrée est reconnue par un marqueur (source dédiée). Conséquences : migration additive et relecture sync-icloud.

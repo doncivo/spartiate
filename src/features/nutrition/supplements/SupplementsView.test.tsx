@@ -73,3 +73,16 @@ describe('I6-05 : SupplementsView', () => {
     expect(within(stats).getByText('Série : 1 jour complet')).toBeInTheDocument();
   });
 });
+
+describe('C-103 : cocher puis décocher vite', () => {
+  it('deux appuis de suite : la prise finit décochée, en base comme à l’écran', async () => {
+    const repo = await db.data.repos.supplements();
+    await repo.create({ name: 'Créatine', dose: 5, unit: 'g', times: ['08:00' as LocalTime], days: 127, active: true });
+    mount();
+    const box = await screen.findByRole('checkbox', { name: 'Marquer Créatine comme pris' });
+    fireEvent.click(box);
+    fireEvent.click(box);
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Marquer Créatine comme pris' })).toHaveAttribute('aria-checked', 'false'));
+    await waitFor(async () => expect(await repo.intakes('2026-11-13' as LocalDate, '2026-11-13' as LocalDate)).toEqual([]));
+  });
+});

@@ -19,7 +19,8 @@ import type { DeviceId, Hlc, IsoDateTime, LocalDate } from '../../domain/types';
  */
 
 /** Version du moteur de récupération écrite avec chaque résumé (`config.ts`, § 16.3) ; à incrémenter quand une formule change. */
-export const RECOVERY_ENGINE_VERSION = 1;
+/** 2 : lot 0.29.2 (jour de la mesure, nuit sous 180 min, baseline sur 30 jours, cardio, Exertion au poids du corps) ; les jours déjà stockés sont recalculés puis réécrits. */
+export const RECOVERY_ENGINE_VERSION = 2;
 
 export interface RecoveryDayRecord {
   /** `recovery|AAAA-MM-JJ`. */

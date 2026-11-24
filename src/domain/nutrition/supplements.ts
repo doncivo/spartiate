@@ -110,6 +110,28 @@ export function dueIntakes(supplements: readonly Supplement[], intakes: readonly
   return out.sort((a, b) => (a.moment < b.moment ? -1 : a.moment > b.moment ? 1 : a.supplement.name.localeCompare(b.supplement.name, 'fr')));
 }
 
+/**
+ * C-091 : prises dues d'un jour POUR LES STATISTIQUES (constance, série, bande). L'historique des heures n'est pas conservé : une prise cochée à
+ * une heure qui n'est plus prévue (heure changée depuis) couvre un créneau encore sans prise ce jour-là, une prise par créneau. Les prises
+ * exactes gardent leur créneau ; la carte du jour et les rappels restent sur `dueIntakes` (cocher et décocher visent l'heure exacte).
+ */
+export function settledIntakes(supplements: readonly Supplement[], intakes: readonly SupplementIntake[], date: LocalDate): DueIntake[] {
+  const due = dueIntakes(supplements, intakes, date);
+  const orphans = new Map<string, number>();
+  for (const supplement of supplements) {
+    if (!isDueOn(supplement, date)) continue;
+    const exact = new Set<string>(supplement.times);
+    orphans.set(supplement.id, intakes.filter((i) => i.supplementId === supplement.id && i.date === date && !exact.has(i.moment)).length);
+  }
+  return due.map((item) => {
+    if (item.taken) return item;
+    const left = orphans.get(item.supplement.id) ?? 0;
+    if (left <= 0) return item;
+    orphans.set(item.supplement.id, left - 1);
+    return { ...item, taken: true };
+  });
+}
+
 export interface SupplementAdherence {
   readonly due: number;
   readonly taken: number;
@@ -122,14 +144,14 @@ const MAX_SPAN_DAYS = 366;
 
 /**
  * Constance (D-211) : prises cochées / prises dues, jours `from` à `to` compris, avec la configuration COURANTE de chaque complément (heures,
- * jours, pause), à partir de son jour de création. Une prise cochée à une heure qui n'est plus prévue ne compte pas.
+ * jours, pause), à partir de son jour de création. Une prise cochée à une heure changée depuis couvre un créneau libre du jour (C-091).
  */
 export function supplementAdherence(supplements: readonly Supplement[], intakes: readonly SupplementIntake[], from: LocalDate, to: LocalDate): SupplementAdherence {
   let due = 0;
   let taken = 0;
   let day = from;
   for (let i = 0; i < MAX_SPAN_DAYS && day <= to; i += 1, day = addDays(day, 1)) {
-    for (const item of dueIntakes(supplements, intakes, day)) {
+    for (const item of settledIntakes(supplements, intakes, day)) {
       due += 1;
       if (item.taken) taken += 1;
     }
@@ -147,7 +169,7 @@ export function supplementStreak(supplements: readonly Supplement[], intakes: re
   let streak = 0;
   let day = today;
   for (let i = 0; i < MAX_SPAN_DAYS && day >= earliest; i += 1, day = addDays(day, -1)) {
-    const due = dueIntakes(supplements, intakes, day);
+    const due = settledIntakes(supplements, intakes, day);
     if (due.length === 0) continue;
     if (due.every((x) => x.taken)) streak += 1;
     else if (day !== today) break;

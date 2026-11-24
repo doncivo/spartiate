@@ -1,4 +1,5 @@
 import { ACTIONS_BY_CATEGORY, EMPTY_ACTION_QUEUE, parseActionQueue, type NotificationActionQueueV1 } from '../../domain/notificationActions';
+import { dueIntakes } from '../../domain/nutrition/supplements';
 import { hasSupplementActionTrouble, intakesToTake, parseSupplementActionTrouble, receiveSupplementActions, settleSupplementAction, SUPPLEMENT_ACTION_TYPE_ID, supplementActionTodo, troubleAfterPass, type SupplementActionTrouble } from '../../domain/supplementNotificationActions';
 import type { SettingsRepository } from '../../db/repositories/settingsRepository';
 import type { SupplementRepository } from '../../db/repositories/supplementRepository';
@@ -50,6 +51,8 @@ export interface SupplementActionRun {
   readonly applied: number;
   readonly duplicates: number;
   readonly failed: number;
+  /** C-048 : actions « Pris » dont l'heure n'existe plus dans la configuration courante (heure changée, complément supprimé ou en pause) : rien coché. */
+  readonly unmatched: number;
 }
 
 export interface SupplementActionProcessor {
@@ -83,7 +86,7 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
   }
 
   async function pass(): Promise<PassOutcome> {
-    const result = { taken: 0, applied: 0, duplicates: 0, failed: 0 };
+    const result = { taken: 0, applied: 0, duplicates: 0, failed: 0, unmatched: 0 };
     let drained;
     try {
       drained = await deps.source.drain();
@@ -112,6 +115,7 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
           await repo.setTaken(id, day, moment, true);
           result.taken += 1;
         }
+        if (!dueIntakes(supplements, intakes, day).some((item) => item.moment === moment)) result.unmatched += 1;
         queue = settleSupplementAction(queue, entry.key, 'applied', deps.nowMs());
         result.applied += 1;
       } catch {
@@ -142,7 +146,8 @@ export function createSupplementActionProcessor(deps: SupplementActionDeps): Sup
       }
     }
     if (result.taken > 0) deps.onTaken(result.taken);
-    if (result.failed > 0) deps.onTrouble('failed');
+    if (result.unmatched > 0) deps.log('supplement-action-unmatched');
+    if (result.failed > 0 || result.unmatched > 0) deps.onTrouble('failed');
     if (lost) {
       deps.log('supplement-action-lost');
       deps.onTrouble('lost');

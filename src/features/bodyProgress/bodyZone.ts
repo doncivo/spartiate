@@ -15,11 +15,13 @@ export interface ZoneSummary {
   readonly last: ZonePoint | null;
   readonly reference: ZonePoint | null;
   readonly delta: number | null;
-  /** `four-weeks` : une mesure existe 28 jours ou plus avant la dernière ; `since` : écart depuis la plus ancienne mesure (historique plus court). */
+  /** `four-weeks` : une mesure existe 28 à 42 jours avant la dernière ; `since` : écart depuis la plus ancienne mesure (historique plus court). */
   readonly span: 'four-weeks' | 'since' | null;
 }
 
 const FOUR_WEEKS = 28;
+/** C-090 : au-delà de 6 semaines, la référence n’est plus « 4 semaines » : l’écart dit sa date réelle. */
+const FOUR_WEEKS_MAX = 42;
 const tenth = (n: number): number => {
   const r = Math.round(n * 10) / 10;
   return r === 0 ? 0 : r;
@@ -31,9 +33,11 @@ export function summarizeZone(points: readonly ZonePoint[]): ZoneSummary {
   const last = sorted.at(-1) ?? null;
   if (last === null || sorted.length < 2) return { last, reference: null, delta: null, span: null };
   const limit = addDays(last.date, -FOUR_WEEKS);
+  const farLimit = addDays(last.date, -FOUR_WEEKS_MAX);
   const older = sorted.slice(0, -1).filter((p) => p.date <= limit);
-  const reference = older.at(-1) ?? sorted[0] ?? last;
-  return { last, reference, delta: tenth(last.value - reference.value), span: older.length > 0 ? 'four-weeks' : 'since' };
+  const inBand = older.filter((p) => p.date >= farLimit);
+  const reference = inBand.at(-1) ?? older.at(-1) ?? sorted[0] ?? last;
+  return { last, reference, delta: tenth(last.value - reference.value), span: inBand.length > 0 ? 'four-weeks' : 'since' };
 }
 
 export interface CurveDot {

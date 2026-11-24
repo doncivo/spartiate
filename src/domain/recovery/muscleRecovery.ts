@@ -46,3 +46,16 @@ export function muscleRecovery(input: { readonly workouts: readonly RecoveryWork
   }
   return [...best.values()].sort((a, b) => (a.muscleId < b.muscleId ? -1 : a.muscleId > b.muscleId ? 1 : 0));
 }
+
+/**
+ * Pourcentage d'une ligne enregistrée relu à l'heure `now` (C-062) : la valeur écrite au calcul est un instantané, elle ne bouge plus ensuite ;
+ * l'affichage la recalcule d'après la fin de séance et la durée (`lastWorkedAt`, `hours`). Jamais sous la valeur enregistrée, borné à 100 ;
+ * heure illisible : la valeur enregistrée.
+ */
+export function muscleRecoveryPercentAt(row: Pick<MuscleRecoveryRow, 'percent' | 'hours' | 'lastWorkedAt'>, now: string): number {
+  const nowMs = Date.parse(now);
+  const workedMs = Date.parse(row.lastWorkedAt);
+  if (!Number.isFinite(nowMs) || !Number.isFinite(workedMs) || !(row.hours > 0)) return row.percent;
+  const live = Math.round(((nowMs - workedMs) / HOUR_MS / row.hours) * 100);
+  return Math.min(100, Math.max(row.percent, live));
+}

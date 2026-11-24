@@ -33,7 +33,7 @@ describe('PROG-01 : cible de repos (D-271)', () => {
     expect(restTargetFromGap(TRAINING, DEFAULT_REST_GAP_KCAL)).toEqual({ kcal: 2400, proteinG: 150, fatG: 80, carbG: 270 });
   });
   it('saisie en kcal : même écart porté par les glucides', () => {
-    expect(restTargetFromKcal(TRAINING, 2250)).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 232 });
+    expect(restTargetFromKcal(TRAINING, 2250)).toEqual({ kcal: 2250, proteinG: 150, fatG: 80, carbG: 233 });
   });
   it('glucides jamais négatifs', () => {
     const low: Target = { kcal: 2000, proteinG: 200, fatG: 100, carbG: 30 };
@@ -173,5 +173,15 @@ describe('ERGO-02b (critère 8) : jours d’entraînement par défaut repris de 
 
   it('routine inconnue, vide ou de 7 jours et plus (aucun repos possible) : lundi, mardi, jeudi, vendredi, samedi', () => {
     for (const n of [null, 0, 7, 9, -1, 2.5, Number.NaN]) expect(defaultTrainingDays(n)).toEqual(DEFAULT_TRAINING_DAYS);
+  });
+});
+
+describe('jamais -0 (CI 45461878768)', () => {
+  it('glucides et kcal arrondis depuis une valeur entre -0,5 et 0 : 0, jamais -0', () => {
+    const t = restTargetFromGap({ kcal: 2000, proteinG: 150, fatG: 80, carbG: 0 }, -1);
+    expect(Object.is(t.carbG, 0)).toBe(true);
+    const k = restTargetFromGap({ kcal: 0, proteinG: 0, fatG: 0, carbG: 0 }, -0.4);
+    expect(Object.is(k.kcal, 0)).toBe(true);
+    expect(Object.is(k.carbG, 0)).toBe(true);
   });
 });

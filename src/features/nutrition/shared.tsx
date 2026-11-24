@@ -60,10 +60,10 @@ export function NumberField({ label, value, onChange, invalid = false, autoFocus
   );
 }
 
-export function TimeField({ value, onChange, invalid = false, onFocus }: { readonly value: string; readonly onChange: (value: string) => void; readonly invalid?: boolean; readonly onFocus?: () => void }) {
+export function TimeField({ value, onChange, invalid = false, onFocus, label }: { readonly value: string; readonly onChange: (value: string) => void; readonly invalid?: boolean; readonly onFocus?: () => void; readonly label?: string }) {
   return (
     <label className="ct-nutrition__field">
-      <span className="ct-nutrition__field-label">{tNutrition('timeLabel')}</span>
+      <span className="ct-nutrition__field-label">{label ?? tNutrition('timeLabel')}</span>
       <input className="ct-nutrition__input" type="time" value={value} aria-invalid={invalid || undefined} onFocus={onFocus} onChange={(event) => onChange(event.target.value)} />
     </label>
   );

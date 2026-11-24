@@ -33,6 +33,7 @@ const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
   'no-weight': 'reasonNoWeight',
   'no-tdee': 'reasonNoTdee',
   'insufficient-coverage': 'reasonCoverage',
+  'no-goal-rate': 'reasonNoGoalRate',
 };
 const CLAMP_KEY: Readonly<Record<Clamp, NutritionTextKey>> = { 'max-weekly-delta': 'whyClampDelta', 'max-loss-rate': 'whyClampLoss', floor: 'whyClampFloor' };
 const WARNING_KEY: Readonly<Record<CheckInWarning, NutritionTextKey>> = {
@@ -141,7 +142,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const first = useMemo(() => firstCheckIn(snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns), [snapshot.today, prefs.checkInWeekday, snapshot.days, snapshot.weighIns]);
   const tdee = useMemo(() => tdeeAt(snapshot, period.weekEnd), [snapshot, period.weekEnd]);
   // Cible en vigueur pendant la semaine analysée : une décision prise pour la semaine suivante ne change pas la proposition relancée.
-  const effective = effectiveTarget(targets, period.weekEnd);
+  const effective = effectiveTarget(targets, period.weekEnd, snapshot.today);
   const current = effective?.target ?? null;
   // FIX-0271 (U-12) : plan de repos actuel (une cible de repos enregistrée le matin du check-in compte), rapporté à la cible analysée.
   const restPlan = checkInRestPlan(targets, period.weekEnd, snapshot.today);
@@ -325,6 +326,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
       </div>
       {proposal.initial ? <p className="ct-nutrition__muted">{tNutrition('proposalInitial')}</p> : null}
       <ProposalTable proposal={proposal} restFrom={restPlan?.rest.kcal} />
+      <p className="ct-nutrition__muted">{tNutrition('checkInCurrentNote', { from: formatDayMonth(addDays(period.weekEnd, -6)), to: formatDayMonth(period.weekEnd) })}</p>
 
       <div className="ct-checkin__why">
       <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>

@@ -141,7 +141,7 @@ const SCREENS: Screen[] = [
   { name: 'Entrainement-routines', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining() },
   { name: 'Entrainement-bibliotheque', viewport: PHONE, date: SUNDAY, dark: true, prepare: goTraining('Bibliothèque') },
   { name: 'Nutrition-journal-fiche', viewport: PHONE, date: SUNDAY, dark: true, prepare: openAddSheet },
-  { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
+  { name: 'Nutrition-dashboard', viewport: PHONE, date: SUNDAY, dark: true, prepare: goNutrition('Tableau de bord') },
   // ERGO-03 : Stratégie (cible à venir, lignes de réglage) et repère du cycle d'Aujourd'hui, iPhone et PC ; « avant » : run du commit rouge.
   { name: 'Nutrition-strategie', viewport: PHONE, date: SUNDAY, dark: true, prepare: goStrategy },
   { name: 'PC-Nutrition-strategie', viewport: PC, date: SUNDAY, dark: true, prepare: goStrategy },
@@ -212,7 +212,7 @@ SCREENS.push(
   { name: 'PC-Entrainement-routines', mockup: 'PC-Routine.html', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining() },
   { name: 'PC-Entrainement-materiel', mockup: 'PC-Materiel.html', viewport: PC, date: SUNDAY, dark: true, prepare: goTraining('Matériel') },
   { name: 'PC-Nutrition-journal', mockup: 'PC-Journal.html', viewport: PC, date: SUNDAY, dark: true, prepare: goNutrition() },
-  { name: 'PC-Nutrition-dashboard', mockup: 'PC-Dashboard.html', viewport: PC, date: SUNDAY, dark: true, prepare: goNutrition('Dashboard') },
+  { name: 'PC-Nutrition-dashboard', mockup: 'PC-Dashboard.html', viewport: PC, date: SUNDAY, dark: true, prepare: goNutrition('Tableau de bord') },
 );
 
 /**
@@ -348,7 +348,7 @@ const GEOMETRY_SCREENS: ReadonlyArray<readonly [string, (page: Page) => Promise<
   ['Fiche d’exercice', openFirstExercise],
   ['Entraînement matériel', goTraining('Matériel')],
   ['Nutrition journal', goNutrition()],
-  ['Nutrition dashboard', goNutrition('Dashboard')],
+  ['Nutrition dashboard', goNutrition('Tableau de bord')],
   ['Progrès (Récupération, Corps, Cardio)', goTab('Progrès')],
   ['Plus', goTab('Plus')],
   ['Plus › Appareils et synchro', goPlusSync],

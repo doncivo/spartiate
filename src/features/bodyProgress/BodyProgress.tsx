@@ -19,7 +19,7 @@ import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositori
 import { formatDayMonthYear } from '../../i18n/format';
 import { formatCm, tBodyProgress, type BodyProgressTextKey } from '../../i18n/bodyProgressText';
 import { logFailure } from '../../platform/desktop/log';
-import { pickPhotoJpeg } from '../../platform/photoImage/picker';
+import { PhotoTooLargeError, pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
 import { Button, ConfirmDialog } from '../../ui';
 import { MissingValue } from '../../ui/MissingValue';
@@ -74,9 +74,17 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   const synced = useSyncedData(['measurement', 'progress_photo']);
   const today = todayLocal(container.clock);
 
-  const [kind, setKind] = useState<MeasurementKind>('waist');
+  const [kind, setKindRaw] = useState<MeasurementKind>('waist');
   const [text, setText] = useState('');
-  const [date, setDate] = useState<LocalDate>(today);
+  // C-105 : la date suit le jour courant tant qu'Ali n'en a pas choisi une (le journal ouvert après minuit ne garde pas la veille).
+  const [pickedDate, setPickedDate] = useState<LocalDate | null>(null);
+  const date = pickedDate ?? today;
+  const setDate = setPickedDate;
+  // C-105 : une valeur saisie pour une zone n'est jamais gardée pour une autre.
+  const setKind = (next: MeasurementKind): void => {
+    if (next !== kind) setText('');
+    setKindRaw(next);
+  };
   const [measureMessage, setMeasureMessage] = useState<{ readonly alert: boolean; readonly text: string } | null>(null);
   const [photoMessage, setPhotoMessage] = useState<{ readonly alert: boolean; readonly text: string } | null>(null);
   const [adding, setAdding] = useState(false);
@@ -113,7 +121,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
       const measureRepo = await repos.measurements();
       const measures = await measureRepo.list();
       // Dernière valeur de chaque genre importé de Santé (I6-04), en lecture seule.
-      const health = (await Promise.all(HEALTH_METRIC_KINDS.map((k) => measureRepo.list(k)))).flatMap((rows) => rows.slice(-1));
+      const health = (await Promise.all(HEALTH_METRIC_KINDS.filter((k) => k !== 'health_fiber_g').map((k) => measureRepo.list(k)))).flatMap((rows) => rows.slice(-1));
       const photos = await photoRepo.list();
       // D-121 : une suppression reçue n'efface jamais le fichier local ; la fiche reste affichée « supprimée ailleurs » jusqu'à la suppression ici.
       const deletedElsewhere = await photoRepo.listDeletedWithFile();
@@ -169,8 +177,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
       await (await container.data.repos.progressPhotos()).add(todayLocal(container.clock), bytes);
       setPhotoMessage({ alert: false, text: tBodyProgress('photoAdded') });
       refresh();
-    } catch {
-      setPhotoMessage({ alert: true, text: tBodyProgress('photoFailed') });
+    } catch (error) {
+      setPhotoMessage({ alert: true, text: tBodyProgress(error instanceof PhotoTooLargeError ? 'photoTooLarge' : 'photoFailed') });
     } finally {
       setAdding(false);
     }

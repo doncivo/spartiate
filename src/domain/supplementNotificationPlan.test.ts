@@ -71,3 +71,22 @@ describe('planSupplementNotifications', () => {
     expect(planSupplementNotifications({ now: now('n’importe quoi'), enabled: true, supplements: [sup()], intakes: [] })).toEqual({ items: [], total: 0 });
   });
 });
+
+describe('NUTRI-0292 (C-035) : saut de l\'heure d\'été', () => {
+  const night = sup({ id: '30000000-0000-4000-8000-000000000003', times: [t('02:30')], since: '2026-03-01' as LocalDate });
+
+  it('une prise à 02:30 le jour du saut (heure inexistante, déclenchée à 03:30) reste planifiée à 03:10', () => {
+    const plan = planSupplementNotifications({ now: now('2026-03-29T03:10'), enabled: true, supplements: [night], intakes: [], zone: 'Europe/Paris' });
+    expect(plan.items.map((i) => i.fireAt)).toContain('2026-03-29T02:30');
+  });
+
+  it('à 03:40, la prise décalée à 03:30 est passée : rien', () => {
+    const plan = planSupplementNotifications({ now: now('2026-03-29T03:40'), enabled: true, supplements: [night], intakes: [], zone: 'Europe/Paris' });
+    expect(plan.items.map((i) => i.fireAt)).not.toContain('2026-03-29T02:30');
+  });
+
+  it('sans fuseau : comparaison flottante inchangée', () => {
+    const plan = planSupplementNotifications({ now: now('2026-03-29T03:10'), enabled: true, supplements: [night], intakes: [] });
+    expect(plan.items.map((i) => i.fireAt)).not.toContain('2026-03-29T02:30');
+  });
+});

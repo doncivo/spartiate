@@ -288,7 +288,7 @@ describe('déclencheurs de l’action « Pris » (FIX-0221)', () => {
       },
       run: async () => {
         calls.push('run');
-        return { status: 'done' as const, taken: 0, applied: 0, duplicates: 0, failed: 0 };
+        return { status: 'done' as const, taken: 0, applied: 0, duplicates: 0, failed: 0, unmatched: 0 };
       },
     };
     return { document, calls, listeners, start: () => startSupplementActions({ document: document as never, source, makeProcessor: () => processor }) };
@@ -319,5 +319,27 @@ describe('déclencheurs de l’action « Pris » (FIX-0221)', () => {
     press(source, { wake: true });
     await flush();
     expect(e.calls).toHaveLength(4);
+  });
+});
+
+describe('NUTRI-0292 (C-048) : « Pris » sur une heure qui n\'existe plus', () => {
+  it('l\'heure du complément a changé depuis la notification : rien n\'est coché, et le passage le dit (jamais en silence)', async () => {
+    const { source, processor, taken, trouble, logs } = await setup();
+    press(source, { sid: supplementNotificationId(D, '09:30' as LocalTime) });
+    const result = await processor.run();
+    expect(result).toMatchObject({ status: 'done', taken: 0, unmatched: 1 });
+    expect(taken).toEqual([]);
+    expect(trouble).toContain('failed');
+    expect(logs).toContain('supplement-action-unmatched');
+  });
+
+  it('tout est déjà coché à cette heure : pas d\'alerte (l\'heure existe)', async () => {
+    const { source, processor, trouble } = await setup();
+    press(source);
+    await processor.run();
+    press(source, { at: NOW - 500_000 });
+    const second = await processor.run();
+    expect(second).toMatchObject({ unmatched: 0 });
+    expect(trouble).toEqual([]);
   });
 });

@@ -86,6 +86,7 @@ export const supplementsFr = {
   // Rappels
   remindersTitle: 'Rappels',
   remindersLabel: 'Rappels sur cet iPhone',
+  remindersError: 'Les rappels n’ont pas pu être modifiés.',
   remindersHint: 'Une notification à chaque heure de prise, sans le nom du complément. Désactivés tant que tu ne les actives pas.',
   remindersPc: 'Les rappels sont envoyés par l’iPhone.',
   remindersPermission: 'Les notifications sont refusées pour Spartiate : autorise-les dans Réglages iOS.',

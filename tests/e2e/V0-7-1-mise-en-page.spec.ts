@@ -88,7 +88,7 @@ test('Point 4 : onglets d’Entraînement et de Nutrition sur une seule ligne, o
 
   await tab(page, 'Nutrition').click();
   const nutritionGroup = page.getByRole('radiogroup', { name: 'Sections de Nutrition' });
-  for (const name of ['Journal', 'Dashboard', 'Stratégie', 'Check-in']) await expect(nutritionGroup.getByRole('radio', { name, exact: true })).toBeVisible();
+  for (const name of ['Journal', 'Tableau de bord', 'Stratégie', 'Check-in']) await expect(nutritionGroup.getByRole('radio', { name, exact: true })).toBeVisible();
   await expect.poll(() => rowSpread(nutritionGroup), 'une seule ligne').toBeLessThan(2);
 });
 

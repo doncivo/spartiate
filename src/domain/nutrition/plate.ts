@@ -5,13 +5,19 @@
  */
 
 import { computeTotals, FOOD_GRAMS_MAX, type Totals } from './food';
+import { ingredientFromFood, type DraftIngredient } from './recipe';
+import type { RecipeDraft } from './recipeTypes';
 import type { SearchableFood } from './foodSearch';
 import type { MealEntryDraft } from './mealEntry';
-import type { LocalDate, LocalTime } from '../types';
+import { isLocalTime, type LocalDate, type LocalTime } from '../types';
 
 export interface PlateItem {
   readonly food: SearchableFood;
   readonly grams: number;
+  /** C-100 : « scan » quand l'aliment vient d'un code lu par la caméra ; « search » sinon. */
+  readonly method?: 'search' | 'scan';
+  /** BL-117 : heure propre à cet aliment ; absente : celle de l'assiette. */
+  readonly time?: LocalTime;
 }
 
 export type Plate = readonly PlateItem[];
@@ -19,13 +25,44 @@ export type Plate = readonly PlateItem[];
 const tenth = (n: number): number => Math.round(n * 10) / 10;
 
 /** Ajoute un aliment ; le même aliment cumule ses grammes. Grammes invalides ou cumul au-delà du plafond : assiette inchangée. */
-export function addToPlate(plate: Plate, food: SearchableFood, grams: number): Plate {
+export function addToPlate(plate: Plate, food: SearchableFood, grams: number, method: 'search' | 'scan' = 'search'): Plate {
   if (computeTotals(food.per100g, grams) === null) return plate;
   const existing = plate.find((i) => i.food.ref === food.ref);
-  if (existing === undefined) return [...plate, { food, grams }];
+  if (existing === undefined) return [...plate, method === 'scan' ? { food, grams, method } : { food, grams }];
   const sum = tenth(existing.grams + grams);
   if (sum > FOOD_GRAMS_MAX) return plate;
-  return plate.map((i) => (i === existing ? { food: i.food, grams: sum } : i));
+  return plate.map((i) => (i === existing ? { ...i, grams: sum } : i));
+}
+
+/** BL-117 : nouvelle quantité d'un aliment de l'assiette ; invalide (0, négative, > 10 000) ou aliment absent : assiette inchangée. */
+export function setPlateGrams(plate: Plate, ref: string, grams: number): Plate {
+  const item = plate.find((i) => i.food.ref === ref);
+  if (item === undefined || computeTotals(item.food.per100g, grams) === null) return plate;
+  return plate.map((i) => (i === item ? { ...i, grams } : i));
+}
+
+/** BL-117 : heure propre à un aliment (`null` : retour à l'heure de l'assiette) ; heure invalide ou aliment absent : assiette inchangée. */
+export function setPlateTime(plate: Plate, ref: string, time: LocalTime | null): Plate {
+  const item = plate.find((i) => i.food.ref === ref);
+  if (item === undefined || (time !== null && !isLocalTime(time))) return plate;
+  return plate.map((i) => {
+    if (i !== item) return i;
+    const { time: _previous, ...rest } = i;
+    return time === null ? rest : { ...rest, time };
+  });
+}
+
+/** BL-117 : l'assiette devient une recette d'une portion (un ingrédient par aliment, valeurs figées) ; `null` si le nom ou l'assiette est vide ou un ingrédient invalide. */
+export function plateToRecipeDraft(plate: Plate, name: string): RecipeDraft | null {
+  const trimmed = name.trim();
+  if (trimmed.length === 0 || plate.length === 0) return null;
+  const ingredients: DraftIngredient[] = [];
+  for (const { food, grams } of plate) {
+    const ingredient = ingredientFromFood(food, grams);
+    if (ingredient === null) return null;
+    ingredients.push(ingredient);
+  }
+  return { name: trimmed, servings: 1, cookedWeightG: null, ingredients };
 }
 
 export const removeFromPlate = (plate: Plate, ref: string): Plate => plate.filter((i) => i.food.ref !== ref);
@@ -50,10 +87,10 @@ export function plateTotals(plate: Plate): Totals {
 export function plateEntries(plate: Plate, at: { readonly date: LocalDate; readonly time: LocalTime }): MealEntryDraft[] | null {
   if (plate.length === 0) return null;
   const drafts: MealEntryDraft[] = [];
-  for (const { food, grams } of plate) {
+  for (const { food, grams, method, time } of plate) {
     const totals = computeTotals(food.per100g, grams);
     if (totals === null) return null;
-    drafts.push({ date: at.date, time: at.time, foodId: food.ref, foodName: food.name.slice(0, 200), source: food.provenance, grams, ...totals, method: 'search', confidence: null });
+    drafts.push({ date: at.date, time: time ?? at.time, foodId: food.ref, foodName: food.name.slice(0, 200), source: food.provenance, grams, ...totals, method: method ?? 'search', confidence: null });
   }
   return drafts;
 }

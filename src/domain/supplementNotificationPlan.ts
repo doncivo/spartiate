@@ -1,4 +1,5 @@
 import { addDays } from './localDate';
+import { effectiveFireAt } from './notificationInstant';
 import { NOTIFICATION_LIMIT_DEFAULT } from './notificationPlan';
 import { dueIntakes, type Supplement, type SupplementIntake } from './nutrition/supplements';
 import { isLocalDateTime, type LocalDate, type LocalDateTime, type LocalTime } from './types';
@@ -20,6 +21,8 @@ export interface SupplementNotificationPlanInput {
   readonly supplements: readonly Supplement[];
   readonly intakes: readonly SupplementIntake[];
   readonly limit?: number;
+  /** Fuseau IANA de l'appareil (C-035) : une heure inexistante du saut d'heure se déclenche une heure plus tard, la comparaison à `now` en tient compte. Absent : comparaison flottante. */
+  readonly zone?: string;
 }
 
 export interface PlannedSupplementNotification {
@@ -51,7 +54,7 @@ export function planSupplementNotifications(input: SupplementNotificationPlanInp
     }
     for (const [moment, count] of open) {
       const fireAt = `${day}T${moment}` as LocalDateTime;
-      if (fireAt > nowMinute) candidates.push({ kind: 'supplement', id: supplementNotificationId(day, moment), fireAt, count });
+      if (effectiveFireAt(fireAt, input.zone) > nowMinute) candidates.push({ kind: 'supplement', id: supplementNotificationId(day, moment), fireAt, count });
     }
   }
   candidates.sort((a, b) => (a.fireAt < b.fireAt ? -1 : a.fireAt > b.fireAt ? 1 : 0));
