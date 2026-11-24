@@ -59,8 +59,8 @@ test('séance au clavier : exercice ajouté, séries saisies puis Entrée, clôt
   await confirm.getByRole('button', { name: 'Terminer', exact: true }).click();
   const summary = page.getByRole('region', { name: 'Résumé de la séance' });
   await expect(summary.getByRole('heading', { level: 2, name: 'Séance libre terminée' })).toBeVisible();
-  await expect(summary.getByText('Séries').locator('xpath=following-sibling::*[1]')).toHaveText('2');
-  await expect(summary.getByText('Volume (kg)').locator('xpath=following-sibling::*[1]')).toContainText('332,5');
+  await expect(summary.locator('.ct-summary__kpi').filter({ has: page.locator('dt', { hasText: /^Séries$/ }) }).locator('dd')).toHaveText('2');
+  await expect(summary.locator('.ct-summary__kpi').filter({ has: page.locator('dt', { hasText: /^Volume \(kg\)$/ }) }).locator('dd')).toContainText('332,5');
 
   // Séance close : l'historique d'Entraînement la liste, « Reprendre la séance » n'est plus proposé.
   await summary.getByRole('button', { name: 'Fermer le résumé' }).click();
