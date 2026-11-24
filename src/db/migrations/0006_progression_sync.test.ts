@@ -110,9 +110,9 @@ describe('migration 0006 : progression_sync (I2-01, PR 2/2)', () => {
 
   it('copie figée = catalogue : progression_profile et recommendation_decision ; workout_set = copie de la 0004 + difficulty', async () => {
     const table = (name: string) => SYNC_CATALOGUE.table(name) ?? (() => { throw new Error(name); })();
-    for (const [name, columns] of CAPTURE_TABLES_V6) expect([...columns], name).toEqual([...publishedColumns(table(name))]);
+    for (const [name, columns] of CAPTURE_TABLES_V6) expect([...columns], name).toEqual([...publishedColumns(table(name))].filter((c) => c !== 'config_overrides'));
     const v4Set = CAPTURE_TABLES_V4[1][1];
-    expect(publishedColumns(table('workout_set')).filter((c) => c !== 'difficulty' && c !== 'circuit_id' && c !== 'circuit_rest_sec')).toEqual([...v4Set]);
+    expect(publishedColumns(table('workout_set')).filter((c) => c !== 'difficulty' && c !== 'circuit_id' && c !== 'circuit_rest_sec' && !['distance_m', 'added', 'corrected_from'].includes(c))).toEqual([...v4Set]);
     expect(publishedColumns(table('workout_set'))).toContain('difficulty');
     // Base arrêtée à la 0006 (I3-02 ajoute ensuite les deux déclencheurs de mesocycle).
     const db = await openSqliteWasmDriver();

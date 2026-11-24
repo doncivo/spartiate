@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 116] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 117] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -2500,6 +2500,25 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'progression_profile'
      END"##,
     ),
     (
+        "sync_progression_profile_overrides_au",
+        "progression_profile",
+        r##"CREATE TRIGGER sync_progression_profile_overrides_au AFTER UPDATE OF config_overrides ON progression_profile
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+         SELECT 'progression_profile', NEW.id, '*', OLD.hlc, NULL
+         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = '*');
+       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
+       SELECT 'progression_profile', NEW.id, 'config_overrides', NEW.hlc,
+         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field IN ('config_overrides', '*'))
+           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides')
+           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = '*'), OLD.hlc) END
+       WHERE OLD.config_overrides IS NOT NEW.config_overrides
+       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;
+DELETE FROM sync_outbox WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides' AND OLD.config_overrides IS NOT NEW.config_overrides;
+INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'progression_profile', NEW.id, 'config_overrides' WHERE OLD.config_overrides IS NOT NEW.config_overrides;
+     END"##,
+    ),
+    (
         "sync_project_ai",
         "project",
         r##"CREATE TRIGGER sync_project_ai AFTER INSERT ON project WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
@@ -4626,7 +4645,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 22] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 23] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4769,6 +4788,8 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 22] = [
     ),
     // DATA-0292 (migration 0022) : identifiant du profil par défaut renommé dans des réglages locaux, aucun déclencheur.
     (22, &[]),
+    // DATA-0293 (migration 0023) : capture propre des surcharges par exercice (progression_profile.config_overrides).
+    (23, &["sync_progression_profile_overrides_au"]),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de

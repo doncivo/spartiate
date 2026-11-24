@@ -62,14 +62,14 @@ describe('migration 0004 : workout_sync (I1-03, D-27)', () => {
 
   it('copie figée de capture = colonnes publiées du catalogue ; colonnes locales du repos absentes des déclencheurs', async () => {
     // La 0006 (I2-01) ajoute `workout_set.difficulty`, capturée par son propre déclencheur ; la 0013 (I6-03) ajoute les colonnes de groupe, jamais capturées (séance ouverte, clôture en ligne entière) : la copie de la 0004 reste le reste du catalogue.
-    for (const [table, columns] of CAPTURE_TABLES_V4) expect([...columns], table).toEqual([...publishedColumns(SYNC_CATALOGUE.table(table) ?? (() => { throw new Error(table); })())].filter((c) => c !== 'difficulty' && c !== 'circuit_id' && c !== 'circuit_rest_sec'));
+    for (const [table, columns] of CAPTURE_TABLES_V4) expect([...columns], table).toEqual([...publishedColumns(SYNC_CATALOGUE.table(table) ?? (() => { throw new Error(table); })())].filter((c) => c !== 'difficulty' && c !== 'circuit_id' && c !== 'circuit_rest_sec' && !(['distance_m', 'added', 'corrected_from'].includes(c))));
     const db = await freshDb();
     const triggers = await db.select<{ name: string; sql: string }>("SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_workout%' ORDER BY name");
     expect(triggers.map((t) => t.name)).toEqual(['sync_workout_ai', 'sync_workout_au', 'sync_workout_close_decisions_au', 'sync_workout_set_ai', 'sync_workout_set_au', 'sync_workout_set_difficulty_au']);
     expect(triggers.some((t) => /rest_timer/.test(t.sql))).toBe(false);
     expect(triggers.every((t) => /ended_at/.test(t.sql))).toBe(true);
     // 18 en version 4 ; 24 avec la 0006 (I2-01 : deux tables de progression, la difficulté, les décisions à la clôture) ; 26 avec la 0007 (I3-02 : mesocycle) ; 34 avec la 0008 (I4-02 : food, food_portion, meal_entry, nutrition_target) ; 40 avec la 0009 (I4-07 : day_completeness, recipe, recipe_ingredient) ; 44 avec la 0010 (I5-01 : recovery_day, muscle_recovery) ; 46 avec la 0011 (I6-01 : recovery_factor).
-    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(68); // 68 avec la 0021 (SYNC-0291, écartés et gênes), 64 avec la 0020 (PROG-04), 63 avec la 0019 (PROG-01), 61 avec la 0018 (I6-06 : cardio_session) ; 59 avec la 0017 (I6-05 : compléments et prises) ; 50 avec la 0012 (I6-02) ; 51 avec la 0014 (I6-03b : capture propre des colonnes de groupe de routine_exercise) ; 53 avec la 0015 (FIX-0181 : food_favorite) ; 55 avec la 0016 (RESET-01 : data_reset).
+    expect((await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger'")).length).toBe(69); // 69 avec la 0023 (DATA-0293), 68 avec la 0021 (SYNC-0291, écartés et gênes), 64 avec la 0020 (PROG-04), 63 avec la 0019 (PROG-01), 61 avec la 0018 (I6-06 : cardio_session) ; 59 avec la 0017 (I6-05 : compléments et prises) ; 50 avec la 0012 (I6-02) ; 51 avec la 0014 (I6-03b : capture propre des colonnes de groupe de routine_exercise) ; 53 avec la 0015 (FIX-0181 : food_favorite) ; 55 avec la 0016 (RESET-01 : data_reset).
     await db.close();
   });
 

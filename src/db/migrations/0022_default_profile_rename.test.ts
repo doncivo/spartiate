@@ -31,7 +31,7 @@ const get = async (db: SqlDriver, key: string): Promise<unknown> => {
 
 describe('migration 0022 : identifiant du profil par défaut renommé (DATA-0292, schéma 22)', () => {
   it('registre : 0001 à 0022 ; version 22, nom default_profile_rename', () => {
-    expect(migrations.map((m) => m.version)).toEqual(Array.from({ length: 22 }, (_, i) => i + 1));
+    expect(migrations.slice(0, 22).map((m) => m.version)).toEqual(Array.from({ length: 22 }, (_, i) => i + 1));
     expect(migrations[21]).toBe(migration0022DefaultProfileRename);
     expect(migration0022DefaultProfileRename.name).toBe('default_profile_rename');
   });
