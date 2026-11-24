@@ -43,3 +43,19 @@ describe('normalizeBarcode', () => {
     for (const bad of ['4006381333932', '123', '', 'abcdefgh', '4006381 333931', '04252615', '24252615', '40063813339311']) expect(normalizeBarcode(bad), bad).toBeNull();
   });
 });
+
+describe('NUTRI-0292 (C-043) : format rapporté par le scanner', () => {
+  it('code à 8 chiffres ambigu, lu en UPC-E par le scanner : développé en UPC-A (et non EAN-8)', () => {
+    expect(normalizeBarcode('01234589', 'upce')).toEqual({ code: '0012345000089', kind: 'upce' });
+  });
+  it('même code, lu en EAN-8 par le scanner : EAN-8', () => {
+    expect(normalizeBarcode('01234589', 'ean8')).toEqual({ code: '01234589', kind: 'ean8' });
+  });
+  it('indication incompatible avec le code : null (jamais un autre format deviné)', () => {
+    expect(normalizeBarcode('4006381333931', 'upce')).toBeNull();
+    expect(normalizeBarcode('00000000', 'upce')).toBeNull();
+  });
+  it('sans indication : comportement d\'avant (EAN-8 d\'abord)', () => {
+    expect(normalizeBarcode('01234589')).toEqual({ code: '01234589', kind: 'ean8' });
+  });
+});
