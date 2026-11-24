@@ -73,6 +73,29 @@ describe('migrate avec un plan (instructions chargées à la demande)', () => {
     await db.close();
   });
 
+  it('chargement des instructions en échec : MigrationError, étape « load », ni sauvegarde ni écriture, base intacte', async () => {
+    const db = await openSqliteWasmDriver();
+    await migrate(db, [m1], { clock });
+    const steps: string[] = [];
+    const beforeApply = vi.fn(() => Promise.resolve());
+    const failing = planOf([m1, m2], () => Promise.reject(new Error('import impossible')));
+    await expect(migrate(db, failing, { clock, beforeApply, onStep: (s) => steps.push(s.kind) })).rejects.toThrow(MigrationError);
+    expect(steps).toEqual(['schema', 'load']);
+    expect(beforeApply).not.toHaveBeenCalled();
+    expect(await db.select('SELECT version FROM schema_migrations ORDER BY version')).toEqual([{ version: 1 }]);
+    expect(await db.select("SELECT name FROM sqlite_master WHERE name = 'b'")).toEqual([]);
+    await db.close();
+  });
+
+  it('étape « load » annoncée seulement quand il y a du travail', async () => {
+    const db = await openSqliteWasmDriver();
+    const steps: string[] = [];
+    await migrate(db, [m1, m2], { clock });
+    await migrate(db, planOf([m1, m2], () => Promise.resolve([m1, m2])), { clock, onStep: (s) => steps.push(s.kind) });
+    expect(steps).toEqual(['schema']);
+    await db.close();
+  });
+
   it('latestVersion : dernière version d’un tableau ou d’un plan, 0 si vide', () => {
     expect(latestVersion([m1, m2])).toBe(2);
     expect(latestVersion(planOf([m1], () => Promise.resolve([m1])))).toBe(1);
