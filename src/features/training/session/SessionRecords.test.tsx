@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import { recordsOfSet } from '../../../domain/training/sessionRecords';
 import type { DeviceId } from '../../../domain/types';
+import type { DataAccess } from '../../../db/repositories';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { createFakeHaptics, type FakeHaptics } from '../../../platform/haptics/fake';
 import type { LiveActivity } from '../../../platform/liveActivity';
@@ -24,10 +25,10 @@ const liveActivity: LiveActivity = { isAvailable: async () => ({ available: fals
 
 let db: TestDb;
 let haptics: FakeHaptics;
-const mount = () => {
+const mount = (data: DataAccess = db.data) => {
   act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
   return render(
-    <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, haptics })}>
+    <AppContainerProvider container={createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data, haptics })}>
       <TrainingScreen session={{ os: 'other', notifier, liveActivity }} />
     </AppContainerProvider>,
   );
@@ -79,5 +80,57 @@ describe('§ 17.1 a : records signalés en séance', () => {
     expect(status.closest('[role="status"]')).not.toBeNull();
     expect(status.textContent).toContain('65 kg');
     expect(haptics.calls).toContainEqual({ type: 'impact', style: 'heavy' });
+  });
+
+  // Relecture (E) : la lecture des records n'est pas attendue ; une réponse ancienne (série précédente, lecture lente) ne doit pas écraser
+  // l'état dit pour la série validée ensuite (ni dire un record après coup, ni vibrer).
+  it('lecture lente de la série 1 (record) rendue après la série 2 (sans record) : rien n’est dit après coup, aucun retour haptique', async () => {
+    let armed = false;
+    let release: (() => void) | null = null;
+    const workouts = async () => {
+      const repo = await db.data.repos.workouts();
+      return new Proxy(repo, {
+        get(target, key, receiver) {
+          if (key === 'summary') {
+            return async (id: string) => {
+              const res = await target.summary(id);
+              if (armed) {
+                armed = false;
+                await new Promise<void>((resolve) => {
+                  release = resolve;
+                });
+              }
+              return res;
+            };
+          }
+          const v = Reflect.get(target, key, receiver) as unknown;
+          return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(target) : v;
+        },
+      });
+    };
+    const data = { ...db.data, repos: new Proxy(db.data.repos, { get: (t, k, r) => (k === 'workouts' ? workouts : (Reflect.get(t, k, r) as unknown)) }) } as DataAccess;
+    mount(data);
+    const block = await screen.findByRole('region', { name: BENCH });
+    const first = within(block).getAllByRole('group', { name: /^Série \d+$/ })[0] as HTMLElement;
+    armed = true;
+    fireEvent.change(within(first).getByLabelText('Charge (kg)'), { target: { value: '65' } });
+    fireEvent.change(within(first).getByLabelText('Répétitions'), { target: { value: '8' } });
+    fireEvent.click(within(first).getByRole('button', { name: 'Valider la série' }));
+    expect(await within(first).findByText('65 kg × 8')).toBeInTheDocument();
+    const second = within(block).getAllByRole('group', { name: /^Série \d+$/ })[1] as HTMLElement;
+    fireEvent.change(within(second).getByLabelText('Charge (kg)'), { target: { value: '50' } });
+    fireEvent.change(within(second).getByLabelText('Répétitions'), { target: { value: '8' } });
+    fireEvent.click(within(second).getByRole('button', { name: 'Valider la série' }));
+    expect(await within(second).findByText('50 kg × 8')).toBeInTheDocument();
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(release).not.toBeNull();
+    await act(async () => {
+      release?.();
+      await new Promise((r) => setTimeout(r, 50));
+    });
+    expect(screen.queryByText(/^Record/)).toBeNull();
+    expect(haptics.calls).not.toContainEqual({ type: 'impact', style: 'heavy' });
   });
 });
