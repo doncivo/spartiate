@@ -328,22 +328,21 @@ describe('mesures importées de Santé (I6-04, D-113)', () => {
     expect(row('Masse grasse').getByText(date)).toBeInTheDocument();
     expect(row('Masse maigre').getByText('64,3 kg')).toBeInTheDocument();
     expect(row('Tour de taille').getByText('82 cm')).toBeInTheDocument();
-    expect(row('Taille').getByText('178 cm')).toBeInTheDocument();
-    expect(row('Fibres').getByText('28 g')).toBeInTheDocument();
-    expect(row('Fibres').getByText(date)).toBeInTheDocument();
+    expect(row('Hauteur').getByText('178 cm')).toBeInTheDocument();
+    // C-105 : les fibres sont un apport (Nutrition), plus une mesure du corps.
+    expect(card.queryByText('Fibres')).toBeNull();
     expect(card.queryByRole('button')).toBeNull();
     expect(screen.getByText('Aucune mesure pour cette zone.')).toBeInTheDocument();
   });
 
-  it('ERGO-02b : la date de CHAQUE ligne (5) est celle de sa dernière valeur, jamais celle d’une autre ligne', async () => {
+  it('ERGO-02b : la date de CHAQUE ligne (4) est celle de sa dernière valeur, jamais celle d’une autre ligne', async () => {
     const repo = await measures();
     // Dates toutes différentes ; une valeur plus ancienne par genre qui ne doit pas se montrer.
     const expected = [
       ['health_body_fat_pct', 'Masse grasse', 18.5, 11, '18,5 %'],
       ['health_lean_mass_kg', 'Masse maigre', 64.3, 9, '64,3 kg'],
       ['health_waist_cm', 'Tour de taille', 82, 8, '82 cm'],
-      ['health_height_cm', 'Taille', 178, 7, '178 cm'],
-      ['health_fiber_g', 'Fibres', 28, 10, '28 g'],
+      ['health_height_cm', 'Hauteur', 178, 7, '178 cm'],
     ] as const;
     for (const [kind, , value, day] of expected) {
       await repo.save(D(day - 5), kind, value + 1);

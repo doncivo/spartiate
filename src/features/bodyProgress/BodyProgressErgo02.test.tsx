@@ -69,7 +69,7 @@ describe('Corps iPhone (Corps-apres)', () => {
   it('silhouette : zone sélectionnée dite en texte ; toucher une zone de la silhouette la choisit', async () => {
     await seedWaist();
     const view = mount();
-    expect(await screen.findByRole('img', { name: 'Silhouette, zone Taille sélectionnée' })).toBeInTheDocument();
+    expect(await screen.findByRole('img', { name: 'Silhouette, zone Tour de taille sélectionnée' })).toBeInTheDocument();
     fireEvent.click(view.container.querySelector('[data-zone="hips"]') as Element);
     expect(await screen.findByRole('img', { name: 'Silhouette, zone Hanches sélectionnée' })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Hanches' })).toBeChecked();
@@ -80,10 +80,10 @@ describe('Corps iPhone (Corps-apres)', () => {
     mount();
     const group = await screen.findByRole('radiogroup', { name: 'Zone' });
     expect(within(group).getAllByRole('radio')).toHaveLength(11);
-    expect(within(group).getByRole('radio', { name: 'Taille' })).toBeChecked();
+    expect(within(group).getByRole('radio', { name: 'Tour de taille' })).toBeChecked();
     fireEvent.click(within(group).getByRole('radio', { name: 'Cuisse gauche' }));
     expect(within(group).getByRole('radio', { name: 'Cuisse gauche' })).toBeChecked();
-    expect(within(group).getByRole('radio', { name: 'Taille' })).not.toBeChecked();
+    expect(within(group).getByRole('radio', { name: 'Tour de taille' })).not.toBeChecked();
   });
 
   it('zone sans mesure : un tiret et sa raison, jamais un 0', async () => {
@@ -135,7 +135,7 @@ describe('Corps PC (PC-Corps-apres)', () => {
     await seedWaist();
     mount();
     const group = await screen.findByRole('radiogroup', { name: 'Zone' });
-    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    const waist = within(group).getByRole('radio', { name: 'Tour de taille' });
     expect(waist).toBeChecked();
     expect(waist.textContent).toContain('86,5');
     expect(waist.textContent).toContain('−2');
@@ -161,7 +161,7 @@ describe('Corps PC (PC-Corps-apres)', () => {
     expect(hips).toHaveAccessibleDescription(/pas d’écart sur 4 semaines$/);
     // Revue FIX-0241 : sans mesure, la raison est dite une seule fois.
     expect(within(group).getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription('aucune mesure pas d’écart sur 4 semaines');
-    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    const waist = within(group).getByRole('radio', { name: 'Tour de taille' });
     expect(waist).not.toHaveAccessibleDescription(/pas d’écart/);
     // L'écart affiché est aussi annoncé (il n'était ni dans le nom ni dans la description).
     const delta = waist.querySelector('.ct-bodyprogress__zonedelta')?.textContent ?? '';
@@ -174,16 +174,16 @@ describe('Corps PC (PC-Corps-apres)', () => {
     mount();
     const group = await screen.findByRole('radiogroup', { name: 'Zone' });
     const radios = within(group).getAllByRole('radio');
-    expect(radios.filter((r) => r.getAttribute('tabindex') === '0').map((r) => r.getAttribute('aria-label'))).toEqual(['Taille']);
+    expect(radios.filter((r) => r.getAttribute('tabindex') === '0').map((r) => r.getAttribute('aria-label'))).toEqual(['Tour de taille']);
     expect(radios.filter((r) => r.getAttribute('tabindex') === '-1')).toHaveLength(10);
-    const waist = within(group).getByRole('radio', { name: 'Taille' });
+    const waist = within(group).getByRole('radio', { name: 'Tour de taille' });
     waist.focus();
     fireEvent.keyDown(waist, { key: 'ArrowDown' });
     const hips = await within(group).findByRole('radio', { name: 'Hanches' });
     await waitFor(() => expect(hips).toBeChecked());
     expect(document.activeElement).toBe(hips);
     expect(hips).toHaveAttribute('tabindex', '0');
-    expect(within(group).getByRole('radio', { name: 'Taille' })).toHaveAttribute('tabindex', '-1');
+    expect(within(group).getByRole('radio', { name: 'Tour de taille' })).toHaveAttribute('tabindex', '-1');
   });
 
   it('flèche bas / haut dans le champ de saisie change de zone', async () => {
@@ -193,7 +193,7 @@ describe('Corps PC (PC-Corps-apres)', () => {
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     expect(await screen.findByRole('radio', { name: 'Hanches' })).toBeChecked();
     fireEvent.keyDown(screen.getByLabelText('Mesure (cm)'), { key: 'ArrowUp' });
-    expect(await screen.findByRole('radio', { name: 'Taille' })).toBeChecked();
+    expect(await screen.findByRole('radio', { name: 'Tour de taille' })).toBeChecked();
   });
 
   it('clavier : Entrée enregistre (formulaire), Tab suit l’ordre date, mesure, Enregistrer ; aucun tabindex positif', async () => {
@@ -212,6 +212,6 @@ describe('Corps PC (PC-Corps-apres)', () => {
   it('courbe : image nommée avec la première et la dernière valeur', async () => {
     await seedWaist();
     mount();
-    expect(await screen.findByRole('img', { name: 'Taille : de 88,5 à 86,5 cm' })).toBeInTheDocument();
+    expect(await screen.findByRole('img', { name: 'Tour de taille : de 88,5 à 86,5 cm' })).toBeInTheDocument();
   });
 });
