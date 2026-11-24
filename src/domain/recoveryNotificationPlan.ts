@@ -1,3 +1,4 @@
+import { effectiveFireAt } from './notificationInstant';
 import { addDays } from './localDate';
 import { NOTIFICATION_LIMIT_DEFAULT } from './notificationPlan';
 import { isLocalDateTime, isLocalTime, type LocalDate, type LocalDateTime } from './types';
@@ -25,6 +26,8 @@ export interface RecoveryNotificationPlanInput {
   readonly bedtimeTime: string | null;
   /** Le résumé du jour a un score (pas d'abstention). */
   readonly morningReady: boolean;
+  /** C-062 (c) : fuseau de l'appareil ; une échéance dans l'heure sautée (02:30 le jour du passage à l'heure d'été) est comparée à son heure de déclenchement réelle (`effectiveFireAt`). */
+  readonly zone?: string;
   readonly limit?: number;
 }
 
@@ -61,7 +64,7 @@ export function planRecoveryNotifications(input: RecoveryNotificationPlanInput):
 
   if (input.morning && input.morningReady) {
     const fireAt = `${today}T${MORNING_NOTIFICATION_TIME}` as LocalDateTime;
-    if (fireAt > nowMinute) candidates.push({ kind: 'morning', id: morningNotificationId(today), fireAt });
+    if (effectiveFireAt(fireAt, input.zone) > nowMinute) candidates.push({ kind: 'morning', id: morningNotificationId(today), fireAt });
   }
 
   if (input.bedtime && input.bedtimeTime !== null && isLocalTime(input.bedtimeTime)) {
@@ -69,10 +72,11 @@ export function planRecoveryNotifications(input: RecoveryNotificationPlanInput):
     const minutes = (h ?? 0) * 60 + (m ?? 0);
     // Un coucher avant midi est celui de la nuit qui commence ce soir-là : il tombe le jour civil suivant.
     const offset = minutes < 720 ? 1440 : 0;
-    for (let k = 0; k < BEDTIME_HORIZON_DAYS; k += 1) {
+    for (let k = -1; k < BEDTIME_HORIZON_DAYS; k += 1) {
+      // k = -1 : la soirée d'hier dont le rappel tombe après minuit (02:30 aujourd'hui) n'est pas encore passé à 01:00 ni, le jour du passage à l'heure d'été, à 03:10.
       const evening = addDays(today, k);
       const fireAt = shiftMinutes(evening, offset + minutes - BEDTIME_LEAD_MINUTES);
-      if (fireAt > nowMinute) candidates.push({ kind: 'bedtime', id: bedtimeNotificationId(evening), fireAt });
+      if (effectiveFireAt(fireAt, input.zone) > nowMinute) candidates.push({ kind: 'bedtime', id: bedtimeNotificationId(evening), fireAt });
     }
   }
 

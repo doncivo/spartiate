@@ -3,7 +3,7 @@ import { planRecoveryNotifications } from './recoveryNotificationPlan';
 import type { LocalDateTime } from './types';
 
 /**
- * NUTRI-0292 (C-062, « rappel à heure inexistante ») : vérifié sans défaut. Le matin est fixe à 08:00 (jamais dans l'heure sautée), et le rappel de
+ * NUTRI-0292 (C-062, « rappel à heure inexistante ») : le matin est fixe à 08:00 (jamais dans l'heure sautée), et le rappel de
  * coucher de la nuit du saut d'heure d'été (Paris, 29/03/2026 : 02:30 n'existe pas) est planifié dès la veille au soir ; le plan ne sait pas ce qu'est
  * un fuseau et ne perd donc jamais ce rappel (il est planifié bien avant l'heure sautée).
  */

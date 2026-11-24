@@ -122,7 +122,7 @@ export function createRecoveryNotificationService(deps: RecoveryNotificationDeps
       const proposal = prefs.bedtime ? await readProposal() : null;
       const score = prefs.morning ? await deps.todayScore(today).catch(() => null) : null;
       const room = NOTIFICATION_LIMIT - (await scheduler.reservedCount()) - others.length;
-      const plan = planRecoveryNotifications({ now, bedtime: prefs.bedtime, morning: prefs.morning, bedtimeTime: proposal?.time ?? null, morningReady: score !== null, limit: room });
+      const plan = planRecoveryNotifications({ now, bedtime: prefs.bedtime, morning: prefs.morning, bedtimeTime: proposal?.time ?? null, morningReady: score !== null, zone, limit: room });
       const ours = await compose(plan.items);
       await scheduler.replace([...others, ...ours]);
       deps.log('recovery-notifications-planned', { planned: ours.length, kept: others.length });
