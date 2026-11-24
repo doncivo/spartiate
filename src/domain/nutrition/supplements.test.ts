@@ -147,3 +147,23 @@ describe('masque des jours, de la saisie au rappel (FIX-0242, vendredi compris)'
     expect(isDueOn(s, d('2026-11-22'))).toBe(false);
   });
 });
+
+describe('constance après un changement d’heure (C-091)', () => {
+  const s = sup({ times: [t('08:30')], since: d('2026-11-01') }); // 08:00 avant, 08:30 aujourd’hui
+  const week = ['2026-11-03', '2026-11-04', '2026-11-05', '2026-11-06', '2026-11-07', '2026-11-08', '2026-11-09'].map((day) => take(s, day, '08:00'));
+  it('sept prises à l’ancienne heure : constance 100 %, jamais 0 %', () => {
+    expect(supplementAdherence([s], week, d('2026-11-03'), d('2026-11-09'))).toEqual({ due: 7, taken: 7, ratio: 1 });
+  });
+  it('la série et la bande des jours gardent le passé', () => {
+    expect(supplementStreak([s], week, d('2026-11-10'))).toBe(7);
+  });
+  it('une prise orpheline ne couvre qu’un créneau : deux créneaux, une prise = une moitié', () => {
+    const two = sup({ times: [t('08:30'), t('20:00')], since: d('2026-11-01') });
+    expect(supplementAdherence([two], [take(two, '2026-11-05', '08:00')], d('2026-11-05'), d('2026-11-05'))).toEqual({ due: 2, taken: 1, ratio: 0.5 });
+  });
+  it('une prise exacte garde son créneau et l’orpheline va à l’autre', () => {
+    const two = sup({ times: [t('08:30'), t('20:00')], since: d('2026-11-01') });
+    const r = supplementAdherence([two], [take(two, '2026-11-05', '20:00'), take(two, '2026-11-05', '08:00')], d('2026-11-05'), d('2026-11-05'));
+    expect(r).toEqual({ due: 2, taken: 2, ratio: 1 });
+  });
+});
