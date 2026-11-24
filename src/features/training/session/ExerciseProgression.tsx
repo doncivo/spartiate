@@ -327,7 +327,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           });
           if (chosen === null) return;
           const workouts = await repos.workouts();
-          const work = sets.filter((s) => s.setKind !== 'warmup');
+          // C-069 : séries relues dans la transaction (l'instantané de l'écran peut précéder une validation) ; une série faite n'est jamais écrasée.
+          const fresh = (await workouts.get(workout.id))?.sets.filter((s) => s.exerciseId === exerciseId) ?? sets;
+          const work = fresh.filter((s) => s.setKind !== 'warmup');
           // Autant de séries que proposées (deload, Recovery bas : moins de séries) ; les autres restent vides, à Ali de décider.
           // MOTEUR-0281a : chronométré, la valeur est une durée ; exercice sans charge, un lest nul n'écrit aucune charge.
           const timedValue = prescription.metric === 'time';

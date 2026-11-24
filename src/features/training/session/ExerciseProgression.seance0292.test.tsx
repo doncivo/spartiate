@@ -73,7 +73,7 @@ describe('C-069 : « Accepter » après une validation pas encore redessinée', 
     await r.validateSet(first.id, { reps: 8, loadKg: 90 });
     fireEvent.click(accept);
     expect(await within(await proposal()).findByText('Proposition acceptée.')).toBeInTheDocument();
-    const rows = await db.driver.select<{ id: string; load_kg: number | null; reps: number | null; done: number }>("SELECT id, load_kg, reps, done FROM workout_set WHERE set_kind = 'work' ORDER BY position");
+    const rows = await db.driver.select<{ id: string; load_kg: number | null; reps: number | null; done: number }>(`SELECT id, load_kg, reps, done FROM workout_set WHERE set_kind = 'work' AND workout_id = '${CURRENT}' ORDER BY position`);
     const mine = rows.filter((x) => x.id === first.id);
     expect(mine).toEqual([{ id: first.id, load_kg: 90, reps: 8, done: 1 }]);
     expect(rows.filter((x) => x.id !== first.id).map((x) => [x.load_kg, x.reps, x.done])).toEqual([
