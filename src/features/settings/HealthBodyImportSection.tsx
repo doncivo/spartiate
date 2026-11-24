@@ -176,7 +176,7 @@ function NutritionRow({ run, summary }: { readonly run: BodyImportResult | null;
   return (
     <div className="ct-body__hint">
       <strong>{tHealth('bodyNutritionTitle')}</strong>
-      <p>{tHealth('bodyNutritionCounts', { created: n.created, updated: n.updated, unchanged: n.unchanged, superseded: n.superseded, journal: n.skippedJournal, deleted: n.skippedDeleted, noEnergy: n.skippedNoEnergy })}</p>
+      <p>{tHealth('bodyNutritionCounts', { created: n.created, updated: n.updated, unchanged: n.unchanged, superseded: n.superseded, journal: n.skippedJournal, deleted: n.skippedDeleted, noEnergy: n.skippedNoEnergy, refused: n.refused })}</p>
     </div>
   );
 }

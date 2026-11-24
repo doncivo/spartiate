@@ -363,7 +363,7 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
           const base = outcomes.get(name);
           if (base !== undefined) outcomes.set(name, { ...base, added: c.added, updated: c.updated, unchanged: c.unchanged, skippedDeleted: c.skippedDeleted, rejectedTotal: base.rejectedTotal + c.refused });
         }
-        deps.log('body-import-nutrition', { created: nutrition.created, updated: nutrition.updated, unchanged: nutrition.unchanged, superseded: nutrition.superseded, skipped_journal: nutrition.skippedJournal, skipped_deleted: nutrition.skippedDeleted, skipped_no_energy: nutrition.skippedNoEnergy, skipped_old: nutrition.skippedOld });
+        deps.log('body-import-nutrition', { created: nutrition.created, updated: nutrition.updated, unchanged: nutrition.unchanged, superseded: nutrition.superseded, skipped_journal: nutrition.skippedJournal, skipped_deleted: nutrition.skippedDeleted, skipped_no_energy: nutrition.skippedNoEnergy, skipped_old: nutrition.skippedOld, refused: nutrition.refused });
       } catch {
         // Rien n'a été écrit (transaction annulée) : l'écran le dit, l'import suivant réessaie.
         deps.log('body-import-failed', {});
