@@ -56,7 +56,10 @@ const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f5
 const isPlaceWord = (w) => w.length === 6 && createHash('sha256').update(w.toLowerCase()).digest('hex') === PLACE_SHA256;
 export function redactPlace(text) {
   if (typeof text !== 'string') return text;
-  return text.replace(/(?:\p{Lu}\p{L}* \p{Lu}\p{L}* )?(\p{L}+)/gu, (m, w) => (isPlaceWord(w) ? 'Salle complète' : m));
+  // Deux passes (relecture à froid) : d'abord l'enseigne suivie du mot, puis le mot seul, où qu'il soit.
+  return text
+    .replace(/\p{Lu}\p{L}* \p{Lu}\p{L}* (\p{L}+)/gu, (m, w) => (isPlaceWord(w) ? 'Salle complète' : m))
+    .replace(/\p{L}+/gu, (w) => (isPlaceWord(w) ? 'Salle complète' : w));
 }
 
 export function buildSource({ template, existing, info, version, downloadURL, size, sha256, notes, date, minOSVersion }) {
