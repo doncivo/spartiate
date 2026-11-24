@@ -16,6 +16,7 @@ import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName 
 import { replayWorkout } from './replay';
 import { strengthScore, type StrengthExercise, type StrengthStandards } from './strengthScore';
 import { isCompletedWorkSet, type WorkoutSet, type WorkoutWithSets } from './session';
+import { warmupForExercise } from './warmup';
 import type { ExerciseSession, ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
 
 /**
@@ -396,5 +397,25 @@ describe('SEANCE-0292 C-029 : grille de charges robuste (pile illisible, plusieu
     const p = profile({ forbidden: ['barbell'] });
     expect(loadGrid(['barbell'], p)).toBeNull();
     expect(loadGrid(['barbell', 'dumbbell'], p)?.source).toBe('dumbbell');
+  });
+});
+
+describe('SEANCE-0292 C-030 : échauffement d’un exercice lesté calculé sur la charge totale (corps + lest)', () => {
+  const WEIGHTED = { metric: 'load-reps', equipment: ['pull-up-bar', 'loading-belt', 'dumbbell'], bodyweightFraction: 1 } as const;
+
+  it('tractions lestées 40 kg à 80 kg de corps (total 120) : 40 % = 48 → poids du corps × 8, 60 % = 72 → poids du corps (fusionné), 80 % = 96 → lest 16 × 2', () => {
+    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY, undefined, 80)).toEqual([
+      { loadKg: 0, reps: 8 },
+      { loadKg: 16, reps: 2 },
+    ]);
+  });
+
+  it('poids de corps inconnu : aucune rampe (jamais 40 % du lest seul, ≈ 95 % de la charge totale)', () => {
+    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY)).toEqual([]);
+    expect(warmupForExercise(WEIGHTED, 40, FITNESS_PARK_ANTONY, undefined, null)).toEqual([]);
+  });
+
+  it('exercice à charge ordinaire : rampe inchangée (100 kg : 40, 60, 80)', () => {
+    expect(warmupForExercise(BENCH, 100, FITNESS_PARK_ANTONY).map((s) => s.loadKg)).toEqual([40, 60, 80]);
   });
 });
