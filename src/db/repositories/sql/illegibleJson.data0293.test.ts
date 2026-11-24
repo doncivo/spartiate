@@ -57,8 +57,8 @@ describe('BL-037 : profil de matériel dont un JSON est illisible', () => {
     db = await openBaseDb(DEVICE);
     const repo = await db.data.repos.equipmentProfiles();
     await repo.create({ id: ID, name: 'Salle', kind: 'salle', inventory: GYM_PROFILE.inventory, increments: {} });
-    await db.driver.execute(`UPDATE equipment_profile SET inventory = '{"v2":true}' WHERE id = ?`, [ID]);
+    await db.driver.execute(`UPDATE equipment_profile SET inventory = '["v2"]' WHERE id = ?`, [ID]);
     await expect(repo.update(ID, { name: 'Salle 2' })).rejects.toMatchObject({ code: 'invalid' });
-    expect(await db.driver.select('SELECT name, inventory FROM equipment_profile')).toEqual([{ name: 'Salle', inventory: '{"v2":true}' }]);
+    expect(await db.driver.select('SELECT name, inventory FROM equipment_profile')).toEqual([{ name: 'Salle', inventory: '["v2"]' }]);
   });
 });
