@@ -52,8 +52,8 @@ listé en fin de fiche (« Pour données et synchro »). Reste de la section nut
   baseline exploitable ». Sans défaut ; figé par `tonightValidity.test.ts`. Question Q-19.
 - **C-062** : (a) cardio importé non retiré : D-498 le décide (le cardio ne charge aucun muscle), figé par `muscleRecovery.live.test.ts` ; (b) récupération
   musculaire figée au calcul : `muscleRecoveryPercentAt` relit le pourcentage à l'heure courante (aucun écran ne l'affiche encore) ; (c) rappel à heure
-  inexistante : le matin est fixe à 08:00 et le rappel de coucher de la nuit du saut est planifié dès la veille : sans défaut, figé par
-  `recoveryNotificationPlan.dst.test.ts`.
+  inexistante : défaut confirmé à la relecture (le plan comparait 02:30 > 03:10 en heure flottante : un recalcul dans l'heure sautée perdait le rappel, et la soirée d'hier dont le rappel tombe
+  après minuit n'était jamais envisagée) : corrigé (`zone` + `effectiveFireAt`, soirée d'hier incluse), voir « Corrections de la partie A après relecture ».
 - **C-128** : le refus d'une pesée ou d'une mesure était déjà compté par élément ; seul le dépôt des repas (`create`, `update`, `softDelete`) laissait remonter
   un refus et annulait la transaction de tout l'import (inatteignable aujourd'hui, la validation de l'import étant exemptée de bornes, mais fatal à chaque
   import si elle l'était un jour). Corrigé (`refused`).
@@ -259,7 +259,7 @@ Chaque test rouge a été constaté en échec en local (`npx vitest run --covera
 
 1. Aucune migration, table, colonne, déclencheur ni catalogue de synchro modifié dans cette partie ; `src/sync/**`, `src/domain/sync/**`, `src-tauri/**` intacts.
 2. **C-100 (D-556)** : `meal_entry.method` reçoit la valeur `scan`, déjà admise par le type `EntryMethod`. Relecture sync-icloud (D-26) : à confirmer par data-model que le `CHECK` de `meal_entry.method` de la migration publiée admet `scan`
-   (le test d'écran l'écrit en base réelle sans refus, donc la contrainte locale l'admet) ; une version précédente lit la valeur sans nouvelle contrainte.
+   (preuve : `0008_nutrition.test.ts` insère `method: 'scan'` ; la contrainte de la migration 0008 est `CHECK (method IN ('search', 'scan', 'photo', 'quickadd'))`, aucune migration touchée) ; une version précédente lit la valeur sans nouvelle contrainte.
 3. **BL-117** : `recipe` et `recipe_ingredient` (tables publiées) reçoivent des recettes créées depuis l'assiette par le dépôt existant (`create`), sans champ nouveau.
 4. **Q-23 option B** : lecture seule du profil par Stratégie, sans schéma ; l'option C écrirait `profile.goal` (table publiée) : relecture sync-icloud.
 5. **C-091** : aucun historique d'heures n'est ajouté (D-553). Si Ali veut des heures datées exactes, il faudra une table ou une colonne publiée (historique d'heures du complément) : à ne pas faire sans décision.
@@ -269,3 +269,26 @@ Chaque test rouge a été constaté en échec en local (`npx vitest run --covera
 Relecture à froid, distincte. Points à surveiller, aucun bloquant relevé : (1) C-091 : `settledIntakes` suppose qu'une prise orpheline vient d'une heure changée ; une prise cochée par erreur à une heure non prévue couvre un créneau libre, une fois par créneau.
 (2) C-092 : changer de filtre relance la recherche (un instant sans résultat, jamais ceux d'une autre provenance). (3) C-099 : la file d'écriture de la déclaration écrit la première valeur puis la dernière si les flèches sont très rapides ;
 l'état final est toujours la dernière valeur. (4) BL-117 : l'assiette du Journal n'est pas gardée au changement d'onglet (état d'écran) ; `fr.capture.ts` reste au départ.
+
+## Corrections de la partie A après relecture (CI 45461878768 et relecture à froid)
+
+| Ligne | Rouge | Vert |
+|---|---|---|
+| CI : cible de repos jamais -0 (`restDay.ts`, `Math.round` entre -0,5 et 0) | 49467e63 | 13b42a03 |
+| C-062 (c) : rappel de coucher dans l'heure sautée | 1c9e28b6 | 715c6fdc |
+| C-128 : refus au journal technique et au résumé | e5ac8c55, 9520d5af (expression échappée) | 4ed52772 |
+| C-046 : énergie en milliers sans décimale (`cargo test` ciblé constaté en échec puis vert ; `cargo fmt` ; `cargo clippy --locked -- -D warnings` propre) | 1f3544d3 | 9b03f425 |
+| Mineurs : répétitions infinies, `RECOVERY_ENGINE_VERSION` 2, photo de plus de 40 Mo | 5a98f0f4 | 0aa74d47 (attente), 008db292 |
+| C-100 : preuve SQL que `meal_entry.method` admet « scan » (migration 0008 inchangée) | (preuve, verte d'emblée) | 0aa74d47 |
+
+- CI : la cause du rouge était l'attente `carbG: 232` de `NutritionScreen.test.tsx:511` (C-037 donne 233 : corrigée en partie B, commit 9d5ca65d, cohérente) ; la garde « jamais -0 » est en plus posée à la source (`restTargetFromGap` : arrondi + 0) avec son test.
+- `RECOVERY_ENGINE_VERSION` : lue par `sql/recoveryRepository.ts` (`sameDay` compare la version) et écrite avec chaque résumé ; passer à 2 fait réécrire une fois chaque jour déjà stocké. `recoveryRepository.test.ts` : attente 2.
+- Photo de plus de 40 Mo : `PhotoTooLargeError`, message « Cette image dépasse 40 Mo… » (Progrès, Corps). Espace de `reasonCoverage` corrigée.
+- Statuts mis à jour : **C-062** fait (rappel inclus) ; **C-128** fait (refus au journal et au résumé) ; **C-046** fait (kJ et kcal) ; **C-100** : preuve SQL, aucune D- de remplacement.
+- **D-561** : `RECOVERY_ENGINE_VERSION` = 2 (moteur de récupération du lot 0.29.2) ; les jours stockés sont recalculés et réécrits une fois (`recovery_day` est publiée : relecture sync-icloud, aucun schéma).
+- **D-562** : C-062 (c) : une échéance de rappel de coucher ou du matin est comparée à son heure de déclenchement réelle dans le fuseau de l'appareil ; la soirée d'hier est envisagée (rappel après minuit).
+- **D-563** : C-046 : pour l'énergie (kJ et kcal d'Open Food Facts), « 2,252 » ou « 2.252 » (1 à 3 chiffres puis exactement 3) sont des milliers ; les autres nutriments gardent la décimale.
+- **Q-26** (C-039, D-547) : un jour dont la seule entrée est « Renpho — total du jour » (reconnue par son nom figé) est rendu complet. Options : A = garder D-547 (le total du jour importé de Santé suffit, la déclaration d'Ali prime) ;
+  B = complet seulement si des repas saisis existent et sont complets (le total importé seul reste « partiel » ou « inconnu ») ; C = comme A, mais l'entrée est reconnue par un marqueur (source dédiée) et non par son nom. Recommandation : A.
+  Conséquences : A garde la dépense mesurée alimentée par Santé, au prix d'un jour « complet » dont le total vient d'un seul chiffre, et d'un renommage de l'entrée qui la ferait redevenir une saisie ordinaire ; B protège la dépense (moins de jours complets, donc moins de jours utilisés par le TDEE)
+  mais rend l'import Santé inutile seul ; C demande une source ou une colonne (migration, relecture sync-icloud) et n'a de sens que si A est retenue.
