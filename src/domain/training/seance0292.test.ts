@@ -419,3 +419,29 @@ describe('SEANCE-0292 C-030 : échauffement d’un exercice lesté calculé sur 
     expect(warmupForExercise(BENCH, 100, FITNESS_PARK_ANTONY).map((s) => s.loadKg)).toEqual([40, 60, 80]);
   });
 });
+
+describe('SEANCE-0292 § 11 : constantes du moteur ajustables par exercice (surcharges bornées, tracées dans `activeConfig`)', () => {
+  it('décharge à 0,9 et plafond de hausse à 5 % pour cet exercice : appliqués et tracés ; les autres constantes restent celles par défaut', () => {
+    const exercise = { ...BENCH, configOverrides: { deloadLoad: 0.9, maxGainPerSession: 0.05 } };
+    const deload = prescribe(input({ exercise, history: [session(3, 100, [10, 10, 10])], target: target(8, 10), deload: true }));
+    expect(deload.loadKg).toBe(90);
+    expect(deload.activeConfig.deloadLoad).toBe(0.9);
+    expect(deload.activeConfig.maxGainPerSession).toBe(0.05);
+    expect(deload.activeConfig.snapTolerance).toBe(0.03);
+  });
+
+  it('surcharge illisible ou hors bornes (NaN, négative, clé inconnue, liste) : ignorée, valeur par défaut', () => {
+    const exercise = { ...BENCH, configOverrides: { deloadLoad: Number.NaN, maxGainPerSession: -1, recencyWeights: [5], bogus: 3 } as never };
+    const p = prescribe(input({ exercise, history: [session(3, 100, [10, 10, 10])], target: target(8, 10), deload: true }));
+    expect(p.loadKg).toBe(80);
+    expect(p.activeConfig.deloadLoad).toBe(0.8);
+    expect(p.activeConfig.maxGainPerSession).toBe(0.1);
+    expect(p.activeConfig.recencyWeights).toEqual([1, 0.6, 0.3]);
+  });
+
+  it('la décharge de cycle (deloadLoad de l’entrée, 4 ou 6 semaines) l’emporte sur la surcharge de l’exercice', () => {
+    const exercise = { ...BENCH, configOverrides: { deloadLoad: 0.7 } };
+    const p = prescribe(input({ exercise, history: [session(3, 100, [10, 10, 10])], target: target(8, 10), deload: true, deloadLoad: 0.9 }));
+    expect(p.loadKg).toBe(90);
+  });
+});
