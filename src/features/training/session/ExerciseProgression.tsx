@@ -6,7 +6,7 @@ import { holdForDeclaredFatigue, type DeclaredFatigue } from '../../../domain/tr
 import { isAssistedEquipment } from '../../../domain/training/assisted';
 import { loadGrid } from '../../../domain/training/loadGrid';
 import { prescriptionInputOf } from '../../../domain/training/prescriptionInput';
-import { revertProposal, type RevertTarget } from '../../../domain/training/revertPrescription';
+import { revertForSession, revertProposal, type RevertTarget } from '../../../domain/training/revertPrescription';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
 import { DURATION_MAX_SEC, type WorkoutSet, type WorkoutWithSets } from '../../../domain/training/session';
@@ -440,6 +440,18 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const alerts = constraintAlerts(p);
     const ramp = proposed && ownDecision === null && p.loadKg !== null ? rampFor(p.loadKg) : [];
     const options = p.options ?? [];
+    // Relecture D (D-543) : cible ramenée sur la grille du profil courant ; un jour de décharge, cachée si elle alourdit la séance.
+    const sessionRevert =
+      revertTarget === null
+        ? null
+        : revertForSession(revertTarget, {
+            metric: p.metric ?? 'load-reps',
+            assisted: isAssistedEquipment(exercise?.equipment),
+            loads: exercise === undefined ? null : (loadGrid(exercise.equipment, equipment)?.loads ?? null),
+            deload: p.deload === true || deload,
+            proposal: p.loadKg === null ? null : { loadKg: p.loadKg, reps: p.sets.map((s) => s.reps) },
+          });
+    const revert = sessionRevert?.kind === 'available' ? sessionRevert : null;
     return (
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
@@ -484,10 +496,13 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
                 <p className="ct-progression__hint">{tProgression('warmupHint')}</p>
               </div>
             ) : null}
-            {revertTarget !== null ? (
+            {revert !== null ? (
               <div className="ct-progression__revert">
-                <p className="ct-progression__sentence ct-session__num">{tProgression('revertFrom', { date: progressionDay(revertTarget.decidedAt), value: valueText(p.metric, revertTarget.loadKg, revertTarget.reps, held) })}</p>
-                <Button variant="secondary" disabled={busy} onClick={() => void decide(false, { loadKg: revertTarget.loadKg, reps: revertTarget.reps })}>
+                <p className="ct-progression__sentence ct-session__num">{tProgression('revertFrom', { date: progressionDay(revert.target.decidedAt), value: valueText(p.metric, revert.target.loadKg, revert.target.reps, held) })}</p>
+                {revert.offGridFromKg !== null ? (
+                  <p className="ct-progression__hint ct-session__num">{tProgression('revertOnGrid', { from: loadText(revert.offGridFromKg, held), load: loadText(revert.target.loadKg, held) })}</p>
+                ) : null}
+                <Button variant="secondary" disabled={busy} onClick={() => void decide(false, { loadKg: revert.target.loadKg, reps: revert.target.reps })}>
                   {tProgression('revertButton')}
                 </Button>
                 <p className="ct-progression__hint">{tProgression('revertHint')}</p>

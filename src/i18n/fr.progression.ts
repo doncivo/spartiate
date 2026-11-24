@@ -120,6 +120,8 @@ export const progressionFr = {
   revertFrom: 'Avant ta dernière hausse ({date}) : {value}.',
   revertButton: 'Revenir à la prescription précédente',
   revertHint: 'Reprend ces valeurs pour cette séance ; ton historique et tes décisions restent intacts.',
+  // SEANCE-0292b (relecture D, D-543) : cible du retour absente de la grille du profil courant, ramenée vers le bas.
+  revertOnGrid: '{from} n’existe pas sur ce profil : ramenée à {load}.',
   decisionHint: 'Rien n’est rempli sans ton accord ; tes saisies l’emportent toujours.',
   editLoad: 'Charge proposée (kg)',
   editLoadPair: 'Charge proposée par haltère (kg)',

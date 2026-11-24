@@ -9,7 +9,7 @@ import { revertForSession, type RevertTarget } from './revertPrescription';
  */
 
 const target = (loadKg: number, reps: readonly number[] = [10, 10, 10]): RevertTarget => ({ loadKg, reps, decidedAt: daysAgo(9) });
-const BAR = [20, 22.5, 25, 57.5, 60, 62.5, 100];
+const BAR = [20, 22.5, 25, 50, 57.5, 60, 62.5, 100];
 const base = { metric: 'load-reps', assisted: false, loads: BAR, deload: false, proposal: { loadKg: 62.5, reps: [8, 8, 8] } } as const;
 
 describe('D-543 : retour en séance sur la grille du profil', () => {
