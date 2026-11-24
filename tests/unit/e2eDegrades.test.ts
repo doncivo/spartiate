@@ -1,0 +1,39 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { describe, expect, it } from 'vitest';
+
+// C-193 (relecture 1, point 4) : l'e2e de l'état « aucune donnée » prouve que l'état dégradé est affiché (texte et indication), pas l'absence d'un texte jamais rendu.
+const spec = readFileSync(resolve(import.meta.dirname, '..', 'e2e', 'C193-degrades.spec.ts'), 'utf8');
+
+describe('C193-degrades.spec.ts : assertions qui peuvent échouer', () => {
+  it('aucune assertion sur « J+0/14 » (texte que cet état ne rend jamais)', () => {
+    expect(spec).not.toContain('J+0/14');
+  });
+  it("l'indication qui suit le texte d'absence est exigée", () => {
+    expect(spec).toContain('L’iPhone calcule la récupération depuis ses imports Raccourcis et la publie ici par la synchro.');
+  });
+});
+
+// Run CI 45372804746 : « Curl marteau » se fait aux haltères, le champ s'appelle « Charge par haltère (kg) » ; un libellé « Charge (kg) » exact ne le trouve pas.
+describe('saisie de la charge dans les specs de séance', () => {
+  it.each(['tests/e2e/C193-seance-clavier.spec.ts', 'tests/visual/capture.spec.ts'])('%s accepte « Charge par haltère (kg) »', (file) => {
+    const text = readFileSync(resolve(import.meta.dirname, '..', '..', file), 'utf8');
+    expect(text).not.toContain("getByLabel('Charge (kg)', { exact: true })");
+    expect(text).toContain(String.raw`Charge( par haltère)? \(kg\)`);
+  });
+});
+
+// Run CI 45376658537 : le projet iphone est du Chromium sans agent iPhone (detectOs ≠ ios) ; le résumé a un « Séries » ailleurs que dans ses chiffres.
+describe('specs C-193 : ce que le navigateur de test rend vraiment', () => {
+  const read = (file: string) => readFileSync(resolve(import.meta.dirname, '..', '..', file), 'utf8');
+  it('séance : les chiffres du résumé sont ciblés par leur dt exact', () => {
+    const text = read('tests/e2e/C193-seance-clavier.spec.ts');
+    expect(text).not.toContain("getByText('Séries')");
+    expect(text).toContain('.ct-summary__kpi');
+  });
+  it('récupération : texte du navigateur de test (os ≠ ios) dans les deux projets, sans scénario iPhone inatteignable', () => {
+    const text = read('tests/e2e/C193-degrades.spec.ts');
+    expect(text).not.toContain('Aucune donnée de récupération importée');
+    expect(text).not.toContain('Ouvrir Apple Santé');
+  });
+});

@@ -60,7 +60,8 @@ Les 24 fiches de rôle sont dans .claude/agents/ (README : matrice de propriét�
 
 ## Méthode
 - Suite complète dans la CI, plus en local : unitaires, Rust, e2e pc et iphone, perf et bundle, smoke Windows sur des runners parallèles
-  (.github/workflows/tests.yml, seul workflow de tests), à chaque push de branche. En local : seulement les tests du module en cours.
+  (.github/workflows/tests.yml, seul workflow de tests), à chaque pull request vers main et à chaque push sur main (un push de branche seul ne lance rien :
+  ouvrir la PR ou `gh workflow run tests.yml --ref <branche>`, D-482). En local : seulement les tests du module en cours.
 - Une fusion dans main attend la CI verte sur la branche (statut « suite verte », branche à jour), jamais une suite locale.
 - Pendant qu'un lot est en QA ou en revue, le développement du lot suivant démarre s'il ne touche pas les mêmes dossiers.
 - Une seule compilation iPhone (build-ios.yml) par lot terminé, pas une par essai ; exception SideStore N → N+1 dans AGENTS.md.

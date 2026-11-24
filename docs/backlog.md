@@ -220,7 +220,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-158 | audit Claude 0.27.0 | mineur — textes d'usage Info.plist hérités (tâches) ; caméra sans scan alimentaire ; entitlements contre § 19.4 | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-159 | audit Claude 0.27.0 | mineur — privacy-shield posé après willResignActive (H-32) ; Vision « occupé » à vie | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-160 | audit Claude 0.27.0 | mineur — scripts iOS : entitlements en liste noire ; contrôles codesign rendus silencieux par `\|\| true` | fait en partie ; reste : codesign sans // true (CI-PUB #169, build-ios.yml:174) ; apply-entitlements.mjs en liste noire et check-plist-contract.mjs sans contrôle des valeurs (0.29.x, CI, S) |
-| C-161 | audit Claude 0.27.0 | amélioration — `prepare-a9.mjs` inexécutable et dangereux (même bundle id que l'app réelle) | à faire (0.29.x, CI, S) |
+| C-161 | audit Claude 0.27.0 | amélioration — `prepare-a9.mjs` inexécutable et dangereux (même bundle id que l'app réelle) | fait (CI-0292, PR #205, D-484) |
 | C-162 | audit Claude 0.27.0 | mineur — façades : message brut en console ; import en échec gardé à vie (plus de fin de repos notifiée) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-163 | audit Claude 0.27.0 | mineur — OS « other » si l'agent utilisateur est inconnu : synchro et sauvegardes masquées sans erreur | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-164 | audit Claude 0.27.0 | amélioration — setters de faux exportés sans garde DEV ; `plugins/README.md` incomplet | fait en partie ; reste : plugins/README.md complété (files, live-activity) ; setGeolocation, setSpeechRecognizer, setSystemSettings toujours exportés sans garde DEV (0.29.x, coquille, iOS et qualité, S) |
@@ -232,12 +232,12 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-170 | audit Claude 0.27.0 | important — seuil de couverture training ≥ 90 % (§ 11.6) absent de `vitest.config.ts` | fait (TESTS-FIGES, D-363) |
 | C-171 | audit Claude 0.27.0 | important — test FIX-0272 sans portée : il passe même sans la garde de démontage | fait (TESTS-FIGES) |
 | C-172 | audit Claude 0.27.0 | important — signature sur le runner de `npm ci` ; publication d'un tag sans contrôle de la suite verte | fait (CI-PUB) ; signature en job distinct reportée (D-360) |
-| C-173 | audit Claude 0.27.0 | important (documentaire) — CI sur main et PR seulement, contre « à chaque push de branche » | à faire (0.29.x, CI, S) |
+| C-173 | audit Claude 0.27.0 | important (documentaire) — CI sur main et PR seulement, contre « à chaque push de branche » | fait (CI-0292, PR #205, D-482) ; PRD § 23.2 figé : Q-4 de docs/decisions-a-prendre.md |
 | C-174 | audit Claude 0.27.0 | mineur — `needs` de « suite verte » non vérifié ; contrôles `\|\| true` ; pipe sans pipefail | fait (CI-PUB) |
 | C-175 | audit Claude 0.27.0 | mineur — cache cargo écrit sur tag, persist-credentials, artefacts sans rétention, pas de `npm audit` | fait (CI-PUB) |
 | C-176 | audit Claude 0.27.0 | mineur — tests qui se recalculent avec le code ; bornes lâches au lieu de valeurs exactes | à faire (0.29.x, coquille, iOS et qualité, M) |
 | C-177 | audit Claude 0.27.0 | mineur — propriété du plafond auto-référente ; générateur sans assisté, poids de corps ni décharge | à faire (0.29.x, séance et moteur, S) |
-| C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | à faire (0.29.x, CI, S) |
+| C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | fait (CI-0292, PR #205, D-485 : TZ fixé ; compteurs d'identifiants vérifiés, sans défaut) |
 | C-179 | audit Claude 0.27.0 | amélioration — baisse du nombre de tests non bloquante ; `publish` ne revérifie pas la signature | fait en partie ; reste : publish compare le SHA-256 au build (build-windows.yml) sans relancer verify-signature.mjs ; test-counts.mjs toujours informatif (0.29.x, CI, S) |
 | C-180 | audit Claude 0.27.0 | mineur — licences : images dites « non modifiées » ; réponses FitnessVolt sans empreinte ; droit à vérifier | fait en partie ; reste : licences.md:115 signale la réduction en gris ; restent empreinte des réponses FitnessVolt, droit de relicence (D-310), chemins relatifs des scripts (0.29.x, import et contenu, S) |
 | C-181 | audit Claude 0.27.0 | important — guides d'installation : consignes dangereuses (supprimer une app, effacer le dossier de données) | fait (DOC-PRIV, PR #156) |
@@ -252,7 +252,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-190 | audit Claude 0.27.0 | important — séance active incomplète : vignettes, sauter, remplacer, Failure, fatigue, disques, pause | fait en partie ; reste : SESS-01, PR #177 ; restent Live Activity +30 s et Passer (BL-108) et pause de séance (BL-110) (0.29.x, séance et moteur, M) |
 | C-191 | audit Claude 0.27.0 | important — Progrès incomplet : zone cible, tendances 30 j, volume par muscle, streak, records en séance | fait en partie ; reste : PROGRES, PR #179 ; restent les records signalés en séance (§ 17.1 a) et BL-114 à BL-116 (0.29.x, séance et moteur, M) |
 | C-192 | audit Claude 0.27.0 | mineur — coquille PC : barre non rétractable, ni clic droit ni double-clic, pas de badge ; signature sans lien | fait en partie ; reste : COQUILLE-PC, PR #181 ; restent le badge du minuteur dans le titre (BL-118), swipe et appui long (§ 18.1 c) (0.29.x, coquille, iOS et qualité, M) |
-| C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | à faire (0.29.x, CI, L) |
+| C-193 | audit Claude 0.27.0 | important — couverture e2e et visuelle en deçà des § 23.1 et 18.3 (séance au clavier, journal, export) | fait (CI-0292, PR #205, D-488 : 4 scénarios e2e, 17 scènes visuelles, garde visualCoverage.test.ts) |
 | C-194 | audit Claude 0.27.0 | mineur — divers PRD : imputation, assiette, notification de check-in, contrôle ITSApp…, synchronous NORMAL | fait en partie ; reste : imputation et assiette faites (NUTRI #180), blessures (BLESSURES #182), kg seul décidé (LOT-0.29.1) ; restent notification de check-in, synchronous=NORMAL, script d'icône (0.29.x, coquille, iOS et qualité, M) |
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | fait (SEANCE-0291, PR #199) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | fait (SEANCE-0291, PR #199) |
@@ -268,7 +268,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-101 | revue FIX-PLANCHER | mineur — moyenne des cibles par jour du tableau de bord (`compareKcal`, features) à exposer depuis `weeklyBalance` de `src/domain/nutrition/journal.ts` ; test d’écran de la case « Accepter » du check-in | fait en partie ; reste : test d’écran de la case « Accepter » du check-in (0.29.x, nutrition et récupération, S) ; cible comparée exposée par weeklyBalance (NUTRI-0291) |
 | BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | fait (NUTRI-0291) |
 | BL-103 | revue FIX-SAISIE-NUTRI | mineur — test du minuteur de minuit de `useCurrentDay` en fausses horloges et test de démontage sans fuite ; motif `macro-too-large` dans `validateMealEntry` au lieu du test recopié dans QuickAddForm et EntryEditor | fait (NUTRI-0291) |
-| BL-104 | revue CI-PUB | mineur — build-ios.yml, contrôle de l'extension : afficher `extension-entitlements.err` si `codesign -d` échoue ; signature de l'installeur PC dans un job distinct (D-360, 0.28.1) | à faire (0.29.x, CI, S) |
+| BL-104 | revue CI-PUB | mineur — build-ios.yml, contrôle de l'extension : afficher `extension-entitlements.err` si `codesign -d` échoue ; signature de l'installeur PC dans un job distinct (D-360, 0.28.1) | reporté : signature de l'installeur dans un job distinct non testable sans tag ni clé (D-360, D-483) ; stderr de codesign affiché (CI-0292, PR #205) |
 | BL-105 | revue TESTS-FIGES | mineur — `eightWeeks.test.ts` : « lissée ≠ brute » à cibler sur une semaine et une valeur ; test de déterminisme de `testsFiges.test.ts` peu probant ; garde avant `readPrefs` (`SupplementsView.tsx`) sans cas | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-106 | TESTS-FIGES (D-365) | important — après un changement de salle, une charge d'historique hors de la grille de la nouvelle salle (ou au-dessus du maximum du matériel) est prescrite telle quelle en échelle de répétitions ; à trancher par Ali (arrondi à la grille, plafond du matériel) | fait en partie ; reste : arrondi à la grille et plafond du matériel, à trancher par Ali (D-471 : charge hors grille signalée, PR #199) |
 | BL-096 | rapport FIX-A009 (lot 0.28.0) | `replaceFromSnapshot` ne garde pas une clé de réglage inconnue (aucun réglage publié aujourd'hui : sans effet) | reporté : sans effet tant qu’aucun réglage n’est publié (toujours vrai : écartés et gênes passent par des tables, D-463, D-464) |
@@ -314,7 +314,7 @@ Source : branche `audit-0.26.0` (PR brouillon #148), `docs/audit-0.26.0/bloquant
 | A-002 | audit Codex 0.26.0 | mineur — couleurs hors tokens (Sheet, ConfirmDialog, appairage iPhone) | fait (PR #153) |
 | A-003 | audit Codex 0.26.0 | mineur — docs/licences.md sans react-dom ni zustand | fait (PR #153) |
 | A-004 | audit Codex 0.26.0 | important — reste : 13 délais de 5 s, 7 attentes DOM, 3 tests liés par une référence nulle (rejets corrigés) | à faire (0.29.x, coquille, iOS et qualité, M) |
-| A-005 | audit Codex 0.26.0 | amélioration — huit avertissements cargo autorisés (tokio, rustix), rsa hors graphe : actualiser | à faire (0.29.x, CI, S) |
+| A-005 | audit Codex 0.26.0 | amélioration — huit avertissements cargo autorisés (tokio, rustix), rsa hors graphe : actualiser | fait (CI-0292, PR #205, D-487 : résumé cargo audit, cookie 0.18.3) |
 | A-006 | audit Codex 0.26.0 | mineur — test chronométré de checklist dans `npm run test` | fait (PR #153) |
 | A-007 | audit Codex 0.26.0 | mineur — import Tauri dynamique hors façade dans `theme.ts`, garde ESLint aveugle à la forme dynamique | fait (PR #153) |
 | A-008 | audit Codex 0.26.0 | bloquant — rollback en échec : écriture suivante acquittée puis perdue à la réouverture (`serializedDriver.ts`) | fait (FIX-A008) |
@@ -332,7 +332,7 @@ Source : branche `audit-0.26.0` (PR brouillon #148), `docs/audit-0.26.0/bloquant
 | BL-040 | audit Codex 0.26.0 (partie 3) | piste — purge au plafond des champs inconnus signalée au seul journal technique | à faire (0.29.x, données et synchro, S) |
 | BL-041 | audit Codex 0.26.0 (partie 3) | piste — filtration par horizon à vérifier lors de la conservation et de la réintégration des champs inconnus | à faire (0.29.x, données et synchro, S) |
 | BL-042 | audit Codex 0.26.0 (partie 0) | piste — code mort candidat : 31 fichiers non atteints, 48 morts, 1 172 exports inutilisés (rejoint C-133) | à faire (0.29.x, coquille, iOS et qualité, M) |
-| BL-043 | audit Codex 0.26.0 (partie 0) | piste — présence des avis de licence (MPL-2.0, avis composites) dans les binaires livrés à vérifier | à faire (0.29.x, CI, S) |
+| BL-043 | audit Codex 0.26.0 (partie 0) | piste — présence des avis de licence (MPL-2.0, avis composites) dans les binaires livrés à vérifier | fait (CI-0292, PR #205, D-486 : avis de licence embarqués et contrôlés) |
 | BL-044 | audit Codex 0.26.0 (partie 0) | piste — 16 skip conditionnels et 106 délais de tests à relire ; couverture par module à établir | à faire (0.29.x, coquille, iOS et qualité, M) |
 | BL-045 | audit Codex 0.26.0 (rapport) | Audit incomplet (environ 5 % des fichiers relus) : parties 4 à 11 non faites | caduque : parties 4 à 12 couvertes par l'audit Claude (audit-claude-0.27.0) ; brouillons #148 et #155 laissés intacts (consigne d'Ali : ni fusion ni modification), à clore par Ali |
 
@@ -415,10 +415,10 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 18.2 b | PRD § 18.2 | partiel — Progrès : graphiques, records, bilans (C-191) | fait (audit 0.29.1 : graphiques et constance (PROGRES, #179), bilan hebdomadaire (BILAN-029, #186) ; records en séance : § 17.1 a) |
 | § 18.2 c | PRD § 18.2 | partiel — Plus : « À propos et licences » (C-119) | à faire (0.29.x, coquille, iOS et qualité, M) |
 | § 18.3 a | PRD § 18.3 | partiel — signature < 24 h sans lien vers la procédure SideStore (C-126, C-192) | à faire (0.29.x, coquille, iOS et qualité, S) |
-| § 18.3 b | PRD § 18.3 | partiel — états dégradés testés (C-193) | à faire (0.29.x, CI, M) |
+| § 18.3 b | PRD § 18.3 | partiel — états dégradés testés (C-193) | fait (CI-0292, PR #205 : scènes et e2e des états dégradés ; IA, hors ligne et crash couverts par les tests dom, correspondance dans docs/CI-0292.md) |
 | § 18.4 a | PRD § 18.4 | partiel — contrastes AA (C-111, C-112) | fait (audit 0.29.1 : anneau de focus et bordures contrastés (A11Y, D-370, D-371, #174)) |
 | § 18.4 b | PRD § 18.4 | partiel — icône d'app non générée par script depuis `spartiate.svg` (C-194) | à faire (0.29.x, coquille, iOS et qualité, S) |
-| § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | à faire (0.29.x, CI, M) |
+| § 18.5 a | PRD § 18.5 | partiel — `npm run visual` sans toutes les paires (C-193) | fait (CI-0292, PR #205 : paires ajoutées, garde visualCoverage.test.ts) |
 | § 18.5 b | PRD § 18.5 | partiel — rupture à 1 024 px au lieu de ≥ 900 px (C-135, C-188) | à faire (0.29.x, coquille, iOS et qualité, S) : tranché par Ali (D-480), avec C-135 |
 | § 18.6 a | PRD § 18.6 | absent — Dynamic Type « Très grand » (C-113) | fait (COQUILLE-PC-c, D-400 ; constat d'Ali H-19a) |
 | § 18.6 b | PRD § 18.6 | partiel — zoom PC 100 à 150 % sans test | fait (COQUILLE-0291, PR #198, D-459) |
@@ -444,9 +444,9 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 23.1 a | PRD § 23.1 | absent — couverture de 90 % sur training (C-170) | fait (TESTS-FIGES, D-363) |
 | § 23.1 b | PRD § 23.1 | partiel — vecteurs des § 11 à 16 (C-168, C-169) | fait en partie ; reste : vecteurs ajoutés (TESTS-FIGES #172) ; règles listées non implémentées : C-004, C-006, C-035, C-037, D-364 (0.29.x, séance et moteur, M) |
 | § 23.1 c | PRD § 23.1 | partiel — parité base Wasm / plugin natif (H-18 UNVERIFIED) | à faire (0.29.x, données et synchro, M) |
-| § 23.1 d | PRD § 23.1 | partiel — e2e : séance au clavier, journal, export / import (C-193) | à faire (0.29.x, CI, M) |
+| § 23.1 d | PRD § 23.1 | partiel — e2e : séance au clavier, journal, export / import (C-193) | fait (CI-0292, PR #205 : séance au clavier, journal, export / import en e2e) |
 | § 23.1 e | PRD § 23.1 | partiel — e2e WebKit (C-095) | fait en partie ; reste : virgule décimale corrigée et testée en unitaire (FIX-SAISIE-NUTRI, D-344, #168) ; pas d'e2e WebKit de la saisie (0.29.x, CI, S) |
-| § 23.1 f | PRD § 23.1 | partiel — visuel de chaque onglet et des états dégradés (C-193) | à faire (0.29.x, CI, M) |
+| § 23.1 f | PRD § 23.1 | partiel — visuel de chaque onglet et des états dégradés (C-193) | fait (CI-0292, PR #205 : une scène par onglet et par largeur, états dégradés) |
 | § 23.1 g | PRD § 23.1 | partiel — perf : démarrage et graphiques non mesurés, seul le bundle l'est (C-167) | fait en partie ; reste : démarrage mesuré (tests/e2e/perf-start.spec.ts) ; graphiques < 300 ms et génération < 1 s non mesurés (0.29.x, CI, S) |
 | § 23.1 h | PRD § 23.1 | partiel — recette iPhone signée par itération (C-183) | constat d'Ali à faire (docs/constats-ali.md) |
 | § 23.2 a | PRD § 23.2 | partiel — `tests.yml` à chaque push, « suite verte » (C-173, C-174) | à trancher par Ali : tests.yml sur push main et PR seulement (lignes 8-11) contre « à chaque push de branche » (CLAUDE.md, PRD) ; C-174 fait (#169) |
