@@ -4,6 +4,7 @@ import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, target } from '../../
 import { GEN_LIBRARY, GYM, input as genInput } from '../../../tests/fixtures/training/generation';
 import { T0, setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
+import { circuitsOf } from './circuit';
 import { routineDiff } from './closure';
 import { DEFAULT_GENERATION_CONFIG as GEN_CONFIG } from './config';
 import { estimateExerciseSec, estimateSessionSec, generateSession } from './generateSession';
@@ -184,5 +185,19 @@ describe('SEANCE-0292 C-014 : replay, instant de validation illisible traité co
     expect(out.steps.map((st) => st.set.id)).toEqual(['a', 'b', 'c', 'd']);
     expect(out.missingInstants).toBe(2);
     expect(out.steps[0]?.rest.deviation).toBe('unknown');
+  });
+});
+
+describe('SEANCE-0292 C-015 : circuit, un exercice n’en est membre que par ses séries de travail', () => {
+  const c = (id: string, exerciseId: string, position: number, setKind: WorkoutSet['setKind'] = 'work'): WorkoutSet =>
+    setRow(0, { id, exerciseId, position, setKind, circuitId: 'c1', circuitRestSec: 0, targetRestSec: 90 });
+
+  it('A et B en travail, C en échauffement seulement : superset A + B (C n’est pas membre)', () => {
+    const sets = [c('w', 'c-ex', 0, 'warmup'), c('a1', 'a', 1), c('b1', 'b', 2), c('a2', 'a', 3), c('b2', 'b', 4)];
+    expect(circuitsOf(sets)).toEqual([{ circuitId: 'c1', exerciseIds: ['a', 'b'], rounds: 2, kind: 'superset', restBetweenSec: 0, restRoundSec: 90 }]);
+  });
+
+  it('A en travail, B en échauffement seulement : aucun groupe', () => {
+    expect(circuitsOf([c('w', 'b', 0, 'warmup'), c('a1', 'a', 1), c('a2', 'a', 2)])).toEqual([]);
   });
 });
