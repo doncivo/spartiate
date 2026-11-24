@@ -41,7 +41,8 @@ describe('C-022 : premier point contrôlé ; allure du dernier km au-delà du pl
     const real = (120 - 2) * 1.4;
     expect(t.distanceM).toBeLessThan(real + 5);
     expect(t.distanceM).toBeGreaterThan(real - 10);
-    expect(t.points.length).toBeGreaterThan(50);
+    // Pas de 2,8 m sous une précision de 5 m : un point sur deux gardé (≈ 30).
+    expect(t.points.length).toBeGreaterThanOrEqual(25);
   });
 
   it('au-delà de 10 000 points, l’allure du dernier km suit les derniers points (tracé figé, allure vivante)', () => {
@@ -49,23 +50,31 @@ describe('C-022 : premier point contrôlé ; allure du dernier km au-delà du pl
     expect(typeof fn).toBe('function');
     if (fn === undefined) return;
     let t = emptyTrack();
-    // 5 m toutes les 2 s (2,5 m/s, 400 s/km) jusqu'au plafond, puis 10 m toutes les 2 s (5 m/s, 200 s/km) sur 1,5 km.
+    // 8 m toutes les 2 s (250 s/km) jusqu'au plafond, puis 16 m toutes les 2 s (125 s/km) sur 2,4 km.
     let lat = 0;
     let ms = 0;
     for (let i = 0; i < TRACK_RULES.maxPoints + 10; i += 1) {
-      lat += 5 / (DEG_M * 1000);
+      lat += 8 / (DEG_M * 1000);
       ms += 2_000;
       t = addTrackPoint(t, at(lat, ms));
     }
     expect(t.truncated).toBe(true);
-    expect(fn(t)).toBe(400);
+    expect(fn(t)).toBe(250);
     for (let i = 0; i < 150; i += 1) {
-      lat += 10 / (DEG_M * 1000);
+      lat += 16 / (DEG_M * 1000);
       ms += 2_000;
       t = addTrackPoint(t, at(lat, ms));
     }
     expect(t.points).toHaveLength(TRACK_RULES.maxPoints);
-    expect(fn(t)).toBe(200);
+    expect(fn(t)).toBe(125);
+  });
+
+  it('un saut isolé depuis le premier point reste ignoré (le premier point n’est pas remplacé)', () => {
+    let t = addTrackPoint(emptyTrack(), at(0, 0));
+    t = addTrackPoint(t, at(0.05, 2_000));
+    t = addTrackPoint(t, at(20 / (DEG_M * 1000), 4_000));
+    expect(t.points.map((q) => q.at)).toEqual([T0, T0 + 4_000]);
+    expect(t.distanceM).toBeCloseTo(20, 1);
   });
 
   it('sans plafond atteint, même allure que celle des points gardés', () => {
@@ -73,7 +82,7 @@ describe('C-022 : premier point contrôlé ; allure du dernier km au-delà du pl
     expect(typeof fn).toBe('function');
     if (fn === undefined) return;
     let t = emptyTrack();
-    for (let i = 0; i <= 300; i += 1) t = addTrackPoint(t, at(i * (5 / (DEG_M * 1000)), i * 2_000));
+    for (let i = 0; i <= 300; i += 1) t = addTrackPoint(t, at(i * (8 / (DEG_M * 1000)), i * 2_000));
     expect(fn(t)).toBe(cardio.lastKmSecPerKm(t.points));
   });
 });
