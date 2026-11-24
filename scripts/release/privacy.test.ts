@@ -102,6 +102,10 @@ const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f5
 const PLACE_LENGTH = 6;
 const ALL_TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|plist|svg|sql)$/;
 const placeFiles = tracked.filter((f) => f !== SELF && !/(^|\/)(package-lock\.json|Cargo\.lock)$/.test(f) && !/^docs\/archive\//.test(f));
+/** Fichiers dont le contenu est lu par la garde du lieu. */
+const placeScanned = placeFiles.filter((f) => ALL_TEXT.test(f));
+/** Binaire : un octet nul dans les 8 000 premiers octets. */
+const isBinary = (f: string): boolean => readFileSync(resolve(root, f)).subarray(0, 8000).includes(0);
 const hashed = new Map<string, boolean>();
 function isPlaceWord(word: string): boolean {
   let known = hashed.get(word);
@@ -131,8 +135,11 @@ describe('aucun nom de lieu réel dans les fichiers suivis (D-489)', () => {
     expect(mentionsPlace(`une salle à ${cap}.`)).toBe(true);
     expect(mentionsPlace('fitness-park-salle-complete, Salle complète, ant tony')).toBe(false);
   });
+  it('la garde lit tout fichier suivi non binaire, pas seulement une liste d’extensions', () => {
+    expect(placeFiles.filter((f) => !placeScanned.includes(f) && !isBinary(f))).toEqual([]);
+  });
   it('aucun fichier suivi (contenu, CHANGELOG, fiches, tests, chemins) ne le porte', () => {
-    const textual = placeFiles.filter((f) => ALL_TEXT.test(f));
+    const textual = placeScanned;
     expect(placeFiles.filter((f) => mentionsPlace(f))).toEqual([]);
     expect(textual.filter((f) => mentionsPlace(read(f)))).toEqual([]);
   });
