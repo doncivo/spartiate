@@ -78,6 +78,8 @@ export interface NutritionOutcome {
   readonly skippedNoEnergy: number;
   /** Jours plus anciens que la fenêtre de rapprochement avec le journal : jamais écrits (le journal n'y est pas lu). */
   readonly skippedOld: number;
+  /** C-128 : jours refusés par le dépôt (comptés, jamais un échec de tout l'import). */
+  readonly refused: number;
 }
 
 export interface BodyImportResult {
@@ -123,7 +125,7 @@ export interface HealthBodyImportService {
   lastRun(): BodyImportResult | null;
 }
 
-const EMPTY_NUTRITION: NutritionOutcome = { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0, skippedOld: 0 };
+const EMPTY_NUTRITION: NutritionOutcome = { created: 0, updated: 0, unchanged: 0, superseded: 0, skippedJournal: 0, skippedDeleted: 0, skippedNoEnergy: 0, skippedOld: 0, refused: 0 };
 const MEASURE_KIND: Readonly<Partial<Record<BodyMetric, HealthMetricKind>>> = { body_fat: 'health_body_fat_pct', lean_mass: 'health_lean_mass_kg', waist: 'health_waist_cm', height: 'health_height_cm' };
 
 const isBodyFileName = (name: string): name is BodyFileName => (BODY_FILE_NAMES as readonly string[]).includes(name);
@@ -256,22 +258,33 @@ export function createHealthBodyImportService(deps: BodyImportDeps): HealthBodyI
         journalHasMeals: slot.meals,
         renpho: { live: slot.live === null ? null : { id: slot.live.id, kcal: slot.live.kcal, proteinG: slot.live.proteinG, fatG: slot.live.fatG, carbG: slot.live.carbG }, deleted: slot.deleted },
       });
+      try {
+        switch (plan.action) {
+          case 'create':
+            await repos.meals.create(renphoDayDraft(day as LocalDate, totals));
+            out.created += 1;
+            break;
+          case 'update':
+            await repos.meals.update(plan.id, { kcal: totals.kcal, proteinG: totals.proteinG, fatG: totals.fatG, carbG: totals.carbG });
+            out.updated += 1;
+            break;
+          case 'unchanged':
+            out.unchanged += 1;
+            break;
+          case 'supersede':
+            await repos.meals.softDelete(plan.id);
+            out.superseded += 1;
+            break;
+          case 'skip':
+            break;
+        }
+      } catch (error) {
+        // C-128 : un jour refusé par le dépôt est compté ; il n'annule pas la transaction des autres jours (sinon chaque import échouerait pareil).
+        if (!isRefusal(error)) throw error;
+        out.refused += 1;
+        continue;
+      }
       switch (plan.action) {
-        case 'create':
-          await repos.meals.create(renphoDayDraft(day as LocalDate, totals));
-          out.created += 1;
-          break;
-        case 'update':
-          await repos.meals.update(plan.id, { kcal: totals.kcal, proteinG: totals.proteinG, fatG: totals.fatG, carbG: totals.carbG });
-          out.updated += 1;
-          break;
-        case 'unchanged':
-          out.unchanged += 1;
-          break;
-        case 'supersede':
-          await repos.meals.softDelete(plan.id);
-          out.superseded += 1;
-          break;
         case 'skip':
           if (!imported.has(day)) break;
           if (plan.reason === 'journal') out.skippedJournal += 1;
