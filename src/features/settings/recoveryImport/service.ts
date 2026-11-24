@@ -2,6 +2,7 @@ import type { Clock } from '../../../domain/clock';
 import {
   buildSleepNights,
   parseShortcutHrv,
+  localDayAt,
   parseShortcutRestingHr,
   parseShortcutSleep,
   parseShortcutSteps,
@@ -153,6 +154,9 @@ const SAMPLE_WINDOW_DAYS = 60;
 const WORKOUT_WINDOW_DAYS = 45;
 const DAY_MS = 86_400_000;
 
+/** C-058 (D-478) : jour d'une mesure dans le fuseau de sa cellule (décalage enregistré), sinon dans celui de l'appareil. */
+const dayOfMeasure = (iso: string, offsetMin: number | null, tz: string): string => (offsetMin === null ? utcToLocal(iso, tz).date : localDayAt(Date.parse(iso), offsetMin));
+
 interface Parsed {
   readonly report: ShortcutParseReport;
   readonly inputs: readonly RecoverySampleInput[];
@@ -173,14 +177,14 @@ async function writeSteps(samples: RecoverySampleRepository, inputs: readonly Re
 
 function parseFile(type: RecoverySampleType, text: string, today: string, tz: string): Parsed {
   const source = `${type}.csv`;
-  const point = (iso: string, value: number): RecoverySampleInput => ({ type, startAt: iso, endAt: iso, value, stage: null, source });
+  const point = (iso: string, value: number, utcOffsetMin: number | null = null): RecoverySampleInput => ({ type, startAt: iso, endAt: iso, value, stage: null, source, utcOffsetMin });
   if (type === 'hrv') {
     const r = parseShortcutHrv(text, today, tz);
-    return { report: r, inputs: r.samples.map((s) => point(s.measuredAt, s.value)) };
+    return { report: r, inputs: r.samples.map((s) => point(s.measuredAt, s.value, s.offsetMin)) };
   }
   if (type === 'fc-repos') {
     const r = parseShortcutRestingHr(text, today, tz);
-    return { report: r, inputs: r.samples.map((s) => point(s.measuredAt, s.value)) };
+    return { report: r, inputs: r.samples.map((s) => point(s.measuredAt, s.value, s.offsetMin)) };
   }
   if (type === 'pas') {
     // Un total par jour local, daté à midi UTC de ce jour (clé d'unicité du dépôt : un total plus récent remplace le précédent, `upsertTotals`).
@@ -233,9 +237,9 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const [sleep, hrv, rhr] = await Promise.all([samples.listWindow('sommeil', from, now), samples.listWindow('hrv', from, now), samples.listWindow('fc-repos', from, now)]);
     const segments = sleep.flatMap((s) => (s.stage === null ? [] : [{ start: s.startAt, end: s.endAt, stage: s.stage as SleepStage }]));
     const { nights, ignoredGroups } = buildSleepNights(segments, tz);
-    const hrvSamples = hrv.flatMap((s) => (s.value === null ? [] : [{ measuredAt: s.startAt, day: utcToLocal(s.startAt, tz).date, value: s.value, offsetMin: null }]));
+    const hrvSamples = hrv.flatMap((s) => (s.value === null ? [] : [{ measuredAt: s.startAt, day: dayOfMeasure(s.startAt, s.utcOffsetMin, tz), value: s.value, offsetMin: s.utcOffsetMin }]));
     const byDay = new Map<string, number>();
-    for (const s of rhr) if (s.value !== null) byDay.set(utcToLocal(s.startAt, tz).date, s.value);
+    for (const s of rhr) if (s.value !== null) byDay.set(dayOfMeasure(s.startAt, s.utcOffsetMin, tz), s.value);
     const records = toNightRecords({ nights, hrv: hrvSamples, restingHrByDay: [...byDay].map(([day, value]) => ({ day, value })), timeZone: tz });
 
     // FIX-0115 : diagnostic sans valeur (compteurs seulement, § 22) des nuits retenues et écartées.
@@ -266,7 +270,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     // Jours dont une mesure a été écrite par CET import (ajoutée ou remplacée) : sommeil = jour du réveil, hrv / fc-repos = jour de la mesure.
     const touched = new Set<string>();
     for (const [rows, useEnd] of [[sleep, true], [hrv, false], [rhr, false]] as const) {
-      for (const r of rows) if (r.importedAt === now) touched.add(utcToLocal(useEnd ? r.endAt : r.startAt, tz).date);
+      for (const r of rows) if (r.importedAt === now) touched.add(useEnd ? utcToLocal(r.endAt, tz).date : dayOfMeasure(r.startAt, r.utcOffsetMin, tz));
     }
     const dayEndMs = (day: string): number => localToUtcMs(shiftDay(day, 1) as LocalDate, '00:00', tz) - 1;
     const stale = (day: string, at: string): boolean => {
