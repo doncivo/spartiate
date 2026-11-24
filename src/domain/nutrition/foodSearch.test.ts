@@ -76,3 +76,11 @@ describe('searchFoods', () => {
     expect(searchFoods('\\', catalogue)).toEqual([]);
   });
 });
+
+describe('NUTRI-0292 (C-045) : « ß » normalisé', () => {
+  it('Straße et strasse se normalisent pareil', async () => {
+    const { normalizeText } = await import('./foodSearch');
+    expect(normalizeText('Straße')).toBe('strasse');
+    expect(normalizeText('Fußball')).toBe('fussball');
+  });
+});
