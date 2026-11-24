@@ -13,7 +13,7 @@ import { checkPlistContract, validateContract } from './check-plist-contract.mjs
 // @ts-expect-error script .mjs sans déclaration de types
 import { applyEntitlements, DURABLE_SOURCE, GENERATED_DEST, validateEntitlements } from './apply-entitlements.mjs';
 // @ts-expect-error script .mjs sans déclaration de types
-import { buildSource, ipaUrlFor, loadTemplate, minOSVersionFromConf, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
+import { buildSource, ipaUrlFor, loadTemplate, minOSVersionFromConf, redactPlace, RELEASES_REPO, SOURCE_URL } from './make-source-json.mjs';
 
 type Json = Record<string, unknown>;
 type Version = { version: string; buildVersion?: string; date: string; localizedDescription: string; downloadURL: string; size: number; sha256?: string; minOSVersion: string };
@@ -287,7 +287,8 @@ describe('make-source-json (source SideStore)', () => {
     const r = cli('0.3.4', writeTmp('published-place.json', JSON.stringify(published)));
     const versions = (r.json?.apps[0] as App).versions;
     const notes = versions.map((v) => v.localizedDescription ?? '');
-    for (const n of notes) expect(n.toLowerCase()).not.toContain(word);
+    // Assertions booléennes : un échec ne recopie jamais le mot dans le journal de la CI.
+    expect(notes.some((n) => n.toLowerCase().includes(word))).toBe(false);
     expect(notes.slice(1)).toEqual([
       '- Profil de matériel Salle complète copié avant la 0.3.0 : la paire revient.',
       '- Arrondis (par défaut Salle complète).\n- Base en version 5.',
@@ -295,6 +296,10 @@ describe('make-source-json (source SideStore)', () => {
       'Spartiate 0.1.0',
     ]);
     expect(versions[4]).toEqual(published.apps[0]?.versions[3]);
+    // Relecture à froid : le mot suivi de deux mots à majuscule, ou placé entre eux, est retiré lui aussi.
+    expect(redactPlace(`${cap} Club Sport`).toLowerCase().includes(word)).toBe(false);
+    expect(redactPlace(`Club ${cap} Sport x`).toLowerCase().includes(word)).toBe(false);
+    expect(redactPlace('Le Club Sport X. Séance Été Ça va')).toBe('Le Club Sport X. Séance Été Ça va');
   });
 
   it('refuse un IPA dont la version, le bundle ou l’iOS minimum diffèrent, une URL ou une version invalides', () => {
