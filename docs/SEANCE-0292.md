@@ -158,3 +158,197 @@ identiques (`Z`), C-013 n'altère pas les lignes `routine` (test dédié), § 11
 | § 11.2-5 | fait (C-004, C-027) |
 | § 11.2-7 | fait (C-006, C-007, C-029) |
 | § 12.1-4 | fait (C-012 en choix prudent, C-013) |
+
+---
+
+# SEANCE-0292 — partie B : écrans de séance, historique, matériel
+
+Lignes : C-008, C-022, C-066, C-069, C-071 (avec C-024), C-072, C-077, C-078, C-080, C-081, C-082, C-083, BL-110, BL-111, BL-112, BL-121,
+BL-141, § 10.3, § 13.3 b, § 13.4, § 13.8 c, § 14.3 a, § 14.3 b, § 17.1 a. Chapitres : 10.3, 13, 14.3, 17.1. Source : audit Claude 0.27.0
+(`.codex-tmp/lot028/constats-claude.md`, hors git) et docs/backlog.md. Aucune migration, aucun fichier de synchro ; rien d'ajouté au départ
+(écrans touchés tous chargés à la demande : Entraînement, Séance, Journal, Matériel, Cardio ; `src/domain/training` et `src/domain/cardio`
+hors de tests/bundle/start-modules.json).
+
+## Passe product-owner (critères par ligne)
+
+1. C-008 : 61 points immobiles alternant à 10 m, précision 20 m : 0 m (au lieu de 600 m) ; une marche réelle reste mesurée.
+2. C-022 : un premier point décalé de 300 m ne bloque pas les suivants et n'ajoute pas 300 m ; au-delà de 10 000 points, l'allure du dernier
+   km suit les derniers points.
+3. C-066 : « 12,16 » ou « 20,1 » refusés avec un message qui dit de séparer par des points-virgules ; « 1,25 » accepté.
+4. C-081 : « 20 × 4 ; 10 » donne 4 disques de 20 kg par côté, relu tel quel ; un poids en double est refusé ; supprimer le profil actif
+   efface le réglage local dans la même transaction.
+5. C-071 : tractions, dips et lestés : champ « Lest (kg) » et aide « poids du corps non compris » ; assisté : « Assistance (kg) » ; en séance
+   et à la correction du journal.
+6. C-069 : « Accepter » après une validation pas encore redessinée ne touche pas la série validée.
+7. C-072 / § 13.4 : une série validée rouverte en séance est tracée (`corrected_at`) ; une correction du journal ne vide pas la charge d'un
+   exercice à charge.
+8. C-077 : un double appui sur « Nouvelle routine », « Ajouter le programme », « Dupliquer pour modifier », « Activer » n'écrit qu'une fois.
+9. C-078 : la saisie d'une série à faire survit à la destruction de l'écran ; un report GPS n'écrase pas une saisie en cours sans le demander.
+10. C-080 : une lecture ancienne de la proposition n'écrase pas la nouvelle ; une liste parcourue au clavier n'écrit pas à chaque flèche.
+11. C-082 / § 13.8 c : le journal montre toutes les séances closes (pages de 50), chacune ouvrable donc corrigeable et supprimable.
+12. C-083 (à vérifier, appareil) : heure par sélecteur natif, durée au pavé décimal (« 45,30 » = 45:30) ; annonce VoiceOver du suivi au plus
+    une fois par minute ou par 100 m.
+13. BL-121 : les gênes actives écartent leurs patterns et les exercices du muscle gêné des remplaçants proposés en séance, et le disent.
+14. BL-141 : après « Fermer le résumé », l'onglet Entraînement montre son accueil, pas « Nouvelle séance ».
+15. § 10.3 : notifications demandées à la fin de la première séance, jamais au premier repos (le repos reste dans l'app).
+16. § 14.3 b : matériel forcé et interdit modifiables dans un profil ; les deux à la fois refusé.
+17. Lignes de synthèse : § 13.4 (7), § 13.8 c (7, 11), § 14.3 a (3, 4), § 14.3 b (16, C-029 en partie A).
+18. BL-110, BL-111, BL-112, § 13.3 b, § 17.1 a : non faits dans cette partie (voir « Hors périmètre »).
+
+## Passe agent du module (partie B)
+
+- Domaine : `cardio/track.ts` (C-008 pas minimal, C-022 point en attente, fenêtre `recent`, `trackLastKmSecPerKm`), `cardio/session.ts` (C-083),
+  `training/weightList.ts` (nouveau : `parseWeightList`, `parsePlateList`), `equipment.ts` (doublons), `assisted.ts` (`loadFieldOf`),
+  `session.ts` (`correctionIssues`, `draftEntryPatch`), `replacement.ts` (`avoid`, `avoided`).
+- Dépôts : `equipmentProfileRepository` (suppression et réglage local d'un seul tenant), `workoutRepository` (`unvalidateSet` date
+  `corrected_at`, `closedPage`).
+- Écrans : `EquipmentView` (listes, disques « × n », forcé / interdit, une écriture à la fois), `RoutinesView` (une création à la fois),
+  `SetRow` (libellé de charge, saisie gardée, type au clavier), `ActiveSession` (`saveDraft`, repos au clavier), `ExerciseProgression`
+  (relecture dans la transaction, drapeau par chargement), `HistorySetRow` / `HistoryDetail` (libellé, charge non vidée), `HistoryView`
+  (pages), `ReplaceExercise` (gênes), `SessionScreen` (fermeture du résumé, autorisation des notifications), `restTimer` (aucune demande au
+  repos, `askPermission`), `CardioView` (report en attente, heure, durée), `CardioGps` (annonce). Nouveau : `session/keyboardSelect.ts`.
+- Textes : `fr.training.ts`, `fr.trainingSession.ts`, `fr.cardio.ts` (pluriel par `tPlural`, clé « autre » sans « {n} <nom> »).
+
+## Décisions proposées, partie B (Claude (choix prudent) ; révisable par Ali ; à reporter dans docs/decisions.md)
+
+- **D-514** (C-008) : pas minimal d'un segment GPS = max(3 m, précision annoncée du point).
+- **D-515** (C-022) : tant qu'un seul point est gardé, un saut irréaliste est mis en attente ; confirmé par le point suivant, il remplace le
+  premier point ; isolé, il reste ignoré. Allure du dernier km lue d'une fenêtre récente (mémoire, jamais codée), vivante au-delà du plafond.
+- **D-516** (C-066) : liste de poids séparée par « ; » ; une décimale hors des multiples de 0,25 kg (« 12,16 ») est refusée avec un message
+  qui dit de séparer par des points-virgules, jamais devinée.
+- **D-517** (C-081) : disques saisis « poids × nombre » (nombre par côté, 1 à 20 ; sans nombre : 1) ; un poids deux fois dans une liste est
+  refusé (domaine et écran) ; la suppression d'un profil actif efface le réglage local dans la même transaction.
+- **D-518** (C-071) : champ « Lest (kg) » (métrique poids du corps ou fraction de poids de corps) avec l'aide « poids du corps non compris »,
+  « Assistance (kg) » pour un assisté, « Charge (kg) » sinon ; en séance et à la correction.
+- **D-519** (C-072, § 13.4) : « Annuler la validation » d'une série validée date `corrected_at` (colonne publiée existante, publiée à la
+  clôture) ; les valeurs d'avant ne sont pas gardées (Q-14).
+- **D-520** (C-072) : une correction ne vide pas la charge d'une série d'exercice à charge (`load-reps`) ; la modifier reste permis.
+- **D-521** (C-078) : la saisie d'une série à faire est écrite dans `workout_set` (séance ouverte, jamais publiée) à la sortie d'un champ et
+  une seconde après la dernière frappe, sans redessiner la séance ; un champ illisible ou hors bornes n'écrit rien ; « Accepter » ne remplit
+  pas une série déjà saisie (règle I2-01 inchangée).
+- **D-522** (C-078) : un report GPS arrivé pendant une saisie (modification ou champ tapé) attend « Remplacer par le suivi GPS » ou « Garder ma
+  saisie » ; formulaire vierge : rempli directement.
+- **D-523** (C-082) : journal par pages de 50 (« Afficher les séances plus anciennes »), chaque page lue en deux requêtes.
+- **D-524** (C-080) : une liste parcourue au clavier (flèches, Début, Fin, Page) écrit à Entrée ou à la sortie du champ ; au doigt ou à la
+  souris, aussitôt ; chaque chargement de la proposition a son propre drapeau (une lecture d'un chargement précédent n'écrit rien).
+- **D-525** (BL-121) : les gênes actives (patterns et muscle gêné, `injuryAvoidance`) écartent les remplaçants proposés en séance, comme dans
+  la séance proposée ; leur nombre est dit ; la recherche libre de la bibliothèque reste ouverte.
+- **D-526** (§ 10.3) : aucune demande d'autorisation au repos (repos dans l'app, texte qui le dit) ; à la clôture d'une séance sur l'iPhone,
+  l'autorisation est demandée si elle n'a jamais été décidée (donc à la fin de la première séance) ; jamais sur le PC.
+- **D-527** (BL-141) : « Fermer le résumé » ramène à l'accueil de l'Entraînement ; « Nouvelle séance » (carte du jour) propose la copie.
+- **D-528** (C-083) : heure de début par le sélecteur natif (`type="time"`) ; durée au pavé décimal, « , » ou « . » valent « : » suivis de deux
+  chiffres (« 45,30 ») ; l'annonce VoiceOver du suivi change au plus chaque minute ou chaque 100 m.
+- **D-529** (§ 14.3 b) : matériel forcé et interdit modifiables par cases dans la modification d'un profil ; un même matériel forcé et interdit
+  est refusé (`forced-forbidden`, règle existante).
+
+## Questions, partie B (à reporter dans docs/decisions-a-prendre.md)
+
+### Q-13 — Pause de séance (BL-110, § 13.2 « Pause / abandonner »)
+
+Constat : une pause qui ne retire pas son temps de la durée publiée n'a pas d'effet utile ; la durée est `ended_at − started_at`.
+- A. Colonnes additives `workout.paused_at` et `workout.paused_ms` (publiées avec la séance close ; anciens exports et journaux : 0) ; chrono,
+  résumé, énergie Apple Santé et replay hors pause ; repos annulé pendant la pause.
+- B. Pause locale (réglage de l'appareil) : chrono figé à l'écran, durée publiée inchangée.
+- C. Pas de pause : « Abandonner » seulement (déjà présent).
+
+Recommandation : A. Conséquences : migration additive et relecture sync-icloud (partie données et synchro) ; écran de séance ensuite.
+
+### Q-14 — Trace d'une correction de série (C-072, § 13.4, § 13.8)
+
+Constat : seule la date (`corrected_at`) est gardée, pas la valeur d'avant.
+- A. Garder la date seule (état actuel, D-519).
+- B. Colonne additive `workout_set.corrected_from` (JSON des valeurs d'avant la dernière correction), publiée ; « corrigée : 80 → 82,5 kg ».
+- C. Table publiée `workout_set_correction` (historique complet des corrections).
+
+Recommandation : B (une ligne lisible, sans table nouvelle). Conséquences : migration additive, relecture sync-icloud, affichage au journal.
+
+### Q-15 — « Fermer le résumé » (BL-141)
+
+- A. Retour à l'accueil de l'Entraînement (choix prudent D-527, fait).
+- B. Rester sur « Nouvelle séance » ; un nouvel appui sur l'onglet actif ramène à son accueil (règle de navigation commune, coquille).
+
+Recommandation : A (moins de gestes ; B demande une règle de navigation commune à tous les onglets).
+
+## Hors périmètre de la partie B (consigné)
+
+- BL-110 : pause de séance, Q-13 (données et synchro : colonnes additives `paused_at`, `paused_ms`).
+- C-072 : valeurs d'avant une correction, Q-14 (données et synchro : colonne `corrected_from` ou table).
+- C-072 / D-519 : `corrected_at` est désormais daté aussi pour une série rouverte en séance ouverte (colonne et moment de publication
+  inchangés : publiée à la clôture) ; à faire relire par sync-icloud avec la PR (valeur publiée nouvelle, aucun champ nouveau).
+- § 13.3 b : action « +30 s » de la notification de repli : catégorie d'action iOS et traitement de l'action (rôles notifications et
+  ios-mobile, `src/platform/notifications`, plugin notification-actions) ; côté séance, `workouts.extendRest(30)` est prêt.
+- BL-111 (retour à la prescription précédente depuis l'explication en séance ; carte du corps), BL-112 (sans charge : fatigue intra-séance,
+  stagnation, décote de position ; métrique distance), § 17.1 a (records signalés en séance) : non commencés (budget de la session) ;
+  restent « à faire (0.29.x, séance et moteur, M) ».
+- C-083 (appareil) : constat ajouté dans docs/constats-ali.md (clavier, sélecteur, annonce VoiceOver) ; H-35 (distance après arrière-plan)
+  reste son constat existant. Constats ajoutés aussi pour C-078 (fermeture forcée) et § 10.3 (demande en fin de première séance).
+- Échecs préexistants vus en local, indépendants de la partie B (tests inchangés ; RedDay constaté aussi sur le commit parent) : premier test
+  de RedDay.test.tsx (« Recovery 20 (other) ») et premier test de SessionClosure.test.tsx (« Démarrer « Haut A » » introuvable) : délai
+  d'un premier rendu à froid ; verts ensuite dans le même fichier.
+
+## Passe qa-test (partie B)
+
+Rouge (constaté en échec en local) → vert, commits de la partie B (après `2dc11eee`) :
+
+| Ligne | Rouge | Vert | Remarque |
+|---|---|---|---|
+| C-008 | `2f43871c` | `1b9d9f78` | 600 → 0 m ; track.test.ts : points précis à 2 m (règle des 3 m isolée) |
+| C-022 | `690b7f48` | `7e1bc0f6` | deux attentes du rouge corrigées dans le vert (pas sous la précision) |
+| C-066 | `debb5d92` | `5e3cbc43` | |
+| C-081 | `0cba305e` | `98a9ac1a` | |
+| C-071 (C-024) | `d00062f3` | `1307b6c1`, `983ba316` | FixAberrPlausible.test.tsx : libellé « Assistance (kg) » accepté |
+| C-069 | `c65b04b3` | `594d06d0` | requête du test limitée à la séance ouverte |
+| C-072 / § 13.4 | `68eae2ea` | `7275df11` | |
+| C-077 | `2c76c41c` | `85216396` | « Ajouter une série » déjà gardé (busy) : non-régression |
+| C-078 | `0095cde2` | `003b5185`, `69ea834f` | `69ea834f` : typage (exactOptionalPropertyTypes) |
+| C-080 | `1cc177d4` | `27339353` | |
+| C-082 / § 13.8 c | `ffc13a99` | `3afcc1ae` | nom de ligne lu seul dans le test |
+| BL-121 | `8afcf55c` | `299e37c6` | |
+| § 10.3 | `445c564c` | `aa30a78f` | |
+| BL-141 | `d7c91fcd` | `747dcf70` | SessionClosure.test.tsx : deux attentes changées (D-527) |
+| C-083 | `da6944b1` | `bebf2726` | CardioGps.test.tsx : 0,22 → 0,2 km ; reste le constat d'appareil |
+| § 14.3 b | `80e27013` | `a22137e6` | |
+| (renumérotation) | — | `5e2261e8` | D-489 à D-505 → D-506 à D-522 (Ali a pris D-489 à D-505) |
+
+Lancés en local (`CI=1 … --maxWorkers=1 --coverage.enabled=false`) : src/features/training, src/features/cardio, src/features/today,
+src/domain/training, src/domain/cardio, dépôts séance et matériel : 154 fichiers, 1 385 tests, 1 383 verts en un passage ; les 2 rouges
+(LibraryFilters.test.tsx, ExerciseProgressionNotes.test.tsx, fichiers non modifiés) sont verts seuls (délai sous charge, comme en partie A) ;
+src/i18n (27 fichiers, 243 tests), scripts/release docs-paths et agents : verts. `tsc --noEmit` et `eslint` sur les fichiers touchés :
+propres. Bundle de départ : aucun module touché n'est dans tests/bundle/start-modules.json (écrans et catalogues à la demande) ; mesure
+laissée à la CI. e2e non lancés (CI).
+
+## Passe code-reviewer (partie B, à froid, même agent)
+
+À faire par la relecture du lot (agent distinct) ; points relus ici : C-078 n'écrit que des séries à faire d'une séance ouverte (jamais
+publiée) et ne redessine pas la séance ; C-080 `useKeyboardSelect` garde l'écriture immédiate au doigt (tests existants inchangés) ; C-082
+borne la page à 100 et ne lit plus une séance à la fois ; D-519 ne crée aucun champ (relecture sync-icloud demandée, valeur publiée
+nouvelle) ; § 10.3 ne demande rien sur le PC.
+
+## Statuts proposés (partie B)
+
+| ID | Statut |
+|---|---|
+| C-008 | fait (SEANCE-0292, D-514) |
+| C-022 | fait (SEANCE-0292, D-515) |
+| C-066 | fait (SEANCE-0292, D-516) |
+| C-069 | fait (SEANCE-0292) |
+| C-071 | fait (SEANCE-0292, D-518) ; ferme le double compte de C-024 |
+| C-072 | fait en partie (SEANCE-0292, D-519, D-520) ; reste la valeur d'avant la correction (Q-14, données et synchro) |
+| C-077 | fait (SEANCE-0292) |
+| C-078 | fait (SEANCE-0292, D-521, D-522) ; constat d'appareil ajouté (fermeture forcée) |
+| C-080 | fait (SEANCE-0292, D-524) |
+| C-081 | fait (SEANCE-0292, D-517) |
+| C-082 | fait (SEANCE-0292, D-523) |
+| C-083 | code fait (SEANCE-0292, D-528) ; reste le constat d'appareil (docs/constats-ali.md) |
+| BL-110 | à trancher (Q-13) ; puis données et synchro (colonnes additives) |
+| BL-111 | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
+| BL-112 | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
+| BL-121 | fait (SEANCE-0292, D-525) |
+| BL-141 | fait (SEANCE-0292, D-527 ; Q-15) |
+| § 10.3 | fait (SEANCE-0292, D-526) ; constat d'appareil ajouté |
+| § 13.3 b | reste : catégorie et action « +30 s » (rôles notifications et ios-mobile) |
+| § 13.4 | fait en partie (C-072) ; reste Q-14 |
+| § 13.8 c | fait en partie (C-072, C-082) ; reste Q-14 |
+| § 14.3 a | fait (C-066, C-081) |
+| § 14.3 b | fait (SEANCE-0292, D-529 ; C-029 en partie A) |
+| § 17.1 a | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
