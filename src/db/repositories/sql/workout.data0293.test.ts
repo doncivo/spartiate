@@ -22,8 +22,8 @@ async function openSession(sets = 2) {
   const w = await r.addExercise(W, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché', sets, targetRepsMin: 8, targetRepsMax: 10 });
   return { r, sets: w.sets };
 }
-const must = <T>(v: T | undefined): T => {
-  if (v === undefined) throw new Error('absent');
+const must = <T>(v: T | null | undefined): T => {
+  if (v === undefined || v === null) throw new Error('absent');
   return v;
 };
 

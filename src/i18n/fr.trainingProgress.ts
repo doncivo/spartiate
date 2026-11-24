@@ -40,7 +40,8 @@ export const trainingProgressFr = {
   prescriptionSets: 'Séries faites : {percent} % ({done} sur {proposed} proposées)',
   prescriptionLoadsOne: 'Charges tenues : {percent} % ({held} sur {proposed} proposée)',
   prescriptionLoads: 'Charges tenues : {percent} % ({held} sur {proposed} proposées)',
+  prescriptionAddedRemoved: 'Séries ajoutées en séance : {added} · retirées : {removed}',
   prescriptionNoLoads: 'Charges tenues : aucune charge proposée sur la période.',
-  prescriptionRule: 'Les 4 dernières semaines complètes : séries de travail et chronométrées portant une cible ; une charge est tenue quand la série est validée à la charge proposée ou plus. Une série ajoutée en séance reprend la cible de la précédente et compte comme proposée ; une série retirée ne compte plus.',
+  prescriptionRule: 'Les 4 dernières semaines complètes : séries de travail et chronométrées portant une cible ; une charge est tenue quand la série est validée à la charge proposée ou plus. Une série ajoutée en séance n’est jamais proposée (comptée à part) ; une série proposée non faite compte comme retirée.',
   prescriptionNone: 'Aucune série proposée sur les 4 dernières semaines complètes : rien à mesurer pour l’instant.',
 } as const;

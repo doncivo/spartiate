@@ -22,7 +22,7 @@ afterEach(async () => {
 });
 
 describe('Progrès › Prescriptions respectées : ajoutées et retirées', () => {
-  it('2 proposées dont 1 faite, 1 ajoutée faite : 50 % (1 sur 2), « ajoutée : 1 · retirée : 1 », règle sans l’ancienne limite', async () => {
+  it('2 proposées dont 1 faite, 1 ajoutée faite : 50 % (1 sur 2), « ajoutées : 1 · retirées : 1 », règle sans l’ancienne limite', async () => {
     const r = await db.data.repos.workouts();
     await r.start({ source: 'empty', id: W, name: 'Séance' });
     const w = await r.addExercise(W, { exerciseId: 'bench-press-barbell', exerciseName: 'Développé couché à la barre', sets: 2, targetRepsMin: 8, targetRepsMax: 10 });
@@ -37,7 +37,7 @@ describe('Progrès › Prescriptions respectées : ajoutées et retirées', () =
       </AppContainerProvider>,
     );
     expect(await screen.findByText(/Séries faites : 50 % \(1 sur 2 proposées\)/)).toBeInTheDocument();
-    expect(screen.getByText(/1 ajoutée en séance · 1 retirée/)).toBeInTheDocument();
+    expect(screen.getByText(/Séries ajoutées en séance : 1 · retirées : 1/)).toBeInTheDocument();
     expect(screen.getByText(tTrainingProgress('prescriptionRule'))).toBeInTheDocument();
     expect(tTrainingProgress('prescriptionRule')).not.toMatch(/reprend la cible/);
   });
