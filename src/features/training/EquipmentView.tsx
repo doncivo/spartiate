@@ -202,6 +202,9 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   const [kettlebells, setKettlebells] = useState(listText(inv.kettlebellsKg));
   const [increments, setIncrements] = useState<Readonly<Record<string, string>>>(Object.fromEntries(INCREMENT_KEYS.map(([key]) => [key, profile.increments[key] === undefined ? '' : formatNumber(profile.increments[key])])));
   const [toVerify, setToVerify] = useState<readonly string[]>(inv.toVerify ?? []);
+  // SEANCE-0292 (§ 14.3 b) : matériel forcé (toujours proposé) et interdit (jamais proposé), modifiables ; les deux à la fois : refusé.
+  const [forced, setForced] = useState<readonly string[]>(inv.forced);
+  const [forbidden, setForbidden] = useState<readonly string[]>(inv.forbidden);
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
@@ -228,6 +231,8 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       platesPerSideKg: plateList ?? [],
       kettlebellsKg: kbList ?? [],
       toVerify,
+      forced,
+      forbidden,
     };
     const input = { name: name.trim(), kind, inventory, increments: inc };
     if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
@@ -327,6 +332,24 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
           ))}
         </div>
       </fieldset>
+      {(
+        [
+          ['equipmentForced', forced, setForced],
+          ['equipmentForbidden', forbidden, setForbidden],
+        ] as const
+      ).map(([legend, list, setList]) => (
+        <fieldset key={legend} className="ct-training__fieldset">
+          <legend className="ct-training__label">{tTraining(legend)}</legend>
+          <div className="ct-training__checks">
+            {data.content.equipment.map((item) => (
+              <label key={item.id} className="ct-training__check">
+                <input type="checkbox" checked={list.includes(item.id)} onChange={(e) => setList((now) => (e.target.checked ? [...now.filter((id) => id !== item.id), item.id] : now.filter((id) => id !== item.id)))} />
+                <span>{item.nameFr}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
       {error && (
         <p className="ct-training__error" role="alert">
           {error}

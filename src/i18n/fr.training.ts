@@ -164,6 +164,9 @@ export const trainingFr = {
   deleteProfileTitle: 'Supprimer le profil « {name} » ?',
   deleteProfileHint: 'Cet appareil reviendra au profil par défaut s’il l’utilisait.',
   profileDeleted: 'Profil supprimé',
+  /** SEANCE-0292 (§ 14.3 b). */
+  equipmentForced: 'Matériel forcé (toujours proposé)',
+  equipmentForbidden: 'Matériel interdit (jamais proposé)',
   errorProfile: 'Vérifie le profil : un nom, des nombres positifs, le minimum avant le maximum.',
   /** SEANCE-0292 (C-066) : « 12,16 » n'est pas un poids (décimale hors des quarts de kilo). */
   /** SEANCE-0292 (C-081). */
