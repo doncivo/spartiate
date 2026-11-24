@@ -60,15 +60,18 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     expect(b.reasons).toContain('top-reached');
   });
 
-  it('BL-106 (D-471) : charge d’historique hors de la grille de la salle courante, prescription inchangée mais signalée', () => {
+  // SEANCE-0292b (BL-106) : test qui figeait D-471 (« gardée et signalée ») réécrit : D-496 (Ali, 24/11), arrondi vers le bas à la grille du
+  // profil, plafond au maximum du matériel, note.
+  it('BL-106 (D-496) : charge d’historique hors de la grille de la salle courante, arrondie vers le bas, plafonnée et signalée', () => {
     const b = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
-    expect(b.loadKg).toBe(44);
+    expect(b.loadKg).toBe(42.5);
     expect(b.reasons).toContain('reference-off-grid');
-    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 44 } });
+    expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 44, kept: 42.5 } });
     const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_COMPLETE }));
     expect(a.reasons).not.toContain('reference-off-grid');
     // Au-dessus du maximum du matériel de la salle : signalée de même.
     const heavy = prescribe(input({ exercise: CURL, history: history(55, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));
+    expect(heavy.loadKg).toBe(50);
     expect(heavy.reasons).toContain('reference-off-grid');
     // Revue : proposition déjà ramenée sur un cran de la grille (haut de plage atteint : 45 kg en salle B) : rien à vérifier, aucune note.
     const up = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_B }));
@@ -77,7 +80,7 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     // Revue 2 : contrainte active qui laisse la charge à la référence (fatigue : maintien) : signalée aussi.
     const tired = prescribe(input({ exercise: CURL, history: [session(6, 44, [10, 10, 10]), session(3, 44, [7, 7, 7])], target: target(8, 10), equipment: SALLE_B }));
     expect(tired.headline).toBe('fatigue');
-    expect(tired.loadKg).toBe(44);
+    expect(tired.loadKg).toBe(42.5);
     expect(tired.reasons).toContain('reference-off-grid');
   });
 

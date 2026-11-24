@@ -80,6 +80,45 @@ export function revertProposal(decisions: readonly DecisionStep[], options: Reve
   return { kind: 'available', target };
 }
 
+/** SEANCE-0292b (D-543) : retour proposé en séance, ou caché (sous la grille du profil ; jour de décharge qu'il alourdirait). */
+export type SessionRevert =
+  | { readonly kind: 'available'; readonly target: RevertTarget; readonly offGridFromKg: number | null }
+  | { readonly kind: 'hidden'; readonly why: 'below-grid' | 'deload-heavier' };
+
+export interface SessionRevertContext extends RevertOptions {
+  /** Grille du profil de matériel courant (null : aucune grille connue). */
+  readonly loads: readonly number[] | null;
+  /** Jour de décharge (deload du cycle ou demandé). */
+  readonly deload: boolean;
+  /** Proposition du jour (null : rien de proposé, « à saisir »). */
+  readonly proposal: { readonly loadKg: number; readonly reps: readonly number[] } | null;
+}
+
+/**
+ * SEANCE-0292b (relecture D, D-543) : cible du retour EN SÉANCE. Charge absente de la grille du profil courant (exercice chargé, non assisté) :
+ * plus grande charge de la grille ≤ cible (D-496 : vers le bas, donc plafonnée au maximum) ; sous la plus petite charge : pas de retour (comme
+ * D-536). Jour de décharge : un retour plus dur que la proposition allégée (isHarder, ou même charge et plus de répétitions au total), ou
+ * sans proposition chiffrée, n'est pas proposé (choix prudent : la décharge prime).
+ */
+export function revertForSession(target: RevertTarget, ctx: SessionRevertContext): SessionRevert {
+  let kept = target;
+  let offGridFromKg: number | null = null;
+  const loads = ctx.metric === 'load-reps' && !ctx.assisted && ctx.loads !== null && ctx.loads.length > 0 ? ctx.loads : null;
+  if (loads !== null && !loads.some((kg) => Math.abs(kg - target.loadKg) <= EPS)) {
+    const below = loads.filter((kg) => kg <= target.loadKg + EPS);
+    if (below.length === 0) return { kind: 'hidden', why: 'below-grid' };
+    kept = { ...target, loadKg: Math.max(...below) };
+    offGridFromKg = target.loadKg;
+  }
+  if (ctx.deload) {
+    const p = ctx.proposal;
+    if (p === null) return { kind: 'hidden', why: 'deload-heavier' };
+    const heavier = isHarder(kept, p, ctx) || (Math.abs(kept.loadKg - p.loadKg) <= EPS && sum(kept.reps) > sum(p.reps));
+    if (heavier) return { kind: 'hidden', why: 'deload-heavier' };
+  }
+  return { kind: 'available', target: kept, offGridFromKg };
+}
+
 /**
  * Prescription tracée avec la décision de retour : raison principale « décision », raisons `decision-reference` et `revert-previous`, valeurs
  * reprises. Rien d'autre (ni 1RM, ni deload, ni choix) : elle ne fait que porter la trace (§ 11.2 point 9).

@@ -6,13 +6,14 @@ import { holdForDeclaredFatigue, type DeclaredFatigue } from '../../../domain/tr
 import { isAssistedEquipment } from '../../../domain/training/assisted';
 import { loadGrid } from '../../../domain/training/loadGrid';
 import { prescriptionInputOf } from '../../../domain/training/prescriptionInput';
+import { revertForSession, revertProposal, type RevertTarget } from '../../../domain/training/revertPrescription';
 import { warmupForExercise, type WarmupSet } from '../../../domain/training/warmup';
 import { DIFFICULTIES, type Difficulty, type Exercise, type ExerciseSession, type MuscleWeight, type Prescription, type ProgressionEquipment, type RecoverySnapshot, type RepTarget } from '../../../domain/training/types';
 import { DURATION_MAX_SEC, type WorkoutSet, type WorkoutWithSets } from '../../../domain/training/session';
 import type { IsoDateTime } from '../../../domain/types';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ProgressionProfileRecord, RecommendationDecisionRecord } from '../../../db/repositories/progressionRepository';
-import { progressionNoteText, tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
+import { progressionDay, progressionNoteText, tProgression, type ProgressionTextKey } from '../../../i18n/progressionText';
 import { Button } from '../../../ui';
 import { loadCurrentCycle, localDayOf } from '../cycle/currentCycle';
 import { linkedRir, parseSessionLink, sessionRoutineId } from '../cycle/sessionLink';
@@ -254,6 +255,31 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     };
   }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]); // eslint-disable-line react-hooks/exhaustive-deps -- musclesOf change à chaque rendu ; le rang de référence et le poids de corps se relisent au rechargement
 
+  /**
+   * SEANCE-0292b (BL-111, D-537) : valeurs d'avant la dernière hausse (décisions des séances closes), null sans hausse ou illisibles. En séance,
+   * le retour est la valeur retenue de CETTE séance : tracé comme une modification de la proposition (acceptée = non), jamais comme la
+   * décision de retour de la fiche (attachée à la séance close, exclue des valeurs retenues par le repository).
+   */
+  const [revertTarget, setRevertTarget] = useState<RevertTarget | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      try {
+        const decisions = await (await access.repos.progression()).decisions(exerciseId, reportUnreadable);
+        // La décision de cette séance est hors du calcul : le retour se propose à partir des séances closes seulement.
+        const steps = decisions.filter((d) => d.workoutId !== workout.id).map((d) => ({ workoutId: d.workoutId, decidedAt: d.decidedAt, loadKg: d.loadKg, reps: d.reps, revert: d.revert === true }));
+        const proposal = revertProposal(steps, { metric: exercise?.metric ?? 'load-reps', assisted: isAssistedEquipment(exercise?.equipment) });
+        if (alive) setRevertTarget(proposal.kind === 'available' ? proposal.target : null);
+      } catch {
+        // Décisions illisibles : pas de retour proposé ici (la fiche le dit) ; la proposition reste.
+        if (alive) setRevertTarget(null);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [access, exerciseId, workout.id, exercise?.metric, exercise?.equipment, attempt]);
+
   useEffect(() => {
     if (editing !== null) editLoad.current?.focus();
   }, [editing !== null]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -414,6 +440,18 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
     const alerts = constraintAlerts(p);
     const ramp = proposed && ownDecision === null && p.loadKg !== null ? rampFor(p.loadKg) : [];
     const options = p.options ?? [];
+    // Relecture D (D-543) : cible ramenée sur la grille du profil courant ; un jour de décharge, cachée si elle alourdit la séance.
+    const sessionRevert =
+      revertTarget === null
+        ? null
+        : revertForSession(revertTarget, {
+            metric: p.metric ?? 'load-reps',
+            assisted: isAssistedEquipment(exercise?.equipment),
+            loads: exercise === undefined ? null : (loadGrid(exercise.equipment, equipment)?.loads ?? null),
+            deload: p.deload === true || deload,
+            proposal: p.loadKg === null ? null : { loadKg: p.loadKg, reps: p.sets.map((s) => s.reps) },
+          });
+    const revert = sessionRevert?.kind === 'available' ? sessionRevert : null;
     return (
       <>
         <p className="ct-progression__value ct-session__num">{value}</p>
@@ -456,6 +494,18 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
               <div className="ct-progression__warmup">
                 <p className="ct-progression__sentence ct-session__num">{tProgression('warmupPreview', { ramp: rampText(ramp, held) })}</p>
                 <p className="ct-progression__hint">{tProgression('warmupHint')}</p>
+              </div>
+            ) : null}
+            {revert !== null ? (
+              <div className="ct-progression__revert">
+                <p className="ct-progression__sentence ct-session__num">{tProgression('revertFrom', { date: progressionDay(revert.target.decidedAt), value: valueText(p.metric, revert.target.loadKg, revert.target.reps, held) })}</p>
+                {revert.offGridFromKg !== null ? (
+                  <p className="ct-progression__hint ct-session__num">{tProgression('revertOnGrid', { from: loadText(revert.offGridFromKg, held), load: loadText(revert.target.loadKg, held) })}</p>
+                ) : null}
+                <Button variant="secondary" disabled={busy} onClick={() => void decide(false, { loadKg: revert.target.loadKg, reps: revert.target.reps })}>
+                  {tProgression('revertButton')}
+                </Button>
+                <p className="ct-progression__hint">{tProgression('revertHint')}</p>
               </div>
             ) : null}
             <p className="ct-progression__muted">{tProgression('decisionHint')}</p>

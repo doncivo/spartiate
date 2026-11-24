@@ -527,3 +527,49 @@
 .ct-training > * {
   flex-shrink: 0;
 }
+
+/* SEANCE-0292b (BL-111) : carte du corps de la bibliothèque (reflet visuel du filtre « Groupe musculaire »). */
+.ct-training__bodymap {
+  display: flex;
+  justify-content: space-around;
+  padding: var(--ct-space-2) 0;
+  background: var(--ct-color-surface);
+}
+
+.ct-training__silhouette {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ct-space-1);
+}
+
+.ct-training__silhouette svg {
+  width: 88px;
+  height: 176px;
+  display: block;
+}
+
+.ct-training__silhouette-label {
+  font-size: var(--ct-font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-training__outline {
+  fill: none;
+  stroke: var(--ct-color-text-secondary);
+  stroke-width: 1.2;
+  opacity: 0.6;
+}
+
+.ct-training__zone {
+  fill: var(--ct-color-surface-raised);
+  stroke: var(--ct-color-border-strong);
+  stroke-width: 1;
+  cursor: pointer;
+}
+
+.ct-training__zone[data-state='selected'] {
+  fill: var(--ct-color-bronze);
+}

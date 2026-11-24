@@ -26,6 +26,7 @@ import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, us
 import { ContextMenuZone } from '../../ui/ContextMenu';
 import { useAppContainer } from '../app/AppContainerContext';
 import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
+import { LibraryBodyMap } from './library/LibraryBodyMap';
 import { RevertPrescription } from './library/RevertPrescription';
 import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
@@ -125,6 +126,8 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
           <p className="ct-training__muted">{tTraining('pickerHint')}</p>
         )}
       </div>
+      {/* V0-7-1 point 5 (run 45443720283) : la carte suit les filtres pour que l'interrupteur reste visible sans défiler sur iPhone. */}
+      <LibraryBodyMap groups={data.content.groups} selected={group} onChange={setGroup} />
       <p className="ct-training__muted" aria-live="polite">
         {tPlural(tTraining, filtered.length, 'countOne', 'countMany')}
       </p>

@@ -6,7 +6,8 @@ import type { PrescriptionHeadline, ProposalOptionKind, ReasonCode } from './typ
  * prescription incrémente `ENGINE_VERSION` (la version est jointe à chaque prescription et à chaque décision tracée).
  */
 
-export const ENGINE_VERSION = 4;
+// SEANCE-0292b (D-542) : 4 → 5, D-496 (charge hors grille ramenée sur la grille) et D-539 (sans charge : fatigue, stagnation, décote).
+export const ENGINE_VERSION = 5;
 
 export interface ProgressionConfig {
   /** Au-delà, une série pèse `lowQualityWeight` dans l'estimation (§ 11.3). */
