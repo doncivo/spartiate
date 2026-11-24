@@ -49,15 +49,36 @@ export function warmupRamp(workLoadKg: number, loads: readonly number[] | null, 
   return ramp;
 }
 
-/** Rampe d'un exercice avec ce profil : charge × répétitions seulement, grille du matériel de l'exercice. */
+/**
+ * Rampe d'un exercice avec ce profil : charge × répétitions seulement, grille du matériel de l'exercice. C-030 : exercice lesté
+ * (`bodyweightFraction` > 0), les fractions s'appliquent à la charge TOTALE (corps × fraction + lest), le lest est ce total moins le corps,
+ * arrondi vers le bas à la grille ; sous le premier lest disponible, poids du corps seul (lest 0, une seule étape). Poids de corps inconnu :
+ * aucune rampe (40 % du lest seul ferait près de 95 % de la charge totale).
+ */
 export function warmupForExercise(
-  exercise: Pick<ProgressionExercise, 'metric' | 'equipment'> & { readonly assisted?: boolean },
+  exercise: Pick<ProgressionExercise, 'metric' | 'equipment'> & { readonly assisted?: boolean; readonly bodyweightFraction?: number | null },
   workLoadKg: number,
   profile: ProgressionEquipment | null,
   steps: readonly WarmupStep[] = WARMUP_STEPS,
+  bodyweightKg: number | null = null,
 ): WarmupSet[] {
   if (exercise.metric !== 'load-reps' || exercise.assisted === true || isAssistedEquipment(exercise.equipment)) return [];
-  return warmupRamp(workLoadKg, loadGrid(exercise.equipment, profile)?.loads ?? null, steps);
+  const loads = loadGrid(exercise.equipment, profile)?.loads ?? null;
+  const fraction = exercise.bodyweightFraction ?? null;
+  if (fraction === null || !(fraction > 0)) return warmupRamp(workLoadKg, loads, steps);
+  if (bodyweightKg === null || !(bodyweightKg > 0) || loads === null || loads.length === 0 || !(workLoadKg > 0)) return [];
+  const base = bodyweightKg * fraction;
+  const minLoad = Math.min(...loads);
+  const ramp: WarmupSet[] = [];
+  for (const target of warmupTargets(base + workLoadKg, steps)) {
+    const wanted = target.loadKg - base;
+    const loadKg = wanted < minLoad - EPS ? 0 : snapDown(wanted, loads);
+    if (loadKg >= workLoadKg - EPS) continue;
+    const last = ramp.at(-1);
+    if (last !== undefined && loadKg <= last.loadKg + EPS) continue;
+    ramp.push({ loadKg, reps: target.reps });
+  }
+  return ramp;
 }
 
 export interface WarmupCandidate {

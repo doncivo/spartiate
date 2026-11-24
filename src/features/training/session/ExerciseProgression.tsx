@@ -298,9 +298,11 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
    * est déjà validée (jamais d'échauffement inséré avant du travail fait).
    */
   const hasWarmup = sets.some((s) => s.setKind === 'warmup' || s.done);
+  // C-030 : exercice lesté, rampe sur la charge totale (poids de corps de la tendance, lu avec le contexte de prescription).
+  const bodyweightKg = load.status === 'ready' ? load.bodyweightKg : null;
   const rampFor = useCallback(
-    (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment) : []),
-    [warmup, hasWarmup, exercise, equipment],
+    (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment, undefined, bodyweightKg) : []),
+    [warmup, hasWarmup, exercise, equipment, bodyweightKg],
   );
 
   /**
