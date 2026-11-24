@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { CURL, KETTLEBELL_GYM, input, session, target } from '../../../tests/fixtures/training/progression';
+import { CURL, KETTLEBELL_GYM, PLANK, PUSH_UP, bwSession, input, session, target, timedSession } from '../../../tests/fixtures/training/progression';
 import { explanationNotes } from './explain';
 import { prescribe } from './prescribe';
 import type { ProgressionEquipment } from './types';
@@ -78,5 +78,42 @@ describe('SEANCE-0292b § 12.3 (D-497) : modes Variable, Fixe et Statique retir�
     const types: Record<string, unknown> = await import('./generationTypes');
     expect(types['LIBRE_VARIANTS']).toBeUndefined();
     expect(types['PROGRAM_MODES']).toEqual(['guide', 'libre', 'maison', 'importe']);
+  });
+});
+
+describe('SEANCE-0292b BL-112 (D-539) : exercices sans charge, fatigue, stagnation et décote de position', () => {
+  it('fatigue : pompes 12-12-12 puis 9-9-8 (−28 %) → valeurs maintenues, choix « −2 reps » proposé (jamais appliqué)', () => {
+    const p = prescribe(input({ exercise: PUSH_UP, history: [bwSession(6, null, [12, 12, 12]), bwSession(3, null, [9, 9, 8])], target: target(8, 15) }));
+    expect(p.headline).toBe('fatigue');
+    expect(p.reasons).toContain('fatigue-drop');
+    expect(p.sets.map((s) => s.reps)).toEqual([9, 9, 8]);
+    expect(p.options).toContainEqual({ kind: 'fatigue-reps', loadKg: 0, reps: [7, 7, 6] });
+  });
+
+  it('fatigue : planche 60-60-60 puis 40-40-40 → durées maintenues, aucun choix de répétitions', () => {
+    const p = prescribe(input({ exercise: PLANK, history: [timedSession(6, [60, 60, 60]), timedSession(3, [40, 40, 40])], target: target(30, 90) }));
+    expect(p.headline).toBe('fatigue');
+    expect(p.sets.map((s) => s.reps)).toEqual([40, 40, 40]);
+    expect(p.options ?? []).toEqual([]);
+  });
+
+  it('stagnation : 4 séances à 10-10-10 → alerte et deux choix (variante, autre plage), la progression continue (11-10-10)', () => {
+    const history = [12, 9, 6, 3].map((d) => bwSession(d, null, [10, 10, 10]));
+    const p = prescribe(input({ exercise: PUSH_UP, history, target: target(8, 15) }));
+    expect(p.reasons).toContain('stall');
+    expect(p.headline).toBe('rep-ladder');
+    expect(p.sets.map((s) => s.reps)).toEqual([11, 10, 10]);
+    expect((p.options ?? []).map((o) => o.kind)).toEqual(['stall-variant', 'stall-range']);
+  });
+
+  it('décote de position : 2ᵉ exercice du muscle (× 0,93) → 11-10-10 devient 10-9-9, note dédiée aux répétitions', () => {
+    const p = prescribe(input({ exercise: PUSH_UP, history: [bwSession(3, null, [10, 10, 10])], target: target(8, 15), positionRank: 2, lastPositionRank: 1 }));
+    expect(p.reasons).toContain('position-discount');
+    expect(p.sets.map((s) => s.reps)).toEqual([10, 9, 9]);
+    expect(p.positionRank).toBe(2);
+    expect(explanationNotes(p)).toContainEqual({ key: 'notePositionValues', params: { rank: 2, cut: 7 } });
+    // Même rang que la séance de référence : aucune décote.
+    const same = prescribe(input({ exercise: PUSH_UP, history: [bwSession(3, null, [10, 10, 10])], target: target(8, 15), positionRank: 2, lastPositionRank: 2 }));
+    expect(same.reasons).not.toContain('position-discount');
   });
 });
