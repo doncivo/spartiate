@@ -16,7 +16,7 @@ test('aucune donnée de récupération : texte d’absence, aucun cadran, aucun 
   await expect(card).toBeVisible();
   await expect(card.getByText(isPhone(testInfo) ? 'Aucune donnée de récupération importée pour l’instant.' : 'Aucun résumé de récupération reçu de l’iPhone.')).toBeVisible();
   await expect(card.getByRole('img')).toHaveCount(0);
-  await expect(card.getByText('J+0/14')).toHaveCount(0);
+  await expect(card.getByText(isPhone(testInfo) ? 'Va dans Plus → Apple Santé → Raccourcis pour importer ton sommeil, ta HRV et ta FC de repos.' : 'L’iPhone calcule la récupération depuis ses imports Raccourcis et la publie ici par la synchro.')).toBeVisible();
 });
 
 test('iPhone : « Ouvrir Apple Santé » mène à l’écran Apple Santé', async ({ page }, testInfo) => {
