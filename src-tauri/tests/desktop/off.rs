@@ -461,3 +461,32 @@ async fn a_client_refusing_the_scheme_reports_tls_and_the_wire_form_is_stable() 
         json!({"kind": "tls"})
     );
 }
+
+fn body_with_energy(value: serde_json::Value) -> String {
+    json!({
+        "code": BARCODE,
+        "status": 1,
+        "product": { "code": BARCODE, "product_name": "Produit", "nutriments": { "energy-kcal_100g": value } }
+    })
+    .to_string()
+}
+
+/// NUTRI-0292 (C-046) : une virgule de milliers n'est jamais lue comme une virgule décimale.
+#[tokio::test]
+async fn thousands_separators_are_not_read_as_decimals() {
+    let cases = [
+        ("1,234.5", 1234.5),
+        ("1.234,5", 1234.5),
+        ("1,234,567", 1_234_567.0),
+        ("1,5", 1.5),
+        ("12.5", 12.5),
+    ];
+    for (text, expected) in cases {
+        let mock = start_mock(move |_| reply(200, &body_with_energy(json!(text))));
+        let out = client_for(&mock.base).product(BARCODE).await.unwrap();
+        assert_eq!(
+            out.products[0].nutriments["energy-kcal_100g"], expected,
+            "{text}"
+        );
+    }
+}
