@@ -90,7 +90,8 @@ describe('suivi GPS (iPhone, premier plan)', () => {
     gps.emit(fix(1));
     db.clock.advance(30_000);
     gps.emit(fix(2));
-    expect(await screen.findByText('Suivi en cours : 1 min · 0,22 km')).toBeInTheDocument();
+    // SEANCE-0292 (C-083) : distance annoncée aux 100 m (attente changée : 0,22 → 0,2 km).
+    expect(await screen.findByText('Suivi en cours : 1 min · 0,2 km')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Arrêter et reporter' }));
     expect(await screen.findByText('Durée et distance reportées : vérifie le ressenti, puis enregistre.')).toBeInTheDocument();
     expect(gps.calls.stopped).toBe(1);

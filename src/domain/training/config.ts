@@ -111,6 +111,40 @@ export const DEFAULT_PROGRESSION_CONFIG: ProgressionConfig = Object.freeze({
   timeStepMaxSec: 5,
 });
 
+/** Constantes du moteur qu'un exercice peut ajuster (PRD § 11 « ajustables par exercice ») : bornes incluses, entier si `integer`. */
+export type TunableKey = 'deloadLoad' | 'maxGainPerSession' | 'snapTolerance' | 'easyRecalibrationGain' | 'unknownIncrementKg' | 'fatigueDrop' | 'stallSessions' | 'detrainStartDays' | 'lowRecoveryLoad' | 'timeStepMaxSec';
+
+/**
+ * SEANCE-0292 (§ 11, choix prudent D-510) : bornes des surcharges par exercice. Le plafond de hausse ne dépasse jamais 10 % (§ 11.5 « aucune
+ * hausse > 10 % par séance ») et le recalibrage « Facile » jamais 5 % (§ 11.2.5) : une surcharge ne peut que rendre le moteur plus prudent ou
+ * adapter un réglage matériel. Hors bornes, illisible ou clé inconnue : ignorée (valeur par défaut).
+ */
+export const TUNABLE_BOUNDS: Readonly<Record<TunableKey, { readonly min: number; readonly max: number; readonly integer?: boolean }>> = Object.freeze({
+  deloadLoad: { min: 0.5, max: 1 },
+  maxGainPerSession: { min: 0.01, max: 0.1 },
+  snapTolerance: { min: 0, max: 0.1 },
+  easyRecalibrationGain: { min: 0, max: 0.05 },
+  unknownIncrementKg: { min: 0.25, max: 20 },
+  fatigueDrop: { min: 0.05, max: 0.5 },
+  stallSessions: { min: 2, max: 10, integer: true },
+  detrainStartDays: { min: 7, max: 60, integer: true },
+  lowRecoveryLoad: { min: 0.5, max: 1 },
+  timeStepMaxSec: { min: 1, max: 60, integer: true },
+});
+
+/** Configuration d'un exercice : celle du moteur, puis ses surcharges valides (`TUNABLE_BOUNDS`) ; sans surcharge, la même référence. */
+export function withExerciseOverrides(config: ProgressionConfig, overrides: Readonly<Partial<Record<TunableKey, number>>> | undefined): ProgressionConfig {
+  if (overrides === undefined || overrides === null) return config;
+  const patch: Partial<Record<TunableKey, number>> = {};
+  for (const [key, bounds] of Object.entries(TUNABLE_BOUNDS) as [TunableKey, (typeof TUNABLE_BOUNDS)[TunableKey]][]) {
+    const value = (overrides as Record<string, unknown>)[key];
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < bounds.min || value > bounds.max) continue;
+    if (bounds.integer === true && !Number.isInteger(value)) continue;
+    patch[key] = value;
+  }
+  return Object.keys(patch).length === 0 ? config : Object.freeze({ ...config, ...patch });
+}
+
 /**
  * I5-02 point 2.2 (§ 16.1 niveau A, § 16.3 « par muscle ») : repère du Recovery Split. Un muscle sous `spareBelowPercent` est « à ménager »
  * et seul signalé par la suggestion prudente ; au-delà, « prêt ». Proposition (le PRD ne fixe pas le seuil), à confirmer par Ali.
@@ -241,7 +275,7 @@ export const PROPOSAL_OPTION_ORDER: readonly ProposalOptionKind[] = ['fatigue-lo
 // -----------------------------------------------------------------------------------------------------------------------------------
 
 /** Version des règles de génération ; incrémentée à tout changement d'une constante ci-dessous qui change une séance proposée. */
-export const GENERATION_VERSION = 2;
+export const GENERATION_VERSION = 3;
 
 export interface GenerationConfig {
   /** Temps de travail estimé par série (§ 12.1) ; le repos compte entre séries consécutives seulement (D-73 point 4). */

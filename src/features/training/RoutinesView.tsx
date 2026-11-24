@@ -702,7 +702,7 @@ function RoutineEditor({ data, access, ids, tree, initialMessage, onClose, onCha
 // Liste et programmes de départ
 // -----------------------------------------------------------------------------------------------------------------------------------
 
-function ProgramCard({ data, program, onAdd }: { readonly data: TrainingData; readonly program: StarterProgram; readonly onAdd: () => void }) {
+function ProgramCard({ data, program, busy, onAdd }: { readonly data: TrainingData; readonly program: StarterProgram; readonly busy: boolean; readonly onAdd: () => void }) {
   const lines = program.days.flatMap((d) =>
     d.exercises.map((l) => ({
       exerciseId: l.exerciseId,
@@ -717,7 +717,7 @@ function ProgramCard({ data, program, onAdd }: { readonly data: TrainingData; re
         {program.audienceFr} · {tPlural(tTraining, program.days.length, 'programDaysOne', 'programDays')}
       </p>
       {incompatible > 0 && <p className="ct-training__warn">{tPlural(tTraining, incompatible, 'programIncompatibleOne', 'programIncompatible')}</p>}
-      <Button variant="secondary" onClick={onAdd}>
+      <Button variant="secondary" disabled={busy} onClick={onAdd}>
         {tTraining('programAdd', { name: program.name })}
       </Button>
     </li>
@@ -741,6 +741,9 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
   const [importing, setImporting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // SEANCE-0292 (C-077) : une création à la fois (un double appui arrive avant le redessin qui désactive les boutons).
+  const creating = useRef(false);
+  const [busy, setBusy] = useState(false);
 
   const refresh = async (): Promise<void> => {
     setRoutines(await (await access.repos.trainingRoutines()).list());
@@ -769,6 +772,9 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
   };
 
   const create = async (input: Parameters<typeof programToRoutine>[0] | null): Promise<void> => {
+    if (creating.current) return;
+    creating.current = true;
+    setBusy(true);
     setError(null);
     try {
       const routine = input
@@ -792,6 +798,9 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
       await openTree(routine.id, input ? tTraining('programAdded', { name: input.name }) : null);
     } catch {
       setError(tTraining('saveError'));
+    } finally {
+      creating.current = false;
+      setBusy(false);
     }
   };
 
@@ -837,7 +846,9 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
   return (
     <div className="ct-training__routines">
       <div className="ct-training__actions">
-        <Button onClick={() => void create(null)}>{tTraining('newRoutine')}</Button>
+        <Button disabled={busy} onClick={() => void create(null)}>
+          {tTraining('newRoutine')}
+        </Button>
         <Button variant="secondary" expanded={programs} onClick={() => setPrograms((v) => !v)}>
           {tTraining('addProgram')}
         </Button>
@@ -863,7 +874,7 @@ export function RoutinesView({ data, access, ids, reload }: RoutinesViewProps) {
           <p className="ct-training__muted">{tTraining('programsHint')}</p>
           <ul className="ct-training__cards">
             {data.content.programs.map((program) => (
-              <ProgramCard key={program.id} data={data} program={program} onAdd={() => void create(program)} />
+              <ProgramCard key={program.id} data={data} program={program} busy={busy} onAdd={() => void create(program)} />
             ))}
           </ul>
         </section>

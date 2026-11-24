@@ -3,11 +3,12 @@ import { isFailureSet, setKindChoiceOf, type SetKindChoice } from '../../../doma
 import { tSession } from '../../../i18n/trainingSessionText';
 import { Check, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
-import { defaultEntry, validateSetEntry, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
+import { defaultEntry, draftEntryPatch, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
+import { useKeyboardSelect } from './keyboardSelect';
 import type { OutlierAsk } from './outlierCheck';
 
 /**
@@ -72,6 +73,8 @@ export interface SetRowProps {
   readonly loads?: readonly number[] | null;
   /** ERGO-02 (D-261) : haltères tenus (2 : « 2 × 26 kg », saisie « par haltère ») ; null : charge affichée telle quelle. */
   readonly held?: Held;
+  /** SEANCE-0292 (C-071) : sens du champ de charge (`loadFieldOf`) ; absent : charge soulevée. */
+  readonly loadField?: LoadField;
   readonly timed: boolean;
   readonly source: WorkoutSource;
   readonly busy: boolean;
@@ -81,6 +84,11 @@ export interface SetRowProps {
    */
   readonly checkEntry?: (entry: SetEntry, kind: SetKind) => Promise<OutlierAsk | null>;
   readonly onValidate: (entry: SetEntry) => void;
+  /**
+   * SEANCE-0292 (C-078) : saisie en cours d'une série à faire, à garder en base (champs lisibles seulement) ; appelée à la sortie d'un champ et
+   * une seconde après la dernière frappe. Absent : saisie en mémoire seulement.
+   */
+  readonly onDraft?: (patch: Partial<SetEntry>) => void;
   readonly onUnvalidate: () => void;
   /** SESS-01c : `failure` = série de travail à RIR 0 (`setKindPatch`). */
   readonly onKind: (kind: SetKindChoice) => void;
@@ -102,7 +110,9 @@ function outlierText(outlier: OutlierAsk, held: Held): string {
   return tTraining(outlier.perDumbbell ? 'sessionPlausibleAskDumbbell' : 'sessionPlausibleAsk', { load, body, multiple: formatNumber(outlier.multiple) });
 }
 
-export function SetRow({ set, number, current = false, loads = null, held = null, timed, source, busy, checkEntry, onValidate, onUnvalidate, onKind, onRemove }: SetRowProps) {
+const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
+
+export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onDraft, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
@@ -128,6 +138,28 @@ export function SetRow({ set, number, current = false, loads = null, held = null
     setSynced({ key: stored, draft: next });
     if (!set.done && sameDraft(draft, synced.draft)) setDraft(next);
   }
+  // SEANCE-0292 (C-078) : la saisie d'une série à faire est gardée en base (sortie d'un champ, ou une seconde après la dernière frappe).
+  const savedDraft = useRef<Draft>(draft);
+  const flushDraft = (): void => {
+    if (onDraft === undefined || set.done || sameDraft(draft, savedDraft.current) || sameDraft(draft, synced.draft)) return;
+    savedDraft.current = draft;
+    const read = (t: string): number | null | undefined => (t.trim() === '' ? null : (parseNumber(t) ?? undefined));
+    const patch = draftEntryPatch(timed ? { loadKg: read(draft.load), durationSec: read(draft.duration), rir: read(draft.rir) } : { loadKg: read(draft.load), reps: read(draft.reps), rir: read(draft.rir) });
+    if (Object.keys(patch).length > 0) onDraft(patch);
+  };
+  const flushRef = useRef(flushDraft);
+  useEffect(() => {
+    flushRef.current = flushDraft;
+  });
+  useEffect(() => {
+    if (onDraft === undefined || set.done) return;
+    const id = setTimeout(() => flushRef.current(), 1000);
+    return () => clearTimeout(id);
+  }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps -- relance du délai à chaque frappe seulement
+  // Relecture B : la ligne démontée (exercice changé, écran quitté) avant la seconde de délai enregistre la saisie au lieu de la perdre.
+  useEffect(() => () => flushRef.current(), []);
+  // SEANCE-0292 (C-080) : type de série parcouru au clavier écrit une fois (Entrée ou sortie du champ), pas à chaque flèche.
+  const kindSelect = useKeyboardSelect(setKindChoiceOf(set), (next) => onKind(next as SetKindChoice));
   const warmup = set.setKind === 'warmup';
   const target = targetText(set, timed, source, held);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -205,7 +237,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const steps = current && !timed;
   // ERGO-02 (D-261) : deux haltères, le libellé « 2 × 26 kg » suit la saisie et le « − / + » ; la valeur saisie reste celle d'un haltère.
   const pairLoad = held === 2 ? parseNumber(draft.load) : null;
-  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>) => (
+  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>, describedBy?: string) => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
       <input
@@ -214,12 +246,14 @@ export function SetRow({ set, number, current = false, loads = null, held = null
         inputMode={mode}
         enterKeyHint="done"
         autoComplete="off"
+        aria-describedby={describedBy}
         value={draft[key]}
         onChange={(e) => {
           setAsk(null);
           setDraft((now) => ({ ...now, [key]: e.target.value }));
         }}
         onKeyDown={onKey}
+        onBlur={flushDraft}
       />
     </label>
   );
@@ -255,7 +289,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       ) : (
         <>
           <div className="ct-session__fields">
-            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : 'sessionLoad', 'decimal', loadRef)}
+            {field('load', held === 2 ? 'sessionLoadPerDumbbell' : LOAD_LABEL[loadField], 'decimal', loadRef, loadField === 'ballast' && held !== 2 ? `${set.id}-load-help` : undefined)}
             {pairLoad === null ? null : (
               <output className="ct-session__pair ct-session__num" aria-live="polite">
                 {formatExerciseLoad(pairLoad, 2)}
@@ -269,7 +303,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
           <div className="ct-session__set-actions">
             <label className="ct-session__field ct-session__field--kind">
               <span className="ct-training__label">{tTraining('sessionSetKind')}</span>
-              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={setKindChoiceOf(set)} disabled={busy} onChange={(e) => onKind(e.target.value as SetKindChoice)}>
+              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={kindSelect.value} disabled={busy} onKeyDown={kindSelect.onKeyDown} onChange={kindSelect.onChange} onBlur={kindSelect.onBlur}>
                 <option value={timed && set.setKind === 'timed' ? 'timed' : 'work'}>{tTraining(timed && set.setKind === 'timed' ? 'kindTimed' : 'kindWork')}</option>
                 {!timed && <option value="failure">{tSession('kindFailure')}</option>}
                 <option value="warmup">{tTraining('kindWarmup')}</option>
@@ -284,6 +318,11 @@ export function SetRow({ set, number, current = false, loads = null, held = null
               {tTraining('sessionValidate')}
             </button>
           </div>
+          {loadField === 'ballast' && held !== 2 ? (
+            <p id={`${set.id}-load-help`} className="ct-training__muted">
+              {tTraining('sessionLoadBallastHint')}
+            </p>
+          ) : null}
           <p id={`${set.id}-kind-help`} className="ct-training__muted">
             {tTraining('sessionKindHelp')}
           </p>

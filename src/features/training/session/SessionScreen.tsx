@@ -131,7 +131,11 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
             access={access}
             closed={load.closed}
             heldOf={heldLookup(data)}
-            onClose={() => setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed: null } : now))}
+            // SEANCE-0292 (BL-160, D-527) : « Fermer le résumé » ramène à l'accueil de l'Entraînement (l'onglet ne reste pas sur « Nouvelle séance »).
+            onClose={() => {
+              setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed: null } : now));
+              onExit();
+            }}
             onJournal={() => navigate({ tab: 'training', screen: 'history' })}
           />
         </Suspense>
@@ -150,7 +154,11 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
           haptics={container.haptics}
           onWorkout={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))}
           onRestSetting={setRestSetting}
-          onClosed={(closed) => setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed } : now))}
+          onClosed={(closed) => {
+            setLoad((now) => (now.status === 'ready' ? { ...now, workout: null, closed } : now));
+            // SEANCE-0292 (§ 10.3) : notifications demandées en fin de première séance (iPhone ; jamais sur le PC).
+            void timer.askPermission();
+          }}
         />
       )}
     </div>

@@ -156,7 +156,7 @@ export const trainingFr = {
   dumbbellMin: 'Haltère le plus léger (kg)',
   dumbbellMax: 'Haltère le plus lourd (kg)',
   dumbbellStep: 'Pas des haltères (kg)',
-  platesList: 'Disques par côté (kg, séparés par des points-virgules)',
+  platesList: 'Disques par côté (kg, séparés par des points-virgules ; nombre après « × », ex. 20 × 4 ; 10)',
   kettlebellsList: 'Kettlebells (kg, séparés par des points-virgules)',
   saveProfile: 'Enregistrer le profil',
   profileSaved: 'Profil enregistré',
@@ -164,7 +164,16 @@ export const trainingFr = {
   deleteProfileTitle: 'Supprimer le profil « {name} » ?',
   deleteProfileHint: 'Cet appareil reviendra au profil par défaut s’il l’utilisait.',
   profileDeleted: 'Profil supprimé',
+  /** SEANCE-0292 (§ 14.3 b). */
+  equipmentForced: 'Matériel forcé (toujours proposé)',
+  equipmentForbidden: 'Matériel interdit (jamais proposé)',
   errorProfile: 'Vérifie le profil : un nom, des nombres positifs, le minimum avant le maximum.',
+  /** SEANCE-0292 (C-081). */
+  errorWeightDuplicate: '« {item} » est en double : un poids une seule fois par liste.',
+  /** SEANCE-0292 (C-081) : disques d'un poids, saisis « 20 × 4 ». */
+  plateWithCount: '{n} × {count}',
+  /** SEANCE-0292 (C-066) : « 12,16 » n'est pas un poids (décimale hors des quarts de kilo). */
+  errorWeightSeparator: '« {item} » n’est pas un poids : sépare les poids par des points-virgules (ex. 12 ; 16).',
   kg: '{n} kg',
   /** ERGO-02 (D-261) : charge de deux haltères, la valeur est celle d'un haltère. */
   loadPair: '2 × {load} kg',
@@ -293,6 +302,8 @@ export const trainingFr = {
   sessionAbandonTitle: 'Abandonner la séance ?',
   sessionAbandonHint: 'Les séries saisies seront effacées de cet appareil.',
   sessionAbandonConfirm: 'Abandonner',
+  /** SEANCE-0292 (C-078). */
+  sessionDraftError: 'Saisie non enregistrée sur l’appareil : valide la série pour la garder.',
   sessionWriteError: 'L’enregistrement a échoué. Réessaie : rien n’est perdu de ce qui est déjà validé.',
   sessionNoExercise: 'Aucun exercice pour l’instant.',
   sessionAddExercise: 'Ajouter un exercice',
@@ -322,6 +333,11 @@ export const trainingFr = {
   kindPartial: 'Partielle',
   kindTimed: 'Chronométrée',
   sessionLoad: 'Charge (kg)',
+  /** SEANCE-0292 (C-071) : exercice au poids du corps ou lesté, la saisie est le lest seul. */
+  sessionLoadBallast: 'Lest (kg)',
+  sessionLoadBallastHint: 'Poids du corps non compris : 0 ou vide, sans lest.',
+  /** SEANCE-0292 (C-071) : exercice assisté, la saisie est l’assistance. */
+  sessionLoadAssistance: 'Assistance (kg)',
   /** ERGO-02 (D-261) : deux haltères, la saisie reste la charge d'un haltère ; le libellé « 2 × 26 kg » est affiché à côté. */
   sessionLoadPerDumbbell: 'Charge par haltère (kg)',
   sessionReps: 'Répétitions',
@@ -381,6 +397,8 @@ export const trainingFr = {
   restNotificationTitle: 'Repos terminé',
   restNotificationBody: 'Passe à la série suivante.',
   restNotificationScheduled: 'Une notification sonnera à la fin du repos.',
+  /** SEANCE-0292 (§ 10.3) : autorisation demandée à la fin de la première séance. */
+  restNotificationLater: 'Les notifications te seront proposées à la fin de la séance. En attendant, garde l’œil sur le minuteur.',
   restNotificationDenied: 'Notifications refusées : aucune alerte à la fin du repos. Garde l’œil sur le minuteur.',
   restNotificationFailed: 'La notification de fin de repos n’a pas pu être programmée.',
   restLiveFallback: 'Live Activity indisponible : le minuteur reste dans l’app.',
@@ -427,6 +445,8 @@ export const trainingFr = {
   sectionCycle: 'Cycle',
   sectionCardio: 'Cardio',
   historyTitle: 'Séances terminées',
+  /** SEANCE-0292 (C-082). */
+  historyMore: 'Afficher les séances plus anciennes',
   historyEmpty: 'Aucune séance terminée pour l’instant. Termine une séance pour la retrouver ici, avec ses séries et son volume.',
   historySetsOne: '{n} série',
   historySets: '{n} séries',
@@ -438,6 +458,8 @@ export const trainingFr = {
   historyCorrected: 'corrigée',
   historyCorrect: 'Corriger',
   historyCorrectSave: 'Enregistrer la correction',
+  /** SEANCE-0292 (C-072). */
+  historyErrorLoadCleared: 'La charge ne peut pas être vidée : saisis la charge réellement soulevée.',
   historyCorrectionSaved: 'Correction enregistrée. Elle sera synchronisée avec ton autre appareil.',
   historyCorrectError: 'La correction n’a pas pu être enregistrée. Réessaie.',
   historyDelete: 'Supprimer la séance',

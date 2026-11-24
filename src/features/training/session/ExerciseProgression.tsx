@@ -212,6 +212,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
 
   useEffect(() => {
     live.current = true;
+    // SEANCE-0292 (C-080) : drapeau PROPRE à ce chargement ; une lecture d'un chargement précédent (relancé) n'écrit plus rien.
+    let alive = true;
     void (async () => {
       try {
         const repo = await access.repos.progression();
@@ -229,24 +231,25 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         // I4-08 point 5 : le deload du cycle ne vaut que pour une séance issue de la routine du cycle (démarrée ou proposée depuis elle).
         const ofCycle = cycle !== null && sessionRoutineId({ id: workout.id, routineId: workout.routineId }, link) === cycle.record.routineId;
         const cycleDeload = ofCycle && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
-        if (!live.current) return;
+        if (!alive) return;
         // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
         if (cycleDeload && !cyclePreset.current) {
           cyclePreset.current = true;
           setDeload(true);
         }
         const lastPositionRank = await referencePositionRank(access, history, exerciseId, musclesOf);
-        if (!live.current) return;
+        if (!alive) return;
         const bodyweightKg = exercise?.bodyweightFraction ? await bodyweightNow(access) : null;
-        if (!live.current) return;
+        if (!alive) return;
         const plan = cycleDeload ? cycle.state.plan : null;
         const cycleDeloadPlan = plan?.deloadSets !== undefined && plan.deloadLoad !== undefined ? { sets: plan.deloadSets, load: plan.deloadLoad } : null;
         setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, cycleDeloadPlan, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
       } catch {
-        if (live.current) setLoad({ status: 'error' });
+        if (alive) setLoad({ status: 'error' });
       }
     })();
     return () => {
+      alive = false;
       live.current = false;
     };
   }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]); // eslint-disable-line react-hooks/exhaustive-deps -- musclesOf change à chaque rendu ; le rang de référence et le poids de corps se relisent au rechargement
@@ -276,6 +279,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         deload,
         ...(deload && load.cycleDeloadPlan !== null ? { deloadSets: load.cycleDeloadPlan.sets, deloadLoad: load.cycleDeloadPlan.load } : {}),
         positionRank,
+        // C-025 : inactivité comptée en jours civils du fuseau de l'appareil.
+        utcOffsetMinutes: -new Date(clock.nowMs()).getTimezoneOffset(),
       }),
     );
     // SESS-01d : « Fatigué » déclaré, une hausse prévue reste à la charge de référence (arrondie au matériel actif).
@@ -296,9 +301,11 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
    * est déjà validée (jamais d'échauffement inséré avant du travail fait).
    */
   const hasWarmup = sets.some((s) => s.setKind === 'warmup' || s.done);
+  // C-030 : exercice lesté, rampe sur la charge totale (poids de corps de la tendance, lu avec le contexte de prescription).
+  const bodyweightKg = load.status === 'ready' ? load.bodyweightKg : null;
   const rampFor = useCallback(
-    (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment) : []),
-    [warmup, hasWarmup, exercise, equipment],
+    (loadKg: number): WarmupSet[] => (warmup && !hasWarmup && exercise !== undefined ? warmupForExercise(exercise, loadKg, equipment, undefined, bodyweightKg) : []),
+    [warmup, hasWarmup, exercise, equipment, bodyweightKg],
   );
 
   /**
@@ -323,7 +330,9 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
           });
           if (chosen === null) return;
           const workouts = await repos.workouts();
-          const work = sets.filter((s) => s.setKind !== 'warmup');
+          // C-069 : séries relues dans la transaction (l'instantané de l'écran peut précéder une validation) ; une série faite n'est jamais écrasée.
+          const fresh = (await workouts.get(workout.id))?.sets.filter((s) => s.exerciseId === exerciseId) ?? sets;
+          const work = fresh.filter((s) => s.setKind !== 'warmup');
           // Autant de séries que proposées (deload, Recovery bas : moins de séries) ; les autres restent vides, à Ali de décider.
           // MOTEUR-0281a : chronométré, la valeur est une durée ; exercice sans charge, un lest nul n'écrit aucune charge.
           const timedValue = prescription.metric === 'time';

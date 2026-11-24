@@ -70,8 +70,8 @@ async function firstSet(name: string): Promise<HTMLElement> {
   if (!first) throw new Error('aucune série');
   return first;
 }
-/** « Charge (kg) », ou « Charge par haltère (kg) » pour deux haltères (ERGO-02). */
-const LOAD_LABEL = /^Charge (par haltère )?\(kg\)$/;
+/** « Charge (kg) », ou « Charge par haltère (kg) » pour deux haltères (ERGO-02) ; « Assistance (kg) » pour un assisté (SEANCE-0292, C-071). */
+const LOAD_LABEL = /^(Charge (par haltère )?|Assistance )\(kg\)$/;
 function enter(set: HTMLElement, load: string, reps: string): void {
   fireEvent.change(within(set).getByLabelText(LOAD_LABEL), { target: { value: load } });
   fireEvent.change(within(set).getByLabelText('Répétitions'), { target: { value: reps } });

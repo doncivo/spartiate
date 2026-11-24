@@ -61,8 +61,9 @@ synchro), soit 185 lignes à traiter.
 
 ## Recompte après le complément d'audit (24/11, AUDIT-0292)
 
-Complément d'Ali : docs/LOT-0.29.2-audit.md (D-489 à D-505, lignes BL-138 à BL-159). Sur la base de main après la CI (#205, 11 lignes
-fermées) et avant la fusion de séance et moteur (#206) : **195 lignes « à faire »** — CI 3, séance et moteur 54, nutrition et
-récupération 43, données et synchro 26, import et contenu 5, coquille, iOS et qualité 64. Ordre (D-492) : séance #206, puis BL-138
-(données et synchro), puis les 3 lignes CI nouvelles, la suite de séance et moteur (BL-106, BL-140, BL-141, § 12.3, D-73 (4), restes
-de #206), nutrition et récupération, publication 0.29.2.
+Complément d'Ali : docs/LOT-0.29.2-audit.md (D-489 à D-505, lignes BL-138 à BL-159). Après la CI (#205) et séance et moteur (#206),
+compté par `grep -c 'à faire (0' docs/backlog.md` : **154 lignes « à faire »** — CI 3, séance et moteur 10, nutrition et
+récupération 43, données et synchro 26, import et contenu 5, coquille, iOS et qualité 67. S'y ajoutent 49 lignes « fait en partie ;
+reste : … » (restes traités avec leur module) et 2 « à trancher par Ali » (Q-11 à Q-14 de docs/decisions-a-prendre.md). Ordre (D-492) :
+BL-138 (données et synchro), les 3 lignes CI nouvelles, la suite de séance et moteur (BL-106, BL-140, BL-141, § 12.3, § 12.4, BL-111,
+BL-112, § 13.2 a, § 13.3 b, § 17.1 a), nutrition et récupération, publication 0.29.2.

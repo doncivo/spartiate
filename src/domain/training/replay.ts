@@ -73,11 +73,16 @@ export interface WorkoutReplay {
 
 const byPosition = (a: WorkoutSet, b: WorkoutSet): number => a.position - b.position || a.id.localeCompare(b.id);
 const round2 = (n: number): number => Math.round(n * 100) / 100;
+/** C-014 : instant de validation lisible (ms), sinon null (absent ou illisible : traité comme absent, jamais un comparateur NaN). */
+const instantOf = (set: WorkoutSet): number | null => {
+  const ms = set.doneAt === null ? Number.NaN : Date.parse(set.doneAt);
+  return Number.isFinite(ms) ? ms : null;
+};
 
 /** Ordre réel : séries datées par instant, puis chaque série sans instant après la série datée qui la précède par position. */
 function executionOrder(done: readonly WorkoutSet[]): WorkoutSet[] {
-  const timed = done.filter((s) => s.doneAt !== null).sort((a, b) => Date.parse(a.doneAt as string) - Date.parse(b.doneAt as string) || byPosition(a, b));
-  const untimed = done.filter((s) => s.doneAt === null).sort(byPosition);
+  const timed = done.filter((s) => instantOf(s) !== null).sort((a, b) => (instantOf(a) as number) - (instantOf(b) as number) || byPosition(a, b));
+  const untimed = done.filter((s) => instantOf(s) === null).sort(byPosition);
   const after = new Map<string | null, WorkoutSet[]>();
   for (const u of untimed) {
     const anchor = [...timed].filter((t) => byPosition(t, u) < 0).sort(byPosition).at(-1);
@@ -117,8 +122,10 @@ function restTarget(sets: readonly WorkoutSet[], set: WorkoutSet): number | null
 function restOf(sets: readonly WorkoutSet[], set: WorkoutSet, next: WorkoutSet | undefined): ReplayRest {
   if (next === undefined) return { actualSec: null, targetSec: null, deviation: 'last', deltaSec: null };
   const targetSec = restTarget(sets, set);
-  if (set.doneAt === null || next.doneAt === null) return { actualSec: null, targetSec, deviation: 'unknown', deltaSec: null };
-  const interval = Math.round((Date.parse(next.doneAt) - Date.parse(set.doneAt)) / 1000);
+  const from = instantOf(set);
+  const to = instantOf(next);
+  if (from === null || to === null) return { actualSec: null, targetSec, deviation: 'unknown', deltaSec: null };
+  const interval = Math.round((to - from) / 1000);
   const actualSec = Math.max(0, interval - (next.setKind === 'timed' && next.durationSec !== null ? next.durationSec : 0));
   if (targetSec === null) return { actualSec, targetSec, deviation: 'noTarget', deltaSec: null };
   const deltaSec = actualSec - targetSec;
@@ -144,5 +151,5 @@ export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[] })
       rest: restOf(sets, set, ordered[index + 1]),
     }),
   );
-  return { steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => s.doneAt === null).length };
+  return { steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => instantOf(s) === null).length };
 }

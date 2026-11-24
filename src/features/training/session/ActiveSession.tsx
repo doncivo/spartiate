@@ -5,6 +5,7 @@ import {
   REST_CHOICES_SEC,
   circuitsOf,
   groupByExercise,
+  loadFieldOf,
   restAfterCircuitSet,
   restRemainingMs,
   restSecondsFor,
@@ -40,6 +41,7 @@ import { SessionStrip } from './SessionStrip';
 import { DeclaredFatigueBar } from './DeclaredFatigueBar';
 import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
+import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
 
@@ -105,6 +107,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [grouping, setGrouping] = useState(false);
+  // SEANCE-0292 (C-080) : repos par défaut parcouru au clavier écrit une fois (Entrée ou sortie du champ).
+  const restSelect = useKeyboardSelect(restSetting === null ? '' : String(restSetting), (v) => onRestSetting(v === '' ? null : Number(v)));
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
   const [replacing, setReplacing] = useState<string | null>(null);
   /** SESS-01d : fatigue déclarée pour CETTE séance (réglage local), lue au montage ; illisible : aucune. */
@@ -267,6 +271,18 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     const fresh = await (await access.repos.workouts()).get(workout.id);
     if (live.current) onWorkout(fresh);
   }, [access, workout.id, onWorkout]);
+
+  /**
+   * SEANCE-0292 (C-078, D-521) : saisie d'une série à faire gardée en base sans redessiner la séance (la série reste à faire ; la séance
+   * ouverte n'est pas publiée). Échec : message visible, la saisie reste à l'écran.
+   */
+  async function saveDraft(setId: string, patch: Partial<SetEntry>): Promise<void> {
+    try {
+      await (await access.repos.workouts()).updateSet(setId, patch);
+    } catch {
+      if (live.current) setError(tTraining('sessionDraftError'));
+    }
+  }
 
   async function startRest(seconds: number, label?: string): Promise<void> {
     try {
@@ -526,9 +542,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           <select
             id="ct-session-rest"
             className="ct-session__input"
-            value={restSetting === null ? '' : String(restSetting)}
+            value={restSelect.value}
             aria-describedby="ct-session-rest-hint"
-            onChange={(e) => onRestSetting(e.target.value === '' ? null : Number(e.target.value))}
+            onKeyDown={restSelect.onKeyDown}
+            onChange={restSelect.onChange}
+            onBlur={restSelect.onBlur}
           >
             <option value="">{tTraining('restDefaultExercise')}</option>
             {REST_CHOICES_SEC.map((s) => (
@@ -617,11 +635,13 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     current={set.id === currentSetId}
                     loads={loads}
                     held={held}
+                    loadField={exercise === undefined ? 'load' : loadFieldOf(exercise)}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
                     busy={busy}
                     checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
+                    onDraft={(patch) => void saveDraft(set.id, patch)}
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
                     onKind={(kind: SetKindChoice) => void write((repo) => repo.updateSet(set.id, setKindPatch(kind, set)))}
                     onRemove={() => void write((repo) => repo.removeSet(set.id))}
@@ -783,6 +803,7 @@ function RestExplanation({ report }: { readonly report: RestReport }) {
   const lines: { readonly text: string; readonly alert: boolean }[] = [];
   if (report.notification === 'scheduled') lines.push({ text: tTraining('restNotificationScheduled'), alert: false });
   else if (report.notification === 'denied') lines.push({ text: tTraining('restNotificationDenied'), alert: true });
+  else if (report.notification === 'undetermined') lines.push({ text: tTraining('restNotificationLater'), alert: false });
   else lines.push({ text: tTraining('restNotificationFailed'), alert: true });
   if (report.live !== 'started') lines.push({ text: tTraining('restLiveFallback'), alert: false });
   return (

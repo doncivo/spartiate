@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { groupByExercise, type Exercise, type WorkoutSummary, type WorkoutWithSets } from '../../../domain/training';
+import { groupByExercise, loadFieldOf, type Exercise, type WorkoutSummary, type WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
 import { formatDay, tTraining } from '../../../i18n/trainingText';
@@ -210,6 +210,8 @@ export function HistoryDetail({ data, access, workoutId, synced, onDeleted, onRe
                         number={rank}
                         timedExercise={exercise?.metric === 'time'}
                         held={heldOf(block.exerciseId)}
+                        loadField={exercise === undefined ? 'load' : loadFieldOf(exercise)}
+                        {...(exercise === undefined ? {} : { metric: exercise.metric })}
                         busy={busy}
                         onCorrect={(patch) => correct(set.id, patch)}
                       />

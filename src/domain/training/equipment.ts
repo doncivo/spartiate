@@ -114,6 +114,8 @@ export function backfillDumbbellExtras<T extends { readonly name: string; readon
 }
 
 const positive = (n: number): boolean => Number.isFinite(n) && n > 0;
+/** SEANCE-0292 (C-081) : un même poids deux fois (clé d'affichage en double, nombre ambigu). */
+const hasDuplicate = (values: readonly number[]): boolean => new Set(values).size !== values.length;
 const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg) && positive(r.stepKg) && r.minKg <= r.maxKg;
 const ids = (list: readonly string[]): boolean => list.every((id) => EQUIPMENT_ID_RE.test(id));
 
@@ -128,9 +130,9 @@ export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'nam
   if (inv.dumbbells !== null && !range(inv.dumbbells)) add('dumbbells');
   if (inv.cables.some((c) => !range(c))) add('cables');
   if (inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
-  if (inv.kettlebellsKg.some((k) => !positive(k))) add('kettlebells');
+  if (inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
   if (inv.barbells.some((b) => b.type.trim() === '' || !positive(b.weightKg))) add('barbells');
-  if (inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1)) add('plates');
+  if (inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
   const increments: EquipmentIncrements = input.increments;
   if (Object.values(increments).some((v) => !positive(v))) add('increment');
   return issues;

@@ -19,7 +19,10 @@ export const TRACK_RULES = {
   maxAccuracyM: 50,
   /** Segment plus rapide que 15 m/s (54 km/h) : saut de signal, ignoré. */
   maxSpeedMps: 15,
-  /** Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. */
+  /**
+   * Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. SEANCE-0292 (C-008, D-514) : le pas minimal est
+   * aussi la précision annoncée du point (max(3 m, précision)) ; un écart plus court que l'incertitude n'est pas un déplacement.
+   */
   minStepM: 3,
   /** Points gardés au plus (au-delà, la distance continue de compter, le tracé n'est plus prolongé). */
   maxPoints: 10_000,
@@ -33,9 +36,33 @@ export interface TrackState {
   /** Dernier point retenu (gardé ou compté au-delà du plafond). */
   readonly last: TrackPoint | null;
   readonly truncated: boolean;
+  /**
+   * SEANCE-0292 (C-022) : derniers points retenus, au-delà du plafond comme en deçà, juste assez pour couvrir le dernier kilomètre (allure
+   * vivante quand le tracé n'est plus prolongé). Mémoire seulement, jamais codé.
+   */
+  readonly recent: readonly TrackPoint[];
+  /** Distance couverte par `recent`, en mètres. */
+  readonly recentM: number;
+  /** SEANCE-0292 (C-022) : saut refusé depuis un premier point seul, en attente d'une confirmation par le point suivant. */
+  readonly pending: TrackPoint | null;
 }
 
-export const emptyTrack = (): TrackState => ({ points: [], distanceM: 0, last: null, truncated: false });
+export const emptyTrack = (): TrackState => ({ points: [], distanceM: 0, last: null, truncated: false, recent: [], recentM: 0, pending: null });
+
+const RECENT_SPAN_M = 1000;
+
+/** Ajoute un point à la fenêtre récente et retire les plus anciens tant que le reste couvre encore 1 km. */
+function pushRecent(recent: readonly TrackPoint[], recentM: number, p: TrackPoint, d: number): { recent: TrackPoint[]; recentM: number } {
+  const out = [...recent, p];
+  let m = recentM + d;
+  while (out.length > 2) {
+    const first = haversineM(out[0] as TrackPoint, out[1] as TrackPoint);
+    if (m - first < RECENT_SPAN_M) break;
+    out.shift();
+    m -= first;
+  }
+  return { recent: out, recentM: m };
+}
 
 const rad = (deg: number): number => (deg * Math.PI) / 180;
 
@@ -50,17 +77,39 @@ export function haversineM(a: TrackPoint, b: TrackPoint): number {
 const isUsable = (p: TrackPoint): boolean =>
   Number.isFinite(p.lat) && Number.isFinite(p.lon) && Number.isFinite(p.at) && Number.isFinite(p.accuracyM) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180 && p.accuracyM >= 0 && p.accuracyM <= TRACK_RULES.maxAccuracyM;
 
-/** Ajoute une mesure au tracé : imprécise, instant qui recule, saut irréaliste ou pas trop court : état inchangé. */
+/**
+ * Ajoute une mesure au tracé : imprécise, instant qui recule, saut irréaliste ou pas trop court : état inchangé. SEANCE-0292 (C-022, D-515) :
+ * tant qu'aucune distance n'est comptée (un seul point gardé), un saut irréaliste est mis en attente ; si le point suivant est cohérent avec
+ * lui et pas avec le premier, le premier point était décalé : le point en attente le remplace (un premier point décalé ne bloque plus les
+ * suivants et n'ajoute pas son décalage). Un saut isolé reste ignoré.
+ */
 export function addTrackPoint(state: TrackState, p: TrackPoint): TrackState {
   if (!isUsable(p)) return state;
   const last = state.last;
-  if (last === null) return { points: [p], distanceM: 0, last: p, truncated: false };
+  const anchorAt = (q: TrackPoint): TrackState => ({ points: [q], distanceM: 0, last: q, truncated: false, recent: [q], recentM: 0, pending: null });
+  if (last === null) return anchorAt(p);
+  const alone = state.points.length === 1 && state.distanceM === 0;
   const dt = (p.at - last.at) / 1000;
   if (dt <= 0) return state;
   const d = haversineM(last, p);
-  if (d / dt > TRACK_RULES.maxSpeedMps || d < TRACK_RULES.minStepM) return state;
+  if (d / dt > TRACK_RULES.maxSpeedMps) {
+    if (!alone) return state;
+    const pending = state.pending;
+    if (pending !== null && p.at > pending.at && haversineM(pending, p) / ((p.at - pending.at) / 1000) <= TRACK_RULES.maxSpeedMps) {
+      return addTrackPoint(anchorAt(pending), p);
+    }
+    return { ...state, pending: p };
+  }
+  if (d < Math.max(TRACK_RULES.minStepM, p.accuracyM)) return state;
   const full = state.points.length >= TRACK_RULES.maxPoints;
-  return { points: full ? state.points : [...state.points, p], distanceM: state.distanceM + d, last: p, truncated: state.truncated || full };
+  return {
+    points: full ? state.points : [...state.points, p],
+    distanceM: state.distanceM + d,
+    last: p,
+    truncated: state.truncated || full,
+    ...pushRecent(state.recent, state.recentM, p, d),
+    pending: null,
+  };
 }
 
 /** Distance d'une liste de points déjà retenus. */
@@ -111,4 +160,9 @@ export function lastKmSecPerKm(points: readonly TrackPoint[]): number | null {
     if (distance >= 1000) return Math.round(((last.at - a.at) / 1000) * (1000 / distance));
   }
   return null;
+}
+
+/** SEANCE-0292 (C-022) : allure du dernier kilomètre d'un tracé en cours, lue de la fenêtre récente (vivante au-delà du plafond de points). */
+export function trackLastKmSecPerKm(state: TrackState): number | null {
+  return lastKmSecPerKm(state.recent);
 }

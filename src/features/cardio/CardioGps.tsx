@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { addTrackPoint, emptyTrack, lastKmSecPerKm, paceSecPerKm, type TrackState } from '../../domain/cardio';
+import { addTrackPoint, emptyTrack, trackLastKmSecPerKm, paceSecPerKm, type TrackState } from '../../domain/cardio';
 import type { Clock } from '../../domain/clock';
 import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
@@ -139,7 +139,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
   const elapsedSec = live === null ? 0 : (clock.nowMs() - live.startMs) / 1000;
   const distanceM = live === null ? 0 : live.track.distanceM;
   const pace = paceSecPerKm(elapsedSec, distanceM > 0 ? distanceM : null);
-  const lastKm = live === null ? null : lastKmSecPerKm(live.track.points);
+  const lastKm = live === null ? null : trackLastKmSecPerKm(live.track);
   const signal: CardioTextKey =
     live === null ? 'gpsSignalWaiting' : live.paused ? 'gpsSignalPaused' : live.lost ? 'gpsSignalLost' : live.track.points.length === 0 ? 'gpsSignalWaiting' : 'gpsSignalGood';
   const path = live === null ? '' : trackPath(live.track.points, TRACK_W, TRACK_H, 16);
@@ -182,8 +182,9 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
               <figcaption className="ct-today__muted">{tCardio('gpsTrackNote')}</figcaption>
             </figure>
           )}
+          {/* SEANCE-0292 (C-083) : annonce au plus chaque minute ou chaque 100 m (VoiceOver ne la relit pas tous les 10 m). */}
           <p className="ct-visually-hidden" role="status">
-            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(Math.floor(elapsedSec / 60) * 60), distance: formatKm(distanceM) })}
+            {live.track.points.length === 0 ? line('gpsWaiting') : tCardio('gpsRunning', { duration: formatDuration(Math.floor(elapsedSec / 60) * 60), distance: formatKm(Math.floor(distanceM / 100) * 100) })}
           </p>
           {live.paused ? <p className="ct-cardio__message">{line('gpsPaused')}</p> : live.lost ? <p className="ct-cardio__message">{line('gpsLost')}</p> : null}
           <div className="ct-cardio__gps-actions">

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { useRef, useState } from 'react';
+import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../i18n/trainingText';
@@ -163,13 +163,23 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
 }
 
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
-function parseList(text: string): number[] | null {
-  const parts = text
-    .split(';')
-    .map((p) => p.trim())
-    .filter((p) => p !== '');
-  const values = parts.map(parseNumber);
-  return values.every((v): v is number => v !== null && v > 0) ? values : null;
+
+/** SEANCE-0292 (C-066) : liste lue par le domaine (`parseWeightList`) ; refus : message qui nomme l'élément fautif. */
+type ListRead = { readonly values: readonly number[] | null; readonly error: string | null };
+const listError = (issue: 'invalid' | 'separator' | 'duplicate', item: string): string | null =>
+  issue === 'separator' ? tTraining('errorWeightSeparator', { item }) : issue === 'duplicate' ? tTraining('errorWeightDuplicate', { item }) : null;
+function parseList(text: string): ListRead {
+  const read = parseWeightList(text);
+  return read.ok ? { values: read.values, error: null } : { values: null, error: listError(read.issue, read.item) };
+}
+
+/** SEANCE-0292 (C-081) : disques par côté avec leur nombre (« 20 × 4 ; 10 »), relus tels quels. */
+type Plates = readonly { readonly weightKg: number; readonly count: number }[];
+const platesText = (plates: Plates): string =>
+  plates.map((p) => (p.count > 1 ? tTraining('plateWithCount', { n: formatNumber(p.weightKg), count: p.count }) : formatNumber(p.weightKg))).join(' ; ');
+function parsePlates(text: string): { readonly plates: Plates | null; readonly error: string | null } {
+  const read = parsePlateList(text);
+  return read.ok ? { plates: read.plates, error: null } : { plates: null, error: listError(read.issue, read.item) };
 }
 
 interface EditProps {
@@ -188,15 +198,20 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   const [dMin, setDMin] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.minKg) : '');
   const [dMax, setDMax] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.maxKg) : '');
   const [dStep, setDStep] = useState(inv.dumbbells ? formatNumber(inv.dumbbells.stepKg) : '');
-  const [plates, setPlates] = useState(listText(inv.platesPerSideKg.map((p) => p.weightKg)));
+  const [plates, setPlates] = useState(platesText(inv.platesPerSideKg));
   const [kettlebells, setKettlebells] = useState(listText(inv.kettlebellsKg));
   const [increments, setIncrements] = useState<Readonly<Record<string, string>>>(Object.fromEntries(INCREMENT_KEYS.map(([key]) => [key, profile.increments[key] === undefined ? '' : formatNumber(profile.increments[key])])));
   const [toVerify, setToVerify] = useState<readonly string[]>(inv.toVerify ?? []);
+  // SEANCE-0292 (§ 14.3 b) : matériel forcé (toujours proposé) et interdit (jamais proposé), modifiables ; les deux à la fois : refusé.
+  const [forced, setForced] = useState<readonly string[]>(inv.forced);
+  const [forbidden, setForbidden] = useState<readonly string[]>(inv.forbidden);
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
-    const plateList = parseList(plates);
-    const kbList = parseList(kettlebells);
+    const plateRead = parsePlates(plates);
+    const kbRead = parseList(kettlebells);
+    const plateList = plateRead.plates;
+    const kbList = kbRead.values;
     const anyDumbbell = [dMin, dMax, dStep].some((t) => t.trim() !== '');
     const dumbbells = anyDumbbell ? { minKg: parseNumber(dMin) ?? Number.NaN, maxKg: parseNumber(dMax) ?? Number.NaN, stepKg: parseNumber(dStep) ?? Number.NaN } : null;
     const inc: Record<string, number> = {};
@@ -208,19 +223,20 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       if (value === null) badIncrement = true;
       else inc[key] = value;
     }
-    const previousCounts = new Map(inv.platesPerSideKg.map((p) => [p.weightKg, p.count]));
     const inventory: EquipmentInventory = {
       ...inv,
       available,
       bodyweight,
       dumbbells,
-      platesPerSideKg: (plateList ?? []).map((weightKg) => ({ weightKg, count: previousCounts.get(weightKg) ?? 1 })),
+      platesPerSideKg: plateList ?? [],
       kettlebellsKg: kbList ?? [],
       toVerify,
+      forced,
+      forbidden,
     };
     const input = { name: name.trim(), kind, inventory, increments: inc };
     if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
-      setError(tTraining('errorProfile'));
+      setError(plateRead.error ?? kbRead.error ?? tTraining('errorProfile'));
       return;
     }
     try {
@@ -316,6 +332,24 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
           ))}
         </div>
       </fieldset>
+      {(
+        [
+          ['equipmentForced', forced, setForced],
+          ['equipmentForbidden', forbidden, setForbidden],
+        ] as const
+      ).map(([legend, list, setList]) => (
+        <fieldset key={legend} className="ct-training__fieldset">
+          <legend className="ct-training__label">{tTraining(legend)}</legend>
+          <div className="ct-training__checks">
+            {data.content.equipment.map((item) => (
+              <label key={item.id} className="ct-training__check">
+                <input type="checkbox" checked={list.includes(item.id)} onChange={(e) => setList((now) => (e.target.checked ? [...now.filter((id) => id !== item.id), item.id] : now.filter((id) => id !== item.id)))} />
+                <span>{item.nameFr}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
       {error && (
         <p className="ct-training__error" role="alert">
           {error}
@@ -345,14 +379,23 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
   const [message, setMessage] = useState<string | null>(null);
   const viewed = data.profiles.find((p) => p.id === viewId) ?? data.active;
   const isActive = viewed.id === data.active.id;
+  // SEANCE-0292 (C-077) : une écriture à la fois (un double appui arrive avant le redessin qui désactive les boutons).
+  const acting = useRef(false);
+  const [busy, setBusy] = useState(false);
 
   const act = async (work: () => Promise<void>, done: string): Promise<void> => {
+    if (acting.current) return;
+    acting.current = true;
+    setBusy(true);
     try {
       await work();
       await reload();
       setMessage(done);
     } catch {
       setMessage(tTraining('saveError'));
+    } finally {
+      acting.current = false;
+      setBusy(false);
     }
   };
 
@@ -412,10 +455,11 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
               {isActive && <span className="ct-training__badge">{tTraining('activeHere')}</span>}
             </p>
             <div className="ct-training__actions">
-              {!isActive && <Button onClick={() => void act(() => setActiveProfile(access, viewed.id), tTraining('activated'))}>{tTraining('activate')}</Button>}
+              {!isActive && <Button disabled={busy} onClick={() => void act(() => setActiveProfile(access, viewed.id), tTraining('activated'))}>{tTraining('activate')}</Button>}
               {viewed.origin === 'embedded' ? (
                 <Button
                   variant="secondary"
+                  disabled={busy}
                   onClick={() => {
                     const copy = duplicateEmbeddedProfile(viewed, ids, tTraining('copyName', { name: viewed.name }));
                     void act(async () => {
@@ -438,7 +482,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
                     {tTraining('editProfile')}
                   </Button>
                   {/* ERGO-02 : une seule action rouge à l'écran ; « Activer » l'est déjà quand le profil n'est pas actif (suppression confirmée). */}
-                  <Button variant={isActive ? 'danger' : 'secondary'} onClick={() => setConfirm(true)}>
+                  <Button variant={isActive ? 'danger' : 'secondary'} disabled={busy} onClick={() => setConfirm(true)}>
                     {tTraining('deleteProfile')}
                   </Button>
                 </>
@@ -459,8 +503,8 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
             setConfirm(false);
             const target = viewed;
             void act(async () => {
+              // SEANCE-0292 (C-081) : le dépôt efface le réglage local du profil actif dans la même transaction.
               await (await access.repos.equipmentProfiles()).softDelete(target.id);
-              if (isActive) await access.repos.settings.set('training.activeEquipmentProfile', null);
               setViewId(data.content.defaultProfileId);
             }, tTraining('profileDeleted'));
           }}

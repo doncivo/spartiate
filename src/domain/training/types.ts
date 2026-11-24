@@ -1,5 +1,5 @@
 import type { DeviceId, Hlc, IsoDateTime } from '../types';
-import type { ProgressionConfig } from './config';
+import type { ProgressionConfig, TunableKey } from './config';
 import type { SetKind } from './session';
 
 /**
@@ -316,6 +316,8 @@ export interface ProgressionExercise {
   readonly bodyweightFraction?: number | null;
   /** Exercice assisté : la charge saisie est l'assistance, retranchée du poids de corps porté. */
   readonly assisted?: boolean;
+  /** § 11 (SEANCE-0292) : constantes du moteur propres à cet exercice, bornées par `TUNABLE_BOUNDS` (config.ts) ; absentes : celles du moteur. */
+  readonly configOverrides?: Readonly<Partial<Record<TunableKey, number>>>;
 }
 
 /**
@@ -364,6 +366,8 @@ export interface PrescribeInput {
   readonly lastPositionRank?: number;
   /** Poids de corps en kg (dernière tendance, sinon dernière pesée) ; null ou absent : inconnu (REV-01, exercices au poids du corps). */
   readonly bodyweightKg?: number | null;
+  /** C-025 : décalage du fuseau local en minutes (UTC+1 : 60) ; absent : UTC. Sert à compter l'inactivité en jours civils. */
+  readonly utcOffsetMinutes?: number;
 }
 
 /** Codes de raison, dans l'ordre normatif du § 11.2 (voir `REASON_ORDER`). */

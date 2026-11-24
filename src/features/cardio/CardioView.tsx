@@ -249,7 +249,21 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
     reload();
   };
 
+  // SEANCE-0292 (C-078, D-522) : un suivi reporté pendant une saisie en cours (modification ou champs tapés) attend « Remplacer » ou « Garder ».
+  const [pendingReport, setPendingReport] = useState<GpsReport | null>(null);
+  const dirty = (f: Form): boolean => {
+    const b = blank();
+    return editing !== null || f.duration !== b.duration || f.distance !== b.distance || f.avgHr !== b.avgHr || f.rpe !== b.rpe || f.notes !== b.notes || f.kind !== b.kind;
+  };
   const onReport = (report: GpsReport): void => {
+    if (dirty(form)) {
+      setPendingReport(report);
+      return;
+    }
+    applyReport(report);
+  };
+  const applyReport = (report: GpsReport): void => {
+    setPendingReport(null);
     // Nouveau suivi reporté : nouvelle saisie (nouvel identifiant au prochain enregistrement).
     setDraftId(null);
     const local = utcToLocal(report.startedAt, tz);
@@ -276,6 +290,19 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
     <div className="ct-cardio">
       <p className="ct-today__muted">{tCardio('hint')}</p>
       {gpsBlock ? gpsBlock(onReport) : null}
+      {pendingReport !== null ? (
+        <div className="ct-today__card ct-cardio__card ct-flat" role="group" aria-labelledby="ct-cardio-pending">
+          <p id="ct-cardio-pending" className="ct-cardio__label">
+            {tCardio('gpsPending')}
+          </p>
+          <div className="ct-cardio__actions">
+            <Button onClick={() => applyReport(pendingReport)}>{tCardio('gpsPendingReplace')}</Button>
+            <Button variant="secondary" onClick={() => setPendingReport(null)}>
+              {tCardio('gpsPendingKeep')}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <section className="ct-today__card ct-cardio__card ct-flat" aria-labelledby="ct-cardio-form">
         <h2 id="ct-cardio-form" className="ct-cardio__heading ct-section-title">
@@ -298,12 +325,18 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
           </label>
           <label className="ct-cardio__field">
             <span className="ct-cardio__label">{tCardio('timeLabel')}</span>
-            <input className="ct-cardio__input" inputMode="numeric" autoComplete="off" value={form.time} onChange={(e) => set('time', e.target.value)} />
+            {/* SEANCE-0292 (C-083) : sélecteur d'heure natif (le pavé numérique de l'iPhone n'a pas « : »). */}
+            <input className="ct-cardio__input" type="time" autoComplete="off" value={form.time} onChange={(e) => set('time', e.target.value)} />
           </label>
-          <label className="ct-cardio__field">
-            <span className="ct-cardio__label">{tCardio('durationLabel')}</span>
-            <input className="ct-cardio__input" inputMode="numeric" autoComplete="off" value={form.duration} onChange={(e) => set('duration', e.target.value)} />
-          </label>
+          <div className="ct-cardio__field">
+            <label className="ct-cardio__field">
+              <span className="ct-cardio__label">{tCardio('durationLabel')}</span>
+              <input className="ct-cardio__input" inputMode="decimal" autoComplete="off" aria-describedby="ct-cardio-duration-hint" value={form.duration} onChange={(e) => set('duration', e.target.value)} />
+            </label>
+            <span id="ct-cardio-duration-hint" className="ct-today__muted">
+              {tCardio('durationHint')}
+            </span>
+          </div>
           <label className="ct-cardio__field">
             <span className="ct-cardio__label">{tCardio('distanceLabel')}</span>
             <input className="ct-cardio__input" inputMode="decimal" autoComplete="off" value={form.distance} onChange={(e) => set('distance', e.target.value)} />

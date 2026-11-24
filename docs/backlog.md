@@ -63,33 +63,33 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-001 | audit Claude 0.27.0 | bloquant — exercice assisté hors décharge : cran et réductions inversés (plus d'assistance proposée comme une hausse) | fait (FIX-ASSIST, PR à venir) |
 | C-002 | audit Claude 0.27.0 | important — échauffement d'un exercice assisté plus dur que les séries de travail | fait (FIX-ASSIST, PR à venir) |
 | C-003 | audit Claude 0.27.0 | important — « Mettre à jour la routine » double les séries d'un exercice présent sur deux lignes du jour | fait (FIX-PROGRAMME) |
-| C-004 | audit Claude 0.27.0 | important — recalibrage « Facile » de deux crans en confiance provisoire (< 0,4 : au plus un cran) | à faire (0.29.x, séance et moteur, S) |
+| C-004 | audit Claude 0.27.0 | important — recalibrage « Facile » de deux crans en confiance provisoire (< 0,4 : au plus un cran) | fait (SEANCE-0292, PR #206, D-511) |
 | C-005 | audit Claude 0.27.0 | bloquant — charge aberrante (faute de frappe) enregistrée sans alerte, puis prescrite à toute la séance suivante | fait (FIX-ABERR) |
-| C-006 | audit Claude 0.27.0 | mineur — décharge « arrondie vers le bas » qui ajoute une répétition (snapToEquipment au lieu de snapDown) | à faire (0.29.x, séance et moteur, S) |
-| C-007 | audit Claude 0.27.0 | mineur — grille de barre sans contrôle des disques réellement montables | à faire (0.29.x, séance et moteur, M) |
-| C-008 | audit Claude 0.27.0 | important — distance GPS gonflée à l'arrêt | à faire (0.29.x, séance et moteur, S) |
+| C-006 | audit Claude 0.27.0 | mineur — décharge « arrondie vers le bas » qui ajoute une répétition (snapToEquipment au lieu de snapDown) | fait (SEANCE-0292, PR #206, D-530) |
+| C-007 | audit Claude 0.27.0 | mineur — grille de barre sans contrôle des disques réellement montables | fait (SEANCE-0292, PR #206, D-508) |
+| C-008 | audit Claude 0.27.0 | important — distance GPS gonflée à l'arrêt | fait (SEANCE-0292, PR #206, D-514) |
 | C-009 | audit Claude 0.27.0 | mineur — Recovery Split : seuil 50 % contre « ≥ 80 % » du § 12.1, commentaire faux | fait en partie ; reste : Seuil 50 % conservé par Ali (D-318 (4)) ; reste le commentaire faux config.ts:116 « le PRD ne fixe pas le seuil, à confirmer par Ali » (0.29.x, séance et moteur, S) |
-| C-010 | audit Claude 0.27.0 | mineur — séries dégressives et partielles comptées dans l'écart de routine | à faire (0.29.x, séance et moteur, S) |
+| C-010 | audit Claude 0.27.0 | mineur — séries dégressives et partielles comptées dans l'écart de routine | fait (SEANCE-0292, PR #206, D-513) |
 | C-011 | audit Claude 0.27.0 | mineur — tonnage et records d'un exercice assisté comptent l'assistance | fait (FIX-ASSIST, PR à venir) |
-| C-012 | audit Claude 0.27.0 | mineur — durée estimée à 45 s par série quelle que soit la métrique (exercices chronométrés sous-estimés) | à faire (0.29.x, séance et moteur, S) |
-| C-013 | audit Claude 0.27.0 | mineur — plages 5–10 / 8–15 du § 12.1.4 appliquées aux seules substitutions (à trancher, D-86) | à faire (0.29.x, séance et moteur, S) : D-472 (Ali, 24/11) |
-| C-014 | audit Claude 0.27.0 | mineur — replay : `doneAt` illisible, ordre indéfini au lieu de l'ordre par position | à faire (0.29.x, séance et moteur, S) |
-| C-015 | audit Claude 0.27.0 | mineur — circuit : exercice compté membre du groupe par ses seules séries d'échauffement | à faire (0.29.x, séance et moteur, S) |
-| C-016 | audit Claude 0.27.0 | amélioration — `isCompletedWorkSet` inutilisée hors tests, compte dégressives et partielles comme travail | à faire (0.29.x, séance et moteur, S) |
-| C-017 | audit Claude 0.27.0 | mineur — dernier jour fait vidé : la rotation repart de l'avant-dernier (ambigu dans D-243) | à faire (0.29.x, séance et moteur, S) : D-473 (Ali, 24/11), test qui fige |
+| C-012 | audit Claude 0.27.0 | mineur — durée estimée à 45 s par série quelle que soit la métrique (exercices chronométrés sous-estimés) | fait (SEANCE-0292, PR #206, D-504 d'Ali, D-506) |
+| C-013 | audit Claude 0.27.0 | mineur — plages 5–10 / 8–15 du § 12.1.4 appliquées aux seules substitutions (à trancher, D-86) | fait (SEANCE-0292, PR #206, D-472) |
+| C-014 | audit Claude 0.27.0 | mineur — replay : `doneAt` illisible, ordre indéfini au lieu de l'ordre par position | fait (SEANCE-0292, PR #206) |
+| C-015 | audit Claude 0.27.0 | mineur — circuit : exercice compté membre du groupe par ses seules séries d'échauffement | fait (SEANCE-0292, PR #206) |
+| C-016 | audit Claude 0.27.0 | amélioration — `isCompletedWorkSet` inutilisée hors tests, compte dégressives et partielles comme travail | fait (SEANCE-0292, PR #206 : fonction sans appelant supprimée, justification dans docs/SEANCE-0292.md) |
+| C-017 | audit Claude 0.27.0 | mineur — dernier jour fait vidé : la rotation repart de l'avant-dernier (ambigu dans D-243) | fait (SEANCE-0292, PR #206 : règle figée par un test, D-473) |
 | C-018 | audit Claude 0.27.0 | à vérifier — `programDayFor` ignore la séance déjà close du jour (confirmé par C-063) | fait (audit 0.29.1 : FIX-PROGRAMME (PR #167, C-063) : programDay.ts:67-69 kind 'done' si séance close aujourd'hui) |
-| C-019 | audit Claude 0.27.0 | mineur — jour de la semaine non entier accepté ; « Lundi2 » rattaché au lundi (D-317) | à faire (0.29.x, séance et moteur, S) |
+| C-019 | audit Claude 0.27.0 | mineur — jour de la semaine non entier accepté ; « Lundi2 » rattaché au lundi (D-317) | fait (SEANCE-0292, PR #206) |
 | C-020 | audit Claude 0.27.0 | important, à vérifier — « Semaine de reprise » préremplie par l'onboarding à chaque ouverture (voir C-064) | fait (audit 0.29.1 : FIX-PROGRAMME (PR #167, C-064) : CycleView.tsx:92 et :118 reprise de l'onboarding au premier cycle seulement) |
-| C-021 | audit Claude 0.27.0 | mineur — Recovery Split : arrondi avant la comparaison au seuil (49,6 % compté prêt) | à faire (0.29.x, séance et moteur, S) |
-| C-022 | audit Claude 0.27.0 | mineur — GPS : premier point non contrôlé ; allure du dernier km figée au-delà de 10 000 points | à faire (0.29.x, séance et moteur, S) |
-| C-023 | audit Claude 0.27.0 | mineur — Strength Score : à score égal, borne ignorée (« 99 » au lieu de « > 99 ») | à faire (0.29.x, séance et moteur, S) |
-| C-024 | audit Claude 0.27.0 | à vérifier — tractions et dips : poids du corps ajouté à la charge saisie, double compte possible (voir C-071) | à faire (0.29.x, séance et moteur, S) |
-| C-025 | audit Claude 0.27.0 | mineur — inactivité comptée en tranches de 24 h ; dates comparées comme chaînes ISO | à faire (0.29.x, séance et moteur, S) |
-| C-026 | audit Claude 0.27.0 | à vérifier — décision datée après la dernière séance rendue sans contraintes (décharge, inactivité, journée rouge) | à faire (0.29.x, séance et moteur, S) |
-| C-027 | audit Claude 0.27.0 | mineur — « Dur » bloque le cran mais pas l'échelle de répétitions (§ 11.2.5 ambigu) | à faire (0.29.x, séance et moteur, S) : D-474 (Ali, 24/11), test qui fige |
+| C-021 | audit Claude 0.27.0 | mineur — Recovery Split : arrondi avant la comparaison au seuil (49,6 % compté prêt) | fait (SEANCE-0292, PR #206) |
+| C-022 | audit Claude 0.27.0 | mineur — GPS : premier point non contrôlé ; allure du dernier km figée au-delà de 10 000 points | fait (SEANCE-0292, PR #206, D-515) |
+| C-023 | audit Claude 0.27.0 | mineur — Strength Score : à score égal, borne ignorée (« 99 » au lieu de « > 99 ») | fait (SEANCE-0292, PR #206) |
+| C-024 | audit Claude 0.27.0 | à vérifier — tractions et dips : poids du corps ajouté à la charge saisie, double compte possible (voir C-071) | fait (SEANCE-0292, PR #206 : sans défaut côté moteur, test qui fige ; double compte fermé par C-071) |
+| C-025 | audit Claude 0.27.0 | mineur — inactivité comptée en tranches de 24 h ; dates comparées comme chaînes ISO | fait (SEANCE-0292, PR #206, D-507) |
+| C-026 | audit Claude 0.27.0 | à vérifier — décision datée après la dernière séance rendue sans contraintes (décharge, inactivité, journée rouge) | à trancher par Ali (Q-11 de docs/decisions-a-prendre.md) ; règle actuelle figée par un test (SEANCE-0292, PR #206) |
+| C-027 | audit Claude 0.27.0 | mineur — « Dur » bloque le cran mais pas l'échelle de répétitions (§ 11.2.5 ambigu) | fait (SEANCE-0292, PR #206 : règle figée par un test, D-474) |
 | C-028 | audit Claude 0.27.0 | mineur — aberrante : séances partielles et décharges comptées ; première séance jamais aberrante | fait (FIX-ABERR) |
-| C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | à faire (0.29.x, séance et moteur, S) |
-| C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | à faire (0.29.x, séance et moteur, S) |
+| C-029 | audit Claude 0.27.0 | mineur — grille de charges : `stackMaxKg` NaN, une seule poulie retenue, matériel interdit non filtré | fait (SEANCE-0292, PR #206, D-509) |
+| C-030 | audit Claude 0.27.0 | mineur — échauffement d'un exercice lesté calculé sur le lest seul | fait (SEANCE-0292, PR #206, D-512) |
 | C-031 | audit Claude 0.27.0 | important — check-in à deux cibles : cible de repos sous le plancher, refus à « Accepter » | fait (FIX-PLANCHER) |
 | C-032 | audit Claude 0.27.0 | important — correction des grammes d'une entrée : arrondis cumulés enregistrés | fait (FIX-SAISIE-NUTRI) |
 | C-033 | audit Claude 0.27.0 | important — Open Food Facts : kcal pris tel quel même s'il contredit le kJ | fait (FIX-SAISIE-NUTRI) |
@@ -125,24 +125,24 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-063 | audit Claude 0.27.0 | important — séance du jour proposée de nouveau après avoir été faite | fait (FIX-PROGRAMME) |
 | C-064 | audit Claude 0.27.0 | important — semaine de reprise reconduite au 2e cycle dans un même montage | fait (FIX-PROGRAMME) |
 | C-065 | audit Claude 0.27.0 | important — échanger deux jours de la semaine dans l'éditeur de routine échoue | fait (FIX-PROGRAMME) |
-| C-066 | audit Claude 0.27.0 | important — profils de matériel : « 12,16 » lu comme un seul poids | à faire (0.29.x, séance et moteur, S) |
+| C-066 | audit Claude 0.27.0 | important — profils de matériel : « 12,16 » lu comme un seul poids | fait (SEANCE-0292, PR #206, D-516) |
 | C-067 | audit Claude 0.27.0 | important — suivi GPS en cours perdu (mémoire seule) et « Abandonner » sans confirmation | fait en partie ; reste : Confirmation d'abandon faite (FIX-COQUILLE, PR #170) ; reste le brouillon persistant du suivi GPS (mémoire React seule, D-222) (0.29.x, séance et moteur, M) |
 | C-068 | audit Claude 0.27.0 | important — série supprimée sans confirmation ni annulation ; focus perdu après validation au clavier | fait en partie ; reste : Séance faite (FIX-COQUILLE, PR #170) ; reste le focus du journal des facteurs : RecoveryToday.tsx:318 clé avec hlc qui remonte la carte (0.29.x, nutrition et récupération, S) |
-| C-069 | audit Claude 0.27.0 | important — « Accepter » peut écraser une série déjà validée | à faire (0.29.x, séance et moteur, S) |
+| C-069 | audit Claude 0.27.0 | important — « Accepter » peut écraser une série déjà validée | fait (SEANCE-0292, PR #206) |
 | C-070 | audit Claude 0.27.0 | important — texte faux « Musculation seule, cardio non compté » | à faire (0.29.x, nutrition et récupération, S) |
-| C-071 | audit Claude 0.27.0 | important — tractions et dips : champ « Charge (kg) » sans dire « lest » | à faire (0.29.x, séance et moteur, S) |
-| C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | à faire (0.29.x, séance et moteur, M) |
+| C-071 | audit Claude 0.27.0 | important — tractions et dips : champ « Charge (kg) » sans dire « lest » | fait (SEANCE-0292, PR #206, D-518) ; ferme le double compte de C-024 |
+| C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | fait en partie ; reste : valeur d'avant la correction, à trancher par Ali (Q-13), puis données et synchro ; date de correction faite (SEANCE-0292, PR #206, D-519, D-520) |
 | C-073 | audit Claude 0.27.0 | important — brouillon de routine abandonné sans confirmation ; retraits de jour et d'exercice non confirmés | fait (FIX-COQUILLE) |
 | C-074 | audit Claude 0.27.0 | mineur — jour local lu au rendu, aucune relecture à minuit (séance de la veille proposée) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-075 | audit Claude 0.27.0 | mineur — échec de lecture du profil : Aujourd'hui remplacé sans « Réessayer » ; carte Séance muette en échec | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-076 | audit Claude 0.27.0 | mineur — unités « min », « h » et séparateurs en dur hors i18n | à faire (0.29.x, coquille, iOS et qualité, S) |
-| C-077 | audit Claude 0.27.0 | mineur — double appui sur « Valider », « Ajouter une série » ou « Nouvelle routine » : doublons | à faire (0.29.x, séance et moteur, S) |
-| C-078 | audit Claude 0.27.0 | mineur — saisie de série non validée perdue si la WebView est tuée ; report GPS qui écrase une saisie | à faire (0.29.x, séance et moteur, M) |
+| C-077 | audit Claude 0.27.0 | mineur — double appui sur « Valider », « Ajouter une série » ou « Nouvelle routine » : doublons | fait (SEANCE-0292, PR #206) |
+| C-078 | audit Claude 0.27.0 | mineur — saisie de série non validée perdue si la WebView est tuée ; report GPS qui écrase une saisie | fait (SEANCE-0292, PR #206, D-521, D-522) ; constat d'appareil ajouté (docs/constats-ali.md) |
 | C-079 | audit Claude 0.27.0 | mineur — erreurs des écrans d'entraînement non journalisées ou non rattrapées | fait en partie ; reste : ActiveSession.tsx:479 reload avec catch ; :675 `void reload()` sans catch ; StartSession, RoutinesView, LibraryView, EquipmentView non revus (0.29.x, séance et moteur, S) |
-| C-080 | audit Claude 0.27.0 | mineur — lecture ancienne qui écrase la nouvelle (ExerciseProgression) ; écritures à chaque flèche | à faire (0.29.x, séance et moteur, S) |
-| C-081 | audit Claude 0.27.0 | mineur — matériel : nombre de disques non modifiable, poids en double, suppression hors transaction | à faire (0.29.x, séance et moteur, S) |
-| C-082 | audit Claude 0.27.0 | mineur — journal limité aux 50 dernières séances (les plus anciennes ni corrigeables ni supprimables) | à faire (0.29.x, séance et moteur, S) |
-| C-083 | audit Claude 0.27.0 | à vérifier (appareil) — clavier numérique iOS sans « : » pour l'heure et la durée cardio ; H-35 | à faire (0.29.x, séance et moteur, S) |
+| C-080 | audit Claude 0.27.0 | mineur — lecture ancienne qui écrase la nouvelle (ExerciseProgression) ; écritures à chaque flèche | fait (SEANCE-0292, PR #206, D-524) |
+| C-081 | audit Claude 0.27.0 | mineur — matériel : nombre de disques non modifiable, poids en double, suppression hors transaction | fait (SEANCE-0292, PR #206, D-517) |
+| C-082 | audit Claude 0.27.0 | mineur — journal limité aux 50 dernières séances (les plus anciennes ni corrigeables ni supprimables) | fait (SEANCE-0292, PR #206, D-523) |
+| C-083 | audit Claude 0.27.0 | à vérifier (appareil) — clavier numérique iOS sans « : » pour l'heure et la durée cardio ; H-35 | constat d'Ali à faire (docs/constats-ali.md) ; code fait (SEANCE-0292, PR #206, D-528) |
 | C-084 | audit Claude 0.27.0 | mineur — « 0 groupes » et vocabulaire incohérent (Variée, décharge, Ischios, nombres sans séparateur) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-085 | audit Claude 0.27.0 | amélioration — catalogue `fr.routines` hérité au départ ; JSON servant à un seul test ; paramètres non typés | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-086 | audit Claude 0.27.0 | important — cible de repos sous le plancher : l'écran demande une confirmation qui n'existe pas | fait (FIX-PLANCHER) |
@@ -236,7 +236,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-174 | audit Claude 0.27.0 | mineur — `needs` de « suite verte » non vérifié ; contrôles `\|\| true` ; pipe sans pipefail | fait (CI-PUB) |
 | C-175 | audit Claude 0.27.0 | mineur — cache cargo écrit sur tag, persist-credentials, artefacts sans rétention, pas de `npm audit` | fait (CI-PUB) |
 | C-176 | audit Claude 0.27.0 | mineur — tests qui se recalculent avec le code ; bornes lâches au lieu de valeurs exactes | à faire (0.29.x, coquille, iOS et qualité, M) |
-| C-177 | audit Claude 0.27.0 | mineur — propriété du plafond auto-référente ; générateur sans assisté, poids de corps ni décharge | à faire (0.29.x, séance et moteur, S) |
+| C-177 | audit Claude 0.27.0 | mineur — propriété du plafond auto-référente ; générateur sans assisté, poids de corps ni décharge | fait (SEANCE-0292, PR #206) |
 | C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | fait (CI-0292, PR #205, D-485 : TZ fixé ; compteurs d'identifiants vérifiés, sans défaut) |
 | C-179 | audit Claude 0.27.0 | amélioration — baisse du nombre de tests non bloquante ; `publish` ne revérifie pas la signature | fait en partie ; reste : publish compare le SHA-256 au build (build-windows.yml) sans relancer verify-signature.mjs ; test-counts.mjs toujours informatif (0.29.x, CI, S) |
 | C-180 | audit Claude 0.27.0 | mineur — licences : images dites « non modifiées » ; réponses FitnessVolt sans empreinte ; droit à vérifier | fait en partie ; reste : licences.md:115 signale la réduction en gris ; restent empreinte des réponses FitnessVolt, droit de relicence (D-310), chemins relatifs des scripts (0.29.x, import et contenu, S) |
@@ -275,7 +275,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-107 | MATRICE-DOC (C-187) | mineur — l’attribution Ciqual (« Source : Anses, Table … Ciqual 2025 (Licence Ouverte Etalab 2.0) », champ `source.attribution`) n’est affichée par aucun écran relevé ; à afficher dans la recherche d’aliments ou Plus › À propos et licences | fait (NUTRI-0291) |
 | BL-108 | SESS-01 (docs/SESS-01.md) | Live Activity : boutons « +30 s » et « Passer » (App Intents, ios-mobile) et action « +30 s » de la notification de repli | à faire (0.29.x, coquille, iOS et qualité, M) |
 | BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | fait (SYNC-0291, PR #200, D-447, D-463, D-465 à D-469) |
-| BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à faire (0.29.x, séance et moteur, M) |
+| BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à trancher par Ali (Q-12 de docs/decisions-a-prendre.md) ; puis données et synchro (colonnes additives) |
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | à faire (0.29.x, séance et moteur, M) |
 | BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | à faire (0.29.x, séance et moteur, M) |
 | BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.29.x, import et contenu, S) |
@@ -286,7 +286,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-118 | COQUILLE-PC (D-399) | Badge du minuteur de repos dans le titre de la fenêtre PC (état du minuteur côté coquille, permission fenêtre dans src-tauri/capabilities) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | fait (COQUILLE-0291, PR #198, D-450, D-459 ; restes BL-136) |
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | fait (SYNC-0291, PR #200, D-447, D-464 à D-469) |
-| BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | à faire (0.29.x, séance et moteur, S) |
+| BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | fait (SEANCE-0292, PR #206, D-525) |
 | BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.29.x, données et synchro, M) |
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart décidé par Ali (D-451) : kg seulement |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | fait (NUTRI-0291) |
@@ -303,6 +303,10 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à faire (0.29.x, données et synchro, M) : D-481 (Ali, 24/11), colonne additive et relecture sync-icloud |
 | BL-136 | COQUILLE-0291 (revue à froid, D-459) | PC sous 1 024 px CSS (zoom de 150 %) : Progrès › Corps en une colonne (grille de FIX-0241 dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) hors de l’e2e BL-119, projet e2e iphone sans agent utilisateur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-137 | REL-0.29.1 (CI de SYNC-0291) | Perf Playwright du démarrage : 1 576 ms une fois pour un budget de 1 500 ms (run 44980315919), vert à la relance sans changement ; marge à surveiller (migration 21 au premier lancement d'une base neuve) | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-160 | CI-0292 (relecture à froid, e2e C193-seance-clavier) | Après « Fermer le résumé », un appui sur l'onglet Entraînement laissait l'écran « Nouvelle séance » au lieu de l'accueil d'Entraînement | fait (SEANCE-0292, PR #206, D-527 ; Q-14) |
+| BL-161 | CI-0292 (relecture des paires visuelles, run 45379435573) | Barre latérale PC à 1 440 px : nom « SPARTIATE » coupé en deux lignes, « Entraînement » collé à « Ctrl 2 » (PC-Entrainement-indisponible-app.png) | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-162 | CI-0292 (relecture des paires visuelles, run 45379435573) | Bandeau de signature (iPhone, 440 px) : lien « Voir » coupé en « Vo / ir » (Degrade-signature-expiree-app.png) | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-163 | CI-0292 (relecture des paires visuelles, run 45379435573) | Scènes « Entrainement-indisponible » : la capture montre « Chargement… » ; scène « Degrade-apprentissage » : l'état d'apprentissage de la récupération hors du cadre ; attendre l'état visé avant la capture | à faire (0.29.x, coquille, iOS et qualité, S) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -352,11 +356,11 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 10.0 | PRD § 10.0 | partiel — scénario d'onboarding rejoué : étape 6 sans e2e | fait (audit 0.29.1 : étape 6 « synchro retour iPhone → PC » couverte par l'e2e § 9.2 en Vitest node (SYNC-0281b, D-408, #183)) |
 | § 10.1-1 | PRD § 10.1 | partiel — poids prérempli depuis Santé : par Raccourcis seulement (D-69) | reporté : HealthKit direct BLOCKED (H-3a) |
 | § 10.2 | PRD § 10.2 | absent — blessures avec check-in bimensuel | fait (BLESSURES, 0.28.1, D-402 à D-404 ; BL-120, BL-121) |
-| § 10.3 | PRD § 10.3 | partiel — notifications demandées au premier repos, pas en fin de première séance | à faire (0.29.x, séance et moteur, S) |
-| § 11 | PRD § 11 | partiel — constantes ajustables par exercice : seul `deloadLoad` | à faire (0.29.x, séance et moteur, M) |
-| § 11.2-5 | PRD § 11.2 | partiel — difficulté, recalibrage « Facile » borné (C-004, C-027) | à faire (0.29.x, séance et moteur, S) |
+| § 10.3 | PRD § 10.3 | partiel — notifications demandées au premier repos, pas en fin de première séance | fait (SEANCE-0292, PR #206, D-526) ; constat d'appareil ajouté |
+| § 11 | PRD § 11 | partiel — constantes ajustables par exercice : seul `deloadLoad` | fait en partie ; reste : stockage et édition des surcharges par exercice (migration additive) (0.29.x, données et synchro, M) ; moteur fait (SEANCE-0292, PR #206, D-510) |
+| § 11.2-5 | PRD § 11.2 | partiel — difficulté, recalibrage « Facile » borné (C-004, C-027) | fait (C-004, C-027 ; SEANCE-0292, PR #206) |
 | § 11.2-6 | PRD § 11.2 | partiel — contraintes « maintien ou réduction seulement » (C-001) | fait (audit 0.29.1 : C-001 corrigé : l'assistance est une charge négative (FIX-ASSIST, D-322, #157)) |
-| § 11.2-7 | PRD § 11.2 | partiel — arrondi au matériel (C-006, C-007, C-029) | à faire (0.29.x, séance et moteur, M) |
+| § 11.2-7 | PRD § 11.2 | partiel — arrondi au matériel (C-006, C-007, C-029) | fait (C-006, C-007, C-029 ; SEANCE-0292, PR #206) |
 | § 11.3 a | PRD § 11.3 | partiel — machines : 1RM par profil de salle (D-86, constat 5 reporté) | caduque : reporté par D-86 constat 5 : un seul profil de salle utilisé ; à rouvrir au 2e profil |
 | § 11.3 b | PRD § 11.3 | absent — poids de corps (répétitions puis lest) et exercices chronométrés (C-189) | fait (MOTEUR-0281a, D-383, D-384) |
 | § 11.5 a | PRD § 11.5 | absent — aberrantes signalées avant enregistrement (C-005) | fait (audit 0.29.1 : aberrantes confirmées avant enregistrement (FIX-ABERR, D-323, D-325, #159)) |
@@ -364,7 +368,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 11.6 a | PRD § 11.6 | partiel — fixtures et propriétés : nominal 8 séances, changement de salle absents (C-169) | fait (audit 0.29.1 : fixtures « 8 séances enchaînées » et « changement de salle » ajoutées (TESTS-FIGES, testsFiges.test.ts, #172)) |
 | § 11.6 b | PRD § 11.6 | absent — couverture training ≥ 90 % (C-170) | fait (TESTS-FIGES, D-363 : seuil 90 % sur src/domain/training dans vitest.config.ts) |
 | § 12.1-1 | PRD § 12.1 | partiel — Recovery Split ≥ 80 % (C-009 : 50 %) | caduque : seuil 50 % (D-93) conservé par Ali (LOT-0.28.0.md:32) ; PRD § 12 dit encore « ≥ 80 % » : mise en cohérence avec C-188 |
-| § 12.1-4 | PRD § 12.1 | partiel — budget de 45 s, plages 5–10 / 8–15 (C-012, C-013) | à faire (0.29.x, séance et moteur, S) |
+| § 12.1-4 | PRD § 12.1 | partiel — budget de 45 s, plages 5–10 / 8–15 (C-012, C-013) | fait (C-012, C-013 ; SEANCE-0292, PR #206) |
 | § 12.3 | PRD § 12.3 | partiel — modes Guidé / Libre / Maison : Variable, Fixe, Statique sans effet (D-73 (1)) | à faire (0.29.x, séance et moteur, S) : D-497 (Ali, 24/11, Q-2 : Variable, Fixe et Statique retirés de l'écran) |
 | § 12.4 | PRD § 12.4 | partiel — changement de salle sans perte (D-86, C-169) | à faire (0.29.x, séance et moteur, S) : avec BL-106 (D-496) |
 | § 13.2 a | PRD § 13.2 | partiel — chrono, terminer, abandonner : pas de pause de séance | à faire (0.29.x, séance et moteur, M) |
@@ -374,18 +378,18 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 13.2 e | PRD § 13.2 | absent — calculateur de disques (reporté en I2-01, jamais livré) | fait (audit 0.29.1 : calculateur de disques (SESS-01c, plates.ts, #177)) |
 | § 13.2 f | PRD § 13.2 | absent — fatigue déclarée (C-190) | fait (audit 0.29.1 : fatigue déclarée au démarrage (SESS-01d, D-380, declaredFatigue.ts, #177)) |
 | § 13.3 a | PRD § 13.3 | absent — Live Activity étendue (suivant, +30 s, passer) (C-190) | fait en partie ; reste : exercice suivant et sa charge dans la Live Activity (D-382, #177) ; boutons « +30 s » et « Passer » restent (BL-108) (0.29.x, séance et moteur, M) |
-| § 13.3 b | PRD § 13.3 | partiel — notification de repli sans action « +30 s » | à faire (0.29.x, séance et moteur, S) |
-| § 13.4 | PRD § 13.4 | partiel — correction d'une série validée non tracée (C-072) | à faire (0.29.x, séance et moteur, S) |
+| § 13.3 b | PRD § 13.3 | partiel — notification de repli sans action « +30 s » | à faire (0.29.x, séance et moteur, S) : reste la catégorie de notification et l'action « +30 s » (notifications, ios-mobile) ; extendRest(30) prêt (SEANCE-0292) |
+| § 13.4 | PRD § 13.4 | partiel — correction d'une série validée non tracée (C-072) | fait en partie ; reste : valeur d'avant la correction (Q-13) ; trace datée faite (C-072, PR #206) |
 | § 13.5 a | PRD § 13.5 | absent — résumé : écart et prochaine séance (C-190) | fait (audit 0.29.1 : résumé : écart par exercice et prochaine séance (SESS-01e, summaryGap.ts, #177)) |
 | § 13.5 b | PRD § 13.5 | absent — image partageable du résumé (C-190) | fait (audit 0.29.1 : image partageable du résumé faite sur l'appareil (SESS-01e, D-381, #177)) |
 | § 13.7 | PRD § 13.7 | partiel — test du minuteur après verrouillage | constat d'Ali à faire (docs/constats-ali.md) |
 | § 13.8 a | PRD § 13.8 | partiel — échauffement (C-002, C-030) | fait en partie ; reste : C-002 corrigé (FIX-ASSIST #157) ; reste C-030 (échauffement d'un lesté sur le lest seul, warmup.ts inchangé depuis) (0.29.x, séance et moteur, S) |
 | § 13.8 b | PRD § 13.8 | partiel — « Mettre à jour la routine ? » (C-003, C-010) | fait en partie ; reste : C-003 corrigé (FIX-PROGRAMME, D-350, #167) ; reste C-010 (dégressives et partielles comptées dans l'écart) (0.29.x, séance et moteur, S) |
-| § 13.8 c | PRD § 13.8 | partiel — historique éditable et recalcul (C-072, C-082) | à faire (0.29.x, séance et moteur, M) |
+| § 13.8 c | PRD § 13.8 | partiel — historique éditable et recalcul (C-072, C-082) | fait en partie ; reste : valeur d'avant la correction (Q-13) ; historique paginé et correction tracée (C-072, C-082, PR #206) |
 | § 14.2 a | PRD § 14.2 | partiel — graphique d'exercice : tracé SVG décoratif au lieu de Recharts (C-191) | fait en partie ; reste : Recharts abandonné (D-394, SVG) ; le graphique de la fiche reste décoratif (ExerciseSheetStats.tsx:52 aria-hidden, sans axes) (0.29.x, séance et moteur, S) |
 | § 14.2 b | PRD § 14.2 | absent — filtres par carte du corps et par schéma de mouvement | fait en partie ; reste : filtres par muscle et pattern livrés (MOTEUR-0281c, D-387, #178) ; reste la carte du corps (BL-111) (0.29.x, séance et moteur, M) |
-| § 14.3 a | PRD § 14.3 | partiel — inventaire complet du matériel (C-066, C-081) | à faire (0.29.x, séance et moteur, M) |
-| § 14.3 b | PRD § 14.3 | partiel — matériel forcé ou interdit (C-029) | à faire (0.29.x, séance et moteur, S) |
+| § 14.3 a | PRD § 14.3 | partiel — inventaire complet du matériel (C-066, C-081) | fait (C-066, C-081 ; SEANCE-0292, PR #206) |
+| § 14.3 b | PRD § 14.3 | partiel — matériel forcé ou interdit (C-029) | fait (SEANCE-0292, PR #206, D-529) |
 | § 14.3 c | PRD § 14.3 | partiel — machines : 1RM par profil (D-86, constat 5) | caduque : même motif que § 11.3 a : D-86 constat 5, un seul profil de salle ; à rouvrir au 2e profil |
 | § 15.1 a | PRD § 15.1 | absent — lissage EMA de 7 jours de la dépense (C-036) | fait (D-357, D-397) |
 | § 15.1 b | PRD § 15.1 | absent — imputation des jours non saisis affichée avec incertitude (C-194) | fait (NUTRI-b, D-395) |
@@ -480,7 +484,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | D-246 | rapport de lot 0.22.1 (docs/reprise.md) | Une seule action rouge choisie par écran | fait (décision d'Ali du 20/11) |
 | D-314 (9) | rapport de lot 0.27.0 (docs/reprise.md) | Relecture rétroactive d'une semaine et fuseau de lecture des cibles | fait (décision d'Ali du 20/11 : conservé) |
 | D-317 | rapport de lot 0.27.0 (docs/reprise.md) | Rattachement par le nom du jour à l'import seulement | fait (décision d'Ali du 20/11) |
-| D-73 (4) | rapport de lot 0.27.0 (docs/reprise.md) | Durée estimée de séance (45 s par série, repos, sans transitions), à recaler sur demande | à faire (0.29.x, séance et moteur, S) : D-504 (Ali, 24/11, Q-9) ; durée d'une série chronométrée faite avec C-012 (SEANCE-0292, PR #206), à vérifier contre D-504 |
+| D-73 (4) | rapport de lot 0.27.0 (docs/reprise.md) | Durée estimée de séance (45 s par série, repos, sans transitions), à recaler sur demande | fait (D-504, Ali, 24/11, Q-9 ; C-012, SEANCE-0292, PR #206, D-506 : durée d'une série chronométrée = sa durée cible, 45 s pour les autres) |
 | D-88 / D-220 | rapport de lot 0.27.0 (docs/reprise.md) | Exertion : cardio compté en minutes × ressenti faute de zones FC, à recaler sur demande | fait (D-505, Ali, 24/11, Q-10) |
 | D-144 | rapport de lot 0.27.0 (docs/reprise.md) | Archive `archive/agent-a0528c3a67af21a44` sur origin : supprimable sur décision d'Ali | fait (NETTOYAGE, 0.28.1 : contenu prouvé dans main, branche supprimée, docs/NETTOYAGE.md) |
 

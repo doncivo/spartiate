@@ -34,7 +34,7 @@ export interface TodaySessionPreview {
 }
 
 export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDay, lineIds: readonly string[], options: { readonly nowMs: number; readonly plan: WeekPlan | null }): Promise<TodaySessionPreview> {
-  const minutes = Math.round(estimateSessionSec(day.exercises, DEFAULT_GENERATION_CONFIG) / 60);
+  const fallbackMinutes = Math.round(estimateSessionSec(day.exercises, DEFAULT_GENERATION_CONFIG) / 60);
   const loads = new Map<string, number | null>();
   const held = new Map<string, 1 | 2 | null>();
   const unreadable = new Set<string>();
@@ -42,9 +42,11 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
   try {
     data = await readTrainingData(access);
   } catch {
-    return { minutes, loads, held, unreadable: new Set(lineIds) };
+    return { minutes: fallbackMinutes, loads, held, unreadable: new Set(lineIds) };
   }
   const exerciseOf = (id: string): Exercise | undefined => data.content.catalog.get(id) ?? data.allCustoms.find((c) => c.id === id);
+  // C-012 : séries chronométrées comptées à leur durée cible, comme la génération.
+  const minutes = Math.round(estimateSessionSec(day.exercises, DEFAULT_GENERATION_CONFIG, (id) => exerciseOf(id)?.metric) / 60);
   const musclesOf = (id: string) => exerciseOf(id)?.muscles ?? [];
   const ordered = [...day.exercises].sort((a, b) => a.position - b.position);
   const ranks = positionRanks(ordered.map((l) => ({ exerciseId: l.exerciseId, muscles: musclesOf(l.exerciseId) })));
@@ -71,6 +73,8 @@ export async function loadTodaySessionPreview(access: DataAccess, day: RoutineDa
               ...(options.plan?.deload === true && options.plan.deloadSets !== undefined ? { deloadSets: options.plan.deloadSets } : {}),
               ...(options.plan?.deload === true && options.plan.deloadLoad !== undefined ? { deloadLoad: options.plan.deloadLoad } : {}),
               positionRank: ranks.get(line.exerciseId) ?? 1,
+              // C-025 : même fuseau que la séance active.
+              utcOffsetMinutes: -new Date(options.nowMs).getTimezoneOffset(),
             }),
           );
           loads.set(line.id, p.status === 'prescribed' && p.loadKg !== null && p.loadKg > 0 ? p.loadKg : null);
