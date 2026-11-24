@@ -111,6 +111,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [grouping, setGrouping] = useState(false);
   /** SEANCE-0292b (§ 17.1 a) : records établis par la dernière série validée (texte dit en séance), null : aucun. */
   const [liveRecord, setLiveRecord] = useState<string | null>(null);
+  /** Relecture E : jeton de la dernière validation ; une lecture de records plus ancienne (réponse tardive) est ignorée. */
+  const recordToken = useRef(0);
   // SEANCE-0292 (C-080) : repos par défaut parcouru au clavier écrit une fois (Entrée ou sortie du champ).
   const restSelect = useKeyboardSelect(restSetting === null ? '' : String(restSetting), (v) => onRestSetting(v === '' ? null : Number(v)));
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
@@ -306,10 +308,12 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
    * de fin les donnera).
    */
   async function announceRecords(set: WorkoutSet): Promise<void> {
+    recordToken.current += 1;
+    const token = recordToken.current;
     try {
       const summary = await (await access.repos.workouts()).summary(workout.id);
       const records = recordsOfSet(summary.records, set.id);
-      if (!live.current) return;
+      if (!live.current || token !== recordToken.current) return;
       if (records.length === 0) {
         setLiveRecord(null);
         return;
