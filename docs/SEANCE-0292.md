@@ -68,6 +68,12 @@ Branche `SEANCE-0292` depuis `origin/main` (`3de66bf6`). Aucune migration, aucun
   poids du corps seul (une étape) ; poids de corps inconnu ou sans grille : aucune rampe.
 - **D-513** (C-010) : la structure de la séance compte les séries de travail et chronométrées ; une série prévue changée en dégressive fait
   baisser le nombre de séries de la ligne (question posée) ; un exercice fait seulement en dégressives ou partielles n'est ni retiré ni ajouté.
+- **D-530** (C-006, relecture à froid A, point important) : l'arrondi vers le bas au cran du matériel, sans répétition ajoutée, vaut aussi
+  pour la décharge I2 du cycle de 5 semaines (charge × 0,8) et plus seulement pour la décharge × 0,9 des cycles de 4 et 6 semaines
+  (D-269 (2)). Écart consigné avec D-269 (1), qui déclarait la table 5 semaines « inchangée » : séries ÷ 2, × 0,8 et RIR ≥ 4 restent
+  identiques ; seul le cran change (avant : cran le plus proche de la cible, répétition parfois ajoutée, `snapToEquipment` ; après :
+  cran inférieur, répétitions de la référence). Preuve : `src/domain/training/seance0292.test.ts:53` (ligne 54 depuis `c8bb4e7f`, import ajouté ; haltères 26 kg × 10 → 20 kg, 20,8
+  arrondi vers le bas, aucune `snap-extra-rep`). Code `prescribe.ts:278-280` inchangé par la relecture ; révisable par Ali.
 
 ## Questions (à reporter dans docs/decisions-a-prendre.md)
 
