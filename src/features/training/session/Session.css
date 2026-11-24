@@ -542,3 +542,14 @@
   border-color: var(--ct-color-accent);
   font-weight: 600;
 }
+
+/* SEANCE-0292b (§ 17.1 a) : record signalé en séance ; région vivante toujours présente, sans hauteur quand elle est vide. */
+.ct-session__record {
+  margin: 0;
+  color: var(--ct-color-bronze);
+  font-weight: 600;
+}
+
+.ct-session__record:not(:empty) {
+  padding: var(--ct-space-2) 0;
+}

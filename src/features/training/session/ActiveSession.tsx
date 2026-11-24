@@ -19,6 +19,7 @@ import {
 } from '../../../domain/training';
 import { positionRanksOfSets } from '../../../domain/training/positionRank';
 import { withExcluded } from '../../../domain/training/exclusions';
+import { recordsOfSet } from '../../../domain/training/sessionRecords';
 import { loadExcludedExercises, writeExcluded } from '../exclusionsStore';
 import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
 import { setKindPatch, type SetKindChoice } from '../../../domain/training/failureSet';
@@ -41,6 +42,7 @@ import { SessionStrip } from './SessionStrip';
 import { DeclaredFatigueBar } from './DeclaredFatigueBar';
 import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
+import { recordText } from './SummaryFigures';
 import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
@@ -107,6 +109,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [grouping, setGrouping] = useState(false);
+  /** SEANCE-0292b (§ 17.1 a) : records établis par la dernière série validée (texte dit en séance), null : aucun. */
+  const [liveRecord, setLiveRecord] = useState<string | null>(null);
   // SEANCE-0292 (C-080) : repos par défaut parcouru au clavier écrit une fois (Entrée ou sortie du champ).
   const restSelect = useKeyboardSelect(restSetting === null ? '' : String(restSetting), (v) => onRestSetting(v === '' ? null : Number(v)));
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
@@ -296,6 +300,28 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     }
   }
 
+  /**
+   * § 17.1 a (D-540) : records de la série validée (mêmes règles que le résumé, contre les séances closes), dits dans l'écran et marqués par
+   * un retour haptique appuyé ; sur le PC aussi (texte seul) ; aucune notification système. Lecture impossible : rien n'est dit (le résumé
+   * de fin les donnera).
+   */
+  async function announceRecords(set: WorkoutSet): Promise<void> {
+    try {
+      const summary = await (await access.repos.workouts()).summary(workout.id);
+      const records = recordsOfSet(summary.records, set.id);
+      if (!live.current) return;
+      if (records.length === 0) {
+        setLiveRecord(null);
+        return;
+      }
+      const held = heldFor(exerciseOf(set.exerciseId), data.active);
+      setLiveRecord(records.map((r) => tSession('liveRecord', { name: r.exerciseName, text: recordText(r, held) })).join(' '));
+      haptics.impact('heavy');
+    } catch (error) {
+      logFailure('training', error);
+    }
+  }
+
   async function validate(set: WorkoutSet, entry: SetEntry): Promise<void> {
     const exercise = exerciseOf(set.exerciseId);
     const timed = isTimedExercise(exercise, set);
@@ -306,6 +332,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     });
     if (!ok) return;
     haptics.notification('success');
+    void announceRecords(set);
     // I6-03 : dans un groupe, repos entre exercices (nul = aucun) puis repos de fin de tour (cible des séries) ; hors groupe, repos de l'exercice.
     const inCircuit = restAfterCircuitSet(workout.sets, set.id);
     const seconds = inCircuit?.phase === 'between' ? inCircuit.seconds : restSecondsFor(set, restSetting, exercise?.defaultRestSec ?? null);
@@ -562,6 +589,10 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       </header>
 
       <DeclaredFatigueBar level={declaredFatigue} busy={busy} onChange={(level) => void declareFatigue(level)} />
+
+      <p className="ct-session__record ct-session__num" role="status">
+        {liveRecord}
+      </p>
 
       {error && (
         <p className="ct-training__error" role="alert">
