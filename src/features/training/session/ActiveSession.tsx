@@ -803,6 +803,7 @@ function RestExplanation({ report }: { readonly report: RestReport }) {
   const lines: { readonly text: string; readonly alert: boolean }[] = [];
   if (report.notification === 'scheduled') lines.push({ text: tTraining('restNotificationScheduled'), alert: false });
   else if (report.notification === 'denied') lines.push({ text: tTraining('restNotificationDenied'), alert: true });
+  else if (report.notification === 'undetermined') lines.push({ text: tTraining('restNotificationLater'), alert: false });
   else lines.push({ text: tTraining('restNotificationFailed'), alert: true });
   if (report.live !== 'started') lines.push({ text: tTraining('restLiveFallback'), alert: false });
   return (

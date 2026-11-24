@@ -394,6 +394,8 @@ export const trainingFr = {
   restNotificationTitle: 'Repos terminé',
   restNotificationBody: 'Passe à la série suivante.',
   restNotificationScheduled: 'Une notification sonnera à la fin du repos.',
+  /** SEANCE-0292 (§ 10.3) : autorisation demandée à la fin de la première séance. */
+  restNotificationLater: 'Les notifications te seront proposées à la fin de la séance. En attendant, garde l’œil sur le minuteur.',
   restNotificationDenied: 'Notifications refusées : aucune alerte à la fin du repos. Garde l’œil sur le minuteur.',
   restNotificationFailed: 'La notification de fin de repos n’a pas pu être programmée.',
   restLiveFallback: 'Live Activity indisponible : le minuteur reste dans l’app.',
