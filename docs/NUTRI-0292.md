@@ -292,3 +292,14 @@ l'état final est toujours la dernière valeur. (4) BL-117 : l'assiette du Journ
   B = complet seulement si des repas saisis existent et sont complets (le total importé seul reste « partiel » ou « inconnu ») ; C = comme A, mais l'entrée est reconnue par un marqueur (source dédiée) et non par son nom. Recommandation : A.
   Conséquences : A garde la dépense mesurée alimentée par Santé, au prix d'un jour « complet » dont le total vient d'un seul chiffre, et d'un renommage de l'entrée qui la ferait redevenir une saisie ordinaire ; B protège la dépense (moins de jours complets, donc moins de jours utilisés par le TDEE)
   mais rend l'import Santé inutile seul ; C demande une source ou une colonne (migration, relecture sync-icloud) et n'a de sens que si A est retenue.
+
+## Corrections après la relecture à froid de ad222281..d3ba3739
+
+| Ligne | Rouge | Vert |
+|---|---|---|
+| C-099 : choix pendant la relecture perdu ; écriture sur l'ancien jour (file par jour, reprise après `onChanged`) | 657c406e | (JournalView) b60d9651 |
+| BL-117 : quantité de l'assiette hors bornes (0, 15 000, illisible) : champ invalide, message, ajout bloqué | a7df76cd | cf4cc16f |
+| C-046 : « 0,500 » et « 0.418 » en énergie restent des décimales (premier groupe commençant par 0 ; `cargo test` ciblé en échec puis vert, `cargo fmt`, `cargo clippy` propres) | abcc32d6 | d3605981 |
+| Mineurs : double appui « Enregistrer en recette », alias de `RestTargetForm`, provenance typée des habituels (`lastTime` gardé : `pickRecent` attend un `RecentFood` complet), date dans la clé de file des prises | — | 7886ba9e |
+
+- Bundle : `npm run test:bundle` (190 tests verts) ; mesure normalisée de départ 182 931 octets (référence main 183 842), inchangée par ces corrections.
