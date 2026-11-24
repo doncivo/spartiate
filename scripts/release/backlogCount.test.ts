@@ -17,6 +17,7 @@ const SAMPLE = [
   '| E | x | y | constat d\'Ali à faire (docs/constats-ali.md) |',
   '| F | x | y | fait (PR #1) |',
   '| G | x | y | à faire (0.29.x, CI, M) |',
+  '| H | x | y | à faire sans module ni taille |',
 ].join('\n');
 
 describe('BL-147 : compteur unique du registre', () => {
@@ -27,6 +28,11 @@ describe('BL-147 : compteur unique du registre', () => {
     expect(c.partial).toBe(1);
     expect(c.decide).toBe(1);
     expect(c.constat).toBe(1);
+    expect(c.unknown).toEqual(['H']);
+  });
+
+  it('aucun statut ouvert mal formé dans docs/backlog.md (relecture de CI-0292b)', () => {
+    expect(countBacklog(readFileSync('docs/backlog.md', 'utf8')).unknown).toEqual([]);
   });
 
   it('docs/reprise.md cite le compte exact produit par le script sur docs/backlog.md', () => {
