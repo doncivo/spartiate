@@ -463,9 +463,13 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
       deps.deadline?.check('append');
       const inflight: Inflight = { epoch, segment, expect, count: batch.length, maxHlc, entries: done };
       await writeJson(data.repos, META.inflight, inflight);
+      // DATA-0293 (BL-038) : vrai dès que l'ajout natif a réussi ; un échec ensuite (retrait local) garde l'intention pour que le cycle suivant la résolve.
+      let appended = false;
+      const headBefore = current;
       try {
         await slicer.pause();
         const result = await platform.appendJournal({ epoch, segment, expectRecords: expect, sv, maxHlc, records: batch.map((r) => r.text) });
+        appended = true;
         current = { epoch, segment: result.head.segment, record: result.head.record, hlc: maxHlc, stateSeq: current.stateSeq };
         await slicer.pause();
         await data.transaction(async (repos) => {
@@ -487,6 +491,11 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
         expect = current.record;
         break;
       } catch (error) {
+        if (appended) {
+          // L'ajout a eu lieu, le retrait local a échoué : l'intention (`inflight`) reste, jamais effacée ; erreur rendue telle quelle (réessai au cycle suivant).
+          logger.log('publish-failed', { code: syncErrorCodeOf(error) });
+          return { published, tables: tablesOut, head: headBefore, error: syncErrorCodeOf(error) };
+        }
         await writeJson(data.repos, META.inflight, null);
         const code = syncErrorCodeOf(error);
         const beforeWrite = typeof error === 'object' && error !== null && (error as { appendBeforeWrite?: unknown }).appendBeforeWrite === true;
