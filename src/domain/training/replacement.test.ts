@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { FITNESS_PARK_ANTONY } from '../../../tests/fixtures/training/progression';
+import { SALLE_COMPLETE } from '../../../tests/fixtures/training/progression';
 import {
   R_ASSISTED,
   R_BENCH_BB,
@@ -142,7 +142,7 @@ describe('replacementCandidates', () => {
     const out = replacementCandidates({ of: R_BENCH_BB, library: R_LIBRARY, profile: null, excluded: new Set(), present: new Set(), groupOf, limit: 2 });
     expect(out.alternatives.map((e) => e.id)).toEqual(['incline-press-dumbbell', 'bench-press-dumbbell']);
     expect(out.similar).toHaveLength(2);
-    expect(replacementCandidates({ of: R_BENCH_BB, library: R_LIBRARY, profile: FITNESS_PARK_ANTONY, excluded: new Set(), present: new Set(), groupOf }).similar.map((e) => e.id)).not.toContain('chest-press-machine');
+    expect(replacementCandidates({ of: R_BENCH_BB, library: R_LIBRARY, profile: SALLE_COMPLETE, excluded: new Set(), present: new Set(), groupOf }).similar.map((e) => e.id)).not.toContain('chest-press-machine');
   });
 });
 

@@ -55,7 +55,7 @@ describe('CONTENT-02 : catalogue étendu', () => {
 
   it('compatibilité avec le profil « Salle complète » (FIX-0173) : un matériel absent du profil exclut l’exercice, sans modifier le profil', async () => {
     const content = await loadTrainingContent();
-    const salle = content.profiles.find((p) => p.id === 'fitness-park-antony');
+    const salle = content.profiles.find((p) => p.id === 'salle-complete');
     if (salle === undefined) throw new Error('profil de salle absent');
     const available = usableEquipment(salle);
     const compatible = (id: string) => isExerciseCompatible(content.catalog.get(id) as never, salle);

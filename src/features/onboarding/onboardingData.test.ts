@@ -24,7 +24,7 @@ const FULL: OnboardingDraft = {
   experience: 'intermediate',
   sessionsPerWeek: 3,
   durationMin: 60,
-  equipmentProfileId: 'fitness-park-antony',
+  equipmentProfileId: 'salle-complete',
   priorities: ['chest'],
 };
 
@@ -87,7 +87,7 @@ describe('onboarding : données (I3-07)', () => {
       expect(await db.driver.select('SELECT sex, birth_year, height_cm, goal, experience FROM profile')).toEqual([{ sex: 'male', birth_year: 1996, height_cm: 180, goal: 'gain', experience: 'intermediate' }]);
       expect(await db.driver.select('SELECT date, kg, source FROM body_weight')).toEqual([{ date: TODAY, kg: 80, source: 'manual' }]);
       expect(await db.data.repos.settings.get('nutrition.prefs')).toMatchObject({ activity: 'moderate', goal: { kind: 'gain', weeklyRateKg: 0.2 } });
-      expect(await db.data.repos.settings.get('training.activeEquipmentProfile')).toBe('fitness-park-antony');
+      expect(await db.data.repos.settings.get('training.activeEquipmentProfile')).toBe('salle-complete');
       expect(await db.data.repos.settings.get('onboarding.completed')).toBe(true);
       const routines = await (await db.data.repos.trainingRoutines()).list();
       expect(routines.map((r) => r.name)).toEqual(['Full Body 3 j']);

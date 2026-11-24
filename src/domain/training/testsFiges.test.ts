@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BENCH, CURL, FITNESS_PARK_ANTONY, input, session, set, target } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, SALLE_COMPLETE, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import type { IsoDateTime } from '../types';
 import { explanationNotes } from './explain';
 import { prescribe } from './prescribe';
@@ -48,10 +48,10 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
   const history = (kg: number, reps: number[]): ExerciseSession[] => [
     { workoutId: 'g', endedAt: '2026-11-01T18:00:00.000Z' as IsoDateTime, difficulty: null, sets: reps.map((r, p) => set(kg, r, { position: p })) },
   ];
-  const SALLE_B = { inventory: { ...FITNESS_PARK_ANTONY.inventory, dumbbells: { minKg: 5, maxKg: 50, stepKg: 2.5 } }, increments: { barbell: 2.5, dumbbell: 2.5 } };
+  const SALLE_B = { inventory: { ...SALLE_COMPLETE.inventory, dumbbells: { minKg: 5, maxKg: 50, stepKg: 2.5 } }, increments: { barbell: 2.5, dumbbell: 2.5 } };
 
   it('haut de fourchette atteint à 44 kg (haltères par 2) : 46 kg dans la salle A, 45 kg dans la salle B (pas de 2,5), même référence', () => {
-    const a = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: FITNESS_PARK_ANTONY }));
+    const a = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_COMPLETE }));
     const b = prescribe(input({ exercise: CURL, history: history(44, [10, 10, 10]), target: target(8, 10), equipment: SALLE_B }));
     expect(a.loadKg).toBe(46);
     expect(b.loadKg).toBe(45);
@@ -65,7 +65,7 @@ describe('TESTS-FIGES changement de salle avec historique (§ 11.6)', () => {
     expect(b.loadKg).toBe(44);
     expect(b.reasons).toContain('reference-off-grid');
     expect(explanationNotes(b)).toContainEqual({ key: 'noteReferenceOffGrid', params: { load: 44 } });
-    const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: FITNESS_PARK_ANTONY }));
+    const a = prescribe(input({ exercise: CURL, history: history(44, [8, 8, 8]), target: target(8, 10), equipment: SALLE_COMPLETE }));
     expect(a.reasons).not.toContain('reference-off-grid');
     // Au-dessus du maximum du matériel de la salle : signalée de même.
     const heavy = prescribe(input({ exercise: CURL, history: history(55, [8, 8, 8]), target: target(8, 10), equipment: SALLE_B }));

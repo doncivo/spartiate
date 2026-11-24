@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FARMER, FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { FARMER, SALLE_COMPLETE, input, session, target } from '../../../tests/fixtures/training/progression';
 import { confidenceBand, confidencePercent, explainPrescription } from './explain';
 import { prescribe } from './prescribe';
 
@@ -67,7 +67,7 @@ describe('explainPrescription', () => {
   });
 
   it('même entrée : même phrase (déterminisme)', () => {
-    const make = () => explainPrescription(prescribe(input({ history: three(60, [10, 10, 10]), equipment: FITNESS_PARK_ANTONY })));
+    const make = () => explainPrescription(prescribe(input({ history: three(60, [10, 10, 10]), equipment: SALLE_COMPLETE })));
     expect(make()).toEqual(make());
   });
 });

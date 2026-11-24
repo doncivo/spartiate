@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FITNESS_PARK_ANTONY, input, session, target } from '../../../tests/fixtures/training/progression';
+import { SALLE_COMPLETE, input, session, target } from '../../../tests/fixtures/training/progression';
 import { setRow, workoutRow } from '../../../tests/fixtures/training/workout';
 import type { IsoDateTime } from '../types';
 import { CATALOG_ASSISTED_IDS, isAssistedEquipment } from './assisted';
@@ -23,8 +23,8 @@ import { warmupForExercise } from './warmup';
 // matériel assisted-pull-up-machine → assisted: true (prescriptionInput.ts:46). Exercice personnalisé : bodyweightFraction absent.
 const ASSISTED = { id: 'custom-assisted', metric: 'load-reps', equipment: ['assisted-pull-up-machine'], kind: 'compound', assisted: true } as const;
 const ASSIST_GYM: ProgressionEquipment = {
-  inventory: { ...FITNESS_PARK_ANTONY.inventory, available: [...FITNESS_PARK_ANTONY.inventory.available, 'assisted-pull-up-machine'], machines: [{ equipmentId: 'assisted-pull-up-machine', stackMinKg: 5, stackMaxKg: 100, stepKg: 5 }] },
-  increments: FITNESS_PARK_ANTONY.increments,
+  inventory: { ...SALLE_COMPLETE.inventory, available: [...SALLE_COMPLETE.inventory.available, 'assisted-pull-up-machine'], machines: [{ equipmentId: 'assisted-pull-up-machine', stackMinKg: 5, stackMaxKg: 100, stepKg: 5 }] },
+  increments: SALLE_COMPLETE.increments,
 };
 /** Même exercice, poids de corps connu (fraction 1, corps 80 kg : charge réelle = 80 − assistance). */
 const ASSISTED_BODY = { ...ASSISTED, bodyweightFraction: 1 } as const;
@@ -154,7 +154,7 @@ describe('FIX-ASSIST (c) échauffement', () => {
   it('critère 9 : assisté (drapeau ou matériel) → aucune rampe ; non assisté inchangé', () => {
     expect(warmupForExercise(ASSISTED, 30, ASSIST_GYM)).toEqual([]);
     expect(warmupForExercise({ metric: 'load-reps', equipment: ['assisted-pull-up-machine'] }, 30, ASSIST_GYM)).toEqual([]);
-    expect(warmupForExercise({ metric: 'load-reps', equipment: ['barbell'] }, 100, FITNESS_PARK_ANTONY).length).toBeGreaterThan(0);
+    expect(warmupForExercise({ metric: 'load-reps', equipment: ['barbell'] }, 100, SALLE_COMPLETE).length).toBeGreaterThan(0);
   });
 });
 

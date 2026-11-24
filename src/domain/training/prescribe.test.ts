@@ -4,7 +4,7 @@ import { DEFAULT_PROGRESSION_CONFIG, ENGINE_VERSION, PRESCRIPTION_HEADLINES, REA
 import { positionMultiplier, prescribe, primaryMuscle } from './prescribe';
 import type { ExerciseSession, Prescription } from './types';
 
-/** I2-01, critères 4 à 9 (§ 11.2, D-72) : vecteurs calculés à la main sur le profil par défaut Fitness Park Antony. */
+/** I2-01, critères 4 à 9 (§ 11.2, D-72) : vecteurs calculés à la main sur le profil par défaut Fitness Park. */
 
 const loads = (p: Prescription): (number | null)[] => p.sets.map((s) => s.loadKg);
 const reps = (p: Prescription): number[] => p.sets.map((s) => s.reps);
@@ -99,7 +99,7 @@ describe('hausse d’un cran au haut de la plage (critère 6)', () => {
     expect(p.reasons).toEqual(['history-reference', 'top-reached']);
   });
 
-  it('machine sans palier connu (Fitness Park Antony) ou aucun profil : +2,5 kg par défaut, signalé', () => {
+  it('machine sans palier connu (Fitness Park) ou aucun profil : +2,5 kg par défaut, signalé', () => {
     for (const equipment of [undefined, null]) {
       const p = prescribe(input({ exercise: LEG_PRESS, history: [session(3, 100, [10, 10, 10])], ...(equipment === null ? { equipment: null } : {}) }));
       expect(p.loadKg).toBe(102.5);
@@ -353,7 +353,7 @@ describe('cas limites (passe qa-test)', () => {
     expect(d.sets).toEqual([{ reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }, { reps: 8, loadKg: 20 }]);
   });
 
-  // Liste vérifiée (KETTLEBELL_GYM) : avec Fitness Park Antony, les kettlebells sont à pas inconnu (test suivant), d’où le profil explicite.
+  // Liste vérifiée (KETTLEBELL_GYM) : avec Fitness Park, les kettlebells sont à pas inconnu (test suivant), d’où le profil explicite.
   it('kettlebell sous le maximum d’une liste vérifiée : cran vers la charge suivante (4 → 34 kg plafonné)', () => {
     const p = prescribe(input({ exercise: SWING, equipment: KETTLEBELL_GYM, history: [session(3, 4, [10, 10, 10])] }));
     expect(p.loadKg).toBe(4);
@@ -361,7 +361,7 @@ describe('cas limites (passe qa-test)', () => {
     expect(p.reasons).toEqual(['history-reference', 'top-reached', 'gain-capped']);
   });
 
-  it('kettlebells à pas inconnu (Fitness Park Antony) : cran supposé, signalé increment-unknown, jamais 34 kg après 16 kg', () => {
+  it('kettlebells à pas inconnu (Fitness Park) : cran supposé, signalé increment-unknown, jamais 34 kg après 16 kg', () => {
     const p = prescribe(input({ exercise: SWING, history: [session(3, 16, [10, 10, 10])] }));
     expect(p.loadKg).toBe(18.5);
     expect(p.reasons).toEqual(['history-reference', 'top-reached', 'increment-unknown']);

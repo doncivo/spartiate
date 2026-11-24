@@ -214,7 +214,7 @@ describe('bundle de départ (index.html)', () => {
     expect(start.has(chunk.file)).toBe(false);
   });
 
-  it.each(['Ajouter un programme de départ', 'Compatibles avec mon matériel', 'Développé couché à la barre', 'fitness-park-antony', 'Full Body 3 j'])('I1-01 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(['Ajouter un programme de départ', 'Compatibles avec mon matériel', 'Développé couché à la barre', 'salle-complete', 'Full Body 3 j'])('I1-01 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);

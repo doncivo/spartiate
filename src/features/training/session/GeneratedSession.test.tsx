@@ -15,7 +15,7 @@ import { TrainingScreen } from '../TrainingScreen';
 
 /**
  * I3-01 (interface) : « Séance proposée », bloc à la demande ouvert depuis « Nouvelle séance ». Base SQLite réelle (wasm), contenu embarqué
- * réel, profil actif par défaut (Fitness Park Antony). Rien n'est écrit avant « Commencer cette séance » ; la routine source reste intacte.
+ * réel, profil actif par défaut (Fitness Park). Rien n'est écrit avant « Commencer cette séance » ; la routine source reste intacte.
  */
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c3' as DeviceId;

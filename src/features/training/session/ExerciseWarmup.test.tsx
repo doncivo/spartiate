@@ -11,7 +11,7 @@ import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/na
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
- * I2-03 (§ 13.2, § 13.8, D-72 point 11) : rampe d'échauffement dans la séance active, avec le matériel embarqué Fitness Park Antony (profil
+ * I2-03 (§ 13.2, § 13.8, D-72 point 11) : rampe d'échauffement dans la séance active, avec le matériel embarqué Fitness Park (profil
  * actif par défaut, base SQLite réelle). La rampe est annoncée dans la proposition et insérée avant la première série de travail quand Ali
  * retient une charge (Accepter, Modifier ou un choix), pour le premier exercice composé de chaque pattern seulement ; rien sans geste,
  * rien après un refus ; séries `warmup` ignorables, sans repos.
@@ -77,7 +77,7 @@ afterEach(async () => {
   await db.close();
 });
 
-describe('rampe annoncée puis insérée (critères 1 à 3, matériel d’Antony)', () => {
+describe('rampe annoncée puis insérée (critères 1 à 3, matériel de la salle)', () => {
   it('proposition 62,5 kg : rampe annoncée ; rien n’est inséré sans geste', async () => {
     await seedPast([[BENCH, 60]]);
     await seedCurrent([BENCH]);
@@ -136,7 +136,7 @@ describe('rampe annoncée puis insérée (critères 1 à 3, matériel d’Antony
     expect((await stored(BENCH.exerciseId)).map((s) => s.set_kind)).toEqual(['work', 'work', 'work']);
   });
 
-  it('machine sans palier connu à Antony (presse) : ni annonce ni rampe, aucune charge inventée', async () => {
+  it('machine sans palier connu à la salle (presse) : ni annonce ni rampe, aucune charge inventée', async () => {
     await seedPast([[LEG_PRESS, 100]]);
     await seedCurrent([LEG_PRESS]);
     openSession();

@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { BENCH, CURL, FITNESS_PARK_ANTONY, LEG_PRESS, daysAgo, input } from '../../../tests/fixtures/training/progression';
+import { BENCH, CURL, SALLE_COMPLETE, LEG_PRESS, daysAgo, input } from '../../../tests/fixtures/training/progression';
 import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
 import { epley } from './estimate1rm';
 import { prescribe } from './prescribe';
@@ -16,12 +16,12 @@ const WEIGHTED = { id: 'pull-up-weighted', metric: 'load-reps', equipment: ['pul
 const ASSISTED = { id: 'custom-assisted', metric: 'load-reps', equipment: ['assisted-pull-up-machine'], kind: 'compound', assisted: true } as const;
 const GYM: ProgressionEquipment = {
   inventory: {
-    ...FITNESS_PARK_ANTONY.inventory,
-    available: [...FITNESS_PARK_ANTONY.inventory.available, 'pull-up-bar', 'loading-belt', 'assisted-pull-up-machine'],
+    ...SALLE_COMPLETE.inventory,
+    available: [...SALLE_COMPLETE.inventory.available, 'pull-up-bar', 'loading-belt', 'assisted-pull-up-machine'],
     // Presse à pas grossier (20 kg) : les crans dépassent souvent +10 %, le plafond est réellement exercé.
     machines: [{ equipmentId: 'assisted-pull-up-machine', stackMinKg: 5, stackMaxKg: 100, stepKg: 5 }, { equipmentId: 'leg-press-machine', stackMinKg: 20, stackMaxKg: 400, stepKg: 20 }],
   },
-  increments: FITNESS_PARK_ANTONY.increments,
+  increments: SALLE_COMPLETE.increments,
 };
 
 const arbSession = (index: number): fc.Arbitrary<ExerciseSession> =>

@@ -16,7 +16,7 @@ import { TrainingScreen } from '../TrainingScreen';
  * I5-02 point 2.2 (§ 16.4, § 16.7) : au lancement d'une séance, Recovery ≤ 33 lue dans `recovery_day` → bandeau « Journée rouge : charges
  * allégées de 5 % proposées », un tap pour accepter ou ignorer, choix gardé pour la séance (réglage local), jamais imposé ; Recovery nulle ou
  * absente : aucun bandeau. Accepté : charges × 0,95 arrondies au matériel vers le bas (D-170) et dit ; ignoré : inchangée. Recovery Split : pourcentage par muscle
- * principal, muscle sans ligne « inconnu ». Base SQLite réelle (wasm), contenu embarqué, profil Fitness Park Antony (barre 2,5 kg).
+ * principal, muscle sans ligne « inconnu ». Base SQLite réelle (wasm), contenu embarqué, profil Fitness Park (barre 2,5 kg).
  */
 
 const DEVICE = '60000000-0000-4000-8000-0000000000e9' as DeviceId;

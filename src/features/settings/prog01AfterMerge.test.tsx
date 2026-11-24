@@ -51,7 +51,7 @@ const DRAFT: OnboardingDraft = {
   experience: 'intermediate',
   sessionsPerWeek: 5,
   durationMin: 60,
-  equipmentProfileId: 'fitness-park-antony',
+  equipmentProfileId: 'salle-complete',
   mesoWeeks: 4,
   rampUp: false,
 };

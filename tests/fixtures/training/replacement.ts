@@ -1,5 +1,5 @@
 import type { EmbeddedExercise, ExercisePattern, ProgressionEquipment } from '../../../src/domain/training';
-import { FITNESS_PARK_ANTONY } from './progression';
+import { SALLE_COMPLETE } from './progression';
 
 /**
  * SESS-01a : exercices synthétiques (identifiants du catalogue, valeurs inventées) pour la règle de remplacement en séance. Aucune donnée réelle.
@@ -62,9 +62,9 @@ export const R_LIBRARY: readonly EmbeddedExercise[] = [
 /** Salle de l'essai : profil par défaut (barre 20 kg pas 2,5, haltères 2 à 50 pas 2) + presse pectoraux 5 à 100 kg par 5, sans banc incliné. */
 export const R_GYM: ProgressionEquipment = {
   inventory: {
-    ...FITNESS_PARK_ANTONY.inventory,
-    available: [...FITNESS_PARK_ANTONY.inventory.available, 'rack', 'parallel-bars', 'weight-plate'],
+    ...SALLE_COMPLETE.inventory,
+    available: [...SALLE_COMPLETE.inventory.available, 'rack', 'parallel-bars', 'weight-plate'],
     machines: [{ equipmentId: 'chest-press-machine', stackMinKg: 5, stackMaxKg: 100, stepKg: 5 }],
   },
-  increments: FITNESS_PARK_ANTONY.increments,
+  increments: SALLE_COMPLETE.increments,
 };

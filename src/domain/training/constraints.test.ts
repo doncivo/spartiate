@@ -10,7 +10,7 @@ import type { ExerciseSession, PrescribeInput, RecoverySnapshot } from './types'
 /**
  * I2-02 (§ 11.2 point 6, § 11.3, § 11.5 ; D-72 points 7 à 10, qui priment) : contraintes de fatigue, stagnation, inactivité, deload et
  * récupération. Elles maintiennent ou réduisent, jamais de bonus ; les choix sont présentés, jamais appliqués d'office. Vecteurs calculés à
- * la main (commentaires) ; grille barre de Fitness Park Antony : 20 kg + pas de 2,5 kg ; haltères 2 à 50 kg par 2 ; presse sans grille
+ * la main (commentaires) ; grille barre de Fitness Park : 20 kg + pas de 2,5 kg ; haltères 2 à 50 kg par 2 ; presse sans grille
  * (arrondi au demi-kilo inférieur).
  */
 
