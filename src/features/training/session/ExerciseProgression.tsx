@@ -212,6 +212,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
 
   useEffect(() => {
     live.current = true;
+    // SEANCE-0292 (C-080) : drapeau PROPRE à ce chargement ; une lecture d'un chargement précédent (relancé) n'écrit plus rien.
+    let alive = true;
     void (async () => {
       try {
         const repo = await access.repos.progression();
@@ -229,24 +231,25 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
         // I4-08 point 5 : le deload du cycle ne vaut que pour une séance issue de la routine du cycle (démarrée ou proposée depuis elle).
         const ofCycle = cycle !== null && sessionRoutineId({ id: workout.id, routineId: workout.routineId }, link) === cycle.record.routineId;
         const cycleDeload = ofCycle && cycle.state.phase === 'active' && cycle.state.kind === 'deload';
-        if (!live.current) return;
+        if (!alive) return;
         // I3-02 : en semaine de deload du cycle, le deload est proposé par défaut (une fois, au premier chargement ; désactivable).
         if (cycleDeload && !cyclePreset.current) {
           cyclePreset.current = true;
           setDeload(true);
         }
         const lastPositionRank = await referencePositionRank(access, history, exerciseId, musclesOf);
-        if (!live.current) return;
+        if (!alive) return;
         const bodyweightKg = exercise?.bodyweightFraction ? await bodyweightNow(access) : null;
-        if (!live.current) return;
+        if (!alive) return;
         const plan = cycleDeload ? cycle.state.plan : null;
         const cycleDeloadPlan = plan?.deloadSets !== undefined && plan.deloadLoad !== undefined ? { sets: plan.deloadSets, load: plan.deloadLoad } : null;
         setLoad({ status: 'ready', history, reference, own, profile, cycleDeload, cycleDeloadPlan, targetRir: linkedRir({ id: workout.id }, link, exerciseId), lastPositionRank, bodyweightKg });
       } catch {
-        if (live.current) setLoad({ status: 'error' });
+        if (alive) setLoad({ status: 'error' });
       }
     })();
     return () => {
+      alive = false;
       live.current = false;
     };
   }, [access, exerciseId, workout.id, workout.routineId, workout.startedAt, attempt]); // eslint-disable-line react-hooks/exhaustive-deps -- musclesOf change à chaque rendu ; le rang de référence et le poids de corps se relisent au rechargement

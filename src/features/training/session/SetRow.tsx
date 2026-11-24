@@ -8,6 +8,7 @@ import { stepLoad } from '../../../domain/training/loadGrid';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
+import { useKeyboardSelect } from './keyboardSelect';
 import type { OutlierAsk } from './outlierCheck';
 
 /**
@@ -155,6 +156,8 @@ export function SetRow({ set, number, current = false, loads = null, held = null
     const id = setTimeout(() => flushRef.current(), 1000);
     return () => clearTimeout(id);
   }, [draft]); // eslint-disable-line react-hooks/exhaustive-deps -- relance du délai à chaque frappe seulement
+  // SEANCE-0292 (C-080) : type de série parcouru au clavier écrit une fois (Entrée ou sortie du champ), pas à chaque flèche.
+  const kindSelect = useKeyboardSelect(setKindChoiceOf(set), (next) => onKind(next as SetKindChoice));
   const warmup = set.setKind === 'warmup';
   const target = targetText(set, timed, source, held);
   const label = warmup ? tTraining('sessionWarmupSet') : tTraining('sessionSet', { n: number });
@@ -298,7 +301,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
           <div className="ct-session__set-actions">
             <label className="ct-session__field ct-session__field--kind">
               <span className="ct-training__label">{tTraining('sessionSetKind')}</span>
-              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={setKindChoiceOf(set)} disabled={busy} onChange={(e) => onKind(e.target.value as SetKindChoice)}>
+              <select className="ct-session__input" aria-describedby={`${set.id}-kind-help`} value={kindSelect.value} disabled={busy} onKeyDown={kindSelect.onKeyDown} onChange={kindSelect.onChange} onBlur={kindSelect.onBlur}>
                 <option value={timed && set.setKind === 'timed' ? 'timed' : 'work'}>{tTraining(timed && set.setKind === 'timed' ? 'kindTimed' : 'kindWork')}</option>
                 {!timed && <option value="failure">{tSession('kindFailure')}</option>}
                 <option value="warmup">{tTraining('kindWarmup')}</option>

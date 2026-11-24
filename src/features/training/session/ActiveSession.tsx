@@ -41,6 +41,7 @@ import { SessionStrip } from './SessionStrip';
 import { DeclaredFatigueBar } from './DeclaredFatigueBar';
 import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
+import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
 
@@ -106,6 +107,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [grouping, setGrouping] = useState(false);
+  // SEANCE-0292 (C-080) : repos par défaut parcouru au clavier écrit une fois (Entrée ou sortie du champ).
+  const restSelect = useKeyboardSelect(restSetting === null ? '' : String(restSetting), (v) => onRestSetting(v === '' ? null : Number(v)));
   /** SESS-01a : exercice en cours de remplacement (feuille ouverte). */
   const [replacing, setReplacing] = useState<string | null>(null);
   /** SESS-01d : fatigue déclarée pour CETTE séance (réglage local), lue au montage ; illisible : aucune. */
@@ -539,9 +542,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           <select
             id="ct-session-rest"
             className="ct-session__input"
-            value={restSetting === null ? '' : String(restSetting)}
+            value={restSelect.value}
             aria-describedby="ct-session-rest-hint"
-            onChange={(e) => onRestSetting(e.target.value === '' ? null : Number(e.target.value))}
+            onKeyDown={restSelect.onKeyDown}
+            onChange={restSelect.onChange}
+            onBlur={restSelect.onBlur}
           >
             <option value="">{tTraining('restDefaultExercise')}</option>
             {REST_CHOICES_SEC.map((s) => (
