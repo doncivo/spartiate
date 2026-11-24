@@ -250,7 +250,8 @@ describe('« Mettre à jour la routine ? » (§ 13.8)', () => {
 });
 
 describe('après la clôture', () => {
-  it('« Fermer » revient aux options de départ ; la séance close se copie (historique réel)', async () => {
+  // SEANCE-0292 (BL-141, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée) ; « Nouvelle séance » propose la copie.
+  it('« Fermer » revient à l’accueil ; la séance close se copie depuis « Nouvelle séance » (historique réel)', async () => {
     openSession();
     await startFromRoutine();
     for (const reps of ['8', '8', '7']) await validateNext(BENCH, '60', reps);
@@ -258,6 +259,8 @@ describe('après la clôture', () => {
     await validateNext(ROW, '50', '9');
     fireEvent.click(screen.getByRole('button', { name: 'Terminer la séance' }));
     fireEvent.click(within(await summaryRegion()).getByRole('button', { name: 'Fermer le résumé' }));
+    await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
+    act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
     fireEvent.click(await screen.findByRole('button', { name: /^Copier « Haut A »/ }));
     expect((await screen.findAllByText('Dernière fois : 60 kg × 8')).length).toBe(2);
     expect(await count('SELECT COUNT(*) AS n FROM workout WHERE ended_at IS NULL AND source = ?', ['copy'])).toBe(1);
@@ -346,7 +349,9 @@ describe('0.2.4 point 6 : « Mettre à jour la routine ? » reproposée si l’a
   it('« Fermer le résumé » est une réponse : la question ne revient pas', async () => {
     await closeWithoutRowing();
     fireEvent.click(screen.getByRole('button', { name: 'Fermer le résumé' }));
-    await startOptions();
+    // SEANCE-0292 (BL-141, D-527) : « Fermer » ramène à l'accueil de l'Entraînement (attente changée), la question ne revient pas.
+    await screen.findByRole('radiogroup', { name: 'Sections de l’entraînement' });
+    expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
     await reopen();
     await startOptions();
     expect(screen.queryByRole('group', { name: 'Mettre à jour la routine ?' })).toBeNull();
