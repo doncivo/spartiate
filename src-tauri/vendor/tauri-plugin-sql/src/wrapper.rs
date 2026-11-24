@@ -426,8 +426,6 @@ fn sqlite_options(conn_url: &str) -> Result<sqlx::sqlite::SqliteConnectOptions, 
 /// front (`serializedDriver.ts`) le traite en echec visible `transaction-lost`, jamais rattrape en silence.
 #[cfg(feature = "sqlite")]
 pub async fn open_sqlite_pool(conn_url: &str) -> Result<Pool<Sqlite>, sqlx::Error> {
-    use std::str::FromStr;
-
     use sqlx::sqlite::SqlitePoolOptions;
 
     let options = sqlite_options(conn_url)?;
