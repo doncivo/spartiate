@@ -358,3 +358,20 @@ describe('SEANCE-0292 C-026 (vérification) : une décision postérieure à la d
     expect(p.sets).toHaveLength(1);
   });
 });
+
+describe('SEANCE-0292 C-027 (D-474) : « Dur » bloque seulement la hausse de charge ; l’échelle de répétitions reste libre (règle figée)', () => {
+  it('plage 6–8, [8, 7, 6] « Dur » : même charge, une répétition de plus sur une série ([8, 8, 6])', () => {
+    const p = prescribe(input({ exercise: BENCH, history: [session(3, 100, [8, 7, 6], { difficulty: 'hard' })], target: target(6, 8) }));
+    expect(p.loadKg).toBe(100);
+    expect(p.sets.map((s) => s.reps)).toEqual([8, 8, 6]);
+    expect(p.headline).toBe('rep-ladder');
+  });
+
+  it('haut de plage atteint et « Dur » (ou RIR ≤ 1) : aucun cran, mêmes répétitions', () => {
+    const hard = prescribe(input({ exercise: BENCH, history: [session(3, 100, [10, 10, 10], { difficulty: 'hard' })], target: target(8, 10) }));
+    expect(hard.headline).toBe('hold-hard');
+    expect(hard.loadKg).toBe(100);
+    expect(hard.sets.map((s) => s.reps)).toEqual([10, 10, 10]);
+    expect(hard.reasons).toContain('hard-blocks-increase');
+  });
+});
