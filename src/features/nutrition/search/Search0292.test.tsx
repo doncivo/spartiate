@@ -109,3 +109,70 @@ describe('C-102 : heure invalide, fiche périmée, Échap', () => {
     expect(await screen.findByRole('searchbox', { name: 'Nom de l’aliment' })).toBeInTheDocument();
   });
 });
+
+describe('BL-117 : assiette et go-tos', () => {
+  const addToPlateFlow = async (name: string, query: string, grams: string) => {
+    await typeQuery(query);
+    fireEvent.click(await screen.findByRole('button', { name: new RegExp(name) }));
+    fireEvent.change(await screen.findByLabelText('Quantité (g)'), { target: { value: grams } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ajouter à l’assiette' }));
+  };
+
+  it('assiette gardée à la fermeture de la recherche', async () => {
+    await addCustom('Skyr maison');
+    const r = await openSearch();
+    await addToPlateFlow('Skyr maison', 'skyr', '150');
+    await screen.findByRole('region', { name: 'Assiette' });
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer la recherche' }));
+    fireEvent.click(await within(r).findByRole('button', { name: 'Rechercher un aliment' }));
+    const plate = await screen.findByRole('region', { name: 'Assiette' });
+    expect(within(plate).getByLabelText('Quantité de Skyr maison (g)')).toHaveValue('150');
+  });
+
+  it('grammes modifiables dans l’assiette : le total suit', async () => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await addToPlateFlow('Skyr maison', 'skyr', '100');
+    const plate = await screen.findByRole('region', { name: 'Assiette' });
+    expect(plate).toHaveTextContent('60 kcal');
+    fireEvent.change(within(plate).getByLabelText('Quantité de Skyr maison (g)'), { target: { value: '250' } });
+    expect(screen.getByRole('region', { name: 'Assiette' })).toHaveTextContent('150 kcal');
+  });
+
+  it('heure propre à un aliment : l’entrée écrite la porte', async () => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await addToPlateFlow('Skyr maison', 'skyr', '100');
+    const plate = await screen.findByRole('region', { name: 'Assiette' });
+    fireEvent.change(within(plate).getByLabelText('Heure de Skyr maison'), { target: { value: '08:15' } });
+    fireEvent.click(within(plate).getByRole('button', { name: 'Ajouter l’assiette au journal' }));
+    const repo = await db.data.repos.mealEntries();
+    await waitFor(async () => expect((await repo.listBetween('2000-01-01' as never, '2100-01-01' as never)).map((e) => e.time)).toEqual(['08:15']));
+  });
+
+  it('assiette enregistrée en recette : une recette d’une portion, l’assiette reste', async () => {
+    await addCustom('Skyr maison');
+    await openSearch();
+    await addToPlateFlow('Skyr maison', 'skyr', '150');
+    const plate = await screen.findByRole('region', { name: 'Assiette' });
+    fireEvent.change(within(plate).getByLabelText('Nom de la recette'), { target: { value: 'Petit-déj' } });
+    fireEvent.click(within(plate).getByRole('button', { name: 'Enregistrer en recette' }));
+    expect(await within(plate).findByText('Recette enregistrée.')).toBeInTheDocument();
+    const [recipe] = await (await db.data.repos.recipes()).list();
+    expect(recipe).toMatchObject({ name: 'Petit-déj', servings: 1 });
+    expect(recipe?.ingredients.map((i) => [i.name, i.grams])).toEqual([['Skyr maison', 150]]);
+  });
+
+  it('go-tos : un aliment pris 3 fois apparaît sous « Habituels », jamais sous 2 prises', async () => {
+    const skyr = await addCustom('Skyr maison');
+    const other = await addCustom('Miel local');
+    const meals = await db.data.repos.mealEntries();
+    for (const [food, name, days] of [[skyr, 'Skyr maison', ['2026-11-02', '2026-11-04', '2026-11-06']], [other, 'Miel local', ['2026-11-02', '2026-11-04']]] as const) {
+      for (const day of days) await meals.create({ date: day as never, time: '08:00' as never, foodId: food.id, foodName: name, source: 'custom', grams: 100, kcal: 60, proteinG: 1, fatG: 1, carbG: 1, method: 'search', confidence: null });
+    }
+    await openSearch();
+    const section = await screen.findByRole('region', { name: 'Habituels' });
+    expect(within(section).getByText('Skyr maison')).toBeInTheDocument();
+    expect(within(section).queryByText('Miel local')).toBeNull();
+  });
+});
