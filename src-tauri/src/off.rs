@@ -416,10 +416,34 @@ fn text_field(product: &Value, key: &str) -> Option<String> {
     (!text.is_empty()).then(|| text.chars().take(MAX_TEXT_CHARS).collect())
 }
 
+/// Texte numérique en notation à point (C-046) : quand les deux séparateurs sont présents, le dernier est la virgule décimale et l'autre
+/// sépare les milliers ; un même séparateur répété sépare les milliers ; un séparateur unique reste décimal (« 1,5 » vaut 1,5).
+fn decimal_text(text: &str) -> Option<String> {
+    let Some(last) = text.rfind(['.', ',']) else {
+        return Some(text.to_owned());
+    };
+    let separators = text.chars().filter(|c| matches!(c, '.' | ',')).count();
+    let mixed = text.contains('.') && text.contains(',');
+    let same_repeated = separators > 1 && !mixed;
+    if !mixed && !same_repeated {
+        return Some(text.replace(',', "."));
+    }
+    let decimal_at = if mixed { Some(last) } else { None };
+    let mut out = String::with_capacity(text.len());
+    for (i, c) in text.char_indices() {
+        match c {
+            '.' | ',' if Some(i) == decimal_at => out.push('.'),
+            '.' | ',' => {}
+            _ => out.push(c),
+        }
+    }
+    Some(out)
+}
+
 fn number_of(value: &Value) -> Option<f64> {
     let number = match value {
         Value::Number(n) => n.as_f64()?,
-        Value::String(s) => s.trim().replace(',', ".").parse::<f64>().ok()?,
+        Value::String(s) => decimal_text(s.trim())?.parse::<f64>().ok()?,
         _ => return None,
     };
     number.is_finite().then_some(number)
