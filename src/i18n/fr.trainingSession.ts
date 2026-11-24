@@ -10,6 +10,9 @@ export const trainingSessionFr = {
   replaceAlternatives: 'Alternatives de la fiche',
   replaceSimilar: 'Même groupe musculaire',
   replaceNone: 'Aucune alternative compatible avec le matériel de ce profil.',
+  /** SEANCE-0292 (BL-121) : remplaçants écartés par une gêne déclarée. */
+  replaceAvoidedOne: 'Un exercice écarté à cause d’une gêne déclarée.',
+  replaceAvoided: 'Exercices écartés à cause d’une gêne déclarée : {n}.',
   replaceSearch: 'Chercher dans la bibliothèque',
   replaceSearchClose: 'Fermer la recherche',
   replaceChosen: 'Par « {name} »',

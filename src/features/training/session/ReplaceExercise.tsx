@@ -3,6 +3,9 @@ import type { ReplacementImplement } from '../../../domain/training/config';
 import { estimateReplacementLoad, replacementCandidates, replacementSourceLoad, type ReplacementLoad } from '../../../domain/training/replacement';
 import type { Exercise, ExerciseBlock, WorkoutWithSets } from '../../../domain/training';
 import type { DataAccess } from '../../../db/repositories/dataAccess';
+import { injuryAvoidance, type InjuriesValue } from '../../../domain/training/injuries';
+import { tPlural } from '../../../i18n/plural';
+import { loadInjuries } from '../../settings/injuries/injuriesStore';
 import { formatExerciseLoad, formatNumber } from '../../../i18n/trainingText';
 import { tSession, type TrainingSessionTextKey } from '../../../i18n/trainingSessionText';
 import { Button } from '../../../ui';
@@ -53,9 +56,27 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
   const from = exerciseOf(block.exerciseId);
   const present = useMemo(() => new Set(workout.sets.filter((s) => s.deletedAt === null).map((s) => s.exerciseId)), [workout.sets]);
 
+  // SEANCE-0292 (BL-121) : gênes déclarées (table publiée) appliquées au remplacement comme à la séance proposée ; illisibles : aucune.
+  const [injuries, setInjuries] = useState<InjuriesValue>({ v: 1, items: [] });
+  useEffect(() => {
+    let alive = true;
+    loadInjuries(access.repos).then(
+      (read) => {
+        if (alive) setInjuries(read);
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [access]);
+  const avoid = useMemo(() => injuryAvoidance(injuries, data.exercises), [injuries, data.exercises]);
   const candidates = useMemo(
-    () => (from === undefined ? { alternatives: [], similar: [] } : replacementCandidates({ of: from, library: data.exercises, profile: data.active, excluded, present, groupOf: (e) => exerciseGroup(e, data.content) })),
-    [from, data, excluded, present],
+    () =>
+      from === undefined
+        ? { alternatives: [], similar: [], avoided: 0 }
+        : replacementCandidates({ of: from, library: data.exercises, profile: data.active, excluded, present, groupOf: (e) => exerciseGroup(e, data.content), avoid }),
+    [from, data, excluded, present, avoid],
   );
 
   useEffect(() => {
@@ -169,6 +190,7 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
       {list('replaceAlternatives', candidates.alternatives)}
       {list('replaceSimilar', candidates.similar)}
       {candidates.alternatives.length + candidates.similar.length === 0 && <p className="ct-session__muted">{tSession('replaceNone')}</p>}
+      {candidates.avoided > 0 && <p className="ct-session__muted">{tPlural(tSession, candidates.avoided, 'replaceAvoidedOne', 'replaceAvoided')}</p>}
       <Button variant="secondary" disabled={busy} expanded={searching} onClick={() => setSearching((v) => !v)}>
         {tSession(searching ? 'replaceSearchClose' : 'replaceSearch')}
       </Button>
