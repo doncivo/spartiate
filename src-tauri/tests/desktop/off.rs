@@ -490,3 +490,24 @@ async fn thousands_separators_are_not_read_as_decimals() {
         );
     }
 }
+
+/// NUTRI-0292 (C-046, relecture) : pour l'énergie (kJ et kcal), « 1,234 » ou « 1.234 » (1 à 3 chiffres puis exactement 3) sont des milliers ;
+/// une décimale d'un autre nutriment (« 1,234 » g de protéines) reste une décimale.
+#[tokio::test]
+async fn energy_thousands_without_decimal_part() {
+    let kj = |value: &str| {
+        json!({
+            "code": BARCODE, "status": 1,
+            "product": { "code": BARCODE, "product_name": "Produit", "nutriments": { "energy-kj_100g": value, "energy-kcal_100g": value, "proteins_100g": value } }
+        })
+        .to_string()
+    };
+    for (text, energy, protein) in [("2,252", 2252.0, 2.252), ("2.252", 2252.0, 2.252), ("12,345", 12345.0, 12.345), ("2,5", 2.5, 2.5), ("1234,5", 1234.5, 1234.5)] {
+        let mock = start_mock(move |_| reply(200, &kj(text)));
+        let out = client_for(&mock.base).product(BARCODE).await.unwrap();
+        let n = &out.products[0].nutriments;
+        assert_eq!(n["energy-kj_100g"], energy, "kJ {text}");
+        assert_eq!(n["energy-kcal_100g"], energy, "kcal {text}");
+        assert_eq!(n["proteins_100g"], protein, "protéines {text}");
+    }
+}
