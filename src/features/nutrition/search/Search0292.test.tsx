@@ -1,5 +1,5 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -51,3 +51,32 @@ describe('C-099 : flèches des filtres', () => {
   });
 });
 
+
+describe('C-101 : erreurs dites (§ 18.3)', () => {
+  it('récents illisibles : le dit, jamais « apparaîtront ici »', async () => {
+    const original = db.data.repos.mealEntries.bind(db.data.repos);
+    vi.spyOn(db.data.repos, 'mealEntries').mockImplementation(async () => ({ ...(await original()), recentFoods: () => Promise.reject(new Error('boom')) }));
+    await openSearch();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Les aliments récents n’ont pas pu être lus.');
+    expect(screen.queryByText('Les aliments que tu ajoutes apparaîtront ici.')).toBeNull();
+  });
+
+  it('recherche illisible : le dit, jamais « Aucun résultat » ni « Ciqual indisponible »', async () => {
+    await openSearch();
+    vi.spyOn(db.data.repos, 'foods').mockRejectedValue(new Error('boom'));
+    await typeQuery('skyr');
+    expect(await screen.findByRole('alert')).toHaveTextContent('La recherche n’a pas pu être faite.');
+    expect(screen.queryByText(/Aucun résultat/)).toBeNull();
+  });
+
+  it('journal illisible : message et bouton Réessayer qui relit', async () => {
+    const original = db.data.repos.mealEntries.bind(db.data.repos);
+    const spy = vi.spyOn(db.data.repos, 'mealEntries').mockRejectedValueOnce(new Error('boom'));
+    mount();
+    const r = await screen.findByRole('region', { name: 'Nutrition' });
+    expect(await within(r).findByRole('alert')).toHaveTextContent('Nutrition n’a pas pu être lu.');
+    spy.mockImplementation(original);
+    fireEvent.click(within(r).getByRole('button', { name: 'Réessayer' }));
+    await waitFor(() => expect(within(r).queryByRole('alert')).toBeNull());
+  });
+});
