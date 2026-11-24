@@ -26,10 +26,10 @@ const fieldCapture = (table: string, column: string): string[] => {
     `INSERT INTO sync_outbox (table_name, row_id, field) SELECT '${table}', NEW.id, '${column}' WHERE OLD.${column} IS NOT NEW.${column};`,
   ];
 };
-const ownTrigger = (name: string, table: string, columns: readonly string[]): string => {
+const ownTrigger = (name: string, table: string, columns: readonly string[], also = ''): string => {
   const row = `table_name = '${table}' AND row_id = NEW.id`;
   return `CREATE TRIGGER ${name} AFTER UPDATE OF ${columns.join(', ')} ON ${table}
-     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN
+     WHEN NOT EXISTS (SELECT 1 FROM sync_guard)${also} BEGIN
        INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)
          SELECT '${table}', NEW.id, '*', OLD.hlc, NULL
          WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE ${row} AND field = '*');
@@ -47,5 +47,7 @@ export const migration0023Data0293: Migration = {
     'ALTER TABLE workout_set ADD COLUMN corrected_from TEXT CHECK (corrected_from IS NULL OR length(corrected_from) BETWEEN 1 AND 200)',
     'ALTER TABLE progression_profile ADD COLUMN config_overrides TEXT CHECK (config_overrides IS NULL OR length(config_overrides) BETWEEN 2 AND 512)',
     ownTrigger('sync_progression_profile_overrides_au', 'progression_profile', ['config_overrides']),
+    // Correction d'une série d'une séance CLOSE (correctSet) : capturée champ par champ, avec la garde de la 0006 (difficulty). Sur une séance ouverte : rien (la clôture met la ligne entière en file).
+    ownTrigger('sync_workout_set_corrected_from_au', 'workout_set', ['corrected_from'], ' AND (SELECT ended_at FROM workout WHERE id = NEW.workout_id) IS NOT NULL'),
   ],
 };

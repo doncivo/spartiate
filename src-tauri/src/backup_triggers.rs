@@ -5,7 +5,7 @@
 //! à régénérer avec ce test si la migration 0011 change (jamais, une migration publiée ne se modifie plus) ou si un déclencheur est ajouté.
 
 /// (nom, table, SQL) de chaque déclencheur, triés par nom.
-pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 117] = [
+pub const REFERENCE_TRIGGERS: [(&str, &str, &str); 118] = [
     (
         "search_checklist_ad",
         "checklist",
@@ -4380,6 +4380,11 @@ INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'workout_set', NEW.id
      END"##,
     ),
     (
+        "sync_workout_set_corrected_from_au",
+        "workout_set",
+        r##"CREATE TRIGGER sync_workout_set_corrected_from_au AFTER UPDATE OF corrected_from ON workout_set WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND (SELECT ended_at FROM workout WHERE id = NEW.workout_id) IS NOT NULL BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'workout_set', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'workout_set', NEW.id, 'corrected_from', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'workout_set' AND row_id = NEW.id AND field IN ('corrected_from', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.corrected_from IS NOT NEW.corrected_from ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from' AND OLD.corrected_from IS NOT NEW.corrected_from; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'workout_set', NEW.id, 'corrected_from' WHERE OLD.corrected_from IS NOT NEW.corrected_from; END"##,
+    ),
+    (
         "sync_workout_set_difficulty_au",
         "workout_set",
         r##"CREATE TRIGGER sync_workout_set_difficulty_au AFTER UPDATE OF difficulty ON workout_set
@@ -4788,8 +4793,14 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 23] = [
     ),
     // DATA-0292 (migration 0022) : identifiant du profil par défaut renommé dans des réglages locaux, aucun déclencheur.
     (22, &[]),
-    // DATA-0293 (migration 0023) : capture propre des surcharges par exercice (progression_profile.config_overrides).
-    (23, &["sync_progression_profile_overrides_au"]),
+    // DATA-0293 (migration 0023) : capture propre des surcharges par exercice (progression_profile.config_overrides) et de la valeur d'avant correction d'une série close.
+    (
+        23,
+        &[
+            "sync_progression_profile_overrides_au",
+            "sync_workout_set_corrected_from_au",
+        ],
+    ),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
