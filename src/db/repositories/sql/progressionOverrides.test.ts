@@ -6,7 +6,10 @@ import { openBaseDb, type TestDb } from './testSetup';
 /** DATA-0293 (§ 11, D-510, D-566) : surcharges par exercice, stockées dans `progression_profile.config_overrides` (JSON validé à l'écriture et à la lecture). */
 const DEVICE = '60000000-0000-4000-8000-000000000293' as DeviceId;
 let db: TestDb;
-afterEach(async () => db.close());
+afterEach(async () => {
+  await (db as TestDb | undefined)?.close();
+  db = undefined as never;
+});
 const repo = () => db.data.repos.progression();
 
 describe('parseConfigOverrides (écrit à la main, ADR 0008)', () => {
@@ -20,11 +23,11 @@ describe('parseConfigOverrides (écrit à la main, ADR 0008)', () => {
 describe('ProgressionRepository : surcharges par exercice', () => {
   it('sans ligne ni surcharge : objet vide ; écriture puis relecture ; effacement', async () => {
     db = await openBaseDb(DEVICE);
-    expect(await repo().configOverrides('squat')).toEqual({});
+    expect(await (await repo()).configOverrides('squat')).toEqual({});
     await db.data.transaction(async (r) => (await r.progression()).saveConfigOverrides('squat', { deloadLoad: 0.9, maxGainPerSession: 0.05 }));
-    expect(await repo().configOverrides('squat')).toEqual({ deloadLoad: 0.9, maxGainPerSession: 0.05 });
+    expect(await (await repo()).configOverrides('squat')).toEqual({ deloadLoad: 0.9, maxGainPerSession: 0.05 });
     await db.data.transaction(async (r) => (await r.progression()).saveConfigOverrides('squat', {}));
-    expect(await repo().configOverrides('squat')).toEqual({});
+    expect(await (await repo()).configOverrides('squat')).toEqual({});
     expect(await db.driver.select('SELECT config_overrides FROM progression_profile')).toEqual([{ config_overrides: null }]);
   });
 
@@ -40,14 +43,14 @@ describe('ProgressionRepository : surcharges par exercice', () => {
     db = await openBaseDb(DEVICE);
     await db.data.transaction(async (r) => (await r.progression()).saveConfigOverrides('squat', { deloadLoad: 0.9 }));
     await db.data.transaction(async (r) => (await r.progression()).saveProfile({ exerciseId: 'squat', estimated1rmKg: 120, confidence: 0.8, lastEasyRecalibrationAt: null, engineVersion: 3 }));
-    expect(await repo().configOverrides('squat')).toEqual({ deloadLoad: 0.9 });
+    expect(await (await repo()).configOverrides('squat')).toEqual({ deloadLoad: 0.9 });
   });
 
   it('texte illisible stocké (autre appareil) : lu comme vide, jamais d’exception', async () => {
     db = await openBaseDb(DEVICE);
     await db.data.transaction(async (r) => (await r.progression()).saveConfigOverrides('squat', { deloadLoad: 0.9 }));
     await db.driver.execute("UPDATE progression_profile SET config_overrides = '{oups'");
-    expect(await repo().configOverrides('squat')).toEqual({});
+    expect(await (await repo()).configOverrides('squat')).toEqual({});
   });
 
   it('la modification est capturée pour la synchro (champ config_overrides)', async () => {

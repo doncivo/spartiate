@@ -65,7 +65,7 @@ describe('migration 0023 : data_0293 (DATA-0293)', () => {
     await expect(sample(-841)).rejects.toThrow();
     await expect(sample(-840)).resolves.toBeDefined();
     await expect(sample(840)).resolves.toBeDefined();
-    const set = (column: string, v: unknown) => db.execute(`UPDATE workout_set SET ${column} = ? WHERE id = ?`, [v, u(2)]);
+    const set = (column: string, v: string | number) => db.execute(`UPDATE workout_set SET ${column} = ? WHERE id = ?`, [v, u(2)]);
     await expect(set('distance_m', -1)).rejects.toThrow();
     await expect(set('distance_m', 1500)).resolves.toBeDefined();
     await expect(set('added', 2)).rejects.toThrow();
