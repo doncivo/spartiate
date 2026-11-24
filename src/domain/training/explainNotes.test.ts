@@ -70,9 +70,9 @@ describe('explanationNotes', () => {
     expect(explanationNotes(p)).toEqual([]);
   });
 
-  // MOTEUR-0281a : poids du corps et chronométrés prescrits, version 4.
-  it('version du moteur 4', () => {
-    expect(ENGINE_VERSION).toBe(4);
-    expect(prescribe(input()).engineVersion).toBe(4);
+  // MOTEUR-0281a : version 4 ; SEANCE-0292b (D-542) : 5 (D-496 et D-539 changent les propositions).
+  it('version du moteur 5', () => {
+    expect(ENGINE_VERSION).toBe(5);
+    expect(prescribe(input()).engineVersion).toBe(5);
   });
 });
