@@ -129,9 +129,9 @@ export function validateSetEntry(entry: SetEntry, kind: SetKind): SetEntryIssue[
   return issues;
 }
 
-/** Série de travail réussie : validée, hors échauffement, avec une saisie conforme. */
+/** Série de travail réussie : validée, de travail ou chronométrée (C-016 : ni échauffement, ni dégressive, ni partielle), saisie conforme. */
 export function isCompletedWorkSet(set: WorkoutSet): boolean {
-  return set.done && set.setKind !== 'warmup' && validateSetEntry(entryOf(set), set.setKind).length === 0;
+  return set.done && (set.setKind === 'work' || set.setKind === 'timed') && validateSetEntry(entryOf(set), set.setKind).length === 0;
 }
 
 /** Valeurs actuellement saisies (jamais les cibles). */
