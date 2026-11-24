@@ -73,7 +73,8 @@ describe('charges disponibles d’un exercice (profil par défaut Fitness Park A
       inventory: { ...FITNESS_PARK_ANTONY.inventory, platesPerSideKg: [{ weightKg: 2.5, count: 2 }, { weightKg: 10, count: 2 }] },
       increments: {},
     };
-    expect(loadGrid(['barbell'], plates)?.loads).toEqual([20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]);
+    // SEANCE-0292 (C-007) : attente réécrite ; 35 et 55 kg (7,5 et 17,5 kg par côté) ne se montent pas avec deux disques de 2,5 et deux de 10.
+    expect(loadGrid(['barbell'], plates)?.loads).toEqual([20, 25, 30, 40, 45, 50, 60, 65, 70]);
     expect(loadGrid(['barbell'], { inventory: { ...plates.inventory, barbells: [] }, increments: {} })).toBeNull();
     expect(loadGrid(['barbell'], { inventory: { ...plates.inventory, platesPerSideKg: [] }, increments: {} })).toBeNull();
   });

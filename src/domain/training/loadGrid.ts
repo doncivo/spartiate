@@ -50,7 +50,25 @@ function barbellLoads(profile: ProgressionEquipment, equipmentId: string): numbe
   const smallestPlate = Math.min(...inv.platesPerSideKg.map((p) => p.weightKg));
   const step = profile.increments.barbell ?? (Number.isFinite(smallestPlate) ? 2 * smallestPlate : Number.NaN);
   const platesKg = 2 * inv.platesPerSideKg.reduce((sum, p) => sum + p.weightKg * p.count, 0);
-  return stepped(bar.weightKg, platesKg > 0 ? bar.weightKg + platesKg : 1000, step);
+  const grid = stepped(bar.weightKg, platesKg > 0 ? bar.weightKg + platesKg : 1000, step);
+  if (!(platesKg > 0)) return grid;
+  // C-007 (§ 11.2.7) : seules les charges montables (barre + deux fois une combinaison des disques d'un côté) restent, au pas déclaré.
+  const mountable = new Set([...sideSums(inv.platesPerSideKg)].map((side) => roundKg(bar.weightKg + 2 * side)));
+  return grid.filter((kg) => mountable.has(kg));
+}
+
+/** Sommes atteignables d'un côté de la barre avec les disques déclarés (0 compris), bornées à `MAX_LOADS`. */
+function sideSums(plates: ProgressionEquipment['inventory']['platesPerSideKg']): Set<number> {
+  let sums = new Set<number>([0]);
+  for (const p of plates) {
+    if (!(p.weightKg > 0) || !(p.count > 0)) continue;
+    for (let i = 0; i < Math.floor(p.count); i += 1) {
+      const next = new Set(sums);
+      for (const s of sums) if (next.size < MAX_LOADS) next.add(roundKg(s + p.weightKg));
+      sums = next;
+    }
+  }
+  return sums;
 }
 
 /** Grille et clé « à vérifier » (`inventory.toVerify`) du matériel qui la fournit. */

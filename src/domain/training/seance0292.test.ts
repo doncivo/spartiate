@@ -66,8 +66,8 @@ describe('SEANCE-0292 C-007 : grille de barre limitée aux disques réellement m
     expect(loads.length).toBe(88);
   });
 
-  it('incrément déclaré plus grand que le plus petit disque : le pas déclaré reste respecté (5 kg)', () => {
-    expect(loadGrid(['barbell'], home([{ weightKg: 1.25, count: 2 }, { weightKg: 5, count: 2 }], { barbell: 5 }))?.loads).toEqual([20, 25, 30, 35, 40]);
+  it('incrément déclaré plus grand que le plus petit disque : le pas déclaré reste respecté (5 kg, 20 à 45 kg)', () => {
+    expect(loadGrid(['barbell'], home([{ weightKg: 1.25, count: 2 }, { weightKg: 5, count: 2 }], { barbell: 5 }))?.loads).toEqual([20, 25, 30, 35, 40, 45]);
   });
 
   it('haut de plage à 25 kg avec {20, 2,5} : cran montable suivant 60 kg au-delà du plafond +10 %, échelle de répétitions (pas 30 kg)', () => {
