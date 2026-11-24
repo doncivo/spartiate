@@ -84,3 +84,19 @@ describe('NUTRI-0292 (C-045) : « ß » normalisé', () => {
     expect(normalizeText('Fußball')).toBe('fussball');
   });
 });
+
+describe('searchFoods : filtre de provenance avant la coupe (C-092)', () => {
+  const ciqual = Array.from({ length: 60 }, (_, i) => food(`ciqual:${String(i)}`, 'ciqual', `Yaourt nature ${String(i).padStart(2, '0')}`));
+  const universe = [...ciqual, food('off-1', 'off', 'Yaourt grec Marque long nom de produit')];
+  it('sans filtre : la coupe à 50 laisse les 50 premiers (OFF classé en dernier, absent)', () => {
+    expect(searchFoods('yaourt', universe).some((h) => h.provenance === 'off')).toBe(false);
+  });
+  it('filtre OFF : le produit OFF est trouvé malgré 60 fiches Ciqual', () => {
+    expect(searchFoods('yaourt', universe, { provenance: 'off' }).map((h) => h.ref)).toEqual(['off-1']);
+  });
+  it('filtre Ciqual : 50 fiches Ciqual au plus, aucune autre provenance', () => {
+    const hits = searchFoods('yaourt', universe, { provenance: 'ciqual' });
+    expect(hits).toHaveLength(50);
+    expect(hits.every((h) => h.provenance === 'ciqual')).toBe(true);
+  });
+});
