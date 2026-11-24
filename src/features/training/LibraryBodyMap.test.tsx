@@ -53,4 +53,15 @@ describe('BL-111 : carte du corps de la bibliothèque', () => {
     expect(select.value).toBe('');
     expect(zone.getAttribute('data-state')).toBe('normal');
   });
+
+  it("la carte vient après les filtres et l'interrupteur (iPhone 440 px : interrupteur visible sans défiler, V0-7-1 point 5)", async () => {
+    const { container } = open();
+    const toggle = await screen.findByRole('switch', { name: tTraining('compatibleOnly') });
+    const map = container.querySelector('.ct-training__bodymap');
+    const filters = container.querySelector('.ct-training__filters');
+    if (!map || !filters) throw new Error('carte ou filtres absents');
+    expect(toggle.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(filters.contains(map)).toBe(false);
+  });
 });
