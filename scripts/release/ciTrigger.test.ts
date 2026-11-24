@@ -16,7 +16,7 @@ describe('C-173 : déclenchement de tests.yml documenté tel qu\'il est', () => 
 
   it.each(['CLAUDE.md', 'AGENTS.md'])('%s ne promet pas un run à chaque push de branche', (fichier) => {
     const texte = lire(fichier);
-    expect(texte).not.toMatch(/à chaque push(?! de main)/);
+    expect(texte).not.toMatch(/à chaque push(?! sur main)/);
     expect(texte).not.toContain('à chaque push de branche');
   });
 
