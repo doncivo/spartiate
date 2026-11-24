@@ -46,13 +46,14 @@ describe('accumulation d’un tracé (premier plan seulement)', () => {
   });
 
   it('pas de moins de 3 m (bruit à l’arrêt) : ni gardé ni compté, la distance se mesure depuis le dernier point gardé', () => {
+    // SEANCE-0292 (C-008) : le pas minimal est max(3 m, précision) ; points précis à 2 m pour isoler la règle des 3 m.
     expect(TRACK_RULES.minStepM).toBe(3);
-    let t = addTrackPoint(emptyTrack(), p(0));
-    t = addTrackPoint(t, p(0, { lat: 0.00001, at: p(0).at + 1_000 }));
-    t = addTrackPoint(t, p(0, { lat: 0.00002, at: p(0).at + 2_000 }));
+    let t = addTrackPoint(emptyTrack(), p(0, { accuracyM: 2 }));
+    t = addTrackPoint(t, p(0, { lat: 0.00001, at: p(0).at + 1_000, accuracyM: 2 }));
+    t = addTrackPoint(t, p(0, { lat: 0.00002, at: p(0).at + 2_000, accuracyM: 2 }));
     expect(t.points).toHaveLength(1);
     expect(t.distanceM).toBe(0);
-    t = addTrackPoint(t, p(0, { lat: 0.00004, at: p(0).at + 3_000 }));
+    t = addTrackPoint(t, p(0, { lat: 0.00004, at: p(0).at + 3_000, accuracyM: 2 }));
     expect(t.points).toHaveLength(2);
     expect(t.distanceM).toBeCloseTo(0.04 * DEG_M, 3);
   });

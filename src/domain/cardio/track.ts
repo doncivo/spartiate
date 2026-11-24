@@ -19,7 +19,10 @@ export const TRACK_RULES = {
   maxAccuracyM: 50,
   /** Segment plus rapide que 15 m/s (54 km/h) : saut de signal, ignoré. */
   maxSpeedMps: 15,
-  /** Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. */
+  /**
+   * Pas de moins de 3 m depuis le dernier point gardé : bruit à l'arrêt, ni gardé ni compté. SEANCE-0292 (C-008, D-497) : le pas minimal est
+   * aussi la précision annoncée du point (max(3 m, précision)) ; un écart plus court que l'incertitude n'est pas un déplacement.
+   */
   minStepM: 3,
   /** Points gardés au plus (au-delà, la distance continue de compter, le tracé n'est plus prolongé). */
   maxPoints: 10_000,
@@ -58,7 +61,7 @@ export function addTrackPoint(state: TrackState, p: TrackPoint): TrackState {
   const dt = (p.at - last.at) / 1000;
   if (dt <= 0) return state;
   const d = haversineM(last, p);
-  if (d / dt > TRACK_RULES.maxSpeedMps || d < TRACK_RULES.minStepM) return state;
+  if (d / dt > TRACK_RULES.maxSpeedMps || d < Math.max(TRACK_RULES.minStepM, p.accuracyM)) return state;
   const full = state.points.length >= TRACK_RULES.maxPoints;
   return { points: full ? state.points : [...state.points, p], distanceM: state.distanceM + d, last: p, truncated: state.truncated || full };
 }
