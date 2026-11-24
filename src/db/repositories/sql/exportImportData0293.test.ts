@@ -44,8 +44,9 @@ async function archive(db: TestDb, sv: number): Promise<ExportData> {
   const built = await buildExportArchive(data, { date: AT, sv });
   if (sv >= 23) return (await parseExportArchive(built.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).data;
   const json = JSON.parse(new TextDecoder().decode(readZip(built.bytes).find((e) => e.name === 'data.json')?.data)) as { training: Record<string, Record<string, unknown>[]> };
-  for (const row of json.training['workout_set'] ?? []) for (const k of ['distance_m', 'added', 'corrected_from']) delete row[k];
-  for (const row of json.training['progression_profile'] ?? []) delete row['config_overrides'];
+  const without = (rows: Record<string, unknown>[] | undefined, keys: readonly string[]) => (rows ?? []).map((row) => Object.fromEntries(Object.entries(row).filter(([k]) => !keys.includes(k))));
+  json.training['workout_set'] = without(json.training['workout_set'], ['distance_m', 'added', 'corrected_from']);
+  json.training['progression_profile'] = without(json.training['progression_profile'], ['config_overrides']);
   const bytes = new TextEncoder().encode(JSON.stringify(json));
   const zip = buildZip([
     { name: 'data.json', data: bytes },
