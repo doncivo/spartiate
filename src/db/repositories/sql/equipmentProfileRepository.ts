@@ -97,10 +97,10 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     async softDelete(id) {
       await live(id);
       // SEANCE-0292 (C-081) : profil supprimé et, s'il était actif sur cet appareil, réglage local effacé, dans une même transaction.
-      await atomic(db, async (x) => {
+      await atomic(db, async (db) => {
         const stamp = stamper.next();
-        await x.execute('UPDATE equipment_profile SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
-        const local = createSettingsRepository(x, stamper);
+        await db.execute('UPDATE equipment_profile SET deleted_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.at, stamp.deviceId, stamp.hlc, id]);
+        const local = createSettingsRepository(db, stamper);
         if ((await local.get('training.activeEquipmentProfile')) === id) await local.set('training.activeEquipmentProfile', null);
       });
     },

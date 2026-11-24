@@ -409,3 +409,29 @@ Tests de non-régression, tests/unit/sync/seance0292Sync.test.ts (`b1227c8d`), v
 
 Point signalé à Ali : une série validée rouverte puis laissée à faire à la clôture s'affiche à la fois « Corrigée » et « Non faite » dans
 le journal (HistorySetRow.tsx). C'est cohérent avec D-519 (la réouverture est une correction tracée). Il reste à dire si l'affichage convient.
+
+## Preuves rouges reproductibles (relecture B, point important)
+
+Les commits `3e2b2ddf`, `8eab6371` et `c8bb4e7f` portent test et code ensemble, et `08a2d239` est un test seul : preuve rejouée le 24/11 dans un
+worktree détaché sur `e107524a`, le fichier de code ramené à sa version du parent (`git show <sha>^:<fichier>`), puis le test lancé seul
+(`CI=1 npx vitest run --coverage.enabled=false --maxWorkers=1 <test>`) :
+
+```
+== 3e2b2ddf : code de src/features/training/session/SetRow.tsx au parent, test src/features/training/session/SetRow.seance0292.test.tsx
+     × charge tapée puis ligne démontée avant la seconde de délai et sans sortie du champ : la saisie est enregistrée 22ms
+ Failed Tests 1 
+      Tests  1 failed | 5 passed (6)
+== 8eab6371 : code de src/features/training/session/ReplaceExercise.tsx au parent, test src/features/training/session/ReplaceExercise.seance0292.test.tsx
+     × lecture des gênes en échec : un texte dit que le filtre des gênes n’a pas pu s’appliquer ; les remplaçants restent proposés 2527ms
+ Failed Tests 1 
+      Tests  1 failed | 1 passed (2)
+== c8bb4e7f : code de src/domain/training/estimate1rm.ts au parent, test src/domain/training/seance0292.test.ts
+     × ordre total (relecture A) : un instant illisible toujours après les lisibles, aucun cycle a < b < c < a 13ms
+ Failed Tests 1 
+      Tests  1 failed | 47 passed (48)
+== 08a2d239 : test seul ; MIN_MEASURED porté à 1000 (garde du compteur), test src/domain/training/prescribe.c177.property.test.ts
+     × plafond : e1RM implicite de la proposition ≤ meilleur e1RM brut de l’historique × 1,1 (exercices chargés, hors assisté) 116ms
+ Failed Tests 1 
+```
+
+Run CI 45409340461 (rouge) : garde `stampBeforeWrite.test.ts` (C-081 : écriture par `x.execute` dans la transaction, paramètre renommé `db` comme ailleurs) et spec e2e C193-seance-clavier (« Retour à l'entraînement » devenu inutile avec BL-160) ; corrigés ensuite.
