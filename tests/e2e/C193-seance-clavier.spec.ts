@@ -31,7 +31,7 @@ test('séance au clavier : exercice ajouté, séries saisies puis Entrée, clôt
 
   // Série 1 : charge, répétitions, Entrée (virgule décimale comprise).
   const first = openSet();
-  await first.getByLabel('Charge (kg)', { exact: true }).fill('17,5');
+  await first.getByLabel(/^Charge( par haltère)? \(kg\)$/).fill('17,5');
   await first.getByLabel('Répétitions', { exact: true }).fill('10');
   await first.getByLabel('Répétitions', { exact: true }).press('Enter');
   await expect(page.getByText('1 / 3 séries validées')).toBeVisible();
@@ -40,15 +40,15 @@ test('séance au clavier : exercice ajouté, séries saisies puis Entrée, clôt
   // Série 2 : même geste, la série suivante devient la série en cours.
   const second = openSet();
   await expect(second.getByText('Série en cours')).toBeVisible();
-  await second.getByLabel('Charge (kg)', { exact: true }).fill('17,5');
+  await second.getByLabel(/^Charge( par haltère)? \(kg\)$/).fill('17,5');
   await second.getByLabel('Répétitions', { exact: true }).fill('9');
   await second.getByLabel('Répétitions', { exact: true }).press('Enter');
   await expect(page.getByText('2 / 3 séries validées')).toBeVisible();
 
   // Une saisie incomplète est refusée en texte, sans rien valider.
   const third = openSet();
-  await third.getByLabel('Charge (kg)', { exact: true }).fill('17,5');
-  await third.getByLabel('Charge (kg)', { exact: true }).press('Enter');
+  await third.getByLabel(/^Charge( par haltère)? \(kg\)$/).fill('17,5');
+  await third.getByLabel(/^Charge( par haltère)? \(kg\)$/).press('Enter');
   await expect(third.getByRole('alert')).toBeVisible();
   await expect(page.getByText('2 / 3 séries validées')).toBeVisible();
 

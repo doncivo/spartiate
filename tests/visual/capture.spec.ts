@@ -181,7 +181,7 @@ const startSession = async (page: Page): Promise<void> => {
 };
 const validateFirstSet = async (page: Page): Promise<void> => {
   const set = page.getByRole('region', { name: 'Curl marteau' }).getByRole('group', { name: /^Série/ }).filter({ has: page.getByRole('button', { name: 'Valider la série' }) }).first();
-  await set.getByLabel('Charge (kg)', { exact: true }).fill('17,5');
+  await set.getByLabel(/^Charge( par haltère)? \(kg\)$/).fill('17,5');
   await set.getByLabel('Répétitions', { exact: true }).fill('10');
   await set.getByLabel('Répétitions', { exact: true }).press('Enter');
   await page.getByText('1 / 3 séries validées').waitFor();

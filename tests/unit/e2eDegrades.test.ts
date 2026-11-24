@@ -20,6 +20,6 @@ describe('saisie de la charge dans les specs de séance', () => {
   it.each(['tests/e2e/C193-seance-clavier.spec.ts', 'tests/visual/capture.spec.ts'])('%s accepte « Charge par haltère (kg) »', (file) => {
     const text = readFileSync(resolve(import.meta.dirname, '..', '..', file), 'utf8');
     expect(text).not.toContain("getByLabel('Charge (kg)', { exact: true })");
-    expect(text).toContain('Charge( par haltère)? \(kg\)');
+    expect(text).toContain(String.raw`Charge( par haltère)? \(kg\)`);
   });
 });
