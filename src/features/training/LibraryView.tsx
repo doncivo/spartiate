@@ -26,6 +26,7 @@ import { Button, ConfirmDialog, Icon, SectionTitle, SegmentedControl, Switch, us
 import { ContextMenuZone } from '../../ui/ContextMenu';
 import { useAppContainer } from '../app/AppContainerContext';
 import { SheetFigures, SheetSessions, type SheetHistory } from './library/ExerciseSheetStats';
+import { LibraryBodyMap } from './library/LibraryBodyMap';
 import { RevertPrescription } from './library/RevertPrescription';
 import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
@@ -71,6 +72,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
 
   return (
     <div className="ct-training__list-block">
+      <LibraryBodyMap groups={data.content.groups} selected={group} onChange={setGroup} />
       <div className="ct-training__filters">
         <label className="ct-training__field">
           <span className="ct-training__label">{tTraining('search')}</span>
