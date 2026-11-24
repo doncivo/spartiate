@@ -390,8 +390,9 @@ export function FoodSearchPanel({ date, defaultTime, onSaved, onClose, plate, on
   }
 
   /** « Habituels » (go-tos, BL-117) : rouvre la quantité d'un aliment pris souvent, avec sa dernière quantité. */
+  // `lastTime` : `pickRecent` attend un `RecentFood` complet ; seuls l'identifiant, le nom, la provenance et la quantité servent (l'heure n'est pas lue).
   async function pickGoTo(go: GoTo): Promise<void> {
-    await pickRecent({ foodId: go.foodId, foodName: go.foodName, source: go.source as RecentFood['source'], lastGrams: go.lastGrams ?? 100, lastDate: go.lastDate, lastTime: '12:00' as LocalTime, lastMethod: 'search' });
+    await pickRecent({ foodId: go.foodId, foodName: go.foodName, source: go.source, lastGrams: go.lastGrams ?? 100, lastDate: go.lastDate, lastTime: '12:00' as LocalTime, lastMethod: 'search' });
   }
 
   async function pickRecent(recent: RecentFood): Promise<void> {

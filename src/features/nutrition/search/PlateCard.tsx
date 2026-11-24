@@ -33,6 +33,8 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
   });
   const [recipeName, setRecipeName] = useState('');
   const [recipeState, setRecipeState] = useState<'idle' | 'saved' | 'invalid' | 'error'>('idle');
+  // Double appui : une seule création de recette à la fois.
+  const [savingRecipe, setSavingRecipe] = useState(false);
   return (
     <section className="ct-nutrition__panel ct-flat" aria-label={tNutrition('plateTitle')}>
       <h2 className="ct-nutrition__subtitle ct-section-title">{tNutrition('plateTitle')}</h2>
@@ -68,8 +70,13 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
         </label>
         <Button
           variant="secondary"
+          disabled={savingRecipe}
           onClick={() => {
-            void onSaveRecipe(recipeName).then(setRecipeState);
+            if (savingRecipe) return;
+            setSavingRecipe(true);
+            void onSaveRecipe(recipeName)
+              .then(setRecipeState)
+              .finally(() => setSavingRecipe(false));
           }}
         >
           {tNutrition('plateRecipeSave')}

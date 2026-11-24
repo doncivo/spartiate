@@ -6,6 +6,7 @@
 
 import { addDays } from '../localDate';
 import type { LocalDate } from '../types';
+import type { EntrySource } from './food';
 
 export const GO_TO_WINDOW_DAYS = 90;
 export const GO_TO_MIN_COUNT = 3;
@@ -14,7 +15,7 @@ export const GO_TO_LIMIT = 6;
 export interface GoToEntry {
   readonly foodId: string | null;
   readonly foodName: string;
-  readonly source: string;
+  readonly source: EntrySource;
   readonly grams: number | null;
   readonly date: LocalDate;
   readonly time: string;
@@ -23,7 +24,7 @@ export interface GoToEntry {
 export interface GoTo {
   readonly foodId: string;
   readonly foodName: string;
-  readonly source: string;
+  readonly source: EntrySource;
   readonly count: number;
   readonly lastGrams: number | null;
   readonly lastDate: LocalDate;

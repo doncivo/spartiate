@@ -161,7 +161,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
   const intake = useRef<{ chain: Promise<void>; wanted: Map<string, boolean> }>({ chain: Promise.resolve(), wanted: new Map() });
   const toggleIntake = (item: DueIntake): Promise<void> => {
     const state = intake.current;
-    const key = `${item.supplement.id}|${item.moment}`;
+    const key = `${item.supplement.id}|${today}|${item.moment}`;
     const next = !(state.wanted.get(key) ?? item.taken);
     state.wanted.set(key, next);
     state.chain = state.chain.then(async () => {
