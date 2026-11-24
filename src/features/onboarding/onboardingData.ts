@@ -1,3 +1,4 @@
+import { canonicalEquipmentProfileId } from '../../domain/training/legacyProfile';
 import { parseDecimal } from '../../domain/bodyProfile';
 import type { IdGenerator } from '../../domain/id';
 import {
@@ -59,7 +60,7 @@ async function readCurrent(repos: Repositories): Promise<CurrentSettings> {
     experience: profile?.experience ?? null,
     weightKg: weights[0]?.kg ?? null,
     activity: prefs.activity,
-    equipmentProfileId: typeof equipment === 'string' && equipment !== '' ? equipment : null,
+    equipmentProfileId: typeof equipment === 'string' && equipment !== '' ? canonicalEquipmentProfileId(equipment) : null,
     // Cible jamais enregistrée (réglage absent : défaut « maintien » de la lecture) : rien à remplacer.
     nutritionGoal: typeof prefsRaw === 'object' && prefsRaw !== null && (prefsRaw as Record<string, unknown>)['goal'] != null ? prefs.goal : null,
     cycleWeeks: reviewCycleWeeks(cycleWeeks),

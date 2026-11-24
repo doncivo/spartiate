@@ -6,7 +6,7 @@
   "split": "ppl",
   "audienceFr": "Avancé, plus d’une heure disponible",
   "compatibleProfileIds": [
-    "fitness-park-antony"
+    "salle-complete"
   ],
   "mesocycleWeeks": 5,
   "periodization": [

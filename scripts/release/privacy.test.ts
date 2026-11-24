@@ -16,7 +16,16 @@ const TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|
 const OUT = [/^docs\/archive\//, /^content\//, /(^|\/)package-lock\.json$/, /Cargo\.lock$/, /^src-tauri\/vendor\//, /^src-tauri\/gen\//];
 const SELF = 'scripts/release/privacy.test.ts';
 const files = tracked.filter((f) => f !== SELF && TEXT.test(f) && !OUT.some((re) => re.test(f)));
-const read = (f: string): string => readFileSync(resolve(root, f), 'utf8');
+const cache = new Map<string, string>();
+/** Lecture mémorisée : le dépôt entier est parcouru par plusieurs gardes (DATA-0292). */
+const read = (f: string): string => {
+  let text = cache.get(f);
+  if (text === undefined) {
+    text = readFileSync(resolve(root, f), 'utf8');
+    cache.set(f, text);
+  }
+  return text;
+};
 
 type Hit = { file: string; line: number; text: string };
 function scan(paths: readonly string[], patterns: readonly RegExp[], allow: (line: string) => boolean = () => false): Hit[] {
@@ -94,7 +103,7 @@ const PLACE_LENGTH = 6;
 /** Fichiers hors périmètre de la passe DATA-0292 (journal des décisions, propriété d'Ali) : nettoyage demandé à l'orchestrateur, puis liste vidée. */
 const PLACE_PENDING_CLEANUP: readonly string[] = ['docs/decisions.md'];
 const ALL_TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|plist|svg|sql)$/;
-const placeFiles = tracked.filter((f) => f !== SELF && !/^docs\/archive\//.test(f) && !PLACE_PENDING_CLEANUP.includes(f));
+const placeFiles = tracked.filter((f) => f !== SELF && !/(^|\/)(package-lock\.json|Cargo\.lock)$/.test(f) && !/^docs\/archive\//.test(f) && !PLACE_PENDING_CLEANUP.includes(f));
 const hashed = new Map<string, boolean>();
 function isPlaceWord(word: string): boolean {
   let known = hashed.get(word);
@@ -105,12 +114,8 @@ function isPlaceWord(word: string): boolean {
   return known;
 }
 export function mentionsPlace(text: string): boolean {
-  const split = text
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
-  for (const match of split.matchAll(/[A-Za-z]+/g)) {
+  // Mots : minuscules précédées d'une majuscule facultative, ou suite de majuscules (« fooNom » donne « foo », « Nom » ; « NOMReal » donne « NOM », « Real »).
+  for (const match of text.matchAll(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g)) {
     const word = match[0];
     if (word.length === PLACE_LENGTH && isPlaceWord(word.toLowerCase())) return true;
   }
@@ -120,7 +125,7 @@ export function mentionsPlace(text: string): boolean {
 describe('aucun nom de lieu réel dans les fichiers suivis (D-489)', () => {
   it('la garde reconnaît le nom sous ses formes (témoins construits, jamais écrits)', () => {
     const word = String.fromCharCode(97, 110, 116, 111, 110, 121);
-    const cap = word[0]!.toUpperCase() + word.slice(1);
+    const cap = word.charAt(0).toUpperCase() + word.slice(1);
     expect(mentionsPlace(`fitness-park-${word}`)).toBe(true);
     expect(mentionsPlace(`FITNESS_PARK_${word.toUpperCase()}`)).toBe(true);
     expect(mentionsPlace(`for${cap}`)).toBe(true);

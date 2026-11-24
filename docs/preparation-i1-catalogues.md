@@ -491,9 +491,9 @@ par défaut.
 | Incréments par type | Aucun équipement externe configuré. |
 | Forcés / interdits | Aucun par défaut. |
 
-### Gabarit « Salle Antony »
+### Gabarit « Salle Salle »
 
-Profil confirmé par Ali le 3 novembre 2026 pour Fitness Park d’Antony.
+Profil confirmé par Ali le 3 novembre 2026 pour Fitness Park de la salle.
 Les poids explicitement indiqués comme à vérifier seront relevés en salle ;
 les stacks et pas de machines/poulies seront notés à la première utilisation
 de chaque équipement.

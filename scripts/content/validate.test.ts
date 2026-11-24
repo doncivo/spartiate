@@ -528,7 +528,7 @@ describe('contenu embarqué réel', () => {
     for (const d of prog.days) for (const e of d.exercises) for (const g of (lib.get(e.exerciseId) as Json).equipmentGroups as string[][]) expect(g.some((id) => allowed.has(id))).toBe(true);
   });
 
-  it('FIX-0173 (D-142) : un seul profil de salle, générique, « Salle complète », par défaut ; identifiant technique conservé ; plus aucun profil par salle', () => {
+  it('FIX-0173 (D-142) : un seul profil de salle, générique, « Salle complète », par défaut ; identifiant technique « salle-complete » (D-489) ; plus aucun profil par salle', () => {
     const p = load('equipment-profiles', 'profiles.json');
     expect(p.defaultProfileId).toBe('salle-complete');
     expect(p.profiles.map((x: Json) => [x.id, x.name, x.kind, x.isPreset])).toEqual([
@@ -537,7 +537,7 @@ describe('contenu embarqué réel', () => {
       ['poids-de-corps', 'Poids de corps', 'voyage', true],
     ]);
     expect(p.profiles.filter((x: Json) => x.kind === 'salle')).toHaveLength(1);
-    expect(JSON.stringify(p)).not.toMatch(/Fitness Park|Salle/);
+    expect(JSON.stringify(p)).not.toMatch(/Fitness Park/);
     for (const name of ['full-body-3j.json', 'haut-bas-4j.json', 'ppl-6j.json']) expect(load('programs', name).compatibleProfileIds, name).toEqual(['salle-complete']);
   });
 

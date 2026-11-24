@@ -29,9 +29,9 @@ Le contenu de `content/` est généré par script depuis les préparations (`pre
 | Maison haltères 3 j | programme | Jours A, B, C (Lun, Mer, Ven), uniquement haltères, banc, élastique et poids du corps | PRD § 12.5 ; exercices proposés |
 | Jours de la semaine | programmes | Haut / Bas Lun, Mar, Jeu, Ven (PRD) ; les autres proposés | `weekday` ISO 1 à 7 |
 | Périodisation | 4 programmes | Reprise exacte de D-20 (2/3/3/4/2 séries, RIR 3/2/1/0–1/5+, charge × 0,8 en S5) ; `sets` des exercices = valeurs de la semaine 2 | PRD § 12.5 |
-| Profil « Fitness Park Antony » | profil par défaut | Matériel confirmé le 3 novembre : barres, disques, haltères, kettlebells, toutes machines et poulies, bancs plat / incliné / lombaires, rack, traction, dips ; pupitre, bandes, marche, box, roue abdominale, ancrage landmine, ceinture de lest non inclus (non confirmés) ; tapis, sol, mur inclus pour le poids du corps | Prudence : à compléter en salle ; poids de barres à vérifier (`toVerify`) |
-| Pas des machines et poulies Antony | profil | `null`, `perMachineToVerify: true` | « À relever à la première utilisation » |
-| Incrément barre | profils | 2,5 kg au total (1,25 kg par côté) | Salle Antony : 2,5 kg ; préréglage : 1,25 kg par côté |
-| `kind` des profils | profils | Antony et salle commerciale `salle` ; maison `maison` ; poids de corps `voyage` | § 14.3 : salle, maison, voyage ; `kind` du préréglage poids de corps non fourni |
-| Préréglage « salle commerciale » | profil | Matériel d'Antony plus pupitre, bande, marche, box, roue abdominale, lest, landmine, point d'ancrage | Valeurs de la préparation ; modifiable |
+| Profil « Fitness Park » | profil par défaut | Matériel confirmé le 3 novembre : barres, disques, haltères, kettlebells, toutes machines et poulies, bancs plat / incliné / lombaires, rack, traction, dips ; pupitre, bandes, marche, box, roue abdominale, ancrage landmine, ceinture de lest non inclus (non confirmés) ; tapis, sol, mur inclus pour le poids du corps | Prudence : à compléter en salle ; poids de barres à vérifier (`toVerify`) |
+| Pas des machines et poulies Salle | profil | `null`, `perMachineToVerify: true` | « À relever à la première utilisation » |
+| Incrément barre | profils | 2,5 kg au total (1,25 kg par côté) | Salle Salle : 2,5 kg ; préréglage : 1,25 kg par côté |
+| `kind` des profils | profils | Salle et salle commerciale `salle` ; maison `maison` ; poids de corps `voyage` | § 14.3 : salle, maison, voyage ; `kind` du préréglage poids de corps non fourni |
+| Préréglage « salle commerciale » | profil | Matériel de la salle plus pupitre, bande, marche, box, roue abdominale, lest, landmine, point d'ancrage | Valeurs de la préparation ; modifiable |
 | Équipements forcés / interdits | profils | Listes vides | Préparation |
