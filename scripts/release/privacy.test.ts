@@ -4,6 +4,7 @@
 // (« valeur réelle d'Ali », « ta moyenne habituelle (…) », « constat … : 7 h 12 », cible chiffrée attribuée à un constat d'Ali). La liste exacte des
 // valeurs retirées est gardée hors dépôt (HIST-01) ; un chiffre synthétique reste permis tant qu'il n'est pas attribué à Ali.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -82,5 +83,57 @@ describe('aucun conseil de supprimer ou de réinstaller l’app (C-110, C-181)',
     const guides = ['docs/install-iphone.md', 'docs/install-pc.md'];
     const inherited = [/\btâches\b/i, /\bagendas?\b/i, /jours fériés/i, /CT_GOOGLE/, /Réglages\s*[›>]\s*(«\s*)?(À propos|Synchronisation|Journaux|Rechercher)/];
     expect(scan(guides, inherited)).toEqual([]);
+  });
+});
+
+// DATA-0292 (BL-138, D-489) : le nom d'un lieu réel (salle de sport d'Ali) ne figure dans AUCUN fichier suivi, contenu embarqué (content/), CHANGELOG et
+// fiches compris, hors docs/archive (lecture seule, D-40). La garde ne contient pas le nom : elle compare l'empreinte SHA-256 de chaque MOT des
+// fichiers (découpage aux non-lettres et aux majuscules internes : `FOO_NOM`, `forNom`, `d'Nom`, `nom-complet` sont des mots « nom ») et des chemins.
+const PLACE_SHA256 = '2438ec1b751d071979589d45f4f5d9d9697ade8f1fb474ae21898d16f52110d4';
+const PLACE_LENGTH = 6;
+/** Fichiers hors périmètre de la passe DATA-0292 (journal des décisions, propriété d'Ali) : nettoyage demandé à l'orchestrateur, puis liste vidée. */
+const PLACE_PENDING_CLEANUP: readonly string[] = ['docs/decisions.md'];
+const ALL_TEXT = /\.(md|ts|tsx|mjs|cjs|js|json|ya?ml|txt|csv|html|css|rs|swift|toml|plist|svg|sql)$/;
+const placeFiles = tracked.filter((f) => f !== SELF && !/^docs\/archive\//.test(f) && !PLACE_PENDING_CLEANUP.includes(f));
+const hashed = new Map<string, boolean>();
+function isPlaceWord(word: string): boolean {
+  let known = hashed.get(word);
+  if (known === undefined) {
+    known = createHash('sha256').update(word).digest('hex') === PLACE_SHA256;
+    hashed.set(word, known);
+  }
+  return known;
+}
+export function mentionsPlace(text: string): boolean {
+  const split = text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2');
+  for (const match of split.matchAll(/[A-Za-z]+/g)) {
+    const word = match[0];
+    if (word.length === PLACE_LENGTH && isPlaceWord(word.toLowerCase())) return true;
+  }
+  return false;
+}
+
+describe('aucun nom de lieu réel dans les fichiers suivis (D-489)', () => {
+  it('la garde reconnaît le nom sous ses formes (témoins construits, jamais écrits)', () => {
+    const word = String.fromCharCode(97, 110, 116, 111, 110, 121);
+    const cap = word[0]!.toUpperCase() + word.slice(1);
+    expect(mentionsPlace(`fitness-park-${word}`)).toBe(true);
+    expect(mentionsPlace(`FITNESS_PARK_${word.toUpperCase()}`)).toBe(true);
+    expect(mentionsPlace(`for${cap}`)).toBe(true);
+    expect(mentionsPlace(`${word.toUpperCase()}Real`)).toBe(true);
+    expect(mentionsPlace(`une salle à ${cap}.`)).toBe(true);
+    expect(mentionsPlace('fitness-park-salle-complete, Salle complète, ant tony')).toBe(false);
+  });
+  it('aucun fichier suivi (contenu, CHANGELOG, fiches, tests, chemins) ne le porte', () => {
+    const textual = placeFiles.filter((f) => ALL_TEXT.test(f));
+    expect(placeFiles.filter((f) => mentionsPlace(f))).toEqual([]);
+    expect(textual.filter((f) => mentionsPlace(read(f)))).toEqual([]);
+  });
+  it('la liste d’exceptions ne garde que des fichiers qui existent encore', () => {
+    for (const f of PLACE_PENDING_CLEANUP) expect(tracked, f).toContain(f);
   });
 });
