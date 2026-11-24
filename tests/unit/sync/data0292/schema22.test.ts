@@ -14,8 +14,8 @@ import { createSyncService } from '../../../../src/sync';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice } from '../../../sim/syncDevice';
 
 vi.mock('../../../../src/sync', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../../../../src/sync')>();
-  return { ...original, createSyncService: vi.fn(original.createSyncService) };
+  const original = await importOriginal<Record<string, unknown>>();
+  return { ...original, createSyncService: vi.fn(original['createSyncService'] as typeof createSyncService) };
 });
 
 /**
