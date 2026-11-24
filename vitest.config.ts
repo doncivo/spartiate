@@ -1,6 +1,9 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config.ts';
 
+// C-178 : fuseau fixé avant le démarrage des workers (hérité par eux) : mêmes résultats sur le poste d'Ali (Paris) et sur les runners (UTC).
+process.env['TZ'] = 'Europe/Paris';
+
 export default mergeConfig(
   viteConfig,
   defineConfig({
