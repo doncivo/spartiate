@@ -386,3 +386,26 @@ et ReplaceRace (29 fichiers, 246 verts) ; `tsc --noEmit` et `eslint` sur les fic
 | § 14.3 a | fait (C-066, C-081) |
 | § 14.3 b | fait (SEANCE-0292, D-529 ; C-029 en partie A) |
 | § 17.1 a | à faire (0.29.x, séance et moteur, M) : non commencé (budget) |
+
+## Relecture sync-icloud (D-26)
+
+Périmètre : `git diff 3de66bf6..f6dd64c4`. La plage ne touche aucun fichier de src/sync, src/domain/sync ni src-tauri/src/sync, mais elle change
+ce qui est publié. Points relus : (1) colonnes, valeurs et moment de publication de `workout` et `workout_set` ; (2) lecture par un appareil
+en 0.29.1 ; (3) hlc et journal des conflits ; (4) exports et imports dans les deux sens ; (5) C-081 et synchro des profils de matériel ;
+(6) autres effets publiés des repositories touchés.
+
+Verdict : approuvé. Aucun défaut de code ni de protocole. Aucune colonne nouvelle ; publication toujours à la clôture, en ligne entière et
+sous un seul hlc (0004_workout_sync.ts). Valeurs nouvelles : `corrected_at` daté pour une série validée rouverte en séance ouverte (D-519,
+`hidden` : absent du journal des conflits) ; reps, charge et RIR d'une série non validée (C-078), publiés avec done = 0. Ce n'est pas une
+forme nouvelle (« Accepter » remplissait déjà des séries à faire), et tous les calculs filtrent `done`. Exports inchangés (même schéma).
+`training.activeEquipmentProfile` est un réglage local, jamais publié. `closedPage` est en lecture seule ; `GENERATION_VERSION` et les
+surcharges du § 11 ne sont stockées nulle part.
+
+Tests de non-régression, tests/unit/sync/seance0292Sync.test.ts (`b1227c8d`), verts d'emblée comme attendu :
+- (a) série validée rouverte puis revalidée en séance ouverte : rien en file avant la clôture, un seul hlc, `corrected_at` reçu, `conflict_log` vide des deux côtés ;
+- (b) saisie d'une série non validée : reçue avec done = 0, absente du tonnage, des records et des séries prises en compte pour l'e1RM ;
+- (c) saisie écrite après la clôture : refusée par une erreur, rien en file. Saisie lancée en même temps que la clôture : refusée, ou publiée et reçue, jamais perdue en silence ;
+- (d) profil de matériel actif supprimé sur A : profil actif nul sur B, réglage local publié par aucun des deux.
+
+Point signalé à Ali : une série validée rouverte puis laissée à faire à la clôture s'affiche à la fois « Corrigée » et « Non faite » dans
+le journal (HistorySetRow.tsx). C'est cohérent avec D-519 (la réouverture est une correction tracée). Il reste à dire si l'affichage convient.
