@@ -95,7 +95,7 @@ export function createSupplementNotificationService(deps: SupplementNotification
       const today = now.slice(0, 10) as LocalDate;
       const { supplements, intakes } = prefs.enabled ? await deps.load(today, addDays(today, SUPPLEMENT_HORIZON_DAYS - 1)) : { supplements: [], intakes: [] };
       const room = NOTIFICATION_LIMIT - (await scheduler.reservedCount()) - others.length;
-      const plan = planSupplementNotifications({ now, enabled: prefs.enabled, supplements, intakes, limit: room });
+      const plan = planSupplementNotifications({ now, enabled: prefs.enabled, supplements, intakes, limit: room, zone });
       let ours: NotificationRequest[] = [];
       if (plan.items.length > 0) {
         const { supplementNotificationsFr: fr } = await import('../../i18n/fr.supplementNotifications');
