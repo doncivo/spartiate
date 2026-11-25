@@ -171,6 +171,22 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
+  // SHELL-0294a (C-135, D-480) : palette de commandes Ctrl+K, bloc à la demande avec son catalogue de textes ; seul le raccourci reste dans le départ.
+  it('SHELL-0294a : la palette de commandes est un bloc à la demande, hors du départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/palette/CommandPalette.tsx'];
+    if (!chunk) throw new Error('bloc src/features/palette/CommandPalette.tsx absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/palette/CommandPalette.tsx'))).toBe(true);
+  });
+
+  it('SHELL-0294a : les textes de la palette sont hors du départ et présents dans le build', () => {
+    const marker = 'Chercher une commande';
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // Y-FIX-04 : les textes de la fenêtre de choix après restauration ne sont dans aucun bloc de départ (catalogue à part, chargé avec elle).
   it('les textes de la fenêtre de choix après restauration sont hors du départ', () => {
     const marker = 'Restauration : que faire de la synchronisation ?';
