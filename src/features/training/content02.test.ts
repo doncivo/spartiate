@@ -18,7 +18,7 @@ const NEW_IDS = [
   'hip-adduction-machine', 'hip-adduction-cable', 'copenhagen-plank', 'calf-raise-smith', 'crunch', 'decline-crunch', 'lying-leg-raise',
   'hanging-knee-raise', 'cable-woodchopper', 'russian-twist',
 ];
-const ORIGINAL = JSON.parse(readFileSync('src/features/training/content02.originals.json', 'utf8')) as { ids: string[]; names: Record<string, string> };
+const ORIGINAL = JSON.parse(readFileSync('tests/fixtures/training/content02.originals.json', 'utf8')) as { ids: string[]; names: Record<string, string> };
 
 const search = (list: readonly { id: string; nameFr: string; aliasesEn: readonly string[] }[], query: string) => {
   const q = normalizeSearch(query);

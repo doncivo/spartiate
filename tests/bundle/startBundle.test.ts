@@ -171,6 +171,15 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
+  // SHELL-0295 (C-085, D-638) : le catalogue hérité `fr.routines` (habitudes de CircleTasks) ne sert pas au premier affichage d'Aujourd'hui :
+  // il quitte l'arbre `fr.ts` et n'est plus lu que par les fonctions de `formatRoutine.ts` qui le demandent.
+  it('SHELL-0295 (C-085) : le catalogue hérité `fr.routines` est hors du départ', () => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const marker of ['toutes les {count} semaines', 'ROUTINES — JOURS COMPLÉTÉS', 'Restaurer la routine']) {
+      for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), `${chunk.file} : ${marker}`).toBe(false);
+    }
+  });
+
   // SHELL-0294a (C-135, D-480) : palette de commandes Ctrl+K, bloc à la demande avec son catalogue de textes ; seul le raccourci reste dans le départ.
   it('SHELL-0294a : la palette de commandes est un bloc à la demande, hors du départ', () => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
