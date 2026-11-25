@@ -21,7 +21,7 @@ Correspondance explicite avec les 26 agents de CircleTasks. Aucune étape obliga
 
 | Passe | Outil | Règle |
 | --- | --- | --- |
-| Spécification | Ce PRD (`docs/PRD.md`) + ADR | Toute décision nouvelle = ADR numéroté ; toute hypothèse = `H-n` dans le registre § 26 |
+| Spécification | Ce PRD (`docs/prd/README.md`, par chapitre ; `docs/PRD.md` n’est qu’une page de renvoi, D-49, D-623) + ADR | Toute décision nouvelle = ADR numéroté ; toute hypothèse = `H-n` dans le registre § 26 |
 | Implémentation | Claude Code (Opus) | Un ticket = une branche = une PR ; **preuve rouge avant code pour toute story** : un commit qui n'ajoute que les tests et échoue, puis le commit de code qui les fait passer, les deux identifiants dans la fiche |
 | Relecture croisée | Codex | Relit chaque PR ; commentaires résolus avant merge ; ne pousse jamais directement |
 | Intégration | CI GitHub | Verte obligatoire ; merge par toi |

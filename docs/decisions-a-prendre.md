@@ -185,7 +185,7 @@ Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inl
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-342 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+347 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -210,7 +210,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-539 | SEANCE-0292b (BL-112, amende D-385). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 | 8 | D-78 | I4-05 : Open Food Facts et scan, choix prudents de l'agent (mission de nuit du 2026-11-09), révisables par Ali. | A garder · B réviser ; effet : schéma, chiffre, écran |
 
-### séance et moteur (110 : 72 à trancher, 38 à confirmer seulement)
+### séance et moteur (112 : 73 à trancher, 39 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -279,6 +279,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 2 | D-570 | DATA-0293 (BL-112, amende D-539). | A garder · B réviser ; effet : moteur |
 | 2 | D-582 | DATA-0293. | A garder · B réviser ; effet : moteur |
 | 2 | D-588 | CONTENT-0293 (BL-113). | A garder · B réviser ; effet : moteur |
+| 2 | D-620 | SHELL-0294f (BL-150) : durée du mésocycle mise en cohérence. | A garder · B réviser ; effet : moteur |
 | 1 | D-271 | PROG-01 (0.24.0) : cible des jours de repos. | A garder · B réviser ; effet : chiffre |
 | 1 | D-351 | FIX-PROGRAMME (0.28.0) : « Revoir mes réglages » part de la durée réelle du cycle et ne l'écrase plus (C-117, C-064; complète D-315 ). | A garder · B réviser ; effet : écran |
 | 1 | D-455 | PROGRES-0291 (BL-114) : plage de séries jugée sur la dernière semaine complète. | A garder · B réviser ; effet : écran |
@@ -329,6 +330,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-587 | CONTENT-0293 (BL-127). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-590 | CONTENT-0293 (C-180). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-594 | SHELL-0294a (BL-118). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-621 | SHELL-0294f (BL-150) : § 19.2 sans platform.kind. | à confirmer seulement (aucun effet visible repéré) |
 
 ### nutrition (24 : 14 à trancher, 10 à confirmer seulement)
 
@@ -409,7 +411,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (79 : 48 à trancher, 31 à confirmer seulement)
+### synchro et données (80 : 48 à trancher, 32 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -483,6 +485,7 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-519 | SEANCE-0292 (C-072, § 13.4). | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-571 | DATA-0293 (§ 21.2 a). | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-584 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-619 | SHELL-0294f (BL-150) : D-16 et § 21.2 mis en cohérence. | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-135 | FIX-0172 : relecture de sante après l'ouverture (automatisation « Lorsque Spartiate est ouverte »). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-280 | FIX-0241 (0.25.0) : colonnes de Progrès › Corps selon la largeur. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-329 | FIX-CONFID-IOS (0.28.0) : base, sauvegardes locales et journal exclus de la sauvegarde iCloud de l'iPhone (audit Claude C-152, C-147; applique D-99 … | à confirmer seulement (aucun effet visible repéré) |
@@ -553,7 +556,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-600 | SHELL-0294b (C-159, H-32). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (49 : 20 à trancher, 29 à confirmer seulement)
+### CI et outillage (51 : 20 à trancher, 31 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -611,5 +614,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-579 | DATA-0293 (BL-041). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-589 | CONTENT-0293 (BL-010). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-597 | SHELL-0294a (écart de preuve rouge, relecture à froid). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-622 | SHELL-0294f (BL-150) : versions du § 25.2 mises en cohérence avec D-58. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
 
 <!-- revue-choix-prudents:fin -->
