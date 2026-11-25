@@ -167,4 +167,29 @@ beforeEach(async () => {
     await screen.findByText('81,4');
     expect(screen.queryByText('Trois réglages, puis on s’entraîne.')).toBeNull();
   });
+
+  it('C-075 : lecture du profil en échec : message et « Réessayer » ; un nouvel essai réussi affiche l’écran', async () => {
+    viewport('mobile');
+    let calls = 0;
+    const flaky = {
+      ...db.data,
+      repos: {
+        ...db.data.repos,
+        profile: () => {
+          calls += 1;
+          return calls === 1 ? Promise.reject(new Error('lecture')) : db.data.repos.profile();
+        },
+      },
+    } as typeof db.data;
+    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: flaky });
+    render(
+      <AppContainerProvider container={container}>
+        <TodayScreen />
+      </AppContainerProvider>,
+    );
+    expect(await screen.findByText(/Lecture impossible/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
+    expect(await screen.findByText('Bienvenue')).toBeInTheDocument();
+    expect(screen.queryByText(/Lecture impossible/)).toBeNull();
+  });
 });
