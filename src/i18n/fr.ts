@@ -133,6 +133,8 @@ export const fr = {
     saveError: 'Impossible d’enregistrer ce réglage.',
   },
   desktop: {
+    /** BL-118 : titre de la fenêtre pendant le repos entre deux séries. */
+    restBadge: 'Repos {time} · Spartiate',
     tray: {
       open: 'Ouvrir Spartiate',
       sync: 'Synchroniser maintenant',

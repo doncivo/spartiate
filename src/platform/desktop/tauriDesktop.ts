@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { readAppVersion } from '../appVersion';
 import { listen } from '@tauri-apps/api/event';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { relaunchApp } from '../relaunch';
@@ -38,6 +39,10 @@ export function createTauriDesktop(): DesktopPlatform {
   return {
     setTrayLabels: async (labels) => {
       await invoke(SET_TRAY_LABELS_COMMAND, { labels });
+    },
+
+    setWindowTitle: async (title) => {
+      await getCurrentWindow().setTitle(title);
     },
 
     onTraySyncNow: async (handler) => listen(TRAY_SYNC_NOW_EVENT, () => handler()),

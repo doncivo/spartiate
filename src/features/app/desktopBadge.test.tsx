@@ -17,10 +17,11 @@ const START = '2026-11-25T10:00:00.000Z';
 describe('badge du minuteur de repos dans le titre de la fenêtre PC (BL-118)', () => {
   let db: TestDb;
   let desktop: FakeDesktop;
-  const clock = createManualClock(START);
+  let clock = createManualClock(START);
 
   beforeEach(async () => {
     vi.useFakeTimers();
+    clock = createManualClock(START);
     db = await openTestDb(DEVICE);
     desktop = createFakeDesktop();
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
