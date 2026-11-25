@@ -36,10 +36,10 @@ describe('bandeau de signature (C-126, § 18.3 a)', () => {
     expect(banner()).toBeUndefined();
   });
 
-  it('« Voir » ouvre la procédure SideStore', async () => {
+  it('« Voir » ouvre Plus, où la ligne d’expiration porte le lien de la procédure SideStore', async () => {
     source.expireAt(SOON);
     await replanSigning(h.container, 'open');
     banner()?.onAction?.();
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sidestore' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'home' });
   });
 });

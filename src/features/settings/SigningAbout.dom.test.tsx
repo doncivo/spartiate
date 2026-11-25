@@ -138,6 +138,20 @@ describe('À propos : expiration de la signature (I-02)', () => {
     expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'home' });
   });
 
+  it('§ 18.3 a : sous 24 h, la ligne d’expiration propose la procédure SideStore (lien), absente sinon', async () => {
+    source.expireAt('2026-10-14T08:00:00Z');
+    await replanNotifications(h.container, 'open');
+    const first = renderAbout();
+    await screen.findByText(/^Expire le/);
+    expect(screen.queryByRole('button', { name: 'Voir la procédure SideStore' })).toBeNull();
+    first.unmount();
+    source.expireAt('2026-10-08T20:00:00Z');
+    await replanNotifications(h.container, 'resume');
+    renderAbout();
+    fireEvent.click(await screen.findByRole('button', { name: 'Voir la procédure SideStore' }));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'sidestore' });
+  });
+
   it('alerte non planifiée : « L’alerte n’a pas pu être planifiée »', async () => {
     const alert = createFakeSigningAlert();
     alert.failSchedule = true;
