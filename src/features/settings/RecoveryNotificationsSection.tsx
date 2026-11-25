@@ -34,8 +34,6 @@ export function RecoveryNotificationsSection() {
   const [message, setMessage] = useState<RecoveryNotificationsTextKey | null>(null);
   const [busy, setBusy] = useState(false);
   const live = useRef(true);
-  const prefsRef = useRef(prefs);
-  prefsRef.current = prefs;
 
   useEffect(() => {
     live.current = true;
@@ -59,7 +57,7 @@ export function RecoveryNotificationsSection() {
 
   const change = useCallback(
     async (next: RecoveryNotificationPrefs) => {
-      const previous = prefsRef.current;
+      const previous = prefs;
       setBusy(true);
       setMessage(null);
       try {
@@ -78,7 +76,7 @@ export function RecoveryNotificationsSection() {
         if (live.current) setBusy(false);
       }
     },
-    [service],
+    [service, prefs],
   );
 
   if (pc) {

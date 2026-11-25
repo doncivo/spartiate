@@ -212,6 +212,8 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
 - [ ] **C-119 (Licences)** — iPhone, Plus › APP › Licences : la liste des polices, icônes et bibliothèques s'affiche (Cinzel, Lucide, Recharts, d3-ease…), le retour ramène à Plus ; même chose sur le PC (Plus › Licences, panneau de droite). Date : ____ Version : ____
 - [ ] **§ 18.3 a (procédure SideStore)** — iPhone, quand la signature expire dans moins de 24 h, « Voir » du bandeau « Spartiate expire dans … » ouvre Plus, et le bouton « Voir la procédure SideStore » de la ligne « Expire le … » ouvre « Actualiser avec SideStore » ; les libellés cités (« Mes apps », « Actualiser ») correspondent à ceux de ton SideStore. Date : ____ Version : ____
 - [ ] **C-074 (minuit)** — PC, laisse Aujourd'hui ouvert au passage de minuit : la date de la barre du haut et le contenu passent au nouveau jour sans rien toucher. Date : ____ Version : ____
+- [ ] **BL-002, BL-144 (CSP stricte)** — PC puis iPhone, ouvre Aujourd'hui, Nutrition (barres de macros), une séance (barre de repos), Progrès (graphiques), Plus › Synchronisation (QR code d'appairage sur le PC) et Plus › Bibliothèque (pictogrammes d'exercices) : tout s'affiche comme avant, aucun élément sans mise en forme ni barre vide. Date : ____ Version : ____
+- [ ] **C-139 (Quitter)** — PC, clic droit sur l'icône de la zone de notification › Quitter, deux fois de suite rapidement : l'app se ferme proprement une seule fois, sans perte de la dernière saisie. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 
@@ -274,6 +276,9 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | C-119 | 0.29.4 |
 | § 18.3 a | 0.29.4 |
 | C-074 | 0.29.4 |
+| BL-002 | 0.29.4 |
+| BL-144 | 0.29.4 |
+| C-139 | 0.29.4 |
 
 ## Doutes à trancher
 
