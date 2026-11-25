@@ -63,7 +63,7 @@ describe('buildCiqual : jamais de zéro inventé', () => {
   const build = (compo: readonly [string, number, string][], alim: readonly [string, string, string][] = [['9001', 'Aliment synthétique A', '01']]) =>
     buildCiqual({ alim: alimXml(alim), alimGrp: grpXml, compo: compoXml(compo), consts: constXml });
 
-  it('valeurs retenues par code ; absente, traces et « < x » valent null et sont comptées', () => {
+  it('valeurs retenues par code ; « traces » vaut 0 (D-477, Q-20 B) ; absente et « < x » valent null et sont comptées', () => {
     const { data, stats } = build([
       ['9001', 328, '123'],
       ['9001', 25003, '4,5'],
@@ -72,11 +72,23 @@ describe('buildCiqual : jamais de zéro inventé', () => {
       ['9001', 34100, '-'],
       ['9001', 400, '60'],
     ]);
-    expect(data.foods).toEqual([{ code: '9001', nameFr: 'Aliment synthétique A', group: '01', kcal: 123, proteinG: 4.5, fatG: null, carbG: null, fiberG: null }]);
+    expect(data.foods).toEqual([{ code: '9001', nameFr: 'Aliment synthétique A', group: '01', kcal: 123, proteinG: 4.5, fatG: null, carbG: 0, fiberG: null }]);
     expect(stats.below.fatG).toBe(1);
     expect(stats.traces.carbG).toBe(1);
     expect(stats.missing.fiberG).toBe(1);
     expect(data.groups).toEqual([{ code: '01', nameFr: 'groupe synthétique' }]);
+  });
+  it('« traces » vaut 0 g pour chaque constituant (CONTENT-0293, C-042)', () => {
+    const { data, stats } = build([
+      ['9001', 328, 'traces'],
+      ['9001', 25003, 'traces'],
+      ['9001', 40000, 'traces'],
+      ['9001', 31000, 'traces'],
+      ['9001', 34100, 'traces'],
+    ]);
+    expect(data.foods[0]).toMatchObject({ kcal: 0, proteinG: 0, fatG: 0, carbG: 0, fiberG: 0 });
+    expect(stats.traces).toEqual({ kcal: 1, proteinG: 1, fatG: 1, carbG: 1, fiberG: 1 });
+    expect(stats.missing).toEqual({ kcal: 0, proteinG: 0, fatG: 0, carbG: 0, fiberG: 0 });
   });
   it('constituant jamais décrit pour l’aliment : null (pas de ligne = inconnu)', () => {
     const { data } = build([['9001', 328, '10']]);
