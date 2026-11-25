@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { t } from '../../i18n';
 import { Button } from '../../ui';
 import { useFeatureStore } from '../app/AppContainerContext';
@@ -18,13 +19,20 @@ export function UpdateBanner() {
   const notesOpen = useFeatureStore(updaterStore, (s) => s.notesOpen);
   const progress = useFeatureStore(updaterStore, (s) => s.progress);
   const failure = useFeatureStore(updaterStore, (s) => s.failure);
+  const failures = useFeatureStore(updaterStore, (s) => s.checkFailures);
   const install = useFeatureStore(updaterStore, (s) => s.install);
   const later = useFeatureStore(updaterStore, (s) => s.later);
   const toggleNotes = useFeatureStore(updaterStore, (s) => s.toggleNotes);
 
+  const [dismissed, setDismissed] = useState<string | null>(null);
+  const close = (key: string) => () => setDismissed(key);
   // Échec durable sans version à proposer (vérification en échec, ou échec d'installation relu après redémarrage) : visible seul.
-  if (visible && !version && (status === 'installFailed' || status === 'checkFailed')) return <FailureNotice failure={status === 'installFailed' ? failure : null} />;
-  if (status === 'checkFailed') return <FailureNotice failure={null} />;
+  // C-126 : l'alerte se ferme (pour cette session) ; un autre échec la réaffiche.
+  if (visible && !version && (status === 'installFailed' || status === 'checkFailed')) {
+    const key = `${status}:${String(failure)}:${String(failures)}`;
+    return dismissed === key ? null : <FailureNotice failure={status === 'installFailed' ? failure : null} onClose={close(key)} />;
+  }
+  if (status === 'checkFailed') return dismissed === `checkFailed:${String(failures)}` ? null : <FailureNotice failure={null} onClose={close(`checkFailed:${String(failures)}`)} />;
 
   const offered = status === 'available' || status === 'downloading' || status === 'installFailed';
   if (!visible || !offered || !version) return null;
@@ -74,13 +82,16 @@ export function UpdateBanner() {
   );
 }
 
-function FailureNotice({ failure }: { failure: 'signature' | 'other' | null }) {
+function FailureNotice({ failure, onClose }: { failure: 'signature' | 'other' | null; onClose: () => void }) {
   const text = failure === 'signature' ? t('updater.signatureRefused') : failure === 'other' ? t('updater.installFailed') : t('updater.checkFailed');
   return (
     <section className="ct-update" role="region" aria-label={t('updater.bannerLabel')}>
       <p className="ct-update__error" role="alert">
         {text}
       </p>
+      <Button variant="secondary" onClick={onClose} className="ct-update__button">
+        {t('common.close')}
+      </Button>
     </section>
   );
 }

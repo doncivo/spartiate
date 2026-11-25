@@ -5,8 +5,10 @@ import { t } from '../../i18n';
 import { formatTime } from '../../i18n/format';
 import { localDateTimeAt } from '../../domain/notificationInstant';
 import type { SigningStatusV1 } from '../../domain/signingNotice';
+import { sideStoreFr } from '../../i18n/fr.sidestore';
 import { Button } from '../../ui';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
+import { useNavigationStore } from '../app/navigation';
 import { signingPermissionStore } from './signingRun';
 import { requestPermissionOnGesture } from './requestPermission';
 import { signingAlertFailure } from './signingNotice';
@@ -72,6 +74,7 @@ export function SigningRemindersLine() {
 export function SigningAboutRow() {
   const { container, status, zone, nowMs } = useSigningState();
   const permission = useFeatureStore(signingPermissionStore, (s) => s.permission);
+  const navigate = useNavigationStore((s) => s.navigate);
   if (!container.signing.source.supported) return null;
 
   let main: string;
@@ -80,6 +83,8 @@ export function SigningAboutRow() {
   let mainWarn = false;
   // Action utile quand l'alerte ne peut pas partir : demander l'autorisation (geste), ou ouvrir Réglages > Rappels quand iOS ne redemande plus.
   let action: 'allow' | 'view' | null = null;
+  // § 18.3 a : à moins de 24 h de l'expiration (ou expirée), lien vers la procédure d'actualisation par SideStore.
+  let procedure = false;
   if (status.failure !== null) {
     return (
       <div className="ct-settings__row" data-kind="signing">
@@ -102,8 +107,10 @@ export function SigningAboutRow() {
     } else if (notice.state === 'expired') {
       main = t('signing.about.expired', { date, time });
       mainWarn = true;
+      procedure = true;
     } else {
       main = t('signing.about.expires', { date, time, remaining: aboutRemaining(expiresAt - nowMs) });
+      procedure = notice.state === 'soon';
       if (permission === 'denied') {
         action = 'view';
         hint = t('signing.about.notificationsDenied');
@@ -135,6 +142,11 @@ export function SigningAboutRow() {
         {action === 'allow' && (
           <Button variant="secondary" ariaLabel={t('signing.about.allowLabel')} onClick={() => void requestPermissionOnGesture(container)} className="ct-settings__link">
             {t('signing.about.allow')}
+          </Button>
+        )}
+        {procedure && (
+          <Button variant="secondary" onClick={() => navigate({ tab: 'more', screen: 'sidestore' })} className="ct-settings__link">
+            {sideStoreFr.link}
           </Button>
         )}
       </span>

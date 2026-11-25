@@ -8,7 +8,7 @@ import { archiveResetVerdict } from '../../domain/dataReset';
 import { isStrictHlc } from '../../domain/sync/format';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
 import { FileExportError } from '../../platform/files';
-import { Button, Icon, SegmentedControl, useLayout } from '../../ui';
+import { Button, ConfirmDialog, Icon, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
@@ -23,6 +23,30 @@ const REASON: Record<ArchiveErrorCode, ExportImportTextKey> = {
   'hash-mismatch': 'reasonHashMismatch',
   'invalid-data': 'reasonInvalidData',
 };
+
+/** C-127 : jour civil LOCAL d'un instant ISO (un export de 23 h 30 UTC n'est pas daté du jour d'avant ou d'après). */
+function localDayOf(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/**
+ * C-127 : le thème importé s'applique aussitôt à l'interface (attribut du document et miroir local du script de premier affichage,
+ * comme `applyTheme`). Écrit ici et non importé : un module du départ importé par un écran à la demande devient un bloc de plus
+ * dans le départ (bundle). La barre de titre Windows suit au prochain démarrage (`startThemeSync`).
+ */
+function applyImportedTheme(choice: 'light' | 'dark' | 'system'): void {
+  const root = document.documentElement;
+  if (choice === 'system') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', choice);
+  try {
+    window.localStorage.setItem('ct.theme', choice);
+  } catch {
+    // Stockage indisponible : l'attribut est posé quand même.
+  }
+}
 
 interface Preview {
   readonly name: string;
@@ -46,6 +70,7 @@ export function ExportImportScreen() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [mode, setMode] = useState<ImportMode>('merge');
   const [busy, setBusy] = useState(false);
+  const [askReplace, setAskReplace] = useState(false);
 
   /** État local publiable + thème (absent tant qu'il vaut la valeur par défaut « system »). */
   async function readLocal(repos: typeof data.repos): Promise<ExportData> {
@@ -117,17 +142,20 @@ export function ExportImportScreen() {
 
   async function confirm(): Promise<void> {
     if (!preview) return;
+    setAskReplace(false);
     setBusy(true);
     try {
-      const counts = await data.transaction(async (repos) => {
+      const { counts, theme } = await data.transaction(async (repos) => {
         // Le plan est recalculé dans la transaction : l'aperçu a pu vieillir (une synchro a pu écrire entre-temps).
         const fresh = await readLocal(repos);
         const final = planImport(fresh, preview.parsed.data, mode);
         await (await repos.exportImport()).applyImport(final, year);
         const theme = final.writes.settings['ui.theme'];
         if (theme !== undefined) await repos.settings.set('ui.theme', theme);
-        return final.counts;
+        return { counts: final.counts, theme };
       });
+      // C-127 : le thème importé s'applique aussitôt (attribut du document et miroir local ; la barre de titre Windows suit au prochain démarrage), pas au prochain démarrage.
+      if (theme === 'light' || theme === 'dark' || theme === 'system') applyImportedTheme(theme);
       setPreview(null);
       setMessage({ kind: 'ok', text: tExportImport('importDone', { add: counts.add, modify: counts.modify, delete: counts.delete }) });
     } catch {
@@ -176,7 +204,7 @@ export function ExportImportScreen() {
           <section className="ct-body__field" role="region" aria-label={tExportImport('previewTitle')}>
             <h3 className="ct-body__label">{tExportImport('previewTitle')}</h3>
             <p className="ct-body__hint">{tExportImport('previewFile', { name: preview.name })}</p>
-            <p className="ct-body__hint">{tExportImport('previewDate', { date: preview.parsed.manifest.date.slice(0, 10) })}</p>
+            <p className="ct-body__hint">{tExportImport('previewDate', { date: localDayOf(preview.parsed.manifest.date) })}</p>
             <SegmentedControl
               label={tExportImport('modeLabel')}
               value={mode}
@@ -193,13 +221,16 @@ export function ExportImportScreen() {
               <li>{tExportImport('previewDelete', { n: plan.counts.delete })}</li>
               <li>{tExportImport('previewUnchanged', { n: plan.counts.unchanged })}</li>
             </ul>
-            <Button disabled={busy} onClick={() => void confirm()}>
+            <Button disabled={busy} onClick={() => (mode === 'replace' && plan.counts.delete > 0 ? setAskReplace(true) : void confirm())}>
               {tExportImport('confirm')}
             </Button>
             <Button variant="secondary" disabled={busy} onClick={() => setPreview(null)}>
               {tExportImport('cancel')}
             </Button>
           </section>
+        )}
+        {askReplace && plan && (
+          <ConfirmDialog title={tExportImport('replaceTitle', { n: plan.counts.delete })} description={tExportImport('replaceDescription')} confirmLabel={tExportImport('replaceConfirm')} onConfirm={() => void confirm()} onCancel={() => setAskReplace(false)} />
         )}
       </div>
     </div>

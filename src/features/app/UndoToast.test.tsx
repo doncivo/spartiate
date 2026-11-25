@@ -6,6 +6,7 @@ import { asEntityId, type DeviceId } from '../../domain/types';
 import { AppContainerProvider } from './AppContainerContext';
 import { createAppContainer, type AppContainer } from './container';
 import { UNDO_TOAST_MS, type UndoableCommand } from './undo';
+import { useNoticeStore } from './notice';
 import { UndoToast } from './UndoToast';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000021');
@@ -127,5 +128,13 @@ describe('UndoToast global (T-13)', () => {
     fireEvent.mouseLeave(screen.getByRole('status'));
     act(() => void vi.advanceTimersByTime(UNDO_TOAST_MS));
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('C-120 : un message qui arrive pendant le délai ne masque pas « Annuler » (les deux restent visibles)', () => {
+    push(command('Courses'));
+    act(() => useNoticeStore.getState().show('Ajouté dans Perso'));
+    expect(screen.getByText('Ajouté dans Perso')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Annuler' })).toBeInTheDocument();
+    expect(screen.getByText(/« Courses » dupliquée/)).toBeInTheDocument();
   });
 });

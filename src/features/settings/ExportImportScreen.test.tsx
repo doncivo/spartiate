@@ -93,6 +93,7 @@ describe('Plus › Export et import', () => {
     fireEvent.click(within(preview).getByRole('radio', { name: 'Remplacer' }));
     expect(within(preview).getByText('Suppressions : 1')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’import' }));
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Remplacer et supprimer' }));
     await screen.findByRole('status');
     expect(await db.driver.select("SELECT deleted_at IS NOT NULL AS d FROM body_weight WHERE id = 'weight|2026-09-01|manual'")).toEqual([{ d: 1 }]);
   });
@@ -149,5 +150,43 @@ describe('Plus › Export et import', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
     expect(screen.queryByRole('region', { name: 'Aperçu de l’import' })).toBeNull();
+  });
+
+  it('C-127 : « Remplacer » avec des suppressions demande une seconde confirmation ; Annuler n’écrit rien', async () => {
+    await (await db.data.repos.bodyWeights()).saveManual({ date: '2026-09-01' as LocalDate, kg: 90, timezone: 'Europe/Paris' }, '2026-10-05' as LocalDate);
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: await archive() });
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    const preview = await screen.findByRole('region', { name: 'Aperçu de l’import' });
+    fireEvent.click(within(preview).getByRole('radio', { name: 'Remplacer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’import' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent('1');
+    expect(await db.driver.select('SELECT 1 FROM profile')).toEqual([]);
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annuler' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(await db.driver.select('SELECT 1 FROM profile')).toEqual([]);
+    expect(screen.getByRole('region', { name: 'Aperçu de l’import' })).toBeInTheDocument();
+  });
+
+  it('C-127 : le thème importé est appliqué aussitôt à l’interface', async () => {
+    document.documentElement.removeAttribute('data-theme');
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes: await archive() });
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    await screen.findByRole('region', { name: 'Aperçu de l’import' });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’import' }));
+    await screen.findByRole('status');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    document.documentElement.removeAttribute('data-theme');
+  });
+
+  it('C-127 : la date de l’aperçu est celle du jour LOCAL de l’export (Paris), pas celle d’UTC', async () => {
+    const bytes = (await buildExportArchive(DATA, { date: '2026-10-05T22:30:00.000Z', sv: 1 })).bytes;
+    files.setPickBytes({ name: 'spartiate-export.zip', bytes });
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Choisir une archive…' }));
+    const preview = await screen.findByRole('region', { name: 'Aperçu de l’import' });
+    expect(within(preview).getByText('Exportée le 2026-10-06')).toBeInTheDocument();
   });
 });

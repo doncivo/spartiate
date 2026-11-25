@@ -12,10 +12,10 @@ const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' 
  * Résumé de « Profil et poids » (Plus, iPhone et PC). Le résumé n'est construit qu'avec les valeurs réellement saisies (taille, dernier poids, objectif) ; sans aucune valeur, ou si la
  * lecture échoue, texte neutre (la carte reste un lien vers l'écran, où l'échec de lecture est dit).
  */
-export function useProfileSummary(): readonly string[] {
+export function useProfileSummaryDetail(): { readonly parts: readonly string[]; readonly weight: string | null } {
   const container = useAppContainer();
   const { repos } = container.data;
-  const [parts, setParts] = useState<readonly string[]>([]);
+  const [summary, setSummary] = useState<{ readonly parts: readonly string[]; readonly weight: string | null }>({ parts: [], weight: null });
 
   useEffect(() => {
     let live = true;
@@ -27,18 +27,20 @@ export function useProfileSummary(): readonly string[] {
         ]);
         if (!live) return;
         const next: string[] = [];
+        let weightText: string | null = null;
         if (profile?.heightCm != null) next.push(tPlus('profileHeight', { cm: formatKg(profile.heightCm) }));
         const weight = weights[0];
         if (weight) {
           const now = new Date(container.clock.nowMs());
           const today = `${String(now.getFullYear())}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
           const when = weight.date === today ? tPlus('profileWeightToday') : tPlus('profileWeightOn', { date: formatDayMonth(weight.date) });
-          next.push(tPlus('profileWeight', { kg: formatKg(weight.kg), when }));
+          weightText = tPlus('profileWeight', { kg: formatKg(weight.kg), when });
+          next.push(weightText);
         }
         if (profile?.goal != null) next.push(tBody(GOAL_KEY[profile.goal]).toLocaleLowerCase('fr-FR'));
-        setParts(next);
+        setSummary({ parts: next, weight: weightText });
       } catch {
-        if (live) setParts([]);
+        if (live) setSummary({ parts: [], weight: null });
       }
     })();
     return () => {
@@ -46,7 +48,12 @@ export function useProfileSummary(): readonly string[] {
     };
   }, [repos, container.clock]);
 
-  return parts;
+  return summary;
+}
+
+/** Résumé du profil en morceaux de texte (carte « Profil et poids »). */
+export function useProfileSummary(): readonly string[] {
+  return useProfileSummaryDetail().parts;
 }
 
 /** Ligne « Profil et poids » du groupe MOI (ERGO-02, aperçu Plus-apres) : résumé sous le libellé, qui passe à la ligne plutôt que d'être coupé. */

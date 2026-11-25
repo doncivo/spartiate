@@ -83,3 +83,8 @@
   z-index: 5;
   box-shadow: -8px 0 24px var(--ct-shadow-faint);
 }
+
+/* C-121 : le contenu principal reçoit le focus en repli (ouvreur démonté) sans cadre visible. */
+.ct-app-shell__main:focus {
+  outline: none;
+}

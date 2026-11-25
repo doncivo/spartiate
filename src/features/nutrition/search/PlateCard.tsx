@@ -70,9 +70,9 @@ export function PlateCard({ plate, busy, failed, onRemove, onClear, onCommit, on
         </label>
         <Button
           variant="secondary"
-          disabled={savingRecipe}
+          disabled={savingRecipe || badGrams.length > 0}
           onClick={() => {
-            if (savingRecipe) return;
+            if (savingRecipe || badGrams.length > 0) return;
             setSavingRecipe(true);
             void onSaveRecipe(recipeName)
               .then(setRecipeState)

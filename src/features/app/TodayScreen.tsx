@@ -1,7 +1,7 @@
+import { t } from '../../i18n';
 import { tPlural } from '../../i18n/plural';
 import { Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { todayLocal } from '../../domain/clock';
 import type { BodyWeight, Profile } from '../../domain/bodyProfile';
 import { isTrendLearning } from '../../domain/nutrition/trendLearning';
 import { formatDetailDate, formatStamp } from '../../i18n/format';
@@ -14,6 +14,7 @@ import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
 import { lazyScreen, NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessionCard } from './lazyScreens';
+import { useLocalDay } from './useLocalDay';
 import type { TodayPcSideProps } from './TodayPcSide';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';
@@ -135,6 +136,8 @@ export function TodayScreen() {
   const status = useSyncExternalStore(sync ? sync.subscribe : subscribeNone, () => (sync ? sync.status() : null));
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const today = useLocalDay(container.clock);
   const { repos } = container.data;
   // 0.1.4 (2) : un lot reçu de l'autre appareil (profil, pesée) relit l'écran sans changer d'onglet.
   const synced = useSyncedData(['profile', 'body_weight']);
@@ -163,10 +166,9 @@ export function TodayScreen() {
     return () => {
       live = false;
     };
-  }, [repos, backups, synced]);
+  }, [repos, backups, synced, today, attempt]);
 
   const nowMs = container.clock.nowMs();
-  const today = todayLocal(container.clock);
   const configured = status !== null && status.phase !== 'not-configured';
   const syncText = status !== null && configured ? statusLine(status, nowMs) : null;
   const title = (
@@ -178,7 +180,17 @@ export function TodayScreen() {
   if (!loaded) {
     // FIX-0242 : pendant la lecture, même arbre de tête que l'écran lu (section de la même mise en page, titre au même endroit) : le titre n'est
     // jamais démonté puis remonté à la fin de la lecture (lecteur d'écran, et cause du test instable « sans profil : carte d'accueil »).
-    const note = failed ? <p className="ct-today__muted">{tToday('loadFailed')}</p> : null;
+    const note = failed ? (
+      <>
+        <p className="ct-today__muted">{tToday('loadFailed')}</p>
+        <Button variant="secondary" onClick={() => {
+            setFailed(false);
+            setAttempt((n) => n + 1);
+          }}>
+          {t('files.retry')}
+        </Button>
+      </>
+    ) : null;
     return layout === 'pc' ? (
       <section className="ct-section-notice ct-today ct-today--pc" aria-labelledby="ct-section-notice-title">
         {title}

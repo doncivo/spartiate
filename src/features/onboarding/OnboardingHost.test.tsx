@@ -75,6 +75,15 @@ describe('Hôte de l’onboarding : premier lancement sur base vide (I3-07)', ()
     expect(useNavigationStore.getState().overlays).toEqual([]);
   });
 
+  it('C-122 : Ctrl+/ (liste des raccourcis) ouverte par-dessus « Revoir mes réglages » ne démonte pas l’assistant', async () => {
+    await db.data.repos.settings.set('onboarding.completed', true);
+    open();
+    act(() => useNavigationStore.getState().openOverlay({ kind: 'onboarding' }));
+    expect(await screen.findByText('Toi', { selector: 'h1' })).toBeInTheDocument();
+    act(() => useNavigationStore.getState().openOverlay({ kind: 'shortcutsHelp' }));
+    expect(screen.getByText('Toi', { selector: 'h1' })).toBeInTheDocument();
+  });
+
   it('premier lancement fermé : l’onboarding est marqué terminé et ne revient pas', async () => {
     const view = open();
     await screen.findByText('Toi', { selector: 'h1' });

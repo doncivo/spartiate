@@ -128,6 +128,8 @@ export function createShortcutRegistry(): ShortcutRegistry {
       };
     },
     handle: (input, only) => {
+      // C-122 : touche maintenue (répétition) ou saisie en composition : jamais un raccourci (pas de bascule en rafale, pas de geste dans un IME).
+      if (input.held) return null;
       for (const { id, chord, inEditable } of chords) {
         if (input.editable && !inEditable) continue;
         if (only && !only.includes(id)) continue;

@@ -344,15 +344,15 @@ describe('I-02 : bandeau tenu à jour tant que l’app est ouverte (revue)', () 
     expect(banner()).toMatchObject({ detail: 'soon' });
   });
 
-  it('une lecture en échec ou le démontage arrête la minuterie et retire le bandeau', async () => {
+  it('une lecture en échec garde le bandeau et sa minuterie (C-126) ; le démontage les retire', async () => {
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanSigning(r.h.container, 'open');
     expect(vi.getTimerCount()).toBe(1);
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     r.source.fail('profile-unreadable');
     await replanSigning(r.h.container, 'resume');
-    expect(vi.getTimerCount()).toBe(0);
-    expect(banner()).toBeUndefined();
+    expect(vi.getTimerCount()).toBe(1);
+    expect(banner()).toMatchObject({ detail: 'soon' });
     r.source.expireAt('2026-10-08T18:00:00Z');
     await replanSigning(r.h.container, 'resume');
     expect(vi.getTimerCount()).toBe(1);

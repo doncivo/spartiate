@@ -194,4 +194,11 @@ describe('SettingsScreen (T-06)', () => {
     expect(within(app).getByText(/^Version/)).toBeInTheDocument();
     expect(within(app).getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
   });
+
+  it('C-119 : « Licences » dans le groupe APP ouvre l’écran des licences', async () => {
+    renderScreen();
+    const app = screen.getByRole('heading', { name: 'APP' }).nextElementSibling as HTMLElement;
+    fireEvent.click(within(app).getByRole('button', { name: 'Licences' }));
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'licenses' });
+  });
 });

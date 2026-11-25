@@ -108,3 +108,12 @@ describe('SegmentedControl défilant : fondus de bord (FIX-0115)', () => {
     expect(group).not.toHaveAttribute('data-fade-end');
   });
 });
+
+describe('SegmentedControl : arrêt de tabulation (C-121)', () => {
+  it('valeur absente des choix : le premier choix reste atteignable par Tab', () => {
+    render(<SegmentedControl label="Sections" value="zzz" onChange={() => undefined} options={options} />);
+    const radios = screen.getAllByRole('radio');
+    expect(radios.filter((r) => r.getAttribute('tabindex') === '0')).toHaveLength(1);
+    expect(radios[0]).toHaveAttribute('tabindex', '0');
+  });
+});
