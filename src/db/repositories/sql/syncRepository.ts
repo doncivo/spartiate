@@ -613,30 +613,6 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
       return dropped;
     },
 
-    // --- réparations ----------------------------------------------------------------------------------------------------------------
-    async routinePauses(routineIds) {
-      const out = new Map<string, { toDate: string | null; deletedAt: string | null }[]>();
-      for (const id of routineIds) out.set(id, []);
-      for (const part of chunks([...new Set(routineIds)])) {
-        const rows = await db.select<{ routine_id: string; to_date: string | null; deleted_at: string | null }>(
-          `SELECT routine_id, to_date, deleted_at FROM routine_pause WHERE routine_id IN (${marks(part.length)})`,
-          part,
-        );
-        for (const row of rows) out.get(row.routine_id)?.push({ toDate: row.to_date, deletedAt: row.deleted_at });
-      }
-      return out;
-    },
-    async setRoutinePaused(routineId, paused) {
-      await db.execute('UPDATE routine SET paused = ? WHERE id = ? AND paused <> ?', [paused ? 1 : 0, routineId, paused ? 1 : 0]);
-    },
-    async openFocusSessions() {
-      const rows = await db.select<{ id: string; started_at: string; hlc: string }>('SELECT id, started_at, hlc FROM focus_session WHERE ended_at IS NULL AND deleted_at IS NULL');
-      return rows.map((r) => ({ id: r.id, startedAt: r.started_at as IsoDateTime, hlc: r.hlc as Hlc }));
-    },
-    async closeFocusSession(id, endedAt) {
-      const stamp = stamper.next();
-      await db.execute('UPDATE focus_session SET ended_at = ?, paused_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND ended_at IS NULL', [endedAt, stamp.at, stamp.deviceId, stamp.hlc, id]);
-    },
     async deleteExternalEventsOf(accountIds) {
       for (const part of chunks([...new Set(accountIds)])) await db.execute(`DELETE FROM external_event WHERE account_id IN (${marks(part.length)})`, part);
     },

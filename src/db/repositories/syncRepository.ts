@@ -301,14 +301,7 @@ export interface SyncRepository {
     readonly conflictsBefore: IsoDateTime;
   }): Promise<DroppedItem[]>;
 
-  // --- réparations (section 8) ----------------------------------------------------------------------------------------------------
-  /** Périodes de pause des routines données. */
-  routinePauses(routineIds: readonly string[]): Promise<Map<string, { readonly toDate: string | null; readonly deletedAt: string | null }[]>>;
-  /** Colonne locale `routine.paused` (sans tampon : jamais publiée). */
-  setRoutinePaused(routineId: string, paused: boolean): Promise<void>;
-  openFocusSessions(): Promise<{ readonly id: string; readonly startedAt: IsoDateTime; readonly hlc: Hlc }[]>;
-  /** Écriture locale tamponnée (publiée) : clôture d'une session Focus. */
-  closeFocusSession(id: string, endedAt: IsoDateTime): Promise<void>;
+  // --- caches locaux de l’ancien schéma (D-67) : réparations de la section 8 dans le banc legacy (DATA-0295, BL-003) ---------------------
   /** Cache local des événements d'un compte supprimé physiquement (table locale `external_event`). */
   deleteExternalEventsOf(accountIds: readonly string[]): Promise<void>;
 }

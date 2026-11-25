@@ -1,8 +1,8 @@
 import { SETTINGS_DEFINITIONS, type SettingKey } from '../../../src/domain/model/settings';
 import { createCatalogue, kit, type SettingKeyScope, type SyncCatalogue, type SyncTable, type TitleSource } from '../../../src/domain/sync/syncTables';
-import { createSqlRepositoriesFor, type SyncStorage } from '../../../src/db/repositories';
+import { createSqlRepositoriesFor, type RepositoryFactory, type SyncStorage } from '../../../src/db/repositories';
 import type { SyncDeps } from '../../../src/sync/deps';
-import { legacyRepairs } from './repairs';
+import { attachLegacyRepairs, createLegacyRepairQueries, legacyRepairs } from './repairs';
 import { isNaturalId, expectedNaturalId, type NaturalIdTable } from './naturalIds';
 
 /**
@@ -244,7 +244,13 @@ export const LEGACY_SYNC_CATALOGUE: SyncCatalogue = createCatalogue({
 });
 
 /** Repositories SQL branchés sur l'ancien catalogue (banc de synchro). */
-export const createLegacyRepositories = createSqlRepositoriesFor(LEGACY_SYNC_CATALOGUE);
+const legacyBase = createSqlRepositoriesFor(LEGACY_SYNC_CATALOGUE);
+/** DATA-0295 (BL-003) : chaque jeu de repositories du banc porte les requêtes de réparation de l'ancien schéma, sorties du dépôt livré. */
+export const createLegacyRepositories: RepositoryFactory = (executor, stamper) => {
+  const repos = legacyBase(executor, stamper);
+  attachLegacyRepairs(repos.sync, createLegacyRepairQueries(executor, stamper));
+  return repos;
+};
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // Fonctions de recherche sur l'ancien catalogue (reprise des anciennes exportations de syncTables.ts, pour les tests du banc)
