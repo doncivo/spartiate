@@ -348,6 +348,13 @@ describe('validateContent : médias d’exercice (I6-07)', () => {
     expect(runMedia(video.b, video.dir)).toMatch(/un seul média par exercice/);
   });
 
+  it('CONTENT-0293 : un auteur au registre pour une source à auteur unique est refusé', () => {
+    const { b, dir, registry } = withMedia();
+    expect(runMedia(b, dir)).toBe('');
+    registry.files[0].author = 'quelqu’un';
+    expect(runMedia(b, dir)).toMatch(/auteur de l’image au registre pour une source à auteur unique : ex-a\.png/);
+  });
+
   it('refuse un format non admis', () => {
     const { b, dir } = withMedia('ex-a.svg');
     expect(runMedia(b, dir)).toMatch(/format de média non admis : ex-a\.svg/);
