@@ -199,6 +199,11 @@ Constat : le § 18.1 cite « swipe, long-press » et le § 13 « swipe » sur le
 - B : appui long = menu (supprimer, dupliquer, type de série) partout où le PC a un clic droit. Conséquences : plus de surfaces, un composant de menu commun.
 - C : pas de geste (boutons seulement, état actuel) ; § 18.1 amendé. Conséquences : aucun risque de geste involontaire.
 
+## Q-39 — Garde du découpage du PRD ouverte à des décisions de Claude (SHELL-0294f)
+Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des changements du PRD tirés d’une décision d’Ali ; SHELL-0294f y a ajouté D-619 à D-624 (choix prudents de Claude, mise en cohérence du PRD, BL-150 et BL-148). Chaque changement reste listé et motivé.
+- A (recommandé) : garder, en réservant ces ajouts à la mise en cohérence (aucun changement de comportement). Conséquences : rien à refaire.
+- B : refuser ; les corrections du PRD repartent en attente de ta décision. Conséquences : contradictions du PRD rétablies jusqu’à ta réponse.
+
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
 ## Revue par thème des choix prudents (D-490, BL-149)

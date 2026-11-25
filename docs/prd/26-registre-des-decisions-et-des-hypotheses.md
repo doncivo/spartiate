@@ -71,10 +71,10 @@ Les renvois « H-3 » du texte désignent la famille H-3a, H-3b, H-3c (D-59).
 | H-9 | Médias d'exercices disponibles sous licence compatible | UNVERIFIED | Recherche de sources (I1) ; fallback : sans image |
 | H-10 | Camera Control utilisable par une WebView Tauri / plugin AVFoundation ; le scanner existant ne le prouve pas | UNVERIFIED | Spike I4 ; fallback bouton |
 | H-11 | Licence Ciqual (Etalab 2.0) autorise l'embarquement | UNVERIFIED (très probable) | Lecture de la licence, note dans `docs/licences.md` (I4) |
-| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) ; la présence de `reqwest` ne prouve rien |
+| H-12 | API Open Food Facts accessible sans clé à l’usage prévu | CONFIRMED (accès sans clé, constat d’Ali du 19/11/2026 ; débit et recherche restent à mesurer, D-624) | Matrice des capacités, ligne H-12 |
 | H-13 | Les observer queries HealthKit se déclenchent pour une app sans mode fond (`UIBackgroundModes` interdit par le contrat plist) | UNVERIFIED | SPA-006 étendu (I5) ; fallback lecture à l'ouverture |
 | H-14 | Fournisseur IA, coût mensuel et plafond configurable acceptables | UNVERIFIED | Décision avant I4 (Q-2) |
-| H-15 | Recharts tient les volumes (3 ans de séries Spartiate) en < 300 ms | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques (I2) |
+| H-15 | Les graphiques de Progrès (SVG de l’app) tiennent trois ans de séries Spartiate en < 300 ms (reformulée, Recharts retiré, D-614, D-624) | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques |
 | H-16 | Limite de 3 apps sideloadées : SideStore + CircleTasks + Spartiate tiennent ensemble | UNVERIFIED | Vérifié en SPA-004 ; fallback : retirer une app ou bascule Spartiate seul |
 | H-17 | Un verrou local (Face ID / Windows Hello) a une utilité pour toi | DEFERRED (code conservé, entrée masquée, D-37) | Ta décision (Q-6) |
 | H-18 | Le driver `@sqlite.org/sqlite-wasm` des tests reproduit fidèlement le plugin SQL natif vendored : parité DDL, déclencheurs, transactions, pragmas, restauration | UNVERIFIED (outil identifié, D-31) | Tests natifs CI (`cargo test -p tauri-plugin-sql`, `--test desktop`) couvrant les mêmes scénarios que `migrator.test.ts` ; smoke Windows |

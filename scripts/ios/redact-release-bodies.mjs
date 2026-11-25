@@ -36,7 +36,9 @@ export async function redactReleaseBodies({ repo = RELEASES_REPO, token, tags = 
     const patch = await fetchImpl(`${API}/repos/${repo}/releases/${release.id}`, {
       method: 'PATCH',
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body: next }),
+      // Relecture à froid : make_latest vaut true par défaut à l'API ; une ancienne publication ne doit jamais devenir « latest »
+      // (l'updater PC lit releases/latest/download/latest.json).
+      body: JSON.stringify({ body: next, make_latest: 'false' }),
     });
     if (!patch.ok) throw new Error(`Réécriture de la publication ${tag} impossible : HTTP ${patch.status}`);
     result.push({ tag, status: 'réécrite' });

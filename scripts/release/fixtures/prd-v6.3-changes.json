@@ -288,6 +288,22 @@
       "old": "par PR sur `docs/PRD.md` (D-22).",
       "new": "par PR sur `docs/prd/` (D-22, D-49, D-623 ; `docs/PRD.md` reste la page de renvoi).",
       "why": "BL-150 : la révision du PRD passe par les chapitres depuis D-49."
+    },
+    {
+      "id": "bl148-prd-26-h12",
+      "decision": "D-624",
+      "section": "26",
+      "old": "| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) ; la présence de `reqwest` ne prouve rien |",
+      "new": "| H-12 | API Open Food Facts accessible sans clé à l’usage prévu | CONFIRMED (accès sans clé, constat d’Ali du 19/11/2026 ; débit et recherche restent à mesurer, D-624) | Matrice des capacités, ligne H-12 |",
+      "why": "BL-148 : H-12 alignée sur la matrice (accès sans clé constaté par Ali le 19/11/2026, D-36)."
+    },
+    {
+      "id": "bl148-prd-26-h15",
+      "decision": "D-624",
+      "section": "26",
+      "old": "| H-15 | Recharts tient les volumes (3 ans de séries Spartiate) en < 300 ms | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques (I2) |",
+      "new": "| H-15 | Les graphiques de Progrès (SVG de l’app) tiennent trois ans de séries Spartiate en < 300 ms (reformulée, Recharts retiré, D-614, D-624) | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques |",
+      "why": "BL-148 : H-15 reformulée, Recharts retiré en SHELL-0294e (D-614), comme la matrice."
     }
   ]
 }

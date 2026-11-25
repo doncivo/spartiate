@@ -65,3 +65,15 @@ Suite de synchro (`tests/unit/sync`, `src/sync`, deux processus) : 2 035 réussi
 ## Passe code-reviewer
 
 Non faite dans cette session : relecture à froid et relecture sync-icloud (BL-166) à lancer par le coordinateur.
+
+## Relectures (sync-icloud, puis code-reviewer à froid, distincts) et corrections
+
+- sync-icloud (D-26) : approuvé, sans défaut bloquant. Le périmètre se limite à `src/sync/orphanEpoch.ts`. Trois tests de non-régression manquent : ils sont inscrits au reste de BL-166.
+- code-reviewer, un défaut bloquant : le PATCH de `redact-release-bodies.mjs` n'envoyait pas `make_latest`, que l'API met à `true` par défaut. Une ancienne publication pouvait donc devenir « latest », ce qui aurait arrêté l'updater PC. Le PATCH envoie désormais `make_latest: 'false'` : test rouge 3acb2324, puis correctif.
+- Mineurs corrigés :
+  - H-12 et H-15 du § 26.2 alignées sur la matrice (D-624, listées dans `prd-v6.3-changes.json`) ;
+  - test de la revue : section identique au rendu du script (garde, pas de rouge : le document était déjà à jour) ;
+  - portée du CONFIRMED de la ligne « Fork… » dans la matrice ;
+  - § 18.4 b ramené à « fait en partie » (le `--check` des icônes n'est lancé ni par la CI ni par un test) ;
+  - Q-39 : l'ouverture de la garde du PRD aux D- de Claude est à ratifier par Ali ;
+  - reprise.
