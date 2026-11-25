@@ -297,5 +297,8 @@ describe('CONTENT-0293 (BL-127) : durée et exercice choisi', () => {
     expect(importMetricNote(lineOf('Jour 1\nSquat 3 x 30 s'), 'bodyweight-reps')).toBe('seconds-on-reps');
     expect(importMetricNote(lineOf('Jour 1\nPlanche 3 x 12'), 'time')).toBe('reps-on-time');
     expect(importMetricNote(lineOf('Jour 1\nSquat 3 x 8'), 'load-reps')).toBeNull();
+    // Exercice de distance (marche du fermier) : la valeur est écrite en mètres, jamais en répétitions.
+    expect(importMetricNote(lineOf('Jour 1\nMarche 3 x 40 s'), 'distance')).toBe('seconds-on-distance');
+    expect(importMetricNote(lineOf('Jour 1\nMarche 3 x 40'), 'distance')).toBeNull();
   });
 });
