@@ -161,6 +161,10 @@ jobs:
           n=$(ls .vitest/blob/*.json 2>/dev/null | wc -l)
           if [ "$n" -ne 8 ]; then echo "::error::$n rapports blob au lieu de 8 (5 tranches node + 3 tranches dom) : fusion refusée"; ls -la .vitest/blob || true; exit 1; fi
           npx vitest run --merge-reports --reporter=default
+      # SHELL-0295 (BL-044, D-641) : couverture par module, tirée du rapport fusionné, dans le résumé du job (lecture seule, aucun seuil).
+      - name: Couverture par module
+        if: ${{ !cancelled() && hashFiles('coverage/coverage-summary.json') != '' }}
+        run: node scripts/release/coverage-by-module.mjs coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() }}
         with:

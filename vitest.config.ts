@@ -37,7 +37,8 @@ export default mergeConfig(
       coverage: {
         enabled: true,
         provider: 'v8',
-        reporter: ['text-summary', 'html'],
+        // SHELL-0295 (BL-044) : json-summary lu par scripts/release/coverage-by-module.mjs (couverture par module, résumé du job de la CI).
+        reporter: ['text-summary', 'html', 'json-summary'],
         include: ['src/**/*.{ts,tsx}'],
         exclude: ['src/**/*.test.{ts,tsx}', 'src/main.tsx', 'src/**/*.d.ts'],
         // CI (tests.yml) : chaque tranche (--shard) ne voit qu'une partie des tests, le seuil n'a de sens que sur le rapport fusionné
