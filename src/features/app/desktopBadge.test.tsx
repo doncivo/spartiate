@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { createManualClock } from '../../domain/clock';
 import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
@@ -17,6 +17,7 @@ const START = '2026-11-25T10:00:00.000Z';
 describe('badge du minuteur de repos dans le titre de la fenêtre PC (BL-118)', () => {
   let db: TestDb;
   let desktop: FakeDesktop;
+  let warn: MockInstance;
   let clock = createManualClock(START);
 
   beforeEach(async () => {
@@ -24,7 +25,7 @@ describe('badge du minuteur de repos dans le titre de la fenêtre PC (BL-118)', 
     clock = createManualClock(START);
     db = await openTestDb(DEVICE);
     desktop = createFakeDesktop();
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   });
   afterEach(async () => {
     setRestBadge(null);
@@ -73,7 +74,7 @@ describe('badge du minuteur de repos dans le titre de la fenêtre PC (BL-118)', 
     desktop.setWindowTitle = () => Promise.reject(new Error('fenêtre absente'));
     const integration = start();
     setRestBadge(Date.parse(START) + 60_000);
-    await vi.waitFor(() => expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('fenêtre absente')));
+    await vi.waitFor(() => expect(warn).toHaveBeenCalledWith(expect.stringContaining('fenêtre absente')));
     integration.dispose();
   });
 });
