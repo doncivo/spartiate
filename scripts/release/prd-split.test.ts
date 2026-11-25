@@ -109,3 +109,26 @@ describe('corrections de fond D-47, D-48, D-58, D-59 présentes dans les chapitr
     for (const id of ['H-3a', 'H-3b', 'H-3c']) expect(all).toContain(id);
   });
 });
+
+describe('BL-150 (audit du 24/11, N-13) : mises en cohérence du PRD, une D- chacune (D-619 à D-623)', () => {
+  const chapter = (prefix: string): string => read(`docs/prd/${readdirSync(resolve(root, 'docs/prd')).find((f) => f.startsWith(`${prefix}-`))}`);
+  it('D-619 : § 21.2 dit comment D-16 se lit, les sauvegardes natives existant aussi sur iPhone', () => {
+    expect(chapter('21')).toContain('D-619');
+  });
+  it('D-620 : le glossaire donne au mésocycle la durée du § 12.1 (4–7 semaines)', () => {
+    expect(chapter('27')).toContain('Bloc de 4–7 semaines');
+    expect(chapter('27').includes('4–6 semaines')).toBe(false);
+  });
+  it('D-621 : § 19.2 ne cite plus platform.kind (D-47)', () => {
+    expect(chapter('19').includes('platform.kind')).toBe(false);
+    expect(chapter('19')).toContain('detectOs()');
+  });
+  it('D-622 : § 25.2 publie v0.1.0 puis v0.1.1, aucun tag 0.0.x (D-58)', () => {
+    expect(chapter('25').includes('v0.0.')).toBe(false);
+  });
+  it('D-623 : hors registre § 26, docs/PRD.md n’est cité que comme page de renvoi (D-49)', () => {
+    for (const f of readdirSync(resolve(root, 'docs/prd')).filter((x) => /^\d{2}-.+\.md$/.test(x) && !x.startsWith('26-'))) {
+      for (const line of read(`docs/prd/${f}`).split('\n').filter((l) => l.includes('docs/PRD.md'))) expect(line, f).toMatch(/renvoi/);
+    }
+  });
+});
