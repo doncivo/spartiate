@@ -26,6 +26,7 @@ import { useSyncedData } from '../sync/remoteChanges';
 import { CONSTANCY_TABLES, localDayOf, readConstancy, type ConstancyData } from './constancyData';
 import { StreakLines } from './TodayStreak';
 import './TrainingProgress.css';
+import { INTL_LOCALE } from '../../i18n/units';
 
 /**
  * Progrès › Entraînement (PROGRES, § 17.1) : volume par muscle et par semaine. Lecture seule des séances closes (repository), calcul dans le
@@ -107,9 +108,9 @@ function VolumeBars({ perWeek, label }: { readonly perWeek: readonly number[]; r
 /*
  * Dates écrites ici avec Intl plutôt qu'avec i18n/format.ts : ses fonctions inutilisées au départ (calendrier) y entreraient (mesure du bundle).
  */
-const DAY_LONG = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-const MONTH = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-const WEEKDAY_NARROW = new Intl.DateTimeFormat('fr-FR', { weekday: 'narrow', timeZone: 'UTC' });
+const DAY_LONG = new Intl.DateTimeFormat(INTL_LOCALE, { day: 'numeric', month: 'long', timeZone: 'UTC' });
+const MONTH = new Intl.DateTimeFormat(INTL_LOCALE, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const WEEKDAY_NARROW = new Intl.DateTimeFormat(INTL_LOCALE, { weekday: 'narrow', timeZone: 'UTC' });
 const FIRST_ISO: Readonly<Record<FirstWeekday, number>> = { monday: 1, saturday: 6, sunday: 7 };
 const utcOf = (day: string): Date => new Date(`${day}T00:00:00.000Z`);
 /** Initiales des jours dans l'ordre de la semaine réglée (1er janvier 2024 : lundi). */

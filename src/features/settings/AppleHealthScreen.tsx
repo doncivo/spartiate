@@ -18,6 +18,7 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { RepositoryError } from '../../db/repositories/common';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
+import { formatLocaleNumber } from '../../i18n/units';
 
 type Phase = 'idle' | 'asking' | 'denied' | 'requestError' | 'read';
 type Reads = { readonly mass: HealthKitRead<HealthKitBodyMass>; readonly steps: HealthKitRead<HealthKitStepCount> };
@@ -318,7 +319,7 @@ function StepsRead({ read, onRetry }: { readonly read: HealthKitRead<HealthKitSt
     const sources = steps.sources.map((s) => s.name).join(', ');
     return (
       <>
-        <p className="ct-body__big">{tHealth('stepsValue', { count: steps.count.toLocaleString('fr-FR') })}</p>
+        <p className="ct-body__big">{tHealth('stepsValue', { count: formatLocaleNumber(steps.count) })}</p>
         <p className="ct-body__hint">{tHealth('stepsMeta', { sources, start: formatHealthTime(steps.start, steps.timezone), end: formatHealthTime(steps.end, steps.timezone) })}</p>
       </>
     );

@@ -11,6 +11,7 @@ import { activeRoutineDayCount, activeRoutineWeekdays, saveManualTarget, saveRes
 import { RestTargetForm, type RestSaveResult } from './RestTargetForm';
 import { TargetForm, type TargetSaveResult } from './TargetForm';
 import { collapseRecopies, defaultTrainingDays, restTargetFromGap, targetDecidedOn, targetInForceSince, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
+import { SEP } from '../../../i18n/units';
 
 const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
 const STYLE_KEY: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuided', collaborative: 'styleCollaborative', manual: 'styleManual' };
@@ -335,8 +336,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
                 </p>
                 <p className="ct-nutrition__muted">
                   {describeDecision(record)}
-                  {targetDecidedOn(record) === null ? '' : ` · ${tNutrition('historyDecided', { date: formatDayMonth(targetDecidedOn(record) ?? record.weekStart) })}`}
-                  {record.engineVersion === null ? '' : ` · ${tNutrition('historyVersion', { n: record.engineVersion })}`}
+                  {targetDecidedOn(record) === null ? '' : `${SEP}${tNutrition('historyDecided', { date: formatDayMonth(targetDecidedOn(record) ?? record.weekStart) })}`}
+                  {record.engineVersion === null ? '' : `${SEP}${tNutrition('historyVersion', { n: record.engineVersion })}`}
                 </p>
               </li>
             ))}

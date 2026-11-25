@@ -2,6 +2,7 @@ import { tPlural } from '../../../i18n/plural';
 import type { RecipeSearchable } from '../../../domain/nutrition';
 import { formatInt } from '../../../i18n/nutritionText';
 import { tRecipes } from '../../../i18n/recipesText';
+import { SEP } from '../../../i18n/units';
 
 export interface RecipeHitsProps {
   readonly hits: readonly RecipeSearchable[];
@@ -30,7 +31,7 @@ export function RecipeHits({ hits, failed, onPick }: RecipeHitsProps) {
                 <span className="ct-nutrition__badge ct-nutrition__badge--recipe">{tRecipes('badge')}</span>
                 <span className="ct-nutrition__muted ct-nutrition__num">
                   {hit.kcalPerServing === null ? tRecipes('kcalPerServingUnknown') : tRecipes('kcalPerServing', { n: formatInt(hit.kcalPerServing) })}
-                  {' · '}
+                  {SEP}
                   {tPlural(tRecipes, hit.servings, 'servingsOne', 'servingsMany')}
                 </span>
               </button>

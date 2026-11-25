@@ -9,6 +9,7 @@ import { detectTimeZone } from '../../platform/timeZone';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { bodyImportLog, healthBodyImportFor, parseBodyImportSummary, type BodyFileOutcome, type BodyImportResult, type BodyImportSummary } from './healthBodyImport';
+import { formatLocaleNumber } from '../../i18n/units';
 
 const reasonLabel = (reason: ShortcutRejectReason): string => tHealth(`recReason_${reason}` as HealthTextKey);
 
@@ -158,7 +159,7 @@ function FileRow({ name, outcome, summary, at }: { readonly name: (typeof BODY_F
         <p>{isDays ? tHealth('bodyFileCountsDays', { read: stored.read, rejected: stored.rejected }) : tHealth('bodyFileCounts', { read: stored.read, added: stored.added, updated: stored.updated, unchanged: Math.max(0, stored.read - stored.added - stored.updated), rejected: stored.rejected })}</p>
       )}
       {imported !== null && imported.skippedDeleted > 0 && <p>{tPlural(tHealth, imported.skippedDeleted, 'bodyFileDeletedOne', 'bodyFileDeleted')}</p>}
-      {imported?.truncated && <p>{tHealth('bodyFileTruncated', { max: MAX_LINES.toLocaleString('fr-FR') })}</p>}
+      {imported?.truncated && <p>{tHealth('bodyFileTruncated', { max: formatLocaleNumber(MAX_LINES) })}</p>}
       {reasons.length > 0 && (
         <ul aria-label={tHealth('bodyRejectedBy')}>
           {reasons.map((r) => (

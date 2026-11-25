@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 const root = resolve(import.meta.dirname, '..', '..');
 const EXCEPTIONS: ReadonlyMap<string, string> = new Map([
   ['src/features/sync/syncText.ts', 'module du départ (tests/bundle/start-modules.json) : importer units.ts ajouterait un module au départ'],
+  ['src/features/sync/pairing-window/PairingView.tsx', 'fenêtre d’appairage, graphe à liste blanche fermée (tests/bundle/pairingBundle.test.ts) : units.ts n’y entre pas'],
 ]);
 const RULES: readonly (readonly [RegExp, string])[] = [
   [/'fr-FR'/g, "locale 'fr-FR' en dur"],
@@ -41,6 +42,6 @@ describe('C-076 : unités et séparateurs par les fonctions communes de src/i18n
   });
 
   it('chaque exception existe encore et garde un motif réel', () => {
-    for (const [file] of EXCEPTIONS) expect(readFileSync(resolve(root, file), 'utf8')).toMatch(/'fr-FR'/);
+    for (const [file] of EXCEPTIONS) expect(readFileSync(resolve(root, file), 'utf8')).toMatch(/'fr-FR'|' · '/);
   });
 });

@@ -13,6 +13,7 @@ import type { TrainingData } from '../trainingState';
 import { HistoryDetail } from './HistoryDetail';
 import '../session/Session.css';
 import './History.css';
+import { SEP } from '../../../i18n/units';
 
 /**
  * Journal des séances (I1-03, § 13.8 « Historique éditable ») : séances closes, récentes d'abord (date, nom, durée, séries, volume), puis le
@@ -133,7 +134,7 @@ export function HistoryView({ data, access }: { readonly data: TrainingData; rea
                         tTraining('historyVolume', { n: formatVolume(item.volumeKg) }),
                       ]
                         .filter((part): part is string => part !== null)
-                        .join(' · ')}
+                        .join(SEP)}
                     </span>
                   </button>
                 )}
