@@ -50,7 +50,7 @@ describe('BL-165 : réécriture des corps des anciennes publications', () => {
       { tag: 'v9.9.9', status: 'absente' },
     ]);
     const patches = gh.calls.filter((c) => c.method === 'PATCH');
-    expect(patches).toEqual([{ method: 'PATCH', url: `https://api.github.com/repos/${REPO}/releases/11`, body: JSON.stringify({ body: '- Profil « Club Sport Salle complète » par défaut.' }) }]);
+    expect(patches).toEqual([{ method: 'PATCH', url: `https://api.github.com/repos/${REPO}/releases/11`, body: JSON.stringify({ body: '- Profil « Club Sport Salle complète » par défaut.', make_latest: 'false' }) }]);
   });
 
   it('à blanc (dryRun), aucune écriture', async () => {

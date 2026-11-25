@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error -- module JavaScript sans déclaration de types (script de documentation)
-import { extractPrudent, renderReview, idsInReview, START, END } from './prudent-review.mjs';
+import { extractPrudent, renderReview, idsInReview, applyReview, START, END } from './prudent-review.mjs';
 
 /**
  * BL-149 (audit du projet du 24/11, N-12 ; D-490) : la revue par thème des choix prudents de l'agent est produite par script
@@ -53,5 +53,11 @@ describe('BL-149 : relevé des choix prudents (D-490)', () => {
     const missing = expected.filter((id: string) => !got.has(id));
     expect(missing, 'relancer `node scripts/release/prudent-review.mjs --write`').toEqual([]);
     expect([...got].filter((id) => !expected.includes(id))).toEqual([]);
+  });
+
+  it('la section générée est identique octet à octet au rendu du script (aucune retouche à la main)', () => {
+    const doc = readFileSync('docs/decisions-a-prendre.md', 'utf8');
+    const section = renderReview(extractPrudent(readFileSync('docs/decisions.md', 'utf8')));
+    expect(applyReview(doc, section) === doc, 'relancer `node scripts/release/prudent-review.mjs --write`').toBe(true);
   });
 });
