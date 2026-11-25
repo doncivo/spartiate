@@ -29,7 +29,7 @@
   border: 1px solid var(--ct-color-border);
   border-radius: var(--ct-radius-md);
   background: var(--ct-color-surface-input);
-  color: inherit;
+  color: var(--ct-color-text);
   font: inherit;
 }
 
