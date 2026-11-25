@@ -151,3 +151,16 @@ describe('registre', () => {
     expect(input).toMatchObject({ key: 'k', code: 'KeyK', ctrlKey: true, editable: false });
   });
 });
+
+describe('C-122 : répétition et composition', () => {
+  it('une touche maintenue ou saisie en composition ne déclenche aucun raccourci (pas de bascule en rafale)', () => {
+    const registry = createShortcutRegistry();
+    const help = vi.fn();
+    registry.register('app.shortcutsHelp', help);
+    const press = { key: '/', code: 'Slash', ctrlKey: true };
+    expect(registry.handle(key({ ...press, held: true }))).toBeNull();
+    expect(help).not.toHaveBeenCalled();
+    expect(registry.handle(key({ ...press, held: false }))).toBe('app.shortcutsHelp');
+    expect(help).toHaveBeenCalledTimes(1);
+  });
+});
