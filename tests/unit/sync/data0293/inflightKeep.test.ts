@@ -32,8 +32,11 @@ describe('publication : retrait local en échec après un ajout natif réussi (B
     const realTransaction = a.data.transaction.bind(a.data);
     let appended = false;
     let failed = false;
+    // Enregistrements ajoutés au dossier journal de A depuis l'écriture de la tâche (BL-038 : une seule fois).
+    let records = 0;
     (a.platform as { appendJournal: typeof realAppend }).appendJournal = async (request) => {
       const result = await realAppend(request);
+      records += request.records.length;
       appended = true;
       return result;
     };
@@ -56,6 +59,7 @@ describe('publication : retrait local en échec après un ajout natif réussi (B
       }
       syncFolders(devices);
     }
+    expect(records).toBe(1);
     expect(await a.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
     expect(await a.driver.select("SELECT 1 FROM sync_meta WHERE key = 'inflight' AND value <> 'null'")).toEqual([]);
     expect((await b.driver.select<{ n: number }>("SELECT COUNT(*) AS n FROM task WHERE title = 'Une tâche'"))[0]?.n).toBe(1);
