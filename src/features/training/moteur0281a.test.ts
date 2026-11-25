@@ -15,10 +15,10 @@ import {
   timedSession,
 } from '../../../tests/fixtures/training/progression';
 import { progressionFr } from '../../i18n/fr.progression';
-import { DEFAULT_PROGRESSION_CONFIG as CFG, ENGINE_VERSION, REASON_ORDER } from './config';
-import { constraintAlerts, explainPrescription, explanationNotes } from './explain';
-import { ballastLoads, prescribe, timeStepSec } from './prescribe';
-import type { RecoverySnapshot } from './types';
+import { DEFAULT_PROGRESSION_CONFIG as CFG, ENGINE_VERSION, REASON_ORDER } from '../../domain/training/config';
+import { constraintAlerts, explainPrescription, explanationNotes } from '../../domain/training/explain';
+import { ballastLoads, prescribe, timeStepSec } from '../../domain/training/prescribe';
+import type { RecoverySnapshot } from '../../domain/training/types';
 
 /**
  * MOTEUR-0281a (PRD § 11.3 « Sans charge », C-189) : exercice au poids du corps progressé en répétitions jusqu'au haut de la plage, puis lest

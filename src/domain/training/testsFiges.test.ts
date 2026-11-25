@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BENCH, CURL, SALLE_COMPLETE, input, session, set, target } from '../../../tests/fixtures/training/progression';
 import type { IsoDateTime } from '../types';
@@ -39,8 +39,18 @@ describe('TESTS-FIGES nominal 8 séances (§ 11.6)', () => {
     expect(r.headlines).toEqual(['rep-ladder', 'rep-ladder', 'rep-ladder', 'rep-ladder', 'rep-ladder', 'rep-ladder', 'increase', 'rep-ladder']);
   });
 
-  it('déterminisme : la boucle rejouée donne exactement le même résultat', () => {
-    expect(run()).toEqual(run());
+  it('déterminisme (BL-105) : la boucle ne dépend ni de l’horloge réelle ni d’un état gardé entre deux passes', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2020-01-01T00:00:00.000Z'));
+      const first = run();
+      vi.setSystemTime(new Date('2035-06-15T12:34:56.000Z'));
+      const second = run();
+      expect(second).toEqual(first);
+      expect(first.loads).toEqual([60, 60, 60, 60, 60, 60, 62.5, 62.5]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

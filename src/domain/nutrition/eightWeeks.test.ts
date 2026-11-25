@@ -107,9 +107,17 @@ describe('I4-01 : 8 semaines : couverture complète', () => {
   });
 
   it('TESTS-FIGES (C-036) : une fois la mesure disponible, la dépense lissée suit la brute sans la copier (lissage rejoué comme dans l’app)', () => {
-    const measured = reviews.filter((r) => r.tdee.measuredRaw !== null && r.tdee.measuredSmoothed !== null);
-    expect(measured.length).toBeGreaterThan(1);
-    expect(measured.some((r) => r.tdee.measuredSmoothed !== r.tdee.measuredRaw)).toBe(true);
+    // BL-105 : valeurs exactes, semaine par semaine (indices 2 à 6 : première mesure en semaine 3, mélangée à la formule).
+    const raw = reviews.map((r) => r.tdee.measuredRaw);
+    const smoothed = reviews.map((r) => r.tdee.measuredSmoothed);
+    expect(raw.slice(0, 2)).toEqual([null, null]);
+    expect(raw[2]).toBeCloseTo(2680.5478663, 4);
+    expect(smoothed[2]).toBeCloseTo(2642.4558315, 4);
+    expect(raw[3]).toBeCloseTo(2756.2467438, 4);
+    expect(smoothed[3]).toBeCloseTo(2692.4288807, 4);
+    expect(raw[6]).toBeCloseTo(2874.3869665, 4);
+    expect(smoothed[6]).toBeCloseTo(2839.4501485, 4);
+    for (const week of [2, 3, 4, 5, 6]) expect(smoothed[week]).not.toBe(raw[week]);
   });
 
   it('la première semaine repose sur la formule déclarée, sans mesure', () => {

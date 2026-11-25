@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { prescribe } from './prescribe';
-import { explainPrescription } from './explain';
+import { prescribe } from '../../domain/training/prescribe';
+import { explainPrescription } from '../../domain/training/explain';
 import { progressionFr } from '../../i18n/fr.progression';
-import { recalibrationKept } from './decision';
-import type { Prescription, ProgressionEquipment } from './types';
+import { recalibrationKept } from '../../domain/training/decision';
+import type { Prescription, ProgressionEquipment } from '../../domain/training/types';
 import { CURL, SALLE_COMPLETE, input, session, target } from '../../../tests/fixtures/training/progression';
 
 /** I4-08 (0.9.1) : défauts du moteur relevés par relecture à froid avant la première séance réelle (docs/I4-06.md § 1.5). */

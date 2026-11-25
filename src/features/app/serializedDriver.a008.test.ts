@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DbError, type SqlDriver } from './driver';
-import { openSqliteWasmDriver } from './drivers/sqliteWasm';
-import { createSerializedDriver } from './serializedDriver';
-import { useAppStore } from '../features/app/appStore';
-import { bootstrapDatabase } from '../features/app/bootstrap';
+import { DbError, type SqlDriver } from '../../db/driver';
+import { openSqliteWasmDriver } from '../../db/drivers/sqliteWasm';
+import { createSerializedDriver } from '../../db/serializedDriver';
+import { useAppStore } from './appStore';
+import { bootstrapDatabase } from './bootstrap';
 
 /**
  * A-008 (audit Codex 0.26.0) : un ROLLBACK rejeté (autre que « no transaction is active ») laissait la transaction ouverte côté SQLite alors que

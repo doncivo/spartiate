@@ -21,6 +21,9 @@ export function openLogJournal(runtime: 'tauri' | 'web', os: 'windows' | 'ios' |
   if (windowLabel !== 'main') return createLogJournal(null, env);
   if (runtime === 'web') return createLogJournal(createMemoryLogTransport(), env);
   if (os === 'windows' || os === 'ios') return createLogJournal(createTauriLogTransport(), env);
-  return createLogJournal(null, env);
+  // C-163 (D-616) : app installée dont le système reste inconnu : session seule, et la cause est notée (synchro et sauvegardes indisponibles).
+  const session = createLogJournal(null, env);
+  session.record('app', 'os-unknown');
+  return session;
 }
 

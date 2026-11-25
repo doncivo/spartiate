@@ -179,3 +179,9 @@ Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inl
 - A (recommandé, appliqué) : garder la CSP stricte ; Ali ouvre les écrans listés dans docs/constats-ali.md (0.29.4, « CSP ») et signale tout défaut d'affichage. Conséquences : un défaut éventuel est corrigé à la source (style en ligne retiré).
 - B : rétablir `style-src 'unsafe-inline'` seulement. Conséquences : plus de risque d'affichage cassé, mais les styles injectés par une page hostile redeviennent possibles.
 - C : rétablir les deux directives. Conséquences : état d'avant, sans gain de sécurité.
+
+## Q-36 — Système inconnu dans l'app installée : message visible ? (C-163, SHELL-0294e)
+Constat : si l'agent utilisateur et la plateforme du navigateur intégré ne disent rien (cas jamais vu sur Windows ni sur l'iPhone), l'app garde le système « other » : synchro et sauvegardes indisponibles, et seul le journal le dit (`os-unknown`, D-616).
+- A (recommandé, appliqué) : journal seulement ; le cas est théorique et un bandeau de plus alourdirait le départ. Conséquences : si cela arrivait, l'utilisateur verrait des réglages absents et le journal en donnerait la cause.
+- B : lire aussi `navigator.platform` quand l'agent utilisateur est vide (14 à 24 octets de départ, à compenser ailleurs).
+- C : afficher dans Plus une ligne « Système non reconnu : synchro et sauvegardes indisponibles ». Conséquences : cause visible, un texte et un test de plus, catalogue à charger à la demande.
