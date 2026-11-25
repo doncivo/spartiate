@@ -5,6 +5,7 @@ import {
   IMPORT_MATCH_SURE,
   exerciseNameScore,
   importedRoutineSpec,
+  importMetricNote,
   matchExerciseName,
   normalizeExerciseName,
   parseProgramText,
@@ -274,5 +275,27 @@ describe('IMPORT-029a C-6 : routine Libre', () => {
       ],
     });
     expect(validateRoutine(spec)).toEqual([]);
+  });
+});
+
+describe('CONTENT-0293 (BL-127) : durée et exercice choisi', () => {
+  const lineOf = (text: string) => {
+    const exercise = parseProgramText(text).sessions[0]?.exercises[0];
+    if (!exercise) throw new Error('aucun exercice lu');
+    return exercise;
+  };
+
+  it('« 3 x 30 s » sur un exercice chronométré : la cible de la routine est 30 s (la routine garde les secondes dans sa plage, D-472)', () => {
+    const parsed = parseProgramText('Jour 1\nPlanche 3 x 30 s');
+    const spec = importedRoutineSpec('P', parsed.sessions, () => ({ exerciseId: 'plank', exerciseName: 'Planche', defaultRestSec: 60, metric: 'time' }), () => 'S');
+    expect(spec.days[0]?.exercises[0]).toMatchObject({ sets: 3, repMin: 30, repMax: 30 });
+    expect(importMetricNote(lineOf('Jour 1\nPlanche 3 x 30 s'), 'time')).toBeNull();
+  });
+
+  it('une durée lue sur un exercice à répétitions, ou des répétitions lues sur un exercice chronométré, sont signalées', () => {
+    expect(importMetricNote(lineOf('Jour 1\nSquat 3 x 30 s'), 'load-reps')).toBe('seconds-on-reps');
+    expect(importMetricNote(lineOf('Jour 1\nSquat 3 x 30 s'), 'bodyweight-reps')).toBe('seconds-on-reps');
+    expect(importMetricNote(lineOf('Jour 1\nPlanche 3 x 12'), 'time')).toBe('reps-on-time');
+    expect(importMetricNote(lineOf('Jour 1\nSquat 3 x 8'), 'load-reps')).toBeNull();
   });
 });
