@@ -157,7 +157,8 @@ describe('préchargement des écrans', () => {
     expect(cancel).toHaveBeenCalledWith(2);
   });
 
-  it('sans requestIdleCallback (WebKit) : minuteur de 200 ms entre deux écrans, annulable', () => {
+  // SHELL-0294d (BL-036), écart consigné : le minuteur suivant ne naît qu'à la fin du chargement (couvert par preloadWait0294d.test.tsx) ; ce test garde le minuteur initial et l'arrêt.
+  it('sans requestIdleCallback (WebKit) : un minuteur de 200 ms au départ, annulable', () => {
     vi.useFakeTimers();
     const stop = preloadScreens();
     expect(vi.getTimerCount()).toBe(1);

@@ -15,4 +15,15 @@ describe('SHELL-0294d, BL-036 : préchargement des écrans', () => {
     expect(vi.getTimerCount()).toBe(0);
     stop();
   });
+
+  it('arrêt pendant un chargement en cours : aucun moment d’inactivité n’est programmé ensuite', async () => {
+    vi.useFakeTimers();
+    const stop = preloadScreens();
+    vi.advanceTimersByTime(200);
+    stop();
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.dynamicImportSettled();
+    await Promise.resolve();
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });

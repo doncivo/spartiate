@@ -36,6 +36,11 @@
   color: var(--ct-color-text);
 }
 
+/* BL-144 (D-611) : accent des muscles sollicités ; classe, jamais un style en ligne (CSP sans 'unsafe-inline'). */
+.ct-exmedia__picto .ct-picto-muscle {
+  stroke: var(--ct-color-bronze);
+}
+
 .ct-exmedia__picto svg {
   display: block;
   width: 100%;

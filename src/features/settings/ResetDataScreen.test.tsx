@@ -84,7 +84,7 @@ describe('Plus › Repartir de zéro', () => {
     open(onDone, hanging, 30);
     fireEvent.change(screen.getByLabelText('Pour confirmer, tape EFFACER'), { target: { value: 'EFFACER' } });
     fireEvent.click(screen.getByRole('button', { name: 'Tout effacer' }));
-    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1), { timeout: 3000 });
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1));
     expect(await weights()).toBe(0);
   });
 });
