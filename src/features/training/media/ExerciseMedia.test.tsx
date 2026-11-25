@@ -49,6 +49,13 @@ describe('ExerciseMedia', () => {
     expect(screen.getByText(/image réduite et passée en niveaux de gris$/)).toBeInTheDocument();
   });
 
+  it('BL-010 (CONTENT-0293) : l’auteur de chaque image de la source wger est affiché sous l’image, avec la licence et la modification', () => {
+    expect(mediaAttribution('wger', 'utkb')).toBe('Illustration : utkb (wger.de), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris');
+    expect(mediaAttribution('wger', null)).toBeNull();
+    render(<ExerciseMedia exercise={exercise('plank', { images: ['plank.png'], video: null, license: 'CC-BY-SA-4.0', source: 'wger:exercise-images/458/b7bd9c28.png', author: 'utkb' })} />);
+    expect(screen.getByText(/^Illustration : utkb \(wger\.de\)/)).toBeInTheDocument();
+  });
+
   it('sans média : ne rend rien (aucune icône cassée, D-71)', () => {
     const { container } = render(<ExerciseMedia exercise={exercise('plank', null)} />);
     expect(container.innerHTML).toBe('');
@@ -66,13 +73,13 @@ describe('ExerciseMedia', () => {
   it('chaque média du catalogue se résout en une adresse locale et chaque source a son attribution', () => {
     let n = 0;
     for (const x of exercisesJson.exercises) {
-      const image = exerciseImage(x.media.license !== null && x.media.source !== null ? { images: x.media.images, video: x.media.video, license: x.media.license, source: x.media.source } : null);
+      const image = exerciseImage(x.media.license !== null && x.media.source !== null ? { images: x.media.images, video: x.media.video, license: x.media.license, source: x.media.source, author: (x.media as { author?: string }).author ?? null } : null);
       if (!image) continue;
       n += 1;
       expect(mediaUrl(image.file), x.id).toMatch(/\.png/);
-      expect(mediaAttribution(image.sourceId), x.id).not.toBeNull();
+      expect(mediaAttribution(image.sourceId, image.author), x.id).not.toBeNull();
     }
-    expect(n).toBe(101); // 87 (I6-07) + 14 (MEDIA-02)
+    expect(n).toBe(102); // 87 (I6-07) + 14 (MEDIA-02) + 1 (CONTENT-0293, wger : planche)
     expect(mediaAttribution('inconnue')).toBeNull();
     expect(mediaUrl('inconnu.png')).toBeNull();
   });

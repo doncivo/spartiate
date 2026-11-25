@@ -22,6 +22,8 @@ const MEDIA_DIR = join(ROOT, 'content', 'exercises', 'media');
 const EXERCISES = join(ROOT, 'content', 'exercises', 'exercises.json');
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const RAW_BASE = 'https://raw.githubusercontent.com/everkinetic/data';
+/** BL-010 (CONTENT-0293) : source à auteur par image (wger), fichier public servi par wger.de ; l'auteur vient de la correspondance relue. */
+const WGER_BASE = 'https://wger.de/media';
 
 async function main() {
   const map = JSON.parse(readFileSync(join(ROOT, 'scripts', 'content', 'media-map.json'), 'utf8'));
@@ -33,8 +35,10 @@ async function main() {
   for (const entry of map.entries) {
     const sourceId = entry.source ?? map.source;
     const entrySource = MEDIA_SOURCES[sourceId];
-    if (!entrySource || entrySource.commit !== map.commit) throw new Error(`source ou commit inconnu : ${sourceId}`);
-    const res = await fetch(`${RAW_BASE}/${map.commit}/${entry.path}`);
+    const perImage = entrySource?.authorPerImage === true;
+    if (!entrySource || (!perImage && entrySource.commit !== map.commit)) throw new Error(`source ou commit inconnu : ${sourceId}`);
+    if (perImage && (typeof entry.author !== 'string' || entry.author.trim() === '')) throw new Error(`${entry.path} : auteur de l'image obligatoire`);
+    const res = await fetch(perImage ? `${WGER_BASE}/${entry.path}` : `${RAW_BASE}/${map.commit}/${entry.path}`);
     if (!res.ok) throw new Error(`${entry.path} : HTTP ${res.status}`);
     const origin = Buffer.from(await res.arrayBuffer());
     if (!origin.subarray(0, 8).equals(PNG_SIGNATURE)) throw new Error(`${entry.path} : pas un PNG`);
@@ -45,7 +49,7 @@ async function main() {
     writeFileSync(join(MEDIA_DIR, file), bytes);
     const sha = (b) => createHash('sha256').update(b).digest('hex');
     const reduced = reduce ? { originBytes: origin.length, originSha256: sha(origin), transform: `gris-8-bits-hauteur-${reduce}` } : {};
-    files.push({ file, exerciseId: entry.exerciseId, source: sourceId, originPath: entry.path, bytes: bytes.length, sha256: sha(bytes), ...reduced });
+    files.push({ file, exerciseId: entry.exerciseId, source: sourceId, originPath: entry.path, ...(perImage ? { author: entry.author } : {}), bytes: bytes.length, sha256: sha(bytes), ...reduced });
   }
   files.sort((a, b) => a.file.localeCompare(b.file));
   writeFileSync(join(MEDIA_DIR, 'sources.json'), `${JSON.stringify({ schemaVersion: 1, files }, null, 2)}\n`);
@@ -53,7 +57,7 @@ async function main() {
   const exercises = JSON.parse(readFileSync(EXERCISES, 'utf8'));
   for (const x of exercises.exercises) {
     const f = byId.get(x.id);
-    x.media = f ? { images: [f.file], video: null, license: MEDIA_SOURCES[f.source].license, source: `${f.source}:${f.originPath}` } : { images: [], video: null, license: null, source: null };
+    x.media = f ? { images: [f.file], video: null, license: MEDIA_SOURCES[f.source].license, source: `${f.source}:${f.originPath}`, ...(f.author ? { author: f.author } : {}) } : { images: [], video: null, license: null, source: null };
   }
   writeFileSync(EXERCISES, `${JSON.stringify(exercises, null, 2)}\n`);
   const total = files.reduce((s, f) => s + f.bytes, 0);

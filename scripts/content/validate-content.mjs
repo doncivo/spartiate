@@ -61,8 +61,23 @@ export const MEDIA_SOURCES = {
     reduceMaxHeight: 640,
   },
 };
+// BL-010 (CONTENT-0293) : source à auteur par image, licence lue par image sur wger (API publique, CC BY-SA 4). Chaque image nomme son auteur
+// (`media.author`, repris au registre) ; image adaptée (réduite, gris 8 bits), modification signalée sous l'image.
+MEDIA_SOURCES.wger = {
+  title: 'wger (images, réduites)',
+  authorPerImage: true,
+  repository: 'wger.de',
+  license: 'CC-BY-SA-4.0',
+  licenseUri: 'creativecommons.org/licenses/by-sa/4.0',
+  retrievedOn: '2026-11-25',
+  reduceMaxHeight: 640,
+};
 const NETWORK = /[a-z][a-z0-9+.-]*:\/\//i;
 
+/** Clé de comparaison des noms : sans accent ni casse, mots au singulier simple (CONTENT-0293, BL-128). */
+const nameKey = (name) =>
+  name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ')
+    .map((w) => (w.length > 3 && /[sx]$/.test(w) && !/(?:ss|us)$/.test(w) ? w.slice(0, -1) : w)).join(' ');
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -218,9 +233,11 @@ export function validateContent(c, opts = {}) {
           const source = Object.hasOwn(MEDIA_SOURCES, sourceId) ? MEDIA_SOURCES[sourceId] : null;
           if (!source) err(w, `source de média inconnue : ${String(media.source)}`);
           else if (media.license !== source.license) err(w, `licence différente de la source ${sourceId} : ${String(media.license)}`);
+          if (source?.authorPerImage === true && !isStr(media.author)) err(w, `auteur de l’image obligatoire (source ${sourceId})`);
+          if (source && source.authorPerImage !== true && media.author !== undefined && media.author !== null) err(w, `auteur de l’image non attendu (source ${sourceId} à auteur unique)`);
           for (const f of files) {
             if (!isStr(f) || !MEDIA_EXTENSIONS.some((ext) => f.endsWith(ext)) || f.includes('/') || f.includes('\\')) err(w, `format de média non admis : ${String(f)}`);
-            else mediaFiles.push({ where: w, file: f, exerciseId: x.id, source: media.source });
+            else mediaFiles.push({ where: w, file: f, exerciseId: x.id, source: media.source, author: media.author ?? null });
           }
         }
         if (hasMedia && opts.mediaDir) {
@@ -245,6 +262,14 @@ export function validateContent(c, opts = {}) {
         if (a === x.id) err(w, 'alternative identique à l’exercice');
         else if (!exercisesById.has(a)) err(w, `alternative inconnue : ${a}`);
       }
+    }
+    const byName = new Map();
+    for (const x of list) {
+      if (!isObj(x) || !isStr(x.nameFr) || !isStr(x.id)) continue;
+      const key = nameKey(x.nameFr);
+      const first = byName.get(key);
+      if (first === undefined) byName.set(key, x.id);
+      else err(`exercises.json (${x.id})`, `nom proche de celui de ${first} : ${x.id} (« ${x.nameFr} »)`);
     }
   }
 
@@ -400,6 +425,8 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
     }
     if (entry.exerciseId !== m.exerciseId || `${entry.source}:${entry.originPath}` !== m.source) err(m.where, `registre incohérent (exercice ou source) : ${m.file}`);
     if (entry.bytes !== bytes.length || entry.sha256 !== createHash('sha256').update(bytes).digest('hex')) err(m.where, `empreinte ou taille différente du registre : ${m.file}`);
+    if (Object.hasOwn(MEDIA_SOURCES, entry.source) && MEDIA_SOURCES[entry.source].authorPerImage === true && entry.author !== m.author) err(m.where, `auteur de l’image différent du registre : ${m.file}`);
+    if (Object.hasOwn(MEDIA_SOURCES, entry.source) && MEDIA_SOURCES[entry.source].authorPerImage !== true && Object.hasOwn(entry, 'author')) err(m.where, `auteur de l’image au registre pour une source à auteur unique : ${m.file}`);
     validateReduction(entry, bytes, m, err);
   }
   if (total > maxTotal) err(where, `budget total des médias dépassé : ${total} octets > ${maxTotal}`);
@@ -559,6 +586,18 @@ function validateStrength(s, exercisesById, err) {
   }
   if (s !== null) {
     for (const field of ['name', 'url', 'license', 'attribution', 'consultedOn']) if (!isObj(s.source) || !isStr(s.source[field])) err(where, `source.${field} manquante`);
+    const hashes = isObj(s.source) ? s.source.responsesSha256 : undefined;
+    if (!isObj(hashes)) err(where, 'source.responsesSha256 manquante (empreinte SHA-256 de chaque réponse de la source)');
+    else {
+      for (const l of s.lifts) {
+        if (!isObj(l) || !isStr(l.sourceLift)) continue;
+        for (const sex of ['male', 'female']) {
+          const h = hashes[`${l.sourceLift}/${sex}`];
+          if (h === undefined) err(where, `source.responsesSha256 : empreinte manquante pour ${l.sourceLift}/${sex}`);
+          else if (typeof h !== 'string' || !/^[0-9a-f]{64}$/.test(h)) err(where, `source.responsesSha256 : empreinte illisible pour ${l.sourceLift}/${sex}`);
+        }
+      }
+    }
     const p = s.percentiles;
     if (!(p.length >= 2 && p.every((v, i) => isNum(v) && v > 0 && v < 100 && (i === 0 || v > p[i - 1])))) err(where, 'percentiles : nombres croissants dans ]0, 100[ attendus');
     const ids = s.groups.map((g) => (isObj(g) ? g.id : null));

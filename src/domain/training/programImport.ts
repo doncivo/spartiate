@@ -1,5 +1,5 @@
 import { REPS_MAX, REST_MAX_SEC, RIR_MAX, SETS_MAX } from './routineRules';
-import type { RoutineDaySpec, RoutineSpec } from './types';
+import type { ExerciseMetric, RoutineDaySpec, RoutineSpec } from './types';
 
 /**
  * Import d'un programme (IMPORT-029, PRD § 17.4) : texte (bloc JSON du guide `docs/guide-import-programme.md` ou lignes libres, collés ou lus
@@ -528,6 +528,23 @@ export interface ImportPick {
   /** Nom figé de la bibliothèque (D-71). */
   readonly exerciseName: string;
   readonly defaultRestSec: number;
+  /** Métrique de l'exercice choisi (BL-127) : sert seulement à signaler une durée lue sur un exercice à répétitions, ou l'inverse. */
+  readonly metric?: ExerciseMetric;
+}
+
+/**
+ * BL-127 (CONTENT-0293) : la routine ne porte pas de colonne de durée ; la cible d'un exercice chronométré est la plage `repMin`–`repMax` lue en
+ * secondes (D-472, D-506). « 3 × 30 s » sur un exercice chronométré est donc écrit tel quel (30 s) ; les deux cas ambigus sont signalés, jamais
+ * convertis : `seconds-on-reps` (durée lue, exercice à répétitions : 30 est écrit comme 30 répétitions) et `reps-on-time` (répétitions lues, exercice
+ * chronométré : 12 est écrit comme 12 secondes ; `seconds-on-distance` : durée lue, exercice de distance : 40 s est écrit 40 m).
+ */
+export type ImportMetricNote = 'seconds-on-reps' | 'seconds-on-distance' | 'reps-on-time';
+export function importMetricNote(exercise: ImportedExercise, metric: ExerciseMetric): ImportMetricNote | null {
+  const seconds = exercise.notes.some((n) => n.code === 'seconds');
+  if (metric === 'time') return seconds ? null : 'reps-on-time';
+  if (!seconds) return null;
+  // Exercice de distance (marche du fermier) : la routine lit la plage en mètres ; la durée lue serait écrite comme une distance.
+  return metric === 'distance' ? 'seconds-on-distance' : 'seconds-on-reps';
 }
 
 /**

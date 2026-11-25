@@ -10,7 +10,31 @@
     "attribution": "Strength standards data by FitnessVolt (https://fitnessvolt.com/strength-standards/)",
     "dataVersion": "2026-06-09",
     "consultedOn": "2026-11-16",
-    "unit": "kg"
+    "unit": "kg",
+    "responsesSha256": {
+      "bench_press/male": "1d0a43dac7eaa8078951adecdbc820723a1db0bd7a6d2b62b5c7b014a80de5e0",
+      "bench_press/female": "df515da5c5af197f4b9841b49e39022701ca8fdf2532f7a597c5aaf26cf8b740",
+      "incline_bench_press/male": "1997968f45e803055b6c6e59bf1270abd8a1fcbe46e95d6ce72d024a3d8fc1c5",
+      "incline_bench_press/female": "9b55645f3c1a60a51c16c5b434645e47365cfa053a5a463b804d196093140aeb",
+      "pendlay_row/male": "89e0862f81df6048fa99112fbd0f21ffd943946eb43bf4e5f421438b20b04eda",
+      "pendlay_row/female": "3105ebccbd1f9bb0fc56d448703a9e3449372000978796ef9f913725b6fe39be",
+      "pullup/male": "73229828f07cd47e4d576b2b8c6ee6b48c8149a29fd0939caba7e688995016b1",
+      "pullup/female": "19f7aaff2df177e18ae664dec65e75a64d19f12572c6a3d4f754d96a4736e527",
+      "chinup/male": "b192d4114ffe6ec97583f639a313f62efed4f33676c528cdb29a53b6b7e38300",
+      "chinup/female": "9685ea3a34a83e76d8f69c6e447c117ed2ff47057a05441ab5d37ab4e98788fe",
+      "overhead_press/male": "232f2028d4a2d53852d2ba069e745e436998d66c7023d161915528795cbaf810",
+      "overhead_press/female": "4bd9995c9731d57cb520cf5973fe06b21737f81461af926774d4e55e58553d8f",
+      "dip/male": "65c4109d176d6ae602db76590ba7f6707d0e0c164931e2e215c4ef39c3385e45",
+      "dip/female": "761aa6c22f099707311a90f05238e3f6fdc0aa5b9dcae950e47e0b4d1fc44d27",
+      "back_squat/male": "17d0c74eaa65e30306fccbfdd765384b321f84927fb27f83bf80d8ace8e7c7ae",
+      "back_squat/female": "fa96a88a669a0a4614405ef49efa55ad7c0148212a985a4f8eaae65029a336f0",
+      "front_squat/male": "989d4b77e14597d062acab4462684b1198e05bc5a7c7c6e43b2a22881d387377",
+      "front_squat/female": "7b0bee14999f72cae4d7a495d77b3e58f063e68b66964c238fd7c69a3d2aa1c6",
+      "deadlift/male": "7d8d3ba95f12e9dd412c1abb1ff0ad91099910bc7df9a1246c5ff640cb03a0f3",
+      "deadlift/female": "dfa89e71c6540b2b31d6d2043d3e1843bdf9e2fdd65f9909ce62e0d6b6917fd3",
+      "sumo_deadlift/male": "1cf5998702790d4692746d21ab012104895f1bb3e910980f4c15e1170107ae8d",
+      "sumo_deadlift/female": "c6c556e2e570788862209310eceadcb7e944658640c723fdd02813b190beb6eb"
+    }
   },
   "percentiles": [
     10,

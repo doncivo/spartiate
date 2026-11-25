@@ -34,7 +34,7 @@ Dépôt public : aucune valeur réelle d'Ali (mesure, cible chiffrée, date de s
 | H-4 | rapport de lot 0.27.0 (docs/reprise.md) | Live Activity CONFIRMED avec deux défauts d'affichage restants (matrice) | constat d'Ali à faire (docs/constats-ali.md) |
 | BL-008 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | 95 exercices sur 196 sans image, dont 8 de la routine en cours ; chercher d'autres sources à licence vérifiée | fait (MEDIA-03, 0.29.0 : 95 pictogrammes, D-437 à D-441 ; relecture des poses par Ali, BL-132) |
 | BL-009 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Lisibilité des images réduites (640 px, gris) en thèmes clair et sombre, à constater par Ali | constat d'Ali à faire (docs/constats-ali.md) |
-| BL-010 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Auteur par image non affiché : image de gainage reportée pour cette raison | à faire (0.29.x, import et contenu, S) |
+| BL-010 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | Auteur par image non affiché : image de gainage reportée pour cette raison | fait (CONTENT-0293 : auteur par image affiché, image de gainage wger) |
 | BL-011 | rapport de lot 0.26.0 (docs/MEDIA-02.md) | `validateMediaFiles` n'impose pas originSha256, originBytes, transform à une source réduite ; CRC PNG non vérifié | fait (NETTOYAGE, 0.28.1, D-375) |
 | BL-012 | rapport de lot 0.21 (docs/I6-07.md) | Image inversée en thème sombre : fond noir au lieu de la teinte de la carte, à constater par Ali | constat d'Ali à faire (docs/constats-ali.md) |
 | BL-013 | rapport de lot 0.26.0 (docs/PROG-03.md) | Glisser-déposer PC (WebView2) : lâcher sur un champ, Alt+↑/↓, annonce du Narrateur, à constater par Ali | constat d'Ali à faire (docs/constats-ali.md) |
@@ -101,7 +101,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-039 | audit Claude 0.27.0 | mineur, à trancher — jour importé de Renpho jamais complet, exclu de la dépense mesurée (D-113) | fait (NUTRI-0292, D-476, D-547 ; Q-26) |
 | C-040 | audit Claude 0.27.0 | mineur — horloge en avance : décision future qui passe devant une cible prévue ; HLC illisible mal classé | fait (NUTRI-0292) |
 | C-041 | audit Claude 0.27.0 | mineur — totaux du jour non arrondis (erreurs de virgule flottante) | fait (NUTRI-0292) |
-| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | fait en partie (NUTRI-0292, D-477) : reste « traces » dans le contenu Ciqual (import et contenu, Q-20) |
+| C-042 | audit Claude 0.27.0 | à trancher — un aliment à lipides « traces » rend inconnus les lipides de toute la journée (D-75) | fait (CONTENT-0293, D-477, Q-20 B : « traces » vaut 0 g pour les 5 constituants) |
 | C-043 | audit Claude 0.27.0 | mineur — code à 8 chiffres toujours lu en EAN-8 ; format rapporté par le scanner non transmis | fait (NUTRI-0292) |
 | C-044 | audit Claude 0.27.0 | mineur — recette : `servings` à 0 donne Infinity ; recette vide acceptée avec une entrée toute nulle | fait (NUTRI-0292) |
 | C-045 | audit Claude 0.27.0 | mineur — UPC-A sur 12 chiffres non retrouvé dans le cache ; normalisation de « ß » fautive | fait (NUTRI-0292) |
@@ -239,7 +239,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-177 | audit Claude 0.27.0 | mineur — propriété du plafond auto-référente ; générateur sans assisté, poids de corps ni décharge | fait (SEANCE-0292, PR #206) |
 | C-178 | audit Claude 0.27.0 | mineur — TZ non fixé (tests dépendants du fuseau) ; compteurs d'identifiants partagés entre tests | fait (CI-0292, PR #205, D-485 : TZ fixé ; compteurs d'identifiants vérifiés, sans défaut) |
 | C-179 | audit Claude 0.27.0 | amélioration — baisse du nombre de tests non bloquante ; `publish` ne revérifie pas la signature | fait en partie ; reste : publish compare le SHA-256 au build (build-windows.yml) sans relancer verify-signature.mjs ; test-counts.mjs toujours informatif (0.29.x, CI, S) |
-| C-180 | audit Claude 0.27.0 | mineur — licences : images dites « non modifiées » ; réponses FitnessVolt sans empreinte ; droit à vérifier | fait en partie ; reste : licences.md:115 signale la réduction en gris ; restent empreinte des réponses FitnessVolt, droit de relicence (D-310), chemins relatifs des scripts (0.29.x, import et contenu, S) |
+| C-180 | audit Claude 0.27.0 | mineur — licences : images dites « non modifiées » ; réponses FitnessVolt sans empreinte ; droit à vérifier | fait en partie (CONTENT-0293) : empreintes des réponses et licences.md faits ; reste le droit de relicence FitnessVolt (Q-29) |
 | C-181 | audit Claude 0.27.0 | important — guides d'installation : consignes dangereuses (supprimer une app, effacer le dossier de données) | fait (DOC-PRIV, PR #156) |
 | C-182 | audit Claude 0.27.0 | important — guides d'installation écrits pour CircleTasks | fait (DOC-PRIV, PR #156) |
 | C-183 | audit Claude 0.27.0 | important — matrice : CONFIRMED incomplets ou contredits (H-34, H-36), capacités sans ligne | fait (audit 0.29.1 : MATRICE-DOC, PR #171 (docs/MATRICE-DOC.md:14 ; D-318 (9))) |
@@ -278,7 +278,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à trancher par Ali (Q-12 de docs/decisions-a-prendre.md) ; puis données et synchro (colonnes additives) |
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | fait (SEANCE-0292b, D-537, D-538) |
 | BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | fait en partie (DATA-0293, D-570) : reste la saisie de la distance à l’écran et la métrique « distance » du moteur (coquille, iOS et qualité) |
-| BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.29.x, import et contenu, S) |
+| BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | fait en partie (CONTENT-0293) : gilet lesté au catalogue ; reste la source de lest (Q-28, table publiée) |
 | BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | fait (PROGRES-0291, PR #197, D-448, D-455) |
 | BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | fait (PROGRES-0291, PR #197, D-449, D-456 ; reste à trancher : BL-135) |
 | BL-116 | PROGRES (D-394, C-167) | Retirer `recharts`, dépendance déclarée jamais importée | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -291,9 +291,9 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart décidé par Ali (D-451) : kg seulement |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | fait (NUTRI-0291) |
 | BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | fait (PROGRES-0291, PR #197, D-452, D-457) |
-| BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à faire (0.29.x, import et contenu, M) |
-| BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | à faire (0.29.x, import et contenu, M) |
-| BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | à faire (0.29.x, import et contenu, S) |
+| BL-126 | IMPORT-029 (D-423) | Import de programme depuis un PDF | à trancher par Ali (Q-30) : aucune bibliothèque PDF ; refus avec consigne « capture puis photo » figé par un test |
+| BL-127 | IMPORT-029 (D-420) | Exercices tenus importés en secondes (« 3 x 30 s ») : la routine ne porte pas encore de durée | fait (CONTENT-0293 : durée déjà lue en secondes ; écart de métrique signalé à l’aperçu) |
+| BL-128 | IMPORT-029 (revue) | Contenu : « Extension de hanches à la poulie » et « Extension de hanche à la poulie » ne diffèrent que par un pluriel (content-data) | fait (CONTENT-0293 : pull-through renommé, garde des noms proches ; quasi-doublon kickback / hip-extension en Q-31) |
 | BL-129 | IOS-029 (D-434) | Textes d'usage caméra et micro de Info.ios.plist hérités de CircleTasks (« tâches ») | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-130 | IOS-029 (D-436) | build-ios : relever la version du SDK et vérifier le lien faible de FoundationModels (`otool -l`) | fait (TECH-0291, PR #195, D-460 : Xcode 26.6, SDK 26.5, lien faible vérifié) |
 | BL-131 | IOS-029 (relecture security-privacy) | Action « Pris » d’une notification de complément cochée depuis l’écran verrouillé de l’iPhone sans authentification (`.authenticationRequired` absente ; conforme à l’ADR 0013 : le verrou couvre l’interface) | fait : conservé, décision d'Ali (D-453) |
@@ -310,6 +310,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-164 | NUTRI-0292 (contre-relecture à froid, mineurs) | Assiette : « Enregistrer en recette » reste actif quand une quantité est invalide (la recette prend les grammes retenus, pas ceux du champ) ; variable `none` inutile dans `DayCompleteness.test.tsx` | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-165 | REL-0.29.2 (complément d'audit, D-489, D-564) | Les corps de six publications GitHub anciennes de spartiate-releases (v0.2.0, ios-v0.2.0, v0.3.0, ios-v0.3.0, v0.3.3, ios-v0.3.3) portent encore le nom du lieu ; source.json est réécrit par le script de publication, pas ces corps : ajouter au script de publication une étape qui les réécrit (même `redactPlace`), jamais une modification à la main | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-166 | DATA-0293 (contre-relecture sync-icloud) | `resolveInflight` (`orphanEpoch.ts`) publie la tête de l'époque de l'intention sans la comparer à l'époque courante : un ajout réussi, un échec local puis un changement d'époque avant le cycle suivant ; comportement antérieur à DATA-0293, à vérifier par un test | à faire (0.29.x, données et synchro, S) |
+| BL-167 | CONTENT-0293 et REL-0.29.2 (CI) | Mesure de démarrage (`tests/e2e/perf-start.spec.ts`) au-dessus du budget sur des runs sans changement du départ : PC 1 512 et 1 683 ms (budget 1 500), iPhone 2 183 ms (budget 2 000) ; à instruire (dérive réelle ou bruit du runner), sans jamais relever le budget | à faire (0.29.x, coquille, iOS et qualité, S) |
 
 ## 3. Audit Codex 0.26.0
 

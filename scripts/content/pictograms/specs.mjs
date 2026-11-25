@@ -133,7 +133,6 @@ export const SPECS = {
   'tibialis-raise-machine': { anchor: FLOORSIT, props: [prop.dot('toe', 3)], start: P(185, [-70, -70], [90, 90], { foot: 90 }), end: P(185, [-70, -70], [90, 90], { foot: 150 }) },
   'tibialis-raise-band': { anchor: FLOORSIT, props: [prop.cable([96, 80], 'toe')], start: P(185, [-70, -70], [90, 90], { foot: 90 }), end: P(185, [-70, -70], [90, 90], { foot: 150 }) },
   // Gainage
-  plank: { start: P(96, [0, 90], PLANK, { foot: 30 }), end: P(96, [0, 90], PLANK, { foot: 30 }) },
   'body-saw': { props: [prop.dot('toe', 2.5)], start: P(96, [0, 90], PLANK, { foot: 30 }), end: P(101, [0, 95], [-82, -82], { foot: 30 }) },
   'copenhagen-plank': { start: P(96, [0, 90], PLANK, { foot: 30, l2: [-68, -68] }), end: P(96, [0, 90], PLANK, { foot: 30, l2: [-100, -100] }) },
   'dead-bug': { anchor: LYING, start: P(-90, [180, 180], [180, 90], { l2: [180, 90], a2: [180, 180] }), end: P(-90, [-90, -90], [180, 90], { l2: [95, 95], a2: [180, 180] }) },

@@ -14,15 +14,15 @@ import './ExerciseMedia.css';
  */
 export default function ExerciseMedia({ exercise }: { readonly exercise: Exercise }) {
   const image = exerciseImage(exercise.media);
-  if (image) return <Photo exercise={exercise} file={image.file} sourceId={image.sourceId} />;
+  if (image) return <Photo exercise={exercise} file={image.file} sourceId={image.sourceId} author={image.author} />;
   if (hasPictogram(exercise.id)) return <Pictogram exercise={exercise} />;
   return null;
 }
 
-function Photo({ exercise, file, sourceId }: { readonly exercise: Exercise; readonly file: string; readonly sourceId: string }) {
+function Photo({ exercise, file, sourceId, author }: { readonly exercise: Exercise; readonly file: string; readonly sourceId: string; readonly author: string | null }) {
   const [failed, setFailed] = useState(false);
   const url = mediaUrl(file);
-  const attribution = mediaAttribution(sourceId);
+  const attribution = mediaAttribution(sourceId, author);
   return (
     <figure className="ct-exmedia">
       {url === null || failed ? (

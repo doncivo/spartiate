@@ -555,6 +555,18 @@
       "transform": "gris-8-bits-hauteur-640"
     },
     {
+      "file": "plank.png",
+      "exerciseId": "plank",
+      "source": "wger",
+      "originPath": "exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png",
+      "author": "utkb",
+      "bytes": 25228,
+      "sha256": "59dbbd3bbc0bb542f8cb31b9be3013046d623d5cbb545a2770d7cefcd5746739",
+      "originBytes": 239054,
+      "originSha256": "006a934daf47e95ccf37a0482bce110b12b4f2f49c55f7b6d4fc97aba3e588d5",
+      "transform": "gris-8-bits-hauteur-640"
+    },
+    {
       "file": "preacher-curl-machine.png",
       "exerciseId": "preacher-curl-machine",
       "source": "everkinetic",

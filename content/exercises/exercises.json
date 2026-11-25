@@ -7179,7 +7179,7 @@
     },
     {
       "id": "cable-pull-through",
-      "nameFr": "Extension de hanches à la poulie",
+      "nameFr": "Pull-through à la poulie",
       "group": "hamstrings",
       "aliasesEn": [
         "cable pull through"
@@ -9005,10 +9005,13 @@
         ]
       },
       "media": {
-        "images": [],
+        "images": [
+          "plank.png"
+        ],
         "video": null,
-        "license": null,
-        "source": null
+        "license": "CC-BY-SA-4.0",
+        "source": "wger:exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png",
+        "author": "utkb"
       },
       "strengthStandardKey": null,
       "schemaVersion": 1

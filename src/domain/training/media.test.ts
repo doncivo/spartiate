@@ -8,7 +8,12 @@ describe('exerciseImage', () => {
       file: 'bench-press-barbell.png',
       sourceId: 'everkinetic',
       license: 'CC-BY-SA-4.0',
+      author: null,
     });
+  });
+
+  it('BL-010 : rend l’auteur de l’image quand le catalogue le porte (source à auteur par image)', () => {
+    expect(exerciseImage({ images: ['plank.png'], video: null, license: 'CC-BY-SA-4.0', source: 'wger:exercise-images/458/x.png', author: 'utkb' })).toMatchObject({ sourceId: 'wger', author: 'utkb' });
   });
 
   it('rend null sans média, sans image, ou avec une source sans identifiant', () => {
