@@ -197,7 +197,7 @@ Constat : D-412 (Ali, 19/11) renvoie ces trois sujets « après quelques semaine
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-353 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+354 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -514,7 +514,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (46 : 21 à trancher, 25 à confirmer seulement)
+### écrans (47 : 21 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -569,6 +569,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-600 | SHELL-0294b (C-159, H-32). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (55 : 23 à trancher, 32 à confirmer seulement)
 
