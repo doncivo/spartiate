@@ -20,7 +20,7 @@ type ValueAt<T, K extends string> = K extends `${infer H}.${infer R}`
     ? T[K]
     : never;
 
-type ParamNames<S> = S extends `${string}{${infer P}}${infer R}` ? P | ParamNames<R> : never;
+export type ParamNames<S> = S extends `${string}{${infer P}}${infer R}` ? P | ParamNames<R> : never;
 
 export type MessageParams<K extends MessageKey> = Record<ParamNames<ValueAt<Source, K>>, string | number>;
 

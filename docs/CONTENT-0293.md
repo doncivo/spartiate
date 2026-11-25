@@ -25,7 +25,7 @@ ci-dessous : « Claude (choix prudent) ; révisable par Ali ».
 Fichiers : `scripts/content/ciqual.mjs`, `build-ciqual.mjs`, `build-media.mjs`, `build-strength-standards.mjs`, `validate-content.mjs`, `media-map.json`,
 `pictograms/specs.mjs` ; `content/food/ciqual.json` (régénéré), `content/exercises/{equipment,exercises}.json`, `media/{plank.png,sources.json}`,
 `content/strength/standards.json` ; `src/domain/training/{programImport,media,types}.ts`, `src/features/training/{content.ts,import/ProgramImportView.tsx,
-media/*}`, `src/i18n/{fr.programImport,fr.trainingMedia}.ts` ; docs/licences.md. `src/features/training/content02.originals.json` : nom figé du
+media/*}`, `src/i18n/{fr.programImport,fr.trainingMedia}.ts` ; docs/licences.md. `tests/fixtures/training/content02.originals.json` (déplacé de `src/features/training/` en SHELL-0295) : nom figé du
 pull-through mis à jour (fixture du test d'identifiants stables, les identifiants ne changent pas).
 
 ### Vérifications écrites (« à vérifier » et lignes à contrôler)
