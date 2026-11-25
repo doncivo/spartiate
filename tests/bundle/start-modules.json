@@ -50,7 +50,6 @@
         "src/i18n/fr.events.ts",
         "src/i18n/fr.importCsv.ts",
         "src/i18n/fr.notifications.ts",
-        "src/i18n/fr.routines.ts",
         "src/i18n/fr.security.ts",
         "src/i18n/fr.signing.ts",
         "src/i18n/fr.syncConflicts.ts",

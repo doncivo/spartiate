@@ -6,6 +6,7 @@ import type { SetCorrection } from '../../../db/repositories/workoutRepository';
 import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
+import { NONE } from '../../../i18n/units';
 
 /**
  * Une série d'une séance close dans le journal (I1-03) : type, valeurs, RIR et état écrits en toutes lettres (« Validée », « Non validée »,
@@ -36,7 +37,7 @@ export function valueText(set: WorkoutSet, held: Held = null): string {
   const { loadKg, reps, durationSec } = set;
   if (reps === null && durationSec !== null)
     return loadKg === null ? tTraining('sessionDoneDuration', { n: durationSec }) : tTraining('sessionDoneLoadDuration', { load: formatExerciseLoad(loadKg, held), n: durationSec });
-  if (reps === null) return loadKg === null ? '—' : formatExerciseLoad(loadKg, held);
+  if (reps === null) return loadKg === null ? NONE : formatExerciseLoad(loadKg, held);
   return loadKg === null ? tPlural(tTraining, reps, 'sessionDoneRepsOne', 'sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatExerciseLoad(loadKg, held), reps });
 }
 

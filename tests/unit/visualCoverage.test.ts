@@ -79,3 +79,19 @@ describe('BL-163 : les scènes attendent l’état visé avant la capture', () =
     expect(learning).not.toContain('waitForTimeout');
   });
 });
+
+describe('A-004 (SHELL-0295, D-640) : aucune pause fixe dans les captures, un signal observable à la place', () => {
+  it('capture.spec.ts n’appelle jamais waitForTimeout', () => {
+    expect(spec.match(/waitForTimeout\(/g) ?? []).toEqual([]);
+  });
+
+  it('les captures attendent la fin des animations et deux images peintes (settled), et la largeur demandée après un redimensionnement', () => {
+    const start = spec.indexOf('async function settled(');
+    const block = spec.slice(start, spec.indexOf('\n}', start) + 2);
+    expect(start).toBeGreaterThan(0);
+    expect(block).toContain('document.getAnimations()');
+    expect(block).toContain('requestAnimationFrame');
+    expect(spec).toContain('window.innerWidth === w');
+    expect(spec.match(/await settled\(page\)/g)?.length ?? 0).toBeGreaterThanOrEqual(5);
+  });
+});

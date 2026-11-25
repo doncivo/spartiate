@@ -46,6 +46,7 @@ import { recordText } from './SummaryFigures';
 import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
+import { SEP } from '../../../i18n/units';
 
 /**
  * SHELL-0294b (§ 13.3 b, D-604) : événement du document émis par le répartiteur des actions de notification (`supplementWake.ts`, même nom)
@@ -571,7 +572,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             <span role="timer" aria-live="off" aria-label={tTraining('sessionElapsed')}>
               {formatClock(now - startedMs)}
             </span>
-            {' · '}
+            {SEP}
             <span>{tTraining('sessionSummary', { done: summary.validated, planned: summary.planned })}</span>
           </p>
           {currentBlock >= 0 ? <p className="ct-session__muted ct-session__num">{tTraining('sessionExercisePosition', { n: currentBlock + 1, total: blocks.length })}</p> : null}

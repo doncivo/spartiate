@@ -6,6 +6,7 @@ import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
 import { Button, ConfirmDialog, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
 import { trackPath } from './gpsFigures';
+import { NONE } from '../../i18n/units';
 
 /**
  * Suivi GPS d'une séance cardio sur l'iPhone (I6-06, D-222), AU PREMIER PLAN SEULEMENT : l'autorisation demandée est « pendant l'utilisation de
@@ -166,11 +167,11 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
               <span className="ct-cardio__gps-stat-label">{tCardio('gpsStatDuration')}</span>
             </li>
             <li className="ct-cardio__gps-stat">
-              <span className="ct-cardio__gps-stat-value">{pace === null ? '—' : formatPace(pace)}</span>
+              <span className="ct-cardio__gps-stat-value">{pace === null ? NONE : formatPace(pace)}</span>
               <span className="ct-cardio__gps-stat-label">{tCardio(pace === null ? 'gpsPaceNone' : 'gpsStatPace')}</span>
             </li>
             <li className="ct-cardio__gps-stat">
-              <span className="ct-cardio__gps-stat-value">{lastKm === null ? '—' : formatPace(lastKm)}</span>
+              <span className="ct-cardio__gps-stat-value">{lastKm === null ? NONE : formatPace(lastKm)}</span>
               <span className="ct-cardio__gps-stat-label">{tCardio(lastKm === null ? 'gpsLastKmPending' : 'gpsStatLastKm')}</span>
             </li>
           </ul>

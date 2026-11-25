@@ -3,6 +3,7 @@ import type { LocalDate } from '../../../domain/types';
 import { formatDayShort, formatInt, tNutrition } from '../../../i18n/nutritionText';
 import type { DayBar } from './model';
 import { pointsOutOfFrame, trendScale } from './model';
+import { SEP } from '../../../i18n/units';
 
 /**
  * Graphiques du dashboard (I4-03, critère 5) : SVG sans dépendance, calculés en O(n) sur 7 et 28 jours (budget < 300 ms). Les jours sans
@@ -45,7 +46,7 @@ export function BarsChart({ bars, imputed = [] }: { readonly bars: readonly DayB
         {bars.map((bar) => {
           const guess = bar.state === 'complete' ? undefined : estimate.get(bar.date);
           if (guess !== undefined && bar.kcal === null) return <li key={bar.date}>{tNutrition('barItemImputed', { day: formatDayShort(bar.date), kcal: formatInt(guess.kcal), spread: formatInt(guess.spread) })}</li>;
-          return <li key={bar.date}>{tNutrition('barItem', { day: formatDayShort(bar.date), state: stateText(bar.state), value: bar.kcal === null ? '' : ` · ${formatInt(bar.kcal)} kcal` })}</li>;
+          return <li key={bar.date}>{tNutrition('barItem', { day: formatDayShort(bar.date), state: stateText(bar.state), value: bar.kcal === null ? '' : `${SEP}${formatInt(bar.kcal)} kcal` })}</li>;
         })}
       </ul>
     </>

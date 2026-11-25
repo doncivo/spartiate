@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "totaux": {
+    "skipProjet": 17,
+    "skipCondition": 1,
+    "pause": 23,
+    "plafond": 18,
+    "interdit": 0
+  },
+  "fichiers": {
+    "src/App.test.tsx": {
+      "plafond": 1
+    },
+    "src/db/migrations/manifest.test.ts": {
+      "skipCondition": 1
+    },
+    "src/db/serializedDriver.test.ts": {
+      "pause": 1
+    },
+    "src/features/app/coquille.test.tsx": {
+      "pause": 1
+    },
+    "src/features/cardio/CardioGps.test.tsx": {
+      "pause": 1
+    },
+    "src/features/notifications/supplementActions.test.ts": {
+      "pause": 1
+    },
+    "src/features/notifications/supplementWake.test.ts": {
+      "pause": 2
+    },
+    "src/features/nutrition/search/OffSearch.test.tsx": {
+      "pause": 1
+    },
+    "src/features/nutrition/search/Plate.test.tsx": {
+      "pause": 1
+    },
+    "src/features/nutrition/supplements/SupplementsUnmount.fix0272.test.tsx": {
+      "pause": 2
+    },
+    "src/features/progress/constancyData.test.ts": {
+      "pause": 1
+    },
+    "src/features/security/appLockScreenFailure.test.tsx": {
+      "pause": 1
+    },
+    "src/features/settings/injuries/InjuriesSection.muscles.test.tsx": {
+      "pause": 1
+    },
+    "src/features/settings/logs/logsUnavailable.test.tsx": {
+      "plafond": 1
+    },
+    "src/features/training/import/ProgramImportView.review.test.tsx": {
+      "pause": 1
+    },
+    "src/features/training/session/ExerciseProgression.c080.test.tsx": {
+      "pause": 1
+    },
+    "src/features/training/session/ReplaceExercise.seance0292.test.tsx": {
+      "pause": 1
+    },
+    "src/features/training/session/ReplaceRace.test.tsx": {
+      "pause": 1
+    },
+    "src/platform/geolocation/geolocation.test.ts": {
+      "plafond": 1
+    },
+    "src/platform/haptics/haptics.test.ts": {
+      "pause": 1
+    },
+    "src/platform/speech/speech.test.ts": {
+      "pause": 1
+    },
+    "tests/e2e/BL-119-zoom-pc.spec.ts": {
+      "skipProjet": 1
+    },
+    "tests/e2e/I-02.spec.ts": {
+      "skipProjet": 3
+    },
+    "tests/e2e/I-03.spec.ts": {
+      "skipProjet": 2
+    },
+    "tests/e2e/I-06.spec.ts": {
+      "skipProjet": 1
+    },
+    "tests/e2e/P-04.spec.ts": {
+      "pause": 1,
+      "plafond": 1
+    },
+    "tests/e2e/V0-7-1-mise-en-page.spec.ts": {
+      "skipProjet": 1
+    },
+    "tests/e2e/Y-IOS-01.spec.ts": {
+      "skipProjet": 1,
+      "plafond": 1
+    },
+    "tests/e2e/Y-IOS-02-parcours.spec.ts": {
+      "skipProjet": 2,
+      "plafond": 3
+    },
+    "tests/e2e/Y-IOS-02.spec.ts": {
+      "skipProjet": 2,
+      "plafond": 2
+    },
+    "tests/e2e/layoutHelper.spec.ts": {
+      "skipProjet": 1
+    },
+    "tests/e2e/lot-f-qa.spec.ts": {
+      "pause": 1
+    },
+    "tests/e2e/parcours/Y10-oublier-appareil.spec.ts": {
+      "skipProjet": 1,
+      "plafond": 2
+    },
+    "tests/e2e/parcours/Y11-reinitialiser.spec.ts": {
+      "skipProjet": 2,
+      "plafond": 2
+    },
+    "tests/setup/settle.ts": {
+      "pause": 1
+    },
+    "tests/sim/syncFolderSim.ts": {
+      "pause": 1
+    },
+    "tests/smoke/pc-demarrage.spec.ts": {
+      "plafond": 3
+    },
+    "tests/smoke/pc-installeur.spec.ts": {
+      "plafond": 1
+    }
+  }
+}

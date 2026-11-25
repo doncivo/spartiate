@@ -7,6 +7,7 @@ import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
 import './Visbody.css';
+import { formatLocaleNumber } from '../../i18n/units';
 
 /**
  * SUIVIS-029d : Progrès › Corps, bilans VISBODY saisis à la main. Chaque champ facultatif (au moins un), bornes du domaine (refus avec la plage) ; même
@@ -18,7 +19,7 @@ type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | { r
 
 const label = (kind: VisbodyKind): string => tVisbody(`field_${kind}` as VisbodyTextKey);
 const unitText = (f: VisbodyField): string => tVisbody(`unit_${f.unit}`);
-const num = (v: number): string => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+const num = (v: number): string => formatLocaleNumber(v, { maximumFractionDigits: 1 });
 const signed = (v: number): string => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : num(0));
 const dmy = (date: string): string => {
   const [y, m, d] = date.split('-');

@@ -2,6 +2,7 @@ import type { PersonalRecord, WorkoutSummary as Summary } from '../../../domain/
 import { formatClock, formatExerciseLoad, formatNumber, formatVolume, tTraining } from '../../../i18n/trainingText';
 import type { Held } from '../loadDisplay';
 import './Summary.css';
+import { NONE } from '../../../i18n/units';
 
 /** Chiffres du résumé d'une séance close (§ 13.5), communs au résumé de fin et au détail du journal (I1-03). */
 
@@ -11,7 +12,7 @@ export function SummaryFigures({ summary }: { readonly summary: Summary }) {
       <dl className="ct-summary__kpis">
         <div className="ct-summary__kpi">
           <dt>{tTraining('summaryDuration')}</dt>
-          <dd className="ct-session__num">{summary.durationSec === null ? '—' : formatClock(summary.durationSec * 1000)}</dd>
+          <dd className="ct-session__num">{summary.durationSec === null ? NONE : formatClock(summary.durationSec * 1000)}</dd>
         </div>
         <div className="ct-summary__kpi">
           <dt>{tTraining('summarySets')}</dt>

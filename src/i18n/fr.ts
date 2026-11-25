@@ -1,7 +1,6 @@
 import { captureFr } from './fr.capture';
 import { notificationsFr, remindersStatusFr } from './fr.notifications';
 import { appearanceFr } from './fr.appearance';
-import { routinesFr } from './fr.routines';
 import { eventsFr } from './fr.events';
 import { backupFr } from './fr.backup';
 import { importCsvFr } from './fr.importCsv';
@@ -220,7 +219,6 @@ export const fr = {
     stale: 'Action impossible à annuler : la tâche a changé',
     failed: 'Impossible d’annuler cette action.',
   },
-  routines: routinesFr,
   events: eventsFr,
   capture: captureFr,
   backup: backupFr,

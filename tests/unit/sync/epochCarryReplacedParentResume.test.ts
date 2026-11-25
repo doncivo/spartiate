@@ -90,20 +90,44 @@ function recordPageBoundaries(b: SimDevice, probe: CrashProbe): number[] {
   return boundaries;
 }
 
-let reference: unknown = null;
-let boundaries: number[] = [];
-
-describe('Y-FIX-04 : reprise et convergence (critères 9, 10, 14)', () => {
-  it('exécution de référence sans arrêt : 501 tâches rattachées, deux pages, notice bornée sans doublon', async () => {
+/**
+ * A-004 (SHELL-0295, D-640) : l'exécution de référence est faite une fois, à la première demande et sous le délai du test qui la demande (jamais dans un crochet : un crochet en dépassement ferait échouer tout le bloc), puis gardée. Un échec la
+ * remet à zéro : le test suivant la refait au lieu de lire une référence restée nulle (l'audit 0.26.0 y a vu trois échecs en cascade).
+ */
+interface ReferenceRun {
+  readonly reference: unknown;
+  readonly boundaries: readonly number[];
+}
+let referenceRun: Promise<ReferenceRun> | null = null;
+async function runReference(): Promise<ReferenceRun> {
+  try {
     const [a, b] = await scenario();
     const probe = armCrash(b, null);
-    boundaries = recordPageBoundaries(b, probe);
+    const boundaries = recordPageBoundaries(b, probe);
     await b.cycle();
     probe.disarm();
     await rounds(devices);
+    const reference = await outcome(a, b);
+    return { reference, boundaries };
+  } finally {
+    // Appareils et crochets propres à la référence : fermés ici, même en échec ; le test qui la demande ouvre ensuite les siens.
+    setEpochSwitchTestHooks({});
+    await Promise.all(devices.map((d) => d.close()));
+    devices = [];
+  }
+}
+const referenceOnce = (): Promise<ReferenceRun> =>
+  (referenceRun ??= runReference().catch((error: unknown) => {
+    referenceRun = null;
+    throw error;
+  }));
+
+describe('Y-FIX-04 : reprise et convergence (critères 9, 10, 14)', () => {
+
+  it('exécution de référence sans arrêt : 501 tâches rattachées, deux pages, notice bornée sans doublon', async () => {
+    const { reference, boundaries } = await referenceOnce();
     // Deux pages de `reapply` : deux transactions dans l'étape (c), puis la première de l'étape (d).
     expect(boundaries).toHaveLength(3);
-    reference = await outcome(a, b);
     expect(reference).toMatchObject({ sameTasks: true, tasks: COUNT, attached: 0, deleted: 0, projects: [0, 0], notice: { unique: 200, held: 0, overflow: COUNT - 200 }, parked: 0 });
   });
 
@@ -112,7 +136,7 @@ describe('Y-FIX-04 : reprise et convergence (critères 9, 10, 14)', () => {
     ['entre les deux pages', 1],
     ['après la dernière page', 2],
   ])('critère 9 : arrêt brutal %s de `reapply` : même résultat que sans arrêt', async (_label, index) => {
-    expect(reference).not.toBeNull();
+    const { reference, boundaries } = await referenceOnce();
     const [a, b] = await scenario();
     const crashAt = boundaries[index] as number;
     const probe = armCrash(b, crashAt);

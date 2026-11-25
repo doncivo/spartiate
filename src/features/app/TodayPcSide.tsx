@@ -18,6 +18,7 @@ import { heldLookup } from '../training/loadDisplay';
 import { readTrainingData } from '../training/trainingState';
 import { useAppContainer } from './AppContainerContext';
 import './TodayScreen.css';
+import { INTL_LOCALE, SEP } from '../../i18n/units';
 
 /**
  * Colonne de droite d'Aujourd'hui sur PC (ERGO-02, PC-Aujourdhui-apres.dc.html) : macros du jour sous la carte Nutrition, la carte Poids de
@@ -57,7 +58,7 @@ function weekOf(today: LocalDate, first: FirstWeekday): readonly { readonly day:
   const [y, m, d] = today.split('-').map(Number) as [number, number, number];
   const base = Date.UTC(y, m - 1, d);
   const startMs = base - daysFromWeekStart((new Date(base).getUTCDay() || 7) as Weekday, first) * DAY_MS;
-  const names = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', timeZone: 'UTC' });
+  const names = new Intl.DateTimeFormat(INTL_LOCALE, { weekday: 'long', timeZone: 'UTC' });
   return Array.from({ length: WEEK }, (_, i) => {
     const at = new Date(startMs + i * DAY_MS);
     const name = names.format(at);
@@ -219,7 +220,7 @@ export function TodayPcSide({ weight, state }: TodayPcSideProps) {
       <section className="ct-today__card ct-today__card--flat" aria-label={tTodayPc('weekEyebrow')}>
         <h2 className="ct-today__eyebrow ct-section-title">
           {tTodayPc('weekEyebrow')}
-          {count === 0 ? '' : ` · ${tPlural(tTodayPc, count, 'weekCountOne', 'weekCount')}`}
+          {count === 0 ? '' : `${SEP}${tPlural(tTodayPc, count, 'weekCountOne', 'weekCount')}`}
         </h2>
         <ul className="ct-today__week">
           {week.map((d) => {

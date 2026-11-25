@@ -11,6 +11,7 @@ import { nowTime } from '../shared';
 import { RecipeEditor } from './RecipeEditor';
 import { RecipeQuantityStep } from './RecipeQuantityStep';
 import './Recipes.css';
+import { SEP } from '../../../i18n/units';
 
 type Load = { readonly status: 'loading' } | { readonly status: 'error' } | { readonly status: 'ready'; readonly list: readonly Recipe[] };
 type View = { readonly kind: 'list' } | { readonly kind: 'new' } | { readonly kind: 'edit'; readonly recipe: Recipe } | { readonly kind: 'add'; readonly recipe: Recipe };
@@ -151,7 +152,7 @@ export function RecipesView({ today, onChanged }: RecipesViewProps) {
                   <p className="ct-nutrition__entry-name">{recipe.name}</p>
                   <p className="ct-nutrition__muted ct-nutrition__num">
                     {tPlural(tRecipes, recipe.servings, 'servingsOne', 'servingsMany')}
-                    {' · '}
+                    {SEP}
                     {kcal === null ? tRecipes('kcalPerServingUnknown') : tRecipes('kcalPerServing', { n: formatInt(kcal) })}
                   </p>
                 </div>

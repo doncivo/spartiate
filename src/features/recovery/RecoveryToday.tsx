@@ -15,6 +15,7 @@ import { FactorJournalCard } from './FactorJournalCard';
 import { UnusualValuesCard } from './UnusualValuesCard';
 import { contributorTone, exertionDial, formatDuration, formatScore, recoveryDial, ringFraction, sleepDial, stalenessOf, stepsSummary, type StepsSummary } from './display';
 import './RecoveryToday.css';
+import { NONE, formatLocaleNumber } from '../../i18n/units';
 
 /**
  * Cadrans de récupération d'Aujourd'hui (I5-02 point 2.1, § 16.4 et § 16.5) : Recovery, Exertion, Sommeil (valeur ou raison, qualité,
@@ -147,7 +148,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
           {/* ERGO-01 (Recuperation-apres.dc.html) : la Recovery est le chiffre héros du bloc, Effort et Sommeil restent à côté. */}
           <section className="ct-recovery__cell ct-recovery__cell--hero" aria-label={tRecovery('recoveryLabel')}>
             <Dial fraction={recovery.kind === 'value' ? ringFraction(recovery.value, 100) : recovery.kind === 'learning' ? ringFraction(recovery.nights, recovery.of) : null} label={recoveryLabel}>
-              {recovery.kind === 'value' ? String(recovery.value) : recovery.kind === 'learning' ? tRecovery('learningProgress', { x: recovery.nights }) : '—'}
+              {recovery.kind === 'value' ? String(recovery.value) : recovery.kind === 'learning' ? tRecovery('learningProgress', { x: recovery.nights }) : NONE}
             </Dial>
             <p className="ct-recovery__name">{tRecovery('recoveryLabel')}</p>
             {recovery.kind === 'learning' ? <p className="ct-today__text">{tRecovery('learning')}</p> : null}
@@ -158,7 +159,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
           </section>
           <section className="ct-recovery__cell" aria-label={tRecovery('exertionLabel')}>
             <Dial fraction={exertion.kind === 'value' ? ringFraction(exertion.value, 10) : null} label={exertionLabel}>
-              {exertion.kind === 'value' ? formatScore(exertion.value) : '—'}
+              {exertion.kind === 'value' ? formatScore(exertion.value) : NONE}
             </Dial>
             <p className="ct-recovery__name">{tRecovery('exertionLabel')}</p>
             <p className="ct-today__muted">{exertion.kind === 'value' ? tRecovery(EXERTION_SCOPE_KEY) : tRecovery('exertionNone')}</p>
@@ -172,7 +173,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
           </section>
           <section className="ct-recovery__cell" aria-label={tRecovery('sleepLabel')}>
             <Dial fraction={sleep.kind === 'value' && sleep.scorePct !== null ? ringFraction(sleep.scorePct, 100) : null} label={sleepLabel}>
-              {sleep.kind === 'value' ? formatDuration(sleep.minutes) : '—'}
+              {sleep.kind === 'value' ? formatDuration(sleep.minutes) : NONE}
             </Dial>
             <p className="ct-recovery__name">{tRecovery('sleepLabel')}</p>
             {sleep.kind === 'value' && sleep.scorePct !== null ? <p className="ct-today__muted">{tRecovery('sleepShare', { n: sleep.scorePct })}</p> : null}
@@ -220,11 +221,11 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
             <dl className="ct-today__rows">
               <div className="ct-today__row ct-today__row--kv">
                 <dt>{tRecovery('stepsToday')}</dt>
-                <dd>{load.steps.today === null ? tRecovery('stepsTodayUnknown') : `${load.steps.today.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
+                <dd>{load.steps.today === null ? tRecovery('stepsTodayUnknown') : `${formatLocaleNumber(load.steps.today)} ${tRecovery('stepsUnit')}`}</dd>
               </div>
               <div className="ct-today__row ct-today__row--kv">
                 <dt>{load.steps.knownDays < 7 ? tPlural(tRecovery, load.steps.knownDays, 'stepsAveragePartialOne', 'stepsAveragePartial') : tRecovery('stepsAverage')}</dt>
-                <dd>{`${load.steps.average.toLocaleString('fr-FR')} ${tRecovery('stepsUnit')}`}</dd>
+                <dd>{`${formatLocaleNumber(load.steps.average)} ${tRecovery('stepsUnit')}`}</dd>
               </div>
             </dl>
           )}

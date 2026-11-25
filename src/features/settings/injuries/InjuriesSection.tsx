@@ -16,6 +16,7 @@ const SYNCED_TABLES = ['injury'] as const;
 import { replanInjuryReminders } from './replan';
 import '../BodyScreen.css';
 import './Injuries.css';
+import { SEP } from '../../../i18n/units';
 
 interface MuscleOption {
   readonly id: string;
@@ -102,7 +103,7 @@ export function InjuriesSection() {
   const nameOfMuscle = (id: string | null): string | null => (id === null ? null : (muscles.find((m) => m.id === id)?.nameFr ?? id));
   const label = (injury: Injury): string => {
     const parts = [nameOfMuscle(injury.muscleId), ...injury.patterns.map((p) => tTraining(PATTERN_KEY[p])), injury.note].filter((p): p is string => p !== null);
-    return parts.join(' · ');
+    return parts.join(SEP);
   };
   const active = value.items.filter((i) => i.status === 'active');
   const past = value.items.filter((i) => i.status === 'healed');

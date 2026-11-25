@@ -22,6 +22,7 @@ import { onLocalImport } from '../../db/localWrite';
 import { settingsStore } from './settingsStore';
 import { useSyncValue } from './useSyncValue';
 import './SettingsScreen.css';
+import { upperFirst } from '../../i18n/units';
 
 /** `HH:MM` en 24 h dans le fuseau de l'app (celui de l'appareil tant qu'il n'est pas connu). */
 function formatLocalTime(isoUtc: string, timeZone: string | null): string {
@@ -75,7 +76,7 @@ function SettingsScreenMobile() {
   const timeFormat = useFeatureStore(settingsStore, (s) => s.timeFormat);
   const theme = useFeatureStore(settingsStore, (s) => s.theme);
   const [themeText = '', weekdayText = '', formatText = ''] = formatAppearanceParts(theme, firstWeekday, timeFormat);
-  const weekdayCapitalized = weekdayText.charAt(0).toLocaleUpperCase('fr-FR') + weekdayText.slice(1);
+  const weekdayCapitalized = upperFirst(weekdayText);
   const openAppearance = () => navigate({ tab: 'more', screen: 'appearance' });
 
   useEffect(() => {

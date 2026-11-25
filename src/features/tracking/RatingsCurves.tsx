@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { RATING_KINDS, RATING_MAX, RATING_MIN, ratingSeries, type RatingKind, type RatingPoint } from '../../domain/bodyProgress/measurements';
 import { tTracking } from '../../i18n/trackingText';
 import { Sparkline } from './Sparkline';
+import { formatLocaleNumber } from '../../i18n/units';
 
 /** SUIVIS-029c : Progrès › Suivis, courbes des notes du matin sur 30 jours (moyenne, jours notés) ; jour sans note : courbe coupée, jamais 0. */
 export function RatingsCurves({ ratings, today }: { readonly ratings: Readonly<Record<RatingKind, readonly RatingPoint[]>> | null; readonly today: string }) {
@@ -24,7 +25,7 @@ export function RatingsCurves({ ratings, today }: { readonly ratings: Readonly<R
               </p>
             );
           }
-          const summary = tTracking('ratingsSummary', { label, avg: series.average.toLocaleString('fr-FR'), n: series.days });
+          const summary = tTracking('ratingsSummary', { label, avg: formatLocaleNumber(series.average), n: series.days });
           return (
             <div key={kind} className="ct-tracking__block">
               <p className="ct-tracking__value">{summary}</p>

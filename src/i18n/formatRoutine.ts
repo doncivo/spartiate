@@ -2,7 +2,11 @@ import { frFirst } from './format';
 import type { Routine } from '../domain/model';
 import type { StreakUnit } from '../domain/routineStreaks';
 import type { Weekday } from '../domain/types';
-import { t, tDynamic, type MessageKey } from './index';
+import { catalogText } from './catalogText';
+import { routinesFr } from './fr.routines';
+
+/** SHELL-0295 (C-085, D-638) : catalogue lu ici seulement, hors de l'arbre `fr.ts` du départ. */
+export const tRoutines = catalogText(routinesFr);
 
 const intlLocale = (): string => 'fr-FR';
 
@@ -30,11 +34,11 @@ export function scheduleShort(rule: ScheduleFields): string {
     case 'weekdays':
       return weekdayList(rule.weekdays, 'short');
     case 'x_per_week':
-      return t('routines.timesPerWeek', { count: rule.timesPerWeek ?? 0 });
+      return tRoutines('timesPerWeek', { count: rule.timesPerWeek ?? 0 });
     case 'every_n_days':
-      return t('routines.everyNDays', { count: rule.interval ?? 0 });
+      return tRoutines('everyNDays', { count: rule.interval ?? 0 });
     case 'every_n_weeks':
-      return t('routines.everyNWeeksOn', { count: rule.interval ?? 0, days: weekdayList(rule.weekdays, 'short') });
+      return tRoutines('everyNWeeksOn', { count: rule.interval ?? 0, days: weekdayList(rule.weekdays, 'short') });
     default:
       return '';
   }
@@ -44,15 +48,15 @@ export function scheduleShort(rule: ScheduleFields): string {
 export function scheduleLong(rule: ScheduleFields): string {
   switch (rule.scheduleType) {
     case 'daily':
-      return capitalize(t('routines.everyDay'));
+      return capitalize(tRoutines('everyDay'));
     case 'weekdays':
       return capitalize(weekdayList(rule.weekdays, 'long'));
     case 'x_per_week':
-      return capitalize(t('routines.timesPerWeek', { count: rule.timesPerWeek ?? 0 }));
+      return capitalize(tRoutines('timesPerWeek', { count: rule.timesPerWeek ?? 0 }));
     case 'every_n_days':
-      return capitalize(t('routines.everyNDays', { count: rule.interval ?? 0 }));
+      return capitalize(tRoutines('everyNDays', { count: rule.interval ?? 0 }));
     case 'every_n_weeks':
-      return capitalize(t('routines.everyNWeeksOn', { count: rule.interval ?? 0, days: weekdayList(rule.weekdays, 'long') }));
+      return capitalize(tRoutines('everyNWeeksOn', { count: rule.interval ?? 0, days: weekdayList(rule.weekdays, 'long') }));
     default:
       return '';
   }
@@ -79,14 +83,15 @@ export function formatNextOccurrences(dates: readonly string[]): string {
     .join(', ');
 }
 
-const STREAK_KEYS: { readonly [U in StreakUnit]: { readonly one: MessageKey; readonly other: MessageKey } } = {
-  days: { one: 'routines.streak.daysOne', other: 'routines.streak.daysOther' },
-  weeks: { one: 'routines.streak.weeksOne', other: 'routines.streak.weeksOther' },
-  sessions: { one: 'routines.streak.sessionsOne', other: 'routines.streak.sessionsOther' },
+type StreakKey = 'streakDaysOne' | 'streakDaysOther' | 'streakWeeksOne' | 'streakWeeksOther' | 'streakSessionsOne' | 'streakSessionsOther';
+const STREAK_KEYS: { readonly [U in StreakUnit]: { readonly one: StreakKey; readonly other: StreakKey } } = {
+  days: { one: 'streakDaysOne', other: 'streakDaysOther' },
+  weeks: { one: 'streakWeeksOne', other: 'streakWeeksOther' },
+  sessions: { one: 'streakSessionsOne', other: 'streakSessionsOther' },
 };
 
 /** Série accordée (R-04 critère 6) : « 1 jour », « 12 jours », « 1 séance », « 4 séances », « 1 semaine », « 5 semaines ». */
 export function formatStreak(count: number, unit: StreakUnit): string {
   const form = new Intl.PluralRules(intlLocale()).select(count) === 'one' ? 'one' : 'other';
-  return tDynamic(STREAK_KEYS[unit][form], { count });
+  return tRoutines(STREAK_KEYS[unit][form], { count });
 }

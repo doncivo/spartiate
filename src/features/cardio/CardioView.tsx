@@ -25,6 +25,7 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
 import { CardioGps } from './CardioGps';
 import './Cardio.css';
+import { SEP } from '../../i18n/units';
 
 /**
  * Entraînement › Cardio (I6-06, D-221 à D-224) : saisie d'une séance (type, début, durée, distance et FC facultatives, ressenti, notes), historique
@@ -443,7 +444,7 @@ export function CardioView({ timeZone, gps }: CardioViewProps) {
                             rpe: s.rpe,
                           })}
                     </span>
-                    {extra.length > 0 ? <span className="ct-today__muted">{extra.join(' · ')}</span> : null}
+                    {extra.length > 0 ? <span className="ct-today__muted">{extra.join(SEP)}</span> : null}
                     {s.notes !== '' ? <span className="ct-cardio__notes-text">{s.notes}</span> : null}
                   </div>
                   <div className="ct-cardio__actions">

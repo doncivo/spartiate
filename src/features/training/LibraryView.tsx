@@ -32,6 +32,7 @@ import { heldFor } from './loadDisplay';
 import './library/Sheet.css';
 import { groupLabel, KIND_KEY, METRIC_KEY, PATTERN_KEY } from './labels';
 import { exerciseGroup, normalizeSearch, type TrainingData } from './trainingState';
+import { SEP } from '../../i18n/units';
 
 /** Illustration sous licence (I6-07, D-235) : bloc à la demande, chargé à l'ouverture d'une fiche qui a un média. */
 const ExerciseMedia = lazy(() => import('./media/ExerciseMedia'));
@@ -150,7 +151,7 @@ export function ExerciseList({ data, mode, onSelect }: ExerciseListProps) {
                     <button type="button" className="ct-training__row" aria-label={exercise.nameFr} aria-describedby={metaId} onClick={() => onSelect(exercise)} {...bind}>
                       <span className="ct-training__row-name">{exercise.nameFr}</span>
                       <span className="ct-training__row-meta" id={metaId}>
-                        {[g === null ? null : groupLabel(g), exercise.origin === 'custom' ? tTraining('custom') : null, compatible ? null : tTraining('compatibleNo')].filter((s) => s !== null).join(' · ')}
+                        {[g === null ? null : groupLabel(g), exercise.origin === 'custom' ? tTraining('custom') : null, compatible ? null : tTraining('compatibleNo')].filter((s) => s !== null).join(SEP)}
                       </span>
                     </button>
                   )}
@@ -351,10 +352,10 @@ function ExerciseDetail({ data, access, exercise, onBack, onOpen, onEdit, onDele
           {exercise.nameFr}
         </h2>
         <p className="ct-training__muted">
-          {[tTraining(PATTERN_KEY[exercise.pattern]), tTraining(KIND_KEY[exercise.kind]), tTraining(METRIC_KEY[exercise.metric])].join(' · ')}
+          {[tTraining(PATTERN_KEY[exercise.pattern]), tTraining(KIND_KEY[exercise.kind]), tTraining(METRIC_KEY[exercise.metric])].join(SEP)}
           {exercise.origin === 'custom' ? <span className="ct-training__badge">{tTraining('custom')}</span> : null}
         </p>
-        <p className="ct-training__muted">{exercise.muscles.map((m) => muscleName.get(m.id) ?? m.id).join(' · ')}</p>
+        <p className="ct-training__muted">{exercise.muscles.map((m) => muscleName.get(m.id) ?? m.id).join(SEP)}</p>
       </header>
       {pc ? (
         <div className="ct-sheet__columns">

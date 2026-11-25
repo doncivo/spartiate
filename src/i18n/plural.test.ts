@@ -108,7 +108,6 @@ describe('garde : aucun « {n} <nom pluriel> » sans variante au singulier', () 
     'fr.supplementNotifications.ts:noticeTakenOne',
     'fr.progression.ts:alertStall', // alerte à partir de 3 séances sans progrès
     'fr.recoveryFactors.ts:progressNoPair', // seuils fixes du journal de facteurs
-    'fr.routines.ts:rateLabel', // fenêtres fixes de 7 et 30 jours
     'fr.nutrition.ts:tdeeMeasuredTerms', // couverture minimale de 4 jours complets
     'fr.nutrition.ts:checkInFirstNeed', // seuils fixes : 4 jours complets, 2 pesées
   ]);

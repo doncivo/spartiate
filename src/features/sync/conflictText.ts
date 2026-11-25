@@ -10,6 +10,7 @@ import type { SyncStatus } from '../../platform/sync/types';
 import type { ConflictSideView, ConflictView, RestoreRefusal, RestoreResult } from './syncConflictUseCases';
 import { APPLE_REMINDERS_DEVICE } from '../../domain/appleReminders';
 import { deviceName, formatSyncTime } from './syncText';
+import { INTL_LOCALE, upperFirst } from '../../i18n/units';
 
 /**
  * Textes du journal des conflits (Y-04 critères 1 à 4 ; ADR 0011 §4.3 ; decisions.md Y-04 D1) : champ par sa clé
@@ -84,8 +85,8 @@ export function conflictValueText(table: SyncTable, column: SyncColumn, side: Pi
   const own = `${table.name}.${column.name}`;
   if (typeof value === 'string' && (has(BODY_ENUMS, own) || own === 'profile.units')) return enumLabel(table, column, value);
   if (typeof value === 'number') {
-    if (own === 'body_weight.kg') return t('sync.conflicts.values.kg', { value: new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value) });
-    if (own === 'profile.height_cm') return t('sync.conflicts.values.cm', { value: new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(value) });
+    if (own === 'body_weight.kg') return t('sync.conflicts.values.kg', { value: new Intl.NumberFormat(INTL_LOCALE, { maximumFractionDigits: 2 }).format(value) });
+    if (own === 'profile.height_cm') return t('sync.conflicts.values.cm', { value: new Intl.NumberFormat(INTL_LOCALE, { maximumFractionDigits: 1 }).format(value) });
     if (own === 'profile.birth_year') return String(value);
   }
   switch (column.type) {
@@ -106,7 +107,7 @@ export function conflictValueText(table: SyncTable, column: SyncColumn, side: Pi
       return value === 1 ? t('sync.conflicts.values.yes') : t('sync.conflicts.values.no');
     case 'int':
     case 'real':
-      return typeof value === 'number' ? new Intl.NumberFormat('fr-FR').format(value) : String(value);
+      return typeof value === 'number' ? new Intl.NumberFormat(INTL_LOCALE).format(value) : String(value);
     case 'enum':
       return enumLabel(table, column, String(value));
   }
@@ -150,7 +151,7 @@ export function conflictHeading(view: Pick<ConflictView, 'title' | 'itemState' |
     const date = formatDayMonth(view.title);
     return names.field === fieldLabel(view.table, { name: 'kg' }) ? t('sync.conflicts.weightHeading', { date }) : t('sync.conflicts.weightHeadingField', { date, field: names.field });
   }
-  const field = names.field.charAt(0).toLocaleUpperCase('fr-FR') + names.field.slice(1);
+  const field = upperFirst(names.field);
   const title = view.itemState === 'live' && view.title !== null ? quoted(names.title) : names.title;
   return t('sync.conflicts.heading', { field, title });
 }

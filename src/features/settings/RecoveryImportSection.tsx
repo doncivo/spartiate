@@ -9,6 +9,7 @@ import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { importLog, shortcutImportFor, type FileOutcome, type ImportRunResult } from './recoveryImport';
 import { importStatusMessage } from './recoveryImport/statusMessage';
+import { formatLocaleNumber } from '../../i18n/units';
 
 const TYPES: readonly { readonly type: RecoverySampleType; readonly label: HealthTextKey }[] = [
   { type: 'hrv', label: 'recTypeHrv' },
@@ -144,7 +145,7 @@ function TypeRow({ label, state, outcome, run }: { readonly label: string; reado
         <p role="alert">{tHealth('recFailed')}</p>
       )}
       {counts !== null && <p>{tHealth('recCounts', { added: counts.added, duplicates: counts.duplicates, rejected: rejectedTotal })}</p>}
-      {imported?.truncated && <p>{tHealth('recTruncated', { max: MAX_LINES.toLocaleString('fr-FR') })}</p>}
+      {imported?.truncated && <p>{tHealth('recTruncated', { max: formatLocaleNumber(MAX_LINES) })}</p>}
       {reasons.length > 0 && (
         <ul aria-label={tHealth('recRejectedBy')}>
           {reasons.map((r) => (

@@ -1,6 +1,7 @@
 import { DEFAULT_GENERATION_CONFIG } from '../../domain/training/config';
 import { capLinesToDuration, proposeSplit, type OnboardingDraft, type SplitProposal } from '../../domain/onboarding';
 import type { StarterProgram, TrainingContent } from '../training/content';
+import { NONE } from '../../i18n/units';
 
 /** Première séance montrée à l'écran 8 : le premier jour du programme proposé, plafonné par la durée choisie (§ 10.1). Rien n'est écrit. */
 export interface FirstSession {
@@ -29,7 +30,7 @@ export function buildFirstSession(draft: OnboardingDraft, content: TrainingConte
   const items = lines.slice(0, capped.keptCount).map((line) => ({
     name: content.catalog.get(line.exerciseId)?.nameFr ?? line.exerciseId,
     sets: line.sets,
-    reps: line.repMin !== null ? (line.repMax !== null && line.repMax !== line.repMin ? `${String(line.repMin)}–${String(line.repMax)}` : String(line.repMin)) : line.durationSec !== null ? `${String(line.durationSec)} s` : '—',
+    reps: line.repMin !== null ? (line.repMax !== null && line.repMax !== line.repMin ? `${String(line.repMin)}–${String(line.repMax)}` : String(line.repMin)) : line.durationSec !== null ? `${String(line.durationSec)} s` : NONE,
   }));
   return { proposal, program, dayName: day.name, items, estimatedMin: capped.estimatedMin, droppedCount: capped.droppedCount };
 }

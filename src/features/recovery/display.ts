@@ -1,3 +1,4 @@
+import { formatMinutes } from '../../i18n/units';
 import { RECOVERY_CONFIG, type AbstainReason, type Contributor, type RecoveryDaySummary } from '../../domain/recovery';
 
 /**
@@ -34,9 +35,7 @@ export function sleepDial(s: RecoveryDaySummary): SleepDialView {
 
 /** « 7 h 12 », « 8 h 00 », « 45 min ». */
 export function formatDuration(minutes: number): string {
-  const total = Math.round(minutes);
-  if (total < 60) return `${String(total)} min`;
-  return `${String(Math.floor(total / 60))} h ${String(total % 60).padStart(2, '0')}`;
+  return formatMinutes(minutes);
 }
 
 /** Score avec virgule française, sans décimale inutile (« 3,5 », « 10 »). */

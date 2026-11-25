@@ -7,6 +7,7 @@ import { Button, ConfirmDialog, SectionTitle, SegmentedControl, Switch } from '.
 import { duplicateEmbeddedProfile } from './content';
 import { PROFILE_KIND_KEY } from './labels';
 import { setActiveProfile, type AnyProfile, type PersonalProfile, type TrainingData } from './trainingState';
+import { SEP } from '../../i18n/units';
 
 /**
  * Écran « Matériel » (§ 14.3, maquette PC-Materiel) : profils embarqués (lecture seule, à dupliquer) et personnels (modifiables, publiés), profil
@@ -95,7 +96,7 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
           <dl className="ct-equipment__rows">
             <Row label={tTraining('dumbbells')} value={inv.dumbbells ? tTraining('equipmentDumbbellRange', { min: formatNumber(inv.dumbbells.minKg), max: formatNumber(inv.dumbbells.maxKg) }) : tTraining('none')} verify={check.has('dumbbells')} />
             {inv.dumbbells ? <Row label={tTraining('equipmentStep')} value={kg(inv.dumbbells.stepKg)} /> : null}
-            <Row label={tTraining('kettlebells')} value={inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(' · ')} verify={check.has('kettlebells')} />
+            <Row label={tTraining('kettlebells')} value={inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(SEP)} verify={check.has('kettlebells')} />
           </dl>
         </section>
         <section className="ct-equipment__block">
@@ -421,7 +422,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
               >
                 <span className="ct-training__row-name">{p.name}</span>
                 <span className="ct-training__row-meta" id={`ct-profile-meta-${p.id}`}>
-                  {[tTraining(PROFILE_KIND_KEY[p.kind]), p.origin === 'embedded' ? tTraining('embedded') : tTraining('personal'), p.id === data.active.id ? tTraining('activeHere') : null].filter((s) => s !== null).join(' · ')}
+                  {[tTraining(PROFILE_KIND_KEY[p.kind]), p.origin === 'embedded' ? tTraining('embedded') : tTraining('personal'), p.id === data.active.id ? tTraining('activeHere') : null].filter((s) => s !== null).join(SEP)}
                 </span>
               </button>
             </li>

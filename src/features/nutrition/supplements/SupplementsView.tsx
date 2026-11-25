@@ -27,6 +27,7 @@ import { constancyDays, type ConstancyDay } from './constancy';
 import { replanSupplementReminders } from './replan';
 import { logFailure } from '../../../platform/desktop/log';
 import './Supplements.css';
+import { SEP } from '../../../i18n/units';
 
 const WEEK: readonly Weekday[] = [1, 2, 3, 4, 5, 6, 7];
 const ERROR_KEY: Record<SupplementDraftError, SupplementsTextKey> = { name: 'errorName', dose: 'errorDose', unit: 'errorUnit', times: 'errorTimes', days: 'errorDays' };
@@ -54,7 +55,7 @@ function daysText(mask: number): string {
 }
 
 function summary(s: Supplement): string {
-  return [formatSupplementDose(s.dose, s.unit), s.times.join(', '), daysText(s.days)].filter((x): x is string => x !== null).join(' · ');
+  return [formatSupplementDose(s.dose, s.unit), s.times.join(', '), daysText(s.days)].filter((x): x is string => x !== null).join(SEP);
 }
 
 function adherenceText(a: SupplementAdherence): string {

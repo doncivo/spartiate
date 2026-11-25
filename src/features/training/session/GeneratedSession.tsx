@@ -29,6 +29,7 @@ import { groupLabel, PATTERN_KEY } from '../labels';
 import type { TrainingData } from '../trainingState';
 import { buildGenerationInput, defaultGenerationSettings, defaultSplitFor, startGeneratedSession, type GenerationSettings } from './generationInput';
 import './GeneratedSession.css';
+import { SEP } from '../../../i18n/units';
 
 /**
  * « Séance proposée » (I3-01 ; § 12.1, § 12.3 ; D-73) : bloc à la demande ouvert depuis « Nouvelle séance », avec son catalogue de textes.
@@ -396,7 +397,7 @@ function Proposal({ session, entryDays, sourceName, nameOf }: ProposalProps) {
               <h4 className="ct-generated__name">{e.exerciseName}</h4>
               <p className="ct-generated__sets">
                 {setsLine(e)}
-                {e.rir !== null ? ` · ${tGeneration('rir', { rir: e.rir })}` : ''}
+                {e.rir !== null ? `${SEP}${tGeneration('rir', { rir: e.rir })}` : ''}
               </p>
               {e.origin === 'substitution' && (
                 <p className="ct-generated__note">{tGeneration(e.substitutionReason === 'pain' ? 'originSubstitutionPain' : e.substitutionReason === 'excluded' ? 'originSubstitutionExcluded' : 'originSubstitutionEquipment', { name: sourceName(e.sourceExerciseId) })}</p>

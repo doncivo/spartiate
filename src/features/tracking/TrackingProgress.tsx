@@ -11,6 +11,7 @@ import { useSyncedData } from '../sync/remoteChanges';
 import { RatingsCurves } from './RatingsCurves';
 import { isPhone, loadGoals, readRatings, readStepsDays, readZone2, saveGoals, type StepsRead, type Zone2Read } from './trackingData';
 import './Tracking.css';
+import { SEP } from '../../i18n/units';
 
 /**
  * SUIVIS-029 : Progrès › Suivis — objectifs (réglage local), pas par semaine et cardio en zone 2 (4 semaines), notes du matin (30 jours). Bloc chargé à la demande avec son catalogue de textes
@@ -175,7 +176,7 @@ function Zone2({ read, goal, today }: { readonly read: Zone2Read; readonly goal:
                   <span>{tTracking('weekOf', { date: formatDayMonthYear(w.weekStart) })}</span>
                   <span className="ct-tracking__value">
                     {tTracking('zone2WeekLine', { min: w.minutes, goal })}
-                    {w.minutes >= goal ? ` · ${tTracking('zone2Reached')}` : ''}
+                    {w.minutes >= goal ? `${SEP}${tTracking('zone2Reached')}` : ''}
                   </span>
                   {w.sessionsWithoutHr > 0 ? <span className="ct-today__muted">{tTracking('zone2WithoutHr', { n: w.sessionsWithoutHr })}</span> : null}
                 </li>

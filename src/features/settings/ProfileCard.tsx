@@ -4,6 +4,7 @@ import { formatDayMonth } from '../../i18n/format';
 import { tPlus } from '../../i18n/plusText';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
+import { lowerCase } from '../../i18n/units';
 
 const pad2 = (n: number): string => String(n).padStart(2, '0');
 const GOAL_KEY = { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' } as const;
@@ -37,7 +38,7 @@ export function useProfileSummaryDetail(): { readonly parts: readonly string[]; 
           weightText = tPlus('profileWeight', { kg: formatKg(weight.kg), when });
           next.push(weightText);
         }
-        if (profile?.goal != null) next.push(tBody(GOAL_KEY[profile.goal]).toLocaleLowerCase('fr-FR'));
+        if (profile?.goal != null) next.push(lowerCase(tBody(GOAL_KEY[profile.goal])));
         setSummary({ parts: next, weight: weightText });
       } catch {
         if (live) setSummary({ parts: [], weight: null });
