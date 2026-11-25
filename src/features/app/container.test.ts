@@ -49,6 +49,8 @@ describe('démarrage complet', () => {
         ...pending,
         settings: { ...pending.settings, get: async () => stored as never, set },
         syncMeta: { maxHlc: async () => maxHlc },
+        // DATA-0293 (BL-094) : la garde de synchro est lue au démarrage (échec fermé) : le faux dépôt la dit vide.
+        sync: { ...pending.sync, assertGuardEmpty: async () => 0 },
       };
       return repos;
     };
