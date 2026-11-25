@@ -2,6 +2,20 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.3
+
+**Mets à jour le PC et l'iPhone le même jour.** Une migration : ta base passe au schéma 23 (cinq colonnes ajoutées, toutes vides pour ce qui existe déjà ; rien n'est modifié ni effacé). Une sauvegarde « Avant mise à jour » est faite d'abord. Un appareil resté en 0.29.2 garde de côté, sans les afficher, les nouvelles informations reçues de l'autre (séries ajoutées, valeurs d'avant correction, distance d'une série, réglages d'un exercice) et les reprend à sa mise à jour. Une base de schéma 23 restaurée dans une 0.29.2 est refusée, sans perte.
+
+- **Séance et adhérence** : une série ajoutée pendant la séance est comptée à part dans la carte Adhérence (« Séries ajoutées en séance : n · retirées : m ») ; elle ne fausse plus les prescriptions respectées. Une série validée que tu rouvres ou corriges garde ses valeurs d'avant (répétitions, charge, durée, RIR), envoyées à l'autre appareil avec la séance. Une série peut porter une distance (0 à 100 km).
+- **Réglages d'un exercice** : les réglages propres à un exercice sont gardés, vérifiés (bornes connues) et synchronisés ; un recalcul de la progression ne les efface jamais.
+- **Récupération** : une FC au repos importée avec son fuseau (par exemple mesurée à l'étranger) compte pour le jour où elle a été prise.
+- **Nutrition** : une cible prévue n'est plus remplacée par une décision datée du futur (horloge d'un appareil en avance). Dans Ciqual, une valeur « traces » compte pour 0 g ; une valeur absente ou « < x » reste « inconnue », jamais 0.
+- **Import de programme** : « Planche 3 x 30 s » donne une cible de 30 s ; une durée lue sur un exercice à répétitions, ou l'inverse, est signalée dans l'aperçu avant la création. Un PDF est refusé avec la consigne de passer par une capture d'écran.
+- **Bibliothèque et matériel** : « Gilet lesté » rejoint le catalogue du matériel (il n'est ajouté à aucun profil). La planche a sa photo, avec son auteur et sa licence affichés sous l'image. Plus aucun exercice n'a un nom presque identique à un autre.
+- **Synchro et sécurité** : un fichier de garde de synchro illisible au démarrage arrête le démarrage avec une erreur claire au lieu d'être pris pour vide ; une transaction refusée est annulée proprement. La boîte « Oublier le dossier de synchro ? » rappelle que, sans ta clé, les données chiffrées déjà dans iCloud Drive deviennent illisibles, et renvoie à la clé de secours.
+
+Après la mise à jour : la liste complète est dans `docs/constats-ali.md` (section 0.29.3). En priorité : au premier lancement de chaque appareil, Plus › Journaux ne montre aucune erreur de migration ; ajoute une série pendant une séance puis regarde la carte Adhérence.
+
 ## 0.29.2
 
 **Mets à jour le PC et l'iPhone le même jour.** Une migration : ta base passe au schéma 22. Elle ne touche que tes réglages locaux ; rien n'est effacé, et aucune table ni colonne synchronisée n'est ajoutée. Le profil de matériel par défaut est renommé « salle-complete » dans tes réglages locaux ; son nom affiché, « Salle complète », ne change pas. Une sauvegarde « Avant mise à jour » est faite d'abord. Un appareil resté en 0.29.1 ne reçoit pas ce nouveau nom par la synchro et ne perd rien ; il lit les données écrites en 0.29.2, sans afficher les nouveaux groupes musculaires de la récupération. Une base de schéma 22 restaurée dans une 0.29.1 est refusée, sans perte.
