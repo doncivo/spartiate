@@ -1074,10 +1074,8 @@ class FolderBookmarkPlugin: Plugin {
           unlinkat(dirFd, temp, 0)
           throw Failure(code: self.codeOf(error))
         }
-        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant (idempotente).
-        if fsync(dirFd) != 0 {
-          throw Failure(code: self.codeOf(errno))
-        }
+        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant.
+        try self.syncDirectory(dirFd)
         return [:]
       }
     }
@@ -1112,10 +1110,8 @@ class FolderBookmarkPlugin: Plugin {
         if renameat(dirFd, input.from, dirFd, input.to) != 0 {
           throw Failure(code: self.codeOf(errno))
         }
-        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant (idempotente).
-        if fsync(dirFd) != 0 {
-          throw Failure(code: self.codeOf(errno))
-        }
+        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant.
+        try self.syncDirectory(dirFd)
         return [:]
       }
     }
@@ -1184,6 +1180,16 @@ class FolderBookmarkPlugin: Plugin {
   /// demandé et l'écriture refusée (`cloud-pending`, transitoire) : elle est reprise au cycle suivant, sur le fichier téléchargé.
   /// Relecture sync-icloud : même règle que `status` : le substitut ne compte que si le fichier réel est absent (ENOENT) ; un substitut
   /// périmé à côté du fichier réel ne bloque jamais l'écriture (sinon `state.spx` ne serait plus jamais réécrit).
+  /// C-155 (DATA-0295), REL-0.29.5 (D-642, H-43) : `fsync` du dossier après un renommage. EINVAL ou ENOTSUP (système de fichiers
+  /// sans synchro de dossier) : sans effet, pas d'erreur, sinon chaque écriture de l'état échouerait ; toute autre erreur est levée.
+  private func syncDirectory(_ dirFd: Int32) throws {
+    if fsync(dirFd) != 0 {
+      let error = errno
+      if error == EINVAL || error == ENOTSUP { return }
+      throw Failure(code: self.codeOf(error))
+    }
+  }
+
   private func refuseEvicted(_ dirFd: Int32, _ name: String, _ url: URL) throws {
     var real = stat()
     if fstatat(dirFd, name, &real, AT_SYMLINK_NOFOLLOW) == 0 {

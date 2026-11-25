@@ -48,9 +48,9 @@ describe('C-155 : retour du fsync du dossier contrôlé', () => {
 describe('REL-0.29.5 (D-642, H-43) : un dossier sans synchro de dossier ne bloque pas la publication', () => {
   it('les deux écritures passent par syncDirectory, qui tolère EINVAL et ENOTSUP et lève toute autre erreur', () => {
     const helper = body('private func syncDirectory(');
-    expect(helper).toMatch(/if fsync(dirFd) != 0/);
-    expect(helper).toMatch(/error == EINVAL || error == ENOTSUP/);
-    expect(helper).toMatch(/throw Failure(code: self.codeOf(error))/);
+    expect(helper).toContain('if fsync(dirFd) != 0');
+    expect(helper).toContain('if error == EINVAL || error == ENOTSUP { return }');
+    expect(helper).toContain('throw Failure(code: self.codeOf(error))');
     expect(swift.split('try self.syncDirectory(dirFd)').length - 1).toBe(2);
   });
 });
