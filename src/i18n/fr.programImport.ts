@@ -47,6 +47,7 @@ export const programImportFr = {
   note_unread: 'Partie non lue : « {text} »',
   note_seconds: 'Durée en secondes (exercice tenu).',
   'metric_seconds-on-reps': 'Durée lue, mais cet exercice se compte en répétitions : la valeur est enregistrée comme un nombre de répétitions.',
+  'metric_seconds-on-distance': 'Durée lue, mais cet exercice se compte en distance : la valeur est enregistrée comme un nombre de mètres.',
   'metric_reps-on-time': 'Répétitions lues, mais cet exercice est chronométré : la valeur est enregistrée comme une durée en secondes.',
   'note_rir-range': 'Plage de RIR : la valeur haute est retenue.',
   levelSure: 'Proposé',

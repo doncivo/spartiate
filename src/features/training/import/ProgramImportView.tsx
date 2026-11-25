@@ -29,6 +29,12 @@ export interface ProgramImportViewProps {
   readonly ocr?: PhotoReaderProps['open'];
 }
 
+const METRIC_NOTE_KEY = {
+  'seconds-on-reps': 'metric_seconds-on-reps',
+  'seconds-on-distance': 'metric_seconds-on-distance',
+  'reps-on-time': 'metric_reps-on-time',
+} as const;
+
 interface Pick {
   /** Identifiant de l'exercice de la bibliothèque choisi ; null : à choisir. */
   readonly exerciseId: string | null;
@@ -326,7 +332,7 @@ function ExerciseCard({ exercise, match, pick, chosen, groupName, onChoose, onPi
           {note.code === 'unread' ? tImport('note_unread', { text: note.text ?? '' }) : tImport(`note_${note.code}`)}
         </p>
       ))}
-      {metricNote !== null && !pick.removed && <p className="ct-training__muted">{tImport(metricNote === 'reps-on-time' ? 'metric_reps-on-time' : 'metric_seconds-on-reps')}</p>}
+      {metricNote !== null && !pick.removed && <p className="ct-training__muted">{tImport(METRIC_NOTE_KEY[metricNote])}</p>}
       {pick.removed ? (
         <p className="ct-training__muted">{tImport('removed')}</p>
       ) : (
