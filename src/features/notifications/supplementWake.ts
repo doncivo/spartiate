@@ -5,12 +5,13 @@ import type { DataAccess } from '../../db/repositories/dataAccess';
 import type { AppContainer } from '../app/container';
 import { useNoticeStore } from '../app/notice';
 import { announceLocalChanges, onSyncedDataApplied } from '../sync/remoteChanges';
-import { announceRestChanged } from '../training/session/restSignal';
 import { createActionDispatcher } from './actionDispatcher';
 import { createRestActionHandler, restActionTypes } from './restActions';
 import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
 
 const TROUBLE_KEY = 'notifications.actionTrouble';
+/** SHELL-0294b (D-604) : événement écouté par l'écran de séance (`ActiveSession.tsx`, même nom) : le repos a changé, relire l'échéance. */
+const REST_CHANGED_EVENT = 'ct-rest-changed';
 
 /** FIX-0242 : mise à jour de l'état durable, lecture et écriture dans UNE transaction (BEGIN IMMEDIATE : deux mises à jour concurrentes ne se perdent pas). */
 export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['updateTrouble'] {
@@ -75,9 +76,10 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
             const rest = await (await container.data.repos.workouts()).getRest();
             return rest === null ? null : Date.parse(rest.endAt);
           },
-          controller: () => import('./restController').then((m) => m.restControllerFor(container)),
+          // D-604 : le contrôleur vient du bloc de l'Entraînement (déjà à la demande), jamais d'un bloc partagé de plus.
+          controller: () => import('../training/TrainingScreen').then((m) => m.restControllerFor(container)),
           nowMs: () => container.notificationClock.nowMs(),
-          onChanged: announceRestChanged,
+          onChanged: () => void document.dispatchEvent(new Event(REST_CHANGED_EVENT)),
           notice: (text) => useNoticeStore.getState().show(text),
           log: (code) => logFailure('notifications', code),
         }),

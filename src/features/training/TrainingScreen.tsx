@@ -11,6 +11,9 @@ import { TodaySessionCard } from './session/TodaySessionCard';
 import { useTrainingData } from './trainingState';
 import './TrainingScreen.css';
 
+/** SHELL-0294b (§ 13.3 b, D-604) : contrôleur du repos pour les actions de la notification de fin de repos, chargé avec ce bloc. */
+export { restControllerFor } from './session/restController';
+
 /** Journal des séances (I1-03) : bloc à la demande, chargé à l'ouverture de la section. */
 const HistoryView = lazy(() => import('./history/HistoryView').then((m) => ({ default: m.HistoryView })));
 /** Cycle d'entraînement (I3-02) : bloc à la demande, chargé à l'ouverture de la section, avec son catalogue de textes. */

@@ -1,5 +1,4 @@
-import type { NotificationActionId, RawNotificationAction } from '../../domain/notificationActions';
-import type { RawRestAction, RestActionId } from '../../domain/restNotificationActions';
+import type { NotificationActionId, RawNotificationAction, RawRestAction, RestActionId } from '../../domain/notificationActions';
 
 /**
  * Source des actions de notification « Fait » et « +15 min » (N-03, ADR 0012 avenant N3.2) : port de plateforme. Sur l'iPhone, le plugin

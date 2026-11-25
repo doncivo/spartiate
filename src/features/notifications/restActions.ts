@@ -1,5 +1,6 @@
 import { RepositoryError } from '../../db/repositories/common';
-import { decideRestAction, REST_ACTION_EXTEND_SEC, REST_ACTION_TYPE_ID, restActionKey, type RawRestAction } from '../../domain/restNotificationActions';
+import { REST_ACTION_TYPE_ID, type RawRestAction } from '../../domain/notificationActions';
+import { decideRestAction, REST_ACTION_EXTEND_SEC, restActionKey } from '../../domain/restNotificationActions';
 import { restNotificationsFr as fr } from '../../i18n/fr.restNotifications';
 import type { ActionTypeSpec } from '../../platform/notifications';
 import type { RestTimerController } from '../training/session/restTimer';

@@ -1,5 +1,5 @@
 import { pluginDate } from '../../domain/notificationInstant';
-import { REST_ACTION_TYPE_ID } from '../../domain/restNotificationActions';
+import { REST_ACTION_TYPE_ID } from '../../domain/notificationActions';
 import { REST_NOTIFICATION_ID, TIMER_NOTIFICATION_ID } from '../../domain/syntheticTimer';
 import type { OsFamily, Runtime } from '../runtime';
 import { SEND_MARGIN_MS, type IosNotificationBridge } from './tauriNotifications';

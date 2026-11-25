@@ -42,11 +42,16 @@ import { SessionStrip } from './SessionStrip';
 import { DeclaredFatigueBar } from './DeclaredFatigueBar';
 import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
-import { onRestChanged } from './restSignal';
 import { recordText } from './SummaryFigures';
 import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
+
+/**
+ * SHELL-0294b (§ 13.3 b, D-604) : événement du document émis par le répartiteur des actions de notification (`supplementWake.ts`, même nom)
+ * quand « +30 s » ou « Passer » a changé le repos. Un événement plutôt qu'un module partagé : le départ ne grossit pas.
+ */
+const REST_CHANGED_EVENT = 'ct-rest-changed';
 
 /**
  * Écran de séance active (§ 13.2–13.4 ; maquettes iPhone-Seance, PC-Seance ; I1-02). Chaque écriture passe par le repository dans une
@@ -232,12 +237,13 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     };
     document.addEventListener('visibilitychange', onVisible);
     // SHELL-0294b (§ 13.3 b) : « +30 s » ou « Passer » de la notification de fin de repos : l'échéance persistée est relue aussitôt.
-    const offRest = onRestChanged(() => void resume());
+    const onRestChanged = (): void => void resume();
+    document.addEventListener(REST_CHANGED_EVENT, onRestChanged);
     return () => {
       live.current = false;
       clearTimeout(first);
       document.removeEventListener('visibilitychange', onVisible);
-      offRest();
+      document.removeEventListener(REST_CHANGED_EVENT, onRestChanged);
     };
   }, [resume]);
 

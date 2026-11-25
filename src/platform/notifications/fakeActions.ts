@@ -1,5 +1,4 @@
-import type { RawNotificationAction } from '../../domain/notificationActions';
-import { isRestActionId, type RawRestAction } from '../../domain/restNotificationActions';
+import { isRestActionId, type RawNotificationAction, type RawRestAction } from '../../domain/notificationActions';
 import { NotificationActionSourceError, type ActionDrain, type ActionTypeSpec, type NotificationActionSource } from './actions';
 
 /**

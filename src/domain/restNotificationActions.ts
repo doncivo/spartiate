@@ -7,29 +7,16 @@
  * reprise de l'écran de séance (l'app vient de s'ouvrir sur l'échéance passée), et toujours dans les cinq minutes qui suivent l'échéance.
  */
 
-export type RestActionId = 'extend30' | 'skip';
-export const REST_ACTION_IDS: readonly RestActionId[] = ['extend30', 'skip'];
-export const isRestActionId = (value: unknown): value is RestActionId => value === 'extend30' || value === 'skip';
+import type { RawRestAction } from './notificationActions';
 
-/** Catégorie de la notification de fin de repos (`actionTypeId` envoyé avec `show`). */
-export const REST_ACTION_TYPE_ID = 'sp.rest';
+export { isRestActionId, REST_ACTION_IDS, REST_ACTION_TYPE_ID, type RawRestAction, type RestActionId } from './notificationActions';
+
 /** `extra.sid` de la notification du repos (`timerNotification.ts`, sorte `rest`). */
 export const REST_NOTIFICATION_SID = 'timer:rest';
 /** Secondes ajoutées par « +30 s ». */
 export const REST_ACTION_EXTEND_SEC = 30;
 /** Au-delà de cinq minutes après l'échéance, « +30 s » n'a plus de sens : l'action est ignorée et dite. */
 export const REST_ACTION_WINDOW_MS = 5 * 60_000;
-
-/** Action de repos telle que la rend le fichier natif (une ligne). */
-export interface RawRestAction {
-  readonly numericId: number;
-  readonly actionId: RestActionId;
-  /** Instant de la réponse de l'utilisateur (ms UTC). */
-  readonly receivedAtMs: number;
-  readonly sid: string | null;
-  /** Échéance annoncée par la notification (`extra.at`, ms UTC) ; null si absente. */
-  readonly deliveredAt: number | null;
-}
 
 export type RestActionIgnored = 'not-rest' | 'other-rest' | 'late';
 

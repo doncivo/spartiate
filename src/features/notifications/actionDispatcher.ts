@@ -1,5 +1,5 @@
-import type { RawRestAction } from '../../domain/restNotificationActions';
-import { NotificationActionSourceError, type ActionDrain, type ActionTypeSpec, type NotificationActionSource } from '../../platform/notifications';
+import type { RawRestAction } from '../../domain/notificationActions';
+import type { ActionDrain, ActionTypeSpec, NotificationActionSource } from '../../platform/notifications';
 import type { SupplementActionProcessor, SupplementActionRun } from './supplementActions';
 
 /**
@@ -36,7 +36,9 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
       supplementTypes = types;
     },
     drain: async () => {
-      if (snapshot === null) throw new NotificationActionSourceError('rejected');
+      // Tirage impossible : le processeur des compléments le traite comme avant (« source-failed »). Erreur simple, sans la classe de la
+      // plateforme : l'importer ajouterait un bloc aux listes de préchargement du départ (D-604).
+      if (snapshot === null) throw new Error('notification-action-source-failed');
       return { entries: snapshot.entries, rest: [], lines: snapshot.lines, unreadable: snapshot.unreadable, writeFailures: snapshot.writeFailures };
     },
     ack: async (done) => {

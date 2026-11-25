@@ -1,6 +1,5 @@
 import { addPluginListener, invoke } from '@tauri-apps/api/core';
-import { NOTIFICATION_ACTION_IDS, type RawNotificationAction } from '../../domain/notificationActions';
-import { isRestActionId, type RawRestAction } from '../../domain/restNotificationActions';
+import { isRestActionId, NOTIFICATION_ACTION_IDS, type RawNotificationAction, type RawRestAction } from '../../domain/notificationActions';
 import { NotificationActionSourceError, type ActionDrain, type ActionSourceStatus, type NotificationActionSource } from './actions';
 
 /**
