@@ -193,11 +193,17 @@ Constat : D-412 (Ali, 19/11) renvoie ces trois sujets « après quelques semaine
 - B : lundi 1er février 2027 (onze semaines). Conséquences : plus de recul sur l'usage, sujets plus tard.
 - C : à la fin du dernier lot 0.29.x, sans date. Conséquences : dépend du rythme des lots ; risque d'oubli.
 
+## Q-38 — Swipe et appui long sur l'iPhone (§ 18.1 c, C-192, SHELL-0294f)
+Constat : le § 18.1 cite « swipe, long-press » et le § 13 « swipe » sur les séries, sans dire l'action de chaque geste ; rien n'est codé. Un geste sur une ligne entre en concurrence avec le défilement et ne se prouve que par un e2e iPhone (CI) et un constat d'Ali : non fait en SHELL-0294f.
+- A (recommandé) : swipe vers la gauche sur une série = « Supprimer » (avec annulation), appui long sur une vignette d'exercice = réordonner ; rien d'autre. Conséquences : deux gestes dans l'écran de séance (bloc à la demande, hors départ), un e2e iPhone, un constat d'Ali.
+- B : appui long = menu (supprimer, dupliquer, type de série) partout où le PC a un clic droit. Conséquences : plus de surfaces, un composant de menu commun.
+- C : pas de geste (boutons seulement, état actuel) ; § 18.1 amendé. Conséquences : aucun risque de geste involontaire.
+
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-354 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+356 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -424,7 +430,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (80 : 48 à trancher, 32 à confirmer seulement)
+### synchro et données (81 : 49 à trancher, 32 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -462,6 +468,7 @@ Gardées sans question (à confirmer seulement) :
 | 4 | D-326 | FIX-A008 (0.28.0) : pilote SQLite en échec fermé quand l'annulation d'une transaction ne peut pas être établie (audit Codex 0.26.0, A-008, bloquant; … | A garder · B réviser ; effet : schéma |
 | 4 | D-327 | FIX-A009 (0.28.0) : colonnes inconnues d'une table connue gardées à la réception d'un instantané (audit Codex 0.26.0, A-009, bloquant; avenant 38 de … | A garder · B réviser ; effet : schéma |
 | 4 | D-583 | DATA-0293. | A garder · B réviser ; effet : synchro, écran |
+| 4 | D-627 | SHELL-0294f (BL-166) : intention d'ajout d'une époque passée jamais publiée comme tête. | A garder · B réviser ; effet : synchro |
 | 3 | D-469 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-141 | FIX-0173 (constat 4) : unité de measurement.value dans l'export complet selon le genre. | A garder · B réviser ; effet : chiffre |
 | 2 | D-334 | FIX-EXPORT (0.28.0) : horizon de remise à zéro dans le manifeste d'export, refus d'une archive qui ramènerait des données effacées (C-109; complète … | A garder · B réviser ; effet : données |
@@ -571,7 +578,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (55 : 23 à trancher, 32 à confirmer seulement)
+### CI et outillage (56 : 24 à trancher, 32 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -582,6 +589,7 @@ Gardées sans question (à confirmer seulement) :
 | 5 | D-274 | PROG-01 (0.24.0) : exception chiffrée au bundle de départ (choix prudent, révisable par Ali; D-264 (3), D-265). | A garder · B réviser ; effet : schéma, chiffre |
 | 5 | D-615 | SHELL-0294e (BL-137, BL-167). | A garder · B réviser ; effet : moteur, schéma |
 | 5 | D-624 | SHELL-0294f (BL-148) : matrice et ADR 0014 mises à jour par des constats déjà consignés, jamais par une lecture de code (D-36). | A garder · B réviser ; effet : synchro, écran |
+| 5 | D-628 | SHELL-0294f (BL-030) : réintégration en échec au démarrage, vérifiée par test. | A garder · B réviser ; effet : synchro, données |
 | 4 | D-122 | FIX-0171 : mise en œuvre de D-121. | A garder · B réviser ; effet : données, écran |
 | 4 | D-287 | ERGO-02b (0.25.0) : préchargement sans polyfill et sans blocs du départ entre eux (passe architect). | A garder · B réviser ; effet : moteur, chiffre |
 | 4 | D-321 | DOC-PRIV (0.28.0) : retrait des données réelles d'Ali des fichiers suivis (C-165; applique D-318 (5)). | A garder · B réviser ; effet : données, écran |
