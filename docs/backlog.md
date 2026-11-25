@@ -309,6 +309,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-163 | CI-0292 (relecture des paires visuelles, run 45379435573) | Scènes « Entrainement-indisponible » : la capture montre « Chargement… » ; scène « Degrade-apprentissage » : l'état d'apprentissage de la récupération hors du cadre ; attendre l'état visé avant la capture | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-164 | NUTRI-0292 (contre-relecture à froid, mineurs) | Assiette : « Enregistrer en recette » reste actif quand une quantité est invalide (la recette prend les grammes retenus, pas ceux du champ) ; variable `none` inutile dans `DayCompleteness.test.tsx` | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-165 | REL-0.29.2 (complément d'audit, D-489, D-564) | Les corps de six publications GitHub anciennes de spartiate-releases (v0.2.0, ios-v0.2.0, v0.3.0, ios-v0.3.0, v0.3.3, ios-v0.3.3) portent encore le nom du lieu ; source.json est réécrit par le script de publication, pas ces corps : ajouter au script de publication une étape qui les réécrit (même `redactPlace`), jamais une modification à la main | à faire (0.29.x, coquille, iOS et qualité, S) |
+| BL-166 | DATA-0293 (contre-relecture sync-icloud) | `resolveInflight` (`orphanEpoch.ts`) publie la tête de l'époque de l'intention sans la comparer à l'époque courante : un ajout réussi, un échec local puis un changement d'époque avant le cycle suivant ; comportement antérieur à DATA-0293, à vérifier par un test | à faire (0.29.x, données et synchro, S) |
 
 ## 3. Audit Codex 0.26.0
 
@@ -325,7 +326,7 @@ Source : branche `audit-0.26.0` (PR brouillon #148), `docs/audit-0.26.0/bloquant
 | A-007 | audit Codex 0.26.0 | mineur — import Tauri dynamique hors façade dans `theme.ts`, garde ESLint aveugle à la forme dynamique | fait (PR #153) |
 | A-008 | audit Codex 0.26.0 | bloquant — rollback en échec : écriture suivante acquittée puis perdue à la réouverture (`serializedDriver.ts`) | fait (FIX-A008) |
 | A-009 | audit Codex 0.26.0 | bloquant — instantané : colonne nouvelle d'une table connue perdue par l'appareil ancien (dont `routine_day.weekday`) | fait (FIX-A009) |
-| BL-030 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : réintégration en échec gardée au journal seul ; double panne de persistance à vérifier | fait (DATA-0293, D-572) |
+| BL-030 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : réintégration en échec gardée au journal seul ; double panne de persistance à vérifier | à faire (0.29.x, données et synchro, S) : non prouvé en DATA-0293 (D-572 ne couvre que la garde de synchro ; la réintégration en échec de bootstrap.ts reste journalisée seule, sans test ni signal) |
 | BL-031 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : erreur de `assertGuardEmpty` transformée en zéro | fait (DATA-0293, D-572) |
 | BL-032 | audit Codex 0.26.0 (partie 1) | piste — `timeZoneWatcher.ts` absorbe les erreurs de réglage (rejoint C-123) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-033 | audit Codex 0.26.0 (partie 1) | piste — premier rendu du thème « système » : `index.html` impose `data-theme="dark"` | à faire (0.29.x, coquille, iOS et qualité, S) |
