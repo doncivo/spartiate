@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_PICK_ARCHIVE_MAX_BYTES, DEFAULT_PICK_MAX_BYTES } from '../../platform/files/types';
-import { IMPORT_ZIP_LIMITS, buildExportArchive, exportFitsImportLimit, parseExportArchive, EXPORT_SV, type ExportData } from './archive';
-import { buildZip, readZip } from './zip';
+import { IMPORT_ZIP_LIMITS, buildExportArchive, exportFitsImportLimit, parseExportArchive, EXPORT_SV, type ExportData } from '../../domain/exportImport/archive';
+import { buildZip, readZip } from '../../domain/exportImport/zip';
 
 const DATA: ExportData = { profile: null, weights: [{ id: 'weight|2026-10-04|manual', date: '2026-10-04', kg: 82.4, source: 'manual', timezone: 'Europe/Paris', healthUuid: null, measuredAt: null }], settings: {} };
 

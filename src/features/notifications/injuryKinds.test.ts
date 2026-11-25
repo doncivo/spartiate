@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createFakeNotificationScheduler } from '../platform/notifications/fake';
-import { NOTIFICATION_KINDS } from '../platform/notifications/types';
-import { validateRequests } from '../platform/notifications/validate';
-import { parseNotificationLedger } from './notificationLedger';
-import type { LocalDateTime } from './types';
+import { createFakeNotificationScheduler } from '../../platform/notifications/fake';
+import { NOTIFICATION_KINDS } from '../../platform/notifications/types';
+import { validateRequests } from '../../platform/notifications/validate';
+import { parseNotificationLedger } from '../../domain/notificationLedger';
+import type { LocalDateTime } from '../../domain/types';
 
 /** BLESSURES-b : nature « injury » dans le contrat, la validation, le faux et le registre (modèle recoveryKinds.test.ts). */
 const req = { id: 'injury:2026-11-15', fireAt: '2026-11-15T09:00' as LocalDateTime, title: 'Spartiate', body: 'texte', kind: 'injury' as const };
