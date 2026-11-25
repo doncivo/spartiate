@@ -2162,3 +2162,60 @@ fn y_ios_05_18_layer_values_are_consistent() {
     }
     assert!(PLUGIN_REJECT_CODES.contains(&DEADLINE_CODE));
 }
+
+/// DATA-0295 (C-155, second point de l'audit Claude 0.27.0 : « `download` dort jusqu'à 60 s sur la file série, écriture fantôme possible
+/// si Rust abandonne à 20 s ») : tant qu'un `download` est en vol sur la file série de Swift (non abandonné, échéance `timeoutMs` + marge),
+/// une écriture n'est jamais envoyée derrière lui : elle attend au plus sa propre échéance puis rend `cloud-pending` sans atteindre le
+/// transport ; il n'y a donc pas d'écriture abandonnée qui s'exécuterait plus tard. Une fois le téléchargement rendu, l'écriture passe.
+#[test]
+fn data0295_c155_no_write_is_sent_behind_an_in_flight_download() {
+    let limits = DeadlineLimits {
+        file_call: Duration::from_millis(50),
+        download_margin: Duration::from_secs(3_600),
+        max_abandoned: 1,
+    };
+    let mut rig = deadline_rig(Some("download"), limits);
+    let deadline = rig.deadline.clone();
+    let download = std::thread::spawn(move || {
+        deadline.call(
+            "download",
+            json!({ "path": ["devices", "state.spx"], "timeoutMs": 60_000, "limit": 1 }),
+        )
+    });
+    assert!(rig.muted.wait_received(1));
+    for command in ["append", "writeAtomic", "rename"] {
+        assert_eq!(
+            rig.deadline
+                .call(command, json!({ "path": ["devices", "x"] })),
+            Err("cloud-pending".to_owned()),
+            "{command}"
+        );
+    }
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["download".to_owned()],
+        "aucune écriture envoyée derrière le téléchargement en vol"
+    );
+    assert_eq!(
+        rig.deadline.abandoned(),
+        0,
+        "le téléchargement n'est pas abandonné"
+    );
+    rig.release.as_ref().unwrap().0.send(()).unwrap();
+    let _ = download.join().unwrap();
+    rig.muted
+        .script
+        .lock()
+        .unwrap()
+        .insert("append".to_owned(), Ok(json!({})));
+    assert_eq!(
+        rig.deadline
+            .call("append", json!({ "path": ["devices", "x"] })),
+        Ok(json!({}))
+    );
+    assert_eq!(
+        rig.muted.commands(),
+        vec!["download".to_owned(), "append".to_owned()]
+    );
+    drop(rig.release.take());
+}
