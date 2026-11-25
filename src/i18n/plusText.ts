@@ -17,6 +17,7 @@ const fr = {
   navBackup: 'Sauvegarde',
   navExport: 'Export et import',
   navLogs: 'Journaux',
+  navLicenses: 'Licences',
   valueMissing: '— non renseigné',
   // Carte profil
   profileSummaryEmpty: 'Taille, poids et objectif',

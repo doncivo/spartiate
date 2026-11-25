@@ -25,6 +25,7 @@ export type ScreenName =
   | 'resetdatascreen'
   | 'sectionnotice'
   | 'logsscreen'
+  | 'licensesscreen'
   | 'recoveryfailure'
   | 'updaterestoreaction'
   | 'syncdetailsscreen'

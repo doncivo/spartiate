@@ -12,13 +12,14 @@ import { BackupRow } from './BackupRow';
 import { settingsStore } from './settingsStore';
 
 /** Réglages ouvrables dans le panneau de droite de Plus sur PC (ERGO-02, aperçu PC-Plus-apres). */
-export type PanelId = 'profile' | 'sync' | 'appearance' | 'general' | 'keyboard' | 'about' | 'export' | 'backup' | 'logs' | 'reset';
+export type PanelId = 'profile' | 'sync' | 'appearance' | 'general' | 'keyboard' | 'about' | 'export' | 'backup' | 'logs' | 'licenses' | 'reset';
 
 // Même contenu que les sous-écrans, chargés à la demande avec leurs catalogues (aucun module ajouté au départ).
 const BodyScreen = lazy(() => import('./BodyScreen').then((m) => ({ default: m.BodyScreen })));
 const AppearanceScreen = lazy(() => import('./AppearanceScreen').then((m) => ({ default: m.AppearanceScreen })));
 const ExportImportScreen = lazy(() => import('./ExportImportScreen').then((m) => ({ default: m.ExportImportScreen })));
 const LogsScreen = lazy(() => import('./logs/LogsScreen').then((m) => ({ default: m.LogsScreen })));
+const LicensesScreen = lazy(() => import('./LicensesScreen').then((m) => ({ default: m.LicensesScreen })));
 const ResetDataScreen = lazy(() => import('./ResetDataScreen').then((m) => ({ default: m.ResetDataScreen })));
 const SyncDetailsScreen = lazy(() => import('../sync/SyncDetailsScreen').then((m) => ({ default: m.SyncDetailsScreen })));
 
@@ -91,6 +92,8 @@ function content(id: PanelId): ReactNode {
       );
     case 'logs':
       return <LogsScreen />;
+    case 'licenses':
+      return <LicensesScreen />;
     case 'reset':
       return <ResetDataScreen />;
   }

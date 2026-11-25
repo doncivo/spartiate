@@ -131,6 +131,7 @@ function SettingsScreenMobile() {
         <SigningAboutRow />
         {showLockRow && <SecuritySection />}
         <AboutSection heading={false} />
+        <LinkRow label={tPlus('navLicenses')} onClick={() => navigate({ tab: 'more', screen: 'licenses' })} />
       </div>
       <h2 className="ct-settings__section ct-section-title">{tPlus('groupData')}</h2>
       <div className="ct-settings__card ct-flat">

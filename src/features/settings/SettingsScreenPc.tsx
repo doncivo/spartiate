@@ -61,6 +61,7 @@ export function SettingsScreenPc() {
         { id: 'general', label: tPlus('navGeneral'), value: timeZone ?? t('settings.timeZoneUnknown') },
         { id: 'keyboard', label: tPlus('navKeyboard'), value: '' },
         { id: 'about', label: tPlus('navAbout'), value: version ?? t('app.versionUnknown') },
+        { id: 'licenses', label: tPlus('navLicenses'), value: '' },
       ],
     },
     {
