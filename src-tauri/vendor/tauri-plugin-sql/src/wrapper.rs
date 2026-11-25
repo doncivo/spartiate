@@ -403,7 +403,9 @@ fn sqlite_options(conn_url: &str) -> Result<sqlx::sqlite::SqliteConnectOptions, 
 
     Ok(SqliteConnectOptions::from_str(conn_url)?
         .journal_mode(SqliteJournalMode::Wal)
-        // DATA-0293 (§ 21.2 a, C-194) : en WAL, NORMAL garde la base cohérente à toute coupure (au pire la dernière transaction non checkpointée est perdue) ; FULL (défaut sqlx) ajoute un fsync par validation.
+        // DATA-0293 (§ 21.2 a, C-194) : en WAL, NORMAL garde la base COHÉRENTE à toute coupure, mais une coupure de courant ou un plantage du système peut perdre TOUTES les validations
+        // faites depuis la dernière synchronisation du WAL (pas seulement la dernière) ; un plantage de l'app seule ne perd rien. FULL (défaut sqlx) fsync à chaque validation. Le moteur de synchro
+        // supporte ce retour en arrière (preuve : tests/unit/sync/data0293/walRollback.test.ts, D-584).
         .synchronous(SqliteSynchronous::Normal)
         .foreign_keys(true)
         // Spartiate (FIX-CONFID-IOS, C-089) : contenu supprimé écrasé par des zéros (photo supprimée absente des pages libres). Posé ici,
@@ -470,8 +472,8 @@ mod tests {
         db.close().await;
     }
 
-    /// DATA-0293 (§ 21.2 a, C-194) : WAL avec synchronous = NORMAL (sqlx pose FULL par défaut) : en WAL, NORMAL garde la base cohérente à toute coupure
-    /// et ne perd au pire que la dernière transaction non checkpointée ; FULL ajoute un fsync par validation, sans gain ici. Lu directement sur le pool
+    /// DATA-0293 (§ 21.2 a, C-194) : WAL avec synchronous = NORMAL (sqlx pose FULL par défaut) : la base reste cohérente à toute coupure, mais une coupure de courant
+    /// ou un plantage du système peut perdre toutes les validations depuis la dernière synchronisation du WAL ; FULL ajoute un fsync par validation. Lu directement sur les options du pool
     /// (le front ne peut pas lire ce pragma : hors de la liste blanche de guard).
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn data0293_pool_is_wal_with_synchronous_normal() {
