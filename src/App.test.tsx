@@ -27,7 +27,7 @@ function mockViewport(width: number): void {
 describe('App (coquille, T-01)', () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
-    useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null, dbFailure: null, spaceFilter: 'all' });
+    useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null, dbFailure: null });
     useNavigationStore.setState(INITIAL_NAVIGATION);
   });
 

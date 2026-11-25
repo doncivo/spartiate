@@ -47,7 +47,7 @@ export function AppShell({ tabRail, children, topBar, detail, fab, detailOverlay
       <DetailSlotContext.Provider value={layout === 'pc' ? slot : null}>
         <div className="ct-app-shell__column">
           {layout === 'pc' ? topBar : null}
-          <main className="ct-app-shell__main">{children}</main>
+          <main className="ct-app-shell__main" tabIndex={-1}>{children}</main>
         </div>
       </DetailSlotContext.Provider>
       {layout === 'pc' ? (

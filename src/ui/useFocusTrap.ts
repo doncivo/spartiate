@@ -102,15 +102,8 @@ export function useFocusTrap<T extends HTMLElement>({ active, onEscape, initialF
       document.removeEventListener('keydown', handleKeyDown, true);
       const index = activeTraps.indexOf(token);
       if (index >= 0) activeTraps.splice(index, 1);
-      if (previouslyFocused?.isConnected) previouslyFocused.focus();
-      else {
-        // C-121 : l'ouvreur a été démonté : le focus va au contenu principal plutôt que de se perdre sur le corps de page.
-        const main = document.querySelector<HTMLElement>('main');
-        if (main) {
-          if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
-          main.focus({ preventScroll: true });
-        }
-      }
+      // C-121 : ouvreur démonté : le focus va au contenu principal plutôt que de se perdre sur le corps de page.
+      (previouslyFocused?.isConnected ? previouslyFocused : document.querySelector<HTMLElement>('main'))?.focus({ preventScroll: true });
     };
   }, [active]);
 

@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { LicensesScreen } from './LicensesScreen';
-import * as screens from '../app/lazyScreens';
 import { licencesFr } from '../../i18n/fr.licenses';
 
 /**
@@ -39,8 +38,9 @@ describe('LicensesScreen (C-119)', () => {
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'home' });
   });
 
-  it('est un écran à la demande, nommé dans l’inventaire', () => {
-    expect(typeof (screens as Record<string, unknown>).LicensesScreen).toBe('function');
-    expect(readFileSync(join(import.meta.dirname, '..', 'app', 'screenNames.ts'), 'utf8')).toContain("'licensesscreen'");
+  it('est servi à la demande par l’écran Plus (aucun écran de plus dans le départ)', () => {
+    const settings = readFileSync(join(import.meta.dirname, 'SettingsScreen.tsx'), 'utf8');
+    expect(settings).toContain("import('./LicensesScreen')");
+    expect(readFileSync(join(import.meta.dirname, '..', 'app', 'screenNames.ts'), 'utf8')).not.toContain("'licensesscreen'");
   });
 });

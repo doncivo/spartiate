@@ -8,7 +8,6 @@ import { archiveResetVerdict } from '../../domain/dataReset';
 import { isStrictHlc } from '../../domain/sync/format';
 import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
 import { FileExportError } from '../../platform/files';
-import { applyThemeEverywhere, parseThemeChoice } from './theme';
 import { Button, ConfirmDialog, Icon, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
@@ -31,6 +30,22 @@ function localDayOf(iso: string): string {
   if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
   const pad = (n: number): string => String(n).padStart(2, '0');
   return `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/**
+ * C-127 : le thème importé s'applique aussitôt à l'interface (attribut du document et miroir local du script de premier affichage,
+ * comme `applyTheme`). Écrit ici et non importé : un module du départ importé par un écran à la demande devient un bloc de plus
+ * dans le départ (bundle). La barre de titre Windows suit au prochain démarrage (`startThemeSync`).
+ */
+function applyImportedTheme(choice: 'light' | 'dark' | 'system'): void {
+  const root = document.documentElement;
+  if (choice === 'system') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', choice);
+  try {
+    window.localStorage.setItem('ct.theme', choice);
+  } catch {
+    // Stockage indisponible : l'attribut est posé quand même.
+  }
 }
 
 interface Preview {
@@ -140,7 +155,7 @@ export function ExportImportScreen() {
         return { counts: final.counts, theme };
       });
       // C-127 : le thème importé s'applique aussitôt (réglage, document et barre de titre), pas au prochain démarrage.
-      if (theme !== undefined) applyThemeEverywhere(parseThemeChoice(theme));
+      if (theme === 'light' || theme === 'dark' || theme === 'system') applyImportedTheme(theme);
       setPreview(null);
       setMessage({ kind: 'ok', text: tExportImport('importDone', { add: counts.add, modify: counts.modify, delete: counts.delete }) });
     } catch {

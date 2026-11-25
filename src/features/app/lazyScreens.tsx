@@ -160,8 +160,6 @@ export const RecoveryFailureLazy = lazyScreen<{ message: string }>(() => import(
 /** I-06 : « Restaurer la sauvegarde d'avant la mise à jour » de l'écran d'échec du démarrage. */
 export const UpdateRestoreActionLazy = lazyScreen<UpdateRestoreActionProps>(() => import('./UpdateRestoreAction').then((m) => ({ default: m.UpdateRestoreAction })), 'updaterestoreaction');
 /** Écran Logs (I-04), ouvert depuis Réglages › À PROPOS. */
-export const LicensesScreen = lazyScreen<object>(() => import('../settings/LicensesScreen').then((m) => ({ default: m.LicensesScreen })), 'licensesscreen');
-export const SideStoreScreen = lazyScreen<object>(() => import('../settings/SideStoreScreen').then((m) => ({ default: m.SideStoreScreen })), 'sidestorescreen');
 export const LogsScreen = lazyScreen<object>(() => import('../settings/logs/LogsScreen').then((m) => ({ default: m.LogsScreen })), 'logsscreen');
 export const SyncDetailsScreen = lazyScreen<object>(() => import('../sync/SyncDetailsScreen').then((m) => ({ default: m.SyncDetailsScreen })), 'syncdetailsscreen');
 

@@ -1,7 +1,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createManualClock, type ManualClock } from '../../domain/clock';
-import { useLocalDay } from './ShellChrome';
+import { useLocalDay } from './useLocalDay';
 
 /** SHELL-0294c (C-074, C-124) : le jour local est relu à minuit (et au retour au premier plan), jamais figé au premier rendu. */
 describe('useLocalDay', () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { tExportImport } from '../../i18n/exportImportText';
 import { healthFr } from '../../i18n/fr.health';
@@ -35,7 +35,21 @@ function formatLocalTime(isoUtc: string, timeZone: string | null): string {
  * et À PROPOS (version, diagnostic et journal). Apple Santé et Notifications n'existent pas encore : aucune ligne pour eux. PC : voir
  * `SettingsScreenPc`.
  */
+/** C-119, § 18.3 a : « Licences » et la procédure SideStore sont des sous-écrans de Plus, chargés à la demande avec leurs textes (bloc hors du départ). */
+const LicensesScreen = lazy(() => import('./LicensesScreen').then((m) => ({ default: m.LicensesScreen })));
+
 export function SettingsScreen() {
+  const info = useNavigationStore((s) => s.route.tab === 'more' && (s.route.screen === 'licenses' || s.route.screen === 'sidestore'));
+  return info ? (
+    <Suspense fallback={null}>
+      <LicensesScreen />
+    </Suspense>
+  ) : (
+    <SettingsHome />
+  );
+}
+
+function SettingsHome() {
   const layout = useLayout();
   return layout === 'pc' ? <SettingsScreenPc /> : <SettingsScreenMobile />;
 }

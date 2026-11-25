@@ -14,7 +14,7 @@ import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
 import { lazyScreen, NutritionRemainingCard, RecoveryToday, SupplementsTodayCard, TodaySessionCard } from './lazyScreens';
-import { useLocalDay } from './ShellChrome';
+import { useLocalDay } from './useLocalDay';
 import type { TodayPcSideProps } from './TodayPcSide';
 import { useNavigationStore, type Route } from './navigation';
 import './TodayScreen.css';

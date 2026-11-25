@@ -2,6 +2,7 @@ import { Undo2 } from 'lucide-react';
 import { licencesFr } from '../../i18n/fr.licenses';
 import { Icon, useLayout } from '../../ui';
 import { useNavigationStore } from '../app/navigation';
+import { SideStoreScreen } from './SideStoreScreen';
 import './LicensesScreen.css';
 
 /**
@@ -11,6 +12,9 @@ import './LicensesScreen.css';
 export function LicensesScreen() {
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
+  // § 18.3 a : la procédure SideStore est servie par ce même bloc à la demande (un écran de moins dans le départ).
+  const sideStore = useNavigationStore((s) => s.route.tab === 'more' && s.route.screen === 'sidestore');
+  if (sideStore) return <SideStoreScreen />;
   return (
     <div className="ct-licenses-shell" data-layout={layout}>
       <div className="ct-licenses">

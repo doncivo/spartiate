@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ComponentType, type ReactNode } from 'react';
 import { AppContainerProvider, useAppContainer } from './features/app/AppContainerContext';
 import { useAppStore } from './features/app/appStore';
+import { todayLocal } from './domain/clock';
 import { UndoToast } from './features/app/UndoToast';
 import { bootstrapApp, publishStartFailure } from './features/app/bootstrap';
 import { DbFailureDetails, DbOpenWatchdog, failureAlertKey } from './features/app/DbFailureDetails';
@@ -12,7 +13,7 @@ import { startAppStartup, type AppStartup } from './features/app/startup';
 import { FallbackBoundary, StartupWatchdog } from './features/app/StartupWatchdog';
 import { isDatabaseWorkStep, startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
-import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LicensesScreen, LogsScreen, SideStoreScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
+import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
 import { startNetworkStatus } from './features/app/appStatus';
 import { restoreAppearance, startThemeSync } from './features/settings';
@@ -26,7 +27,7 @@ import type { startSigningIntegration } from './features/signing/signingRun';
 import { t } from './i18n';
 import { formatPrefsVersion, subscribeFormatPrefs } from './i18n/formatPrefs';
 import { AppShell, Button, TabRail } from './ui';
-import { PcTopBar, SidebarSyncCard, useLocalDay } from './features/app/ShellChrome';
+import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
 import { SHORTCUTS } from './features/app/shortcuts';
 import { logFailure } from './platform/desktop/log';
 import { formatDetailDate } from './i18n/format';
@@ -50,6 +51,17 @@ const RAIL_ITEMS = TABS.filter((tab) => tab.id !== MORE_ITEM.id);
  * Coquille réelle de l'app : cinq sections fixes. Today, Training, Nutrition et Progress sont neutres jusqu'à leur itération
  * (aucun écran inventé) ; `route.tab` reste la seule source de vérité.
  */
+/** Écrans internes de Plus (`Route` `more`) ; une route absente de la table : la liste des réglages. */
+const MORE_SCREENS: Readonly<Record<string, ComponentType | undefined>> = {
+  appearance: AppearanceScreen,
+  body: BodyScreen,
+  health: AppleHealthScreen,
+  exportimport: ExportImportScreen,
+  reset: ResetDataScreen,
+  logs: LogsScreen,
+  sync: SyncDetailsScreen,
+};
+
 function AppShellContent() {
   // P-03 : un changement de format d'heure ou de premier jour réaffiche aussitôt toute la coquille (sans redémarrage).
   useSyncExternalStore(subscribeFormatPrefs, formatPrefsVersion);
@@ -57,7 +69,9 @@ function AppShellContent() {
   const route = useNavigationStore((s) => s.route);
   const goToTab = useNavigationStore((s) => s.goToTab);
   const layout = useLayout();
-  const day = useLocalDay(container.clock);
+  const MoreScreen = (route.tab === 'more' && MORE_SCREENS[route.screen]) || SettingsScreen;
+  // C-124 : le jour courant est tenu par Aujourd'hui (`useLocalDay`, relu à minuit), seul écran où la date de la barre s'affiche.
+  const day = useAppStore((s) => s.day) ?? todayLocal(container.clock);
 
   // PERF-02 : écrans chargés à la demande, préchargés en arrière-plan après le premier rendu.
   useEffect(() => preloadScreens(), []);
@@ -85,7 +99,7 @@ function AppShellContent() {
       {/* I3-07 : onboarding en 8 écrans (premier lancement sur base vide, ou « Revoir mes réglages ») ; hôte et écrans à la demande. */}
       <OnboardingHost />
       {route.tab === 'more' ? (
-        route.screen === 'appearance' ? <AppearanceScreen /> : route.screen === 'body' ? <BodyScreen /> : route.screen === 'health' ? <AppleHealthScreen /> : route.screen === 'exportimport' ? <ExportImportScreen /> : route.screen === 'reset' ? <ResetDataScreen /> : route.screen === 'logs' ? <LogsScreen /> : route.screen === 'licenses' ? <LicensesScreen /> : route.screen === 'sidestore' ? <SideStoreScreen /> : route.screen === 'sync' ? <SyncDetailsScreen /> : <SettingsScreen />
+        <MoreScreen />
       ) : route.tab === 'training' ? (
         <TrainingScreen />
       ) : route.tab === 'nutrition' ? (
