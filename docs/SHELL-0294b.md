@@ -59,7 +59,7 @@ Preuves locales : chaque rouge lancé seul et vu rouge (échec d'assertion, modu
 `src/i18n`, `src/ui/StatusBanner*`, `tests/unit/visualCoverage.test.ts`, `cargo test --test desktop` (logic, notification_actions, capture_ios), `cargo clippy -D warnings`,
 `npm run typecheck`, `npm run lint`, gardes documentaires. Le Swift n'est compilé que par la CI (`build-ios.yml` en fin de lot, pas par ce ticket) ; les e2e et
 `visual` ne tournent qu'en CI. `SessionReplace.test.tsx` a échoué une fois sur une série de 99 fichiers lancée d'un seul travailleur (attente de 3 s dépassée sous
-charge), vert seul et sans lien avec le diff (un abonnement ajouté à `ActiveSession`) : à relire sur la CI, aucun délai allongé.
+charge) ; vert seul, puis vert dans la série complète `src/features/training` et `src/i18n` (109 fichiers, 653 tests) après le dernier commit de code ; aucun délai allongé.
 
 ## Passe code-reviewer (relecture à froid du diff)
 
