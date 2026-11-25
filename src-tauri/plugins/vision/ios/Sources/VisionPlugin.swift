@@ -10,6 +10,9 @@
 // - le travail tourne sur `visionQueue` (série, dédiée), jamais sur la file IPC partagée de Tauri ni sur le fil principal ;
 // - l'image reste en mémoire : rien n'est écrit, rien n'est envoyé (ni fichier, ni réseau) ; seule `cleanTemporaryUploads` supprime les
 //   copies temporaires du sélecteur de photos.
+// - SHELL-0294b (C-159) : l'état « occupé » ne dure jamais plus que la garde de temps et sa marge. Chaque lecture a un jeton ; la garde de
+//   temps libère l'état dès qu'elle répond `timeout` ; une lecture restée bloquée dans `perform` au-delà est abandonnée (nouvelle file
+//   série), et seule la lecture en cours peut libérer l'état (une lecture abandonnée qui finit enfin ne libère pas la suivante).
 
 import CoreGraphics
 import Foundation
@@ -60,14 +63,20 @@ private final class Settle {
 // MARK: - Plugin
 
 class VisionPlugin: Plugin {
-  /// File des lectures (série, dédiée) : `perform` est synchrone et ne doit jamais tourner sur le fil principal.
-  private let visionQueue = DispatchQueue(label: "fr.spartiate.vision.read", qos: .userInitiated)
+  /// File des lectures (série, dédiée) : `perform` est synchrone et ne doit jamais tourner sur le fil principal. Remplacée (sous `stateLock`)
+  /// quand une lecture bloquée est abandonnée ; lue par `currentQueue()`.
+  private var visionQueue = DispatchQueue(label: "fr.spartiate.vision.read", qos: .userInitiated)
   /// File des gardes de temps (distincte : la file de lecture est occupée pendant `perform`).
   private let guardQueue = DispatchQueue(label: "fr.spartiate.vision.guard", qos: .userInitiated)
   /// Garde de temps d'une lecture (s) : au-delà, la requête est annulée et `timeout` rendu.
   private let readTimeoutSeconds: Double = 15
+  /// Marge au-delà de la garde de temps avant d'abandonner une lecture bloquée (s).
+  private let staleGraceSeconds: Double = 5
   private let stateLock = NSLock()
-  private var reading = false
+  /// Jeton de la lecture en cours (nil : aucune) et date de son début.
+  private var readingToken: UInt64?
+  private var readingSince: Date?
+  private var nextToken: UInt64 = 0
 
   // MARK: Outils communs
 
@@ -85,19 +94,47 @@ class VisionPlugin: Plugin {
     }
   }
 
-  private func beginReading() -> Bool {
+  /// File des lectures du moment (sous `stateLock`).
+  private func currentQueue() -> DispatchQueue {
     stateLock.lock()
     defer { stateLock.unlock() }
-    if reading {
-      return false
-    }
-    reading = true
-    return true
+    return visionQueue
   }
 
-  private func endReading() {
+  /// Jeton de la nouvelle lecture, ou nil si une lecture récente est en cours (`busy`). Une lecture plus vieille que la garde de temps et sa
+  /// marge est abandonnée : elle garde sa file, bloquée, et les suivantes partent sur une file neuve.
+  private func beginReading() -> UInt64? {
     stateLock.lock()
-    reading = false
+    defer { stateLock.unlock() }
+    if readingToken != nil {
+      let age = Date().timeIntervalSince(readingSince ?? Date.distantPast)
+      if age < readTimeoutSeconds + staleGraceSeconds {
+        return nil
+      }
+      visionQueue = DispatchQueue(label: "fr.spartiate.vision.read", qos: .userInitiated)
+    }
+    nextToken &+= 1
+    readingToken = nextToken
+    readingSince = Date()
+    return nextToken
+  }
+
+  /// Garde de temps échue pour la lecture `token` : les lectures suivantes partent sur une file neuve.
+  private func retireQueue(_ token: UInt64) {
+    stateLock.lock()
+    if readingToken == token {
+      visionQueue = DispatchQueue(label: "fr.spartiate.vision.read", qos: .userInitiated)
+    }
+    stateLock.unlock()
+  }
+
+  /// Libère l'état si `token` est la lecture en cours (sans effet sinon : lecture abandonnée, ou déjà libérée par la garde de temps).
+  private func endReading(_ token: UInt64) {
+    stateLock.lock()
+    if readingToken == token {
+      readingToken = nil
+      readingSince = nil
+    }
     stateLock.unlock()
   }
 
@@ -113,6 +150,7 @@ class VisionPlugin: Plugin {
 
   /// Langues que Vision sait lire (niveau précis, révision 3).
   @objc public func status(_ invoke: Invoke) {
+    let visionQueue = currentQueue()
     visionQueue.async {
       let request = VNRecognizeTextRequest()
       request.recognitionLevel = .accurate
@@ -130,6 +168,7 @@ class VisionPlugin: Plugin {
   /// la photo d'une liste ne reste pas sur l'appareil après sa lecture. Appelée par Rust après chaque lecture et au lancement ; seul endroit
   /// du plugin qui touche au système de fichiers (jamais d'écriture), sur la file des lectures (donc après la lecture en cours).
   @objc public func cleanTemporaryUploads(_ invoke: Invoke) {
+    let visionQueue = currentQueue()
     visionQueue.async {
       let manager = FileManager.default
       let directory = NSTemporaryDirectory()
@@ -164,15 +203,16 @@ class VisionPlugin: Plugin {
       reject(invoke, .invalidArgument)
       return
     }
-    if !beginReading() {
+    guard let token = beginReading() else {
       reject(invoke, .busy)
       return
     }
+    let visionQueue = currentQueue()
     visionQueue.async {
-      defer { self.endReading() }
+      defer { self.endReading(token) }
       let settle = Settle()
       do {
-        let lines = try self.read(input, settle: settle, invoke: invoke)
+        let lines = try self.read(input, settle: settle, invoke: invoke, token: token)
         if settle.first() {
           invoke.resolve(["lines": lines])
         }
@@ -190,7 +230,7 @@ class VisionPlugin: Plugin {
 
   // MARK: Lecture
 
-  private func read(_ input: RecognizeArgs, settle: Settle, invoke: Invoke) throws -> [[String: Any]] {
+  private func read(_ input: RecognizeArgs, settle: Settle, invoke: Invoke, token: UInt64) throws -> [[String: Any]] {
     guard let data = Data(base64Encoded: input.image), !data.isEmpty else {
       throw Failure(code: .invalidArgument)
     }
@@ -233,6 +273,10 @@ class VisionPlugin: Plugin {
       if settle.first() {
         request.cancel()
         self?.reject(invoke, .timeout)
+        // La réponse est partie : la lecture suivante part sur une file neuve (jamais derrière un `perform` qui ne rend pas la main), puis
+        // l'état « occupé » est libéré.
+        self?.retireQueue(token)
+        self?.endReading(token)
       }
     }
     guardQueue.asyncAfter(deadline: .now() + readTimeoutSeconds, execute: guardItem)
