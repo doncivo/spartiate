@@ -117,7 +117,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-055 | audit Claude 0.27.0 | mineur — deux pesées au même instant : la dernière ligne du fichier gagne | fait (NUTRI-0292) |
 | C-056 | audit Claude 0.27.0 | mineur, à vérifier — fichier Santé remplacé tronqué accepté (valeur coupée lue) | fait (NUTRI-0292 : limite connue, figée par un test ; Q-18) |
 | C-057 | audit Claude 0.27.0 | amélioration, à vérifier (H-25) — séparateur de milliers anglais lu comme décimale dans `pas.csv` | fait (NUTRI-0292) |
-| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | fait en partie (NUTRI-0292, D-478, D-551) : reste la colonne utc_offset_min de recovery_sample (données et synchro) |
+| C-058 | audit Claude 0.27.0 | à trancher — jour d'une mesure calculé dans le fuseau actuel : glissement possible après un voyage | fait (DATA-0293, D-478, D-565 : décalage gardé pour la FC au repos et la HRV ; le sommeil garde le fuseau de l’appareil) |
 | C-059 | audit Claude 0.27.0 | mineur — nuit du jour non soumise au seuil de 180 min pour le score | fait (NUTRI-0292) |
 | C-060 | audit Claude 0.27.0 | mineur — baseline à σ = 0 ou HRV absente classée niveau B (libellé seulement) | fait (NUTRI-0292 : comportement conservé, figé par un test ; Q-19) |
 | C-061 | audit Claude 0.27.0 | amélioration, à trancher — baseline sans limite de calendrier : ancienne baseline gardée en qualité « good » | fait (NUTRI-0292, D-479 ; Q-21) |
@@ -131,7 +131,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-069 | audit Claude 0.27.0 | important — « Accepter » peut écraser une série déjà validée | fait (SEANCE-0292, PR #206) |
 | C-070 | audit Claude 0.27.0 | important — texte faux « Musculation seule, cardio non compté » | fait (NUTRI-0292) |
 | C-071 | audit Claude 0.27.0 | important — tractions et dips : champ « Charge (kg) » sans dire « lest » | fait (SEANCE-0292, PR #206, D-518) ; ferme le double compte de C-024 |
-| C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | fait en partie ; reste : valeur d'avant la correction, à trancher par Ali (Q-13), puis données et synchro ; date de correction faite (SEANCE-0292, PR #206, D-519, D-520) |
+| C-072 | audit Claude 0.27.0 | important, à vérifier — correction d'une série validée sans trace (§ 13.4) ; charge vidée acceptée | fait en partie (DATA-0293, D-567, Q-13 B) : reste l’affichage « corrigée : 80 → 82,5 kg » au journal (coquille, iOS et qualité) |
 | C-073 | audit Claude 0.27.0 | important — brouillon de routine abandonné sans confirmation ; retraits de jour et d'exercice non confirmés | fait (FIX-COQUILLE) |
 | C-074 | audit Claude 0.27.0 | mineur — jour local lu au rendu, aucune relecture à minuit (séance de la veille proposée) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-075 | audit Claude 0.27.0 | mineur — échec de lecture du profil : Aujourd'hui remplacé sans « Réessayer » ; carte Séance muette en échec | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -177,7 +177,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-115 | audit Claude 0.27.0 | important — chien de garde : « Réessayer » proposé pendant une migration lente | fait (FIX-COQUILLE) |
 | C-116 | audit Claude 0.27.0 | important — un bloc de signature illisible met toute l'app en erreur de démarrage | fait (FIX-COQUILLE) |
 | C-117 | audit Claude 0.27.0 | important — « Revoir mes réglages » écrase la durée de cycle choisie depuis (D-315) | fait (FIX-PROGRAMME) |
-| C-118 | audit Claude 0.27.0 | important — oublier le dossier et la clé sans dire que les données iCloud deviendront illisibles | à faire (0.29.x, données et synchro, M) |
+| C-118 | audit Claude 0.27.0 | important — oublier le dossier et la clé sans dire que les données iCloud deviendront illisibles | fait (DATA-0293, D-578) |
 | C-119 | audit Claude 0.27.0 | important, à vérifier — « À propos et licences » absent de Plus (§ 18.2) | à faire (0.29.x, coquille, iOS et qualité, M) ; reste aussi : src/i18n/fileFailureText.ts:8 renvoie à Réglages › À propos › Logs, qui n'existe pas |
 | C-120 | audit Claude 0.27.0 | mineur — toast « Annuler » mal annoncé, masqué par un message suivant sur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-121 | audit Claude 0.27.0 | mineur — piège de focus perméable ; retour à un ouvreur démonté ; SegmentedControl sans arrêt de tabulation | à faire (0.29.x, coquille, iOS et qualité, M) |
@@ -201,7 +201,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | C-139 | audit Claude 0.27.0 | important — double « Quitter » coupe l'attente du front ; icône de zone de notification en échec = plantage | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-140 | audit Claude 0.27.0 | important — journal technique saturable et sans filtre de donnée corporelle côté Rust | fait (FIX-CONFID-IOS) |
 | C-141 | audit Claude 0.27.0 | important — commandes OCR et dictée exposées sans aucun usage | fait en partie ; reste : OCR utilisé par l'import de programme (D-423) ; dictée sans usage (D-415) mais speech_* encore dans build.rs:41-43 et capabilities/capture-ios.json (0.29.x, coquille, iOS et qualité, S) |
-| C-142 | audit Claude 0.27.0 | à vérifier — `vault_ios.rs` : course sur le cache de la clé (dépend de la sérialisation par SyncCore) | à faire (0.29.x, données et synchro, S) |
+| C-142 | audit Claude 0.27.0 | à vérifier — `vault_ios.rs` : course sur le cache de la clé (dépend de la sérialisation par SyncCore) | fait (DATA-0293, D-577) |
 | C-143 | audit Claude 0.27.0 | mineur — marqueur de démarrage illisible traité comme absent ; marqueur définitif écrit sans vérifier le jeton | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-144 | audit Claude 0.27.0 | mineur — `db_diagnostics` renvoie des chemins absolus (ADR 0009) ; dates de sauvegarde mal validées | à faire (0.29.x, coquille, iOS et qualité, S) |
 | C-145 | audit Claude 0.27.0 | mineur — export : lecteur réseau accepté, temporaire au-delà de 255 caractères, repli JSON avant plafond | à faire (0.29.x, coquille, iOS et qualité, S) |
@@ -257,13 +257,13 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-090 | rapport FIX-ASSIST (lot 0.28.0) | historique (`HistoryView`) : un assisté personnalisé (machine assistée) n'est pas exclu comme l'assisté du catalogue | fait (SEANCE-0291, PR #199) |
 | BL-091 | rapport FIX-ASSIST (lot 0.28.0) | alerte secondaire d'inactivité : affiche « −x % » pour un exercice assisté dont l'assistance est maintenue | fait (SEANCE-0291, PR #199) |
 | BL-092 | rapport FIX-ABERR (lot 0.28.0) | résumé de fin : séance passée datée par la dernière série et non par `ended_at` ; décharges comptées pour confirmer une aberrante (écart à D-323 (2)) | fait (SEANCE-0291, PR #199, D-470) |
-| BL-093 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | test sur base migrée : ROLLBACK rejeté puis arrêt, curseur, `sync_field_clock` et `sync_outbox` inchangés ; garde orpheline vue par `assertGuardEmpty` | à faire (0.29.x, données et synchro, S) |
-| BL-094 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | `bootstrap.ts` ~300 : échec de `assertGuardEmpty` avalé (`.catch(() => 0)`) : garde orpheline durable possible, à mettre en échec fermé | à faire (0.29.x, données et synchro, S) |
-| BL-095 | relecture code-reviewer de FIX-A008 (lot 0.28.0) | `serializedDriver.ts` ~155 : BEGIN IMMEDIATE exécuté puis rejeté par le transport, transaction ouverte à l’insu du pilote (même classe que A-008) | à faire (0.29.x, données et synchro, S) |
+| BL-093 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | test sur base migrée : ROLLBACK rejeté puis arrêt, curseur, `sync_field_clock` et `sync_outbox` inchangés ; garde orpheline vue par `assertGuardEmpty` | fait (DATA-0293, D-573) |
+| BL-094 | relecture sync-icloud de FIX-A008 (lot 0.28.0) | `bootstrap.ts` ~300 : échec de `assertGuardEmpty` avalé (`.catch(() => 0)`) : garde orpheline durable possible, à mettre en échec fermé | fait (DATA-0293, D-572) |
+| BL-095 | relecture code-reviewer de FIX-A008 (lot 0.28.0) | `serializedDriver.ts` ~155 : BEGIN IMMEDIATE exécuté puis rejeté par le transport, transaction ouverte à l’insu du pilote (même classe que A-008) | fait (DATA-0293, D-573) |
 | FIX-A009b | relecture sync-icloud de FIX-A009 (lot 0.28.0) | bloquant (perte) — réintégration : champ gardé comparé à l'horloge `'*'` de la ligne ; jour renommé avant lecture → jour de la semaine perdu | fait (FIX-A009b) |
-| BL-097 | rapport FIX-A009b (lot 0.28.0) | limite : colonne connue écrite nulle avec la ligne face à une valeur gardée plus ancienne non nulle (divergence possible, non atteignable aujourd'hui) ; correction complète = migration de `sync_unknown` ; déclencheur : tout ticket qui élargit une contrainte d’une colonne publiée (data-model, architect) | à faire (0.29.x, données et synchro, M) |
-| BL-098 | relecture architecte de FIX-A009b (lot 0.28.0) | garde « colonne publiée ajoutée nulle » sur base vide : ajouter une ligne avant chaque migration pour attraper un remplissage par UPDATE | à faire (0.29.x, données et synchro, S) |
-| BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | à faire (0.29.x, données et synchro, S) |
+| BL-097 | rapport FIX-A009b (lot 0.28.0) | limite : colonne connue écrite nulle avec la ligne face à une valeur gardée plus ancienne non nulle (divergence possible, non atteignable aujourd'hui) ; correction complète = migration de `sync_unknown` ; déclencheur : tout ticket qui élargit une contrainte d’une colonne publiée (data-model, architect) | fait (DATA-0293 : sans défaut dans ce lot, garde ajoutée pour la prochaine contrainte élargie) |
+| BL-098 | relecture architecte de FIX-A009b (lot 0.28.0) | garde « colonne publiée ajoutée nulle » sur base vide : ajouter une ligne avant chaque migration pour attraper un remplissage par UPDATE | fait (DATA-0293, D-574) |
+| BL-099 | relecture architecte de FIX-A009b (lot 0.28.0) | réintégration : exclure aussi une ligne créée ici et non publiée (file d’envoi sur `*`), à soumettre à sync-icloud | fait (DATA-0293, D-575) |
 | BL-100 | revue FIX-EXPORT | mineur — test C-108 : comparer la liste `WIPED` de `ResetDataScreen.tsx` (et non les clés du catalogue) à `RESET_TABLES`, mots clés de tables plus précis, commentaire du cas « horizon local illisible » | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-101 | revue FIX-PLANCHER | mineur — moyenne des cibles par jour du tableau de bord (`compareKcal`, features) à exposer depuis `weeklyBalance` de `src/domain/nutrition/journal.ts` ; test d’écran de la case « Accepter » du check-in | fait en partie ; reste : test d’écran de la case « Accepter » du check-in (0.29.x, nutrition et récupération, S) ; cible comparée exposée par weeklyBalance (NUTRI-0291) |
 | BL-102 | revue FIX-RECUP | mineur — `writeSteps` (recoveryImport/service.ts) : `upsertTotals` puis `insertMany` en deux écritures, à réunir en une transaction (tout ou rien par fichier) ; guide Raccourcis, partie A : ordre de `poids.csv` à aligner sur la partie C | fait (NUTRI-0291) |
@@ -277,7 +277,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-109 | SESS-01 (D-377) | Exercices écartés communs aux deux appareils (table ou colonne publiée, relecture sync-icloud) | fait (SYNC-0291, PR #200, D-447, D-463, D-465 à D-469) |
 | BL-110 | SESS-01 (C-190) | Pause de séance (§ 13.2 « Pause / abandonner ») | à trancher par Ali (Q-12 de docs/decisions-a-prendre.md) ; puis données et synchro (colonnes additives) |
 | BL-111 | MOTEUR-0281 (D-386, D-387) | Retour à la prescription précédente depuis l'explication de la charge en séance ; body map de la bibliothèque | fait (SEANCE-0292b, D-537, D-538) |
-| BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | fait en partie ; reste : métrique distance (colonne additive de workout_set, migration) (0.29.x, données et synchro, M) ; fatigue, stagnation et décote des exercices sans charge faites (SEANCE-0292b, D-539) |
+| BL-112 | MOTEUR-0281 (D-385) | Exercices sans charge : fatigue intra-séance, stagnation, décote de position ; métrique distance | fait en partie (DATA-0293, D-570) : reste la saisie de la distance à l’écran et la métrique « distance » du moteur (coquille, iOS et qualité) |
 | BL-113 | MOTEUR-0281 (D-383) | Gilet lesté au catalogue du matériel (content-data), puis source de lest | à faire (0.29.x, import et contenu, S) |
 | BL-114 | PROGRES (D-390) | Plage cible de séries par muscle et par semaine (« vs plage », § 17.1) | fait (PROGRES-0291, PR #197, D-448, D-455) |
 | BL-115 | PROGRES (D-392) | Adhérence : séances faites ou prescriptions acceptées (I2, § 8) | fait (PROGRES-0291, PR #197, D-449, D-456 ; reste à trancher : BL-135) |
@@ -287,7 +287,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-119 | COQUILLE-PC (D-401) | Zoom PC 100–150 % : test de mise en page en CI (e2e pc) ; à 150 % la disposition iPhone s'affiche | fait (COQUILLE-0291, PR #198, D-450, D-459 ; restes BL-136) |
 | BL-120 | BLESSURES (D-402) | Gênes communes aux deux appareils (table publiée, migration, relecture sync-icloud) | fait (SYNC-0291, PR #200, D-447, D-464 à D-469) |
 | BL-121 | BLESSURES (D-403) | Gênes appliquées au remplacement d'exercice en séance active | fait (SEANCE-0292, PR #206, D-525) |
-| BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | à faire (0.29.x, données et synchro, M) |
+| BL-122 | SYNC-0281 (D-405, relectures) | Test de `w` noté par les chemins instantané (join depuis un instantané v18, reprise engine, epochSwitch) ; scénario M2 par un vrai report | fait en partie (DATA-0293) : instantané et reprise testés ; reste un test d’écrivain noté pour epochSwitch et le report M2 (données et synchro) |
 | BL-123 | REL-0.28.1 (D-409) | Unités configurables (kg / lb, § 10) | écart décidé par Ali (D-451) : kg seulement |
 | BL-124 | BILAN-029 (revue) | `weeklyRate.ts` (check-in) : les fenêtres de début et de fin se recouvrent la veille de la semaine, une même pesée peut donner une variation de 0 kg ; corrigé dans le bilan seulement | fait (NUTRI-0291) |
 | BL-125 | BILAN-029 (D-416) | Recommandation du bilan hebdomadaire (§ 17.3) : règle à définir | fait (PROGRES-0291, PR #197, D-452, D-457) |
@@ -300,7 +300,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-132 | MEDIA-03 (D-437) | Relire les poses des 95 pictogrammes (planche des 6 essais, puis les 8 de la routine ; cas douteux : planche Copenhague, dips, dead bug, squat cosaque) ; corrections dans `scripts/content/pictograms/specs.mjs` puis `node scripts/content/build-pictograms.mjs` | constat d'Ali à faire (docs/constats-ali.md) |
 | BL-133 | TECH-01 (D-443) | CLEAN-03 lots D à F (177 fichiers), bascule du défaut du simulateur, purge de BL-003 et BL-035 quand ils n'ont plus d'appelant | fait en partie ; reste : 133 fichiers sur le banc legacy, raisons dans docs/TECH-0291-BL133.md (textes longs, champs sans équivalent, dépôts hérités, versions simulées) (0.29.x, données et synchro, L) ; 29 migrés (PR #195, D-462) |
 | BL-134 | TECH-01 (D-445, D-446) | minimatch via eslint 10.15 et typescript-eslint 8.73 (worktree à node_modules réels) ; `cargo audit` dans tests.yml | fait (TECH-0291, PR #195, D-461) |
-| BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | à faire (0.29.x, données et synchro, M) : D-481 (Ali, 24/11), colonne additive et relecture sync-icloud |
+| BL-135 | PROGRES-0291 (revue à froid, D-456) | Adhérence aux prescriptions : une série ajoutée en séance reprend la cible de la précédente et compte comme proposée, une série retirée ne compte plus ; les distinguer demande de marquer les séries ajoutées (colonne additive) | fait (DATA-0293, D-568) |
 | BL-136 | COQUILLE-0291 (revue à froid, D-459) | PC sous 1 024 px CSS (zoom de 150 %) : Progrès › Corps en une colonne (grille de FIX-0241 dès 1 024 px), sous-écrans (Réglages, Synchro, Corps) hors de l’e2e BL-119, projet e2e iphone sans agent utilisateur iPhone | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-137 | REL-0.29.1 (CI de SYNC-0291) | Perf Playwright du démarrage : 1 576 ms une fois pour un budget de 1 500 ms (run 44980315919), vert à la relance sans changement ; marge à surveiller (migration 21 au premier lancement d'une base neuve) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-160 | CI-0292 (relecture à froid, e2e C193-seance-clavier) | Après « Fermer le résumé », un appui sur l'onglet Entraînement laissait l'écran « Nouvelle séance » au lieu de l'accueil d'Entraînement | fait (SEANCE-0292, PR #206, D-527 ; Q-14) |
@@ -325,18 +325,18 @@ Source : branche `audit-0.26.0` (PR brouillon #148), `docs/audit-0.26.0/bloquant
 | A-007 | audit Codex 0.26.0 | mineur — import Tauri dynamique hors façade dans `theme.ts`, garde ESLint aveugle à la forme dynamique | fait (PR #153) |
 | A-008 | audit Codex 0.26.0 | bloquant — rollback en échec : écriture suivante acquittée puis perdue à la réouverture (`serializedDriver.ts`) | fait (FIX-A008) |
 | A-009 | audit Codex 0.26.0 | bloquant — instantané : colonne nouvelle d'une table connue perdue par l'appareil ancien (dont `routine_day.weekday`) | fait (FIX-A009) |
-| BL-030 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : réintégration en échec gardée au journal seul ; double panne de persistance à vérifier | à faire (0.29.x, données et synchro, S) |
-| BL-031 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : erreur de `assertGuardEmpty` transformée en zéro | à faire (0.29.x, données et synchro, S) |
+| BL-030 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : réintégration en échec gardée au journal seul ; double panne de persistance à vérifier | fait (DATA-0293, D-572) |
+| BL-031 | audit Codex 0.26.0 (partie 1) | piste — `bootstrap.ts` : erreur de `assertGuardEmpty` transformée en zéro | fait (DATA-0293, D-572) |
 | BL-032 | audit Codex 0.26.0 (partie 1) | piste — `timeZoneWatcher.ts` absorbe les erreurs de réglage (rejoint C-123) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-033 | audit Codex 0.26.0 (partie 1) | piste — premier rendu du thème « système » : `index.html` impose `data-theme="dark"` | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-034 | audit Codex 0.26.0 (partie 1) | piste — rejets de chargement des notifications et de l'import récupération limités au journal | à faire (0.29.x, coquille, iOS et qualité, S) |
 | BL-035 | audit Codex 0.26.0 (partie 1) | piste — cycle statique hérité goalRules → week → todayList, à purger avec CLEAN-03 | à faire (0.29.x, données et synchro, S) |
 | BL-036 | audit Codex 0.26.0 (partie 1) | piste — `preloadScreens` n'attend pas la fin d'un import avant de programmer le suivant | à faire (0.29.x, coquille, iOS et qualité, S) |
-| BL-037 | audit Codex 0.26.0 (partie 2) | piste — parseurs d'exercices et de matériel qui rendent une liste vide, compléments illisibles filtrés : risque de réécriture | à faire (0.29.x, données et synchro, S) |
-| BL-038 | audit Codex 0.26.0 (partie 3) | piste — publication : ajout natif réussi puis retrait local en échec, le catch efface l'intention | à faire (0.29.x, données et synchro, S) |
-| BL-039 | audit Codex 0.26.0 (partie 3) | piste — heure du dernier cycle qui avance sans `allRead` : texte et avertissements à examiner | à faire (0.29.x, données et synchro, S) |
-| BL-040 | audit Codex 0.26.0 (partie 3) | piste — purge au plafond des champs inconnus signalée au seul journal technique | à faire (0.29.x, données et synchro, S) |
-| BL-041 | audit Codex 0.26.0 (partie 3) | piste — filtration par horizon à vérifier lors de la conservation et de la réintégration des champs inconnus | à faire (0.29.x, données et synchro, S) |
+| BL-037 | audit Codex 0.26.0 (partie 2) | piste — parseurs d'exercices et de matériel qui rendent une liste vide, compléments illisibles filtrés : risque de réécriture | fait (DATA-0293, D-581) |
+| BL-038 | audit Codex 0.26.0 (partie 3) | piste — publication : ajout natif réussi puis retrait local en échec, le catch efface l'intention | fait (DATA-0293, D-582) |
+| BL-039 | audit Codex 0.26.0 (partie 3) | piste — heure du dernier cycle qui avance sans `allRead` : texte et avertissements à examiner | à trancher par Ali (Q-27) |
+| BL-040 | audit Codex 0.26.0 (partie 3) | piste — purge au plafond des champs inconnus signalée au seul journal technique | fait (DATA-0293, D-576) |
+| BL-041 | audit Codex 0.26.0 (partie 3) | piste — filtration par horizon à vérifier lors de la conservation et de la réintégration des champs inconnus | fait (DATA-0293, D-579 : sans défaut, preuve par test) |
 | BL-042 | audit Codex 0.26.0 (partie 0) | piste — code mort candidat : 31 fichiers non atteints, 48 morts, 1 172 exports inutilisés (rejoint C-133) | à faire (0.29.x, coquille, iOS et qualité, M) |
 | BL-043 | audit Codex 0.26.0 (partie 0) | piste — présence des avis de licence (MPL-2.0, avis composites) dans les binaires livrés à vérifier | fait (CI-0292, PR #205, D-486 : avis de licence embarqués et contrôlés) |
 | BL-044 | audit Codex 0.26.0 (partie 0) | piste — 16 skip conditionnels et 106 délais de tests à relire ; couverture par module à établir | à faire (0.29.x, coquille, iOS et qualité, M) |
@@ -359,7 +359,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 10.1-1 | PRD § 10.1 | partiel — poids prérempli depuis Santé : par Raccourcis seulement (D-69) | reporté : HealthKit direct BLOCKED (H-3a) |
 | § 10.2 | PRD § 10.2 | absent — blessures avec check-in bimensuel | fait (BLESSURES, 0.28.1, D-402 à D-404 ; BL-120, BL-121) |
 | § 10.3 | PRD § 10.3 | partiel — notifications demandées au premier repos, pas en fin de première séance | fait (SEANCE-0292, PR #206, D-526) ; constat d'appareil ajouté |
-| § 11 | PRD § 11 | partiel — constantes ajustables par exercice : seul `deloadLoad` | fait en partie ; reste : stockage et édition des surcharges par exercice (migration additive) (0.29.x, données et synchro, M) ; moteur fait (SEANCE-0292, PR #206, D-510) |
+| § 11 | PRD § 11 | partiel — constantes ajustables par exercice : seul `deloadLoad` | fait en partie (DATA-0293, D-569) : stockage et dépôt faits ; reste l’écran d’édition des surcharges et leur passage au moteur (coquille, iOS et qualité) |
 | § 11.2-5 | PRD § 11.2 | partiel — difficulté, recalibrage « Facile » borné (C-004, C-027) | fait (C-004, C-027 ; SEANCE-0292, PR #206) |
 | § 11.2-6 | PRD § 11.2 | partiel — contraintes « maintien ou réduction seulement » (C-001) | fait (audit 0.29.1 : C-001 corrigé : l'assistance est une charge négative (FIX-ASSIST, D-322, #157)) |
 | § 11.2-7 | PRD § 11.2 | partiel — arrondi au matériel (C-006, C-007, C-029) | fait (C-006, C-007, C-029 ; SEANCE-0292, PR #206) |
@@ -436,7 +436,7 @@ Source : `docs/audit-claude-0.27.0/tracabilite.md` (branche `audit-claude-0.27.0
 | § 19.4 a | PRD § 19.4 | partiel — entitlements (C-158) | à faire (0.29.x, coquille, iOS et qualité, S) |
 | § 19.4 b | PRD § 19.4 | partiel — ni App Groups, ni conteneur iCloud, ni push ; contrôle codesign (C-160, C-174) | fait en partie ; reste : contrôles codesign sans « // true » (CI-PUB, build-ios.yml:174, #169) ; entitlements en liste noire (C-160) ; App Groups / iCloud hors compte gratuit (D-411) (0.29.x, CI, S) |
 | § 21.1 | PRD § 21.1 | partiel — données réelles interdites (C-165) | fait (audit 0.29.1 : données réelles retirées des fichiers et de l'historique (DOC-PRIV #156, HIST-01 #158, D-321)) |
-| § 21.2 a | PRD § 21.2 | partiel — WAL et checkpoint : `synchronous = NORMAL` jamais posé (C-194) | à faire (0.29.x, données et synchro, S) |
+| § 21.2 a | PRD § 21.2 | partiel — WAL et checkpoint : `synchronous = NORMAL` jamais posé (C-194) | fait (DATA-0293, D-571, D-584) |
 | § 21.2 b | PRD § 21.2 | partiel — sauvegardes 14 / 5 / 3 (C-137, C-138) | fait (audit 0.29.1 : rotation et exclusion mutuelle des sauvegardes (SAUV-RUST, D-366 à D-369, #173)) |
 | § 21.2 c | PRD § 21.2 | partiel — journaux 256 Kio × 2 (C-140, C-147) | fait (audit 0.29.1 : journal Rust borné, journal iOS hors Documents (FIX-CONFID-IOS, D-329, D-332, #163)) |
 | § 21.2 d | PRD § 21.2 | partiel — mise à jour SideStore sans supprimer l'app (H-5, C-110, C-181) | fait (audit 0.29.1 : textes sans réinstallation (DOC-PRIV #156, C-110, C-181) ; H-5 CONFIRMED (capability-matrix.md:25)) |
