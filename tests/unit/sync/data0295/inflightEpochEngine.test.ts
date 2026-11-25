@@ -75,7 +75,18 @@ describe('BL-166 (1) : moteur, intention gardée puis changement d’époque ava
     await a.cycle();
     (a.data as { transaction: typeof realTransaction }).transaction = realTransaction;
     expect(failed).toBe(true);
-    expect((await meta(a, 'inflight')) as Inflight | null).toMatchObject({ epoch: oldEpoch });
+    const kept = (await meta(a, 'inflight')) as Inflight | null;
+    expect(kept).toMatchObject({ epoch: oldEpoch });
+    // Le scénario est bien celui de BL-166 : file encore pleine et intention qui porte ses entrées.
+    expect(await a.data.repos.sync.outboxCount()).toBeGreaterThan(0);
+    expect(kept?.entries.length ?? 0).toBeGreaterThan(0);
+    // Espion : époque de chaque état écrit par A, et si l'écriture suit son changement d'époque (journal `epoch-switched`).
+    const realWriteState = a.platform.writeState.bind(a.platform);
+    const written: { epoch: unknown; head: unknown; afterSwitch: boolean }[] = [];
+    (a.platform as { writeState: typeof realWriteState }).writeState = async (request) => {
+      written.push({ epoch: request.state.epoch, head: request.state.head.epoch, afterSwitch: a.logger.entries.some((e) => e.event === 'epoch-switched') });
+      return realWriteState(request);
+    };
     // Changement d'époque ouvert par B (restauration, « Appliquer partout ») avant le cycle suivant de A.
     syncFolders(devices);
     const marker: RestoreMarker = {
@@ -94,6 +105,10 @@ describe('BL-166 (1) : moteur, intention gardée puis changement d’époque ava
     const newEpoch = await meta(a, 'epoch');
     expect(newEpoch).not.toEqual(oldEpoch);
     expect(await meta(b, 'epoch')).toEqual(newEpoch);
+    // Après le changement, aucun état ne part sur l’ancienne époque (ni l’état, ni sa tête).
+    const after = written.filter((w) => w.afterSwitch);
+    expect(after.length).toBeGreaterThan(0);
+    for (const w of after) expect(w).toMatchObject({ epoch: newEpoch, head: newEpoch });
     expect(await meta(a, 'inflight')).toBeNull();
     expect(((await meta(a, 'head')) as { epoch: EpochId } | null)?.epoch).toEqual(newEpoch);
     expect((await b.task(entry.id))?.title).toBe('Entrée avant le changement');
