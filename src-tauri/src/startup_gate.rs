@@ -703,6 +703,12 @@ pub fn settle_provisional_marker(
     config_dir: &Path,
     recovery: &Result<crate::backup::Recovery, crate::backup::BackupError>,
 ) -> bool {
+    // SHELL-0294d (C-143) : un marqueur ILLISIBLE n'est pas un marqueur absent : rien n'est décidé, la preuve (marqueur d'avant) reste, la
+    // synchro reste suspendue (comme `marker::read`) et le journal le consigne.
+    if crate::sync::marker::read(config_dir).is_err() {
+        crate::applog::write("backup-recovery", "marker-unreadable");
+        return false;
+    }
     let Some(token) = crate::sync::marker::provisional_token(config_dir) else {
         let _ = std::fs::remove_file(config_dir.join(PREVIOUS_MARKER_FILE));
         return true;

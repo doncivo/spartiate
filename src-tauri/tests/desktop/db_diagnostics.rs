@@ -14,10 +14,9 @@ fn dossier_absent() {
     let report = diagnose_db_dir(Ok(missing.clone()));
     assert!(!report.dir_exists);
     assert!(!report.file_exists);
-    assert_eq!(
-        report.db_path.as_deref(),
-        Some(missing.join(DB_FILE).to_string_lossy().as_ref())
-    );
+    // SHELL-0294d (C-144, ADR 0009), écart consigné : ce test figeait le chemin absolu renvoyé à la WebView ; seuls des noms sont rendus.
+    assert_eq!(report.db_path.as_deref(), Some(DB_FILE));
+    assert_eq!(report.config_dir.as_deref(), Some("absent"));
 }
 
 #[test]
@@ -33,6 +32,7 @@ fn fichier_present_avec_taille_et_wal() {
 #[test]
 fn dossier_introuvable() {
     let report = diagnose_db_dir(Err("aucun dossier".into()));
-    assert_eq!(report.config_dir_error.as_deref(), Some("aucun dossier"));
+    // C-144 (écart consigné) : le texte du système n'est plus renvoyé (il peut citer un chemin), seulement un code stable.
+    assert_eq!(report.config_dir_error.as_deref(), Some("no-data-dir"));
     assert!(report.config_dir.is_none() && report.db_path.is_none());
 }

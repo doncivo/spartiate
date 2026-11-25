@@ -25,7 +25,7 @@ fn c144_the_diagnostic_never_returns_an_absolute_path() {
     let report = diagnose_db_dir(Ok(dir.path().to_path_buf()));
     let folder = report.config_dir.expect("nom du dossier");
     let db = report.db_path.expect("nom de la base");
-    assert!(!folder.contains(['/', '\\']),"{folder}");
+    assert!(!folder.contains(['/', '\\']), "{folder}");
     assert_eq!(db, DB_FILE);
 }
 
