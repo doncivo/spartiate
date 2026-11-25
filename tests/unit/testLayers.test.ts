@@ -7,6 +7,8 @@ import { describe, expect, it } from 'vitest';
  * les lit : un test de `src/<couche>` n'importe pas une couche que cette couche n'a pas le droit d'importer. Les fixtures partagées vivent
  * dans `tests/fixtures`, jamais dans une autre couche de `src`. Les exceptions sont nommées et motivées ; une exception qui n'a plus lieu d'être
  * est refusée (la liste ne ment pas).
+ * Limite écrite (relecture à froid) : la règle ESLint « features → db/drivers, platform/tauri » n'est pas reprise ici, onze tests de features
+ * ouvrent une vraie base par le driver sqliteWasm (moteur SQL de test, sans équivalent dans tests/fixtures).
  */
 const SRC = resolve(import.meta.dirname, '..', '..', 'src');
 
@@ -16,6 +18,7 @@ const FORBIDDEN: Readonly<Record<string, readonly string[]>> = {
   sync: ['features', 'ui'],
   i18n: ['db', 'features', 'ui', 'sync', 'platform'],
   ui: ['db', 'features', 'sync', 'platform'],
+  platform: ['features', 'ui'],
 };
 
 /** Exceptions : fichier (relatif à src, séparateur /) → motif. */
@@ -24,6 +27,7 @@ const EXCEPTIONS: Readonly<Record<string, string>> = {
   'domain/sync/devices.test.ts': 'src/domain/sync/** : déplacement à relire par sync-icloud (D-26), type de platform/sync',
   'domain/syncBanners.test.ts': 'type de platform/sync, avec les tests de domain/sync : même relecture sync-icloud',
   'domain/sync/epochCarryReport.test.ts': 'src/domain/sync/** : déplacement à relire par sync-icloud (D-26), semences de db',
+  'platform/signing/signing.test.ts': 'vérifie le câblage du conteneur de l\x27app (features/app/container) : à déplacer vers features/app (BL-145, reste)',
   'i18n/plural.test.ts': 'lit le dossier src/i18n lui-même (fs relatif au fichier) : le déplacer casserait son balayage',
 };
 

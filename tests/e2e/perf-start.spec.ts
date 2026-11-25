@@ -35,5 +35,7 @@ for (const kind of ['pc', 'iphone'] as const) {
     const median = medianMs(runs);
     test.info().annotations.push({ type: 'mesure', description: `médiane ${String(median)} ms de [${runs.join(', ')}] (jeté : ${String(discarded)}), budget ${String(BUDGET_MS[kind])} ms` });
     expect(median, `démarrage ${kind}`).toBeLessThan(BUDGET_MS[kind]);
+    // Relecture à froid : le chargement jeté reste borné (double du budget), un démarrage à froid très dégradé ne passe pas en silence.
+    expect(discarded, `premier chargement ${kind}`).toBeLessThan(2 * BUDGET_MS[kind]);
   });
 }

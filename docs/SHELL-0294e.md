@@ -17,8 +17,8 @@ Aucune migration, aucun fichier de `src/sync/**`, `src-tauri/src/sync/**` ni Swi
 ## Passe agent du module (coquille et qualité)
 
 Fichiers : `package.json`, `package-lock.json` (`npm uninstall --package-lock-only`, node_modules partagé non touché), `docs/licences.md`, `public/THIRD-PARTY-NOTICES.txt` (régénéré par `third-party-notices.mjs --write`, `--check` vert),
-`src/i18n/fr.licenses.ts`, `src/features/settings/LicensesScreen.{tsx,css}`, `src/platform/{runtime,index}.ts`, `src/features/app/bootstrap.ts`, `src/features/strength/{groupCount.ts,StrengthScore.tsx}`,
-`tests/e2e/perf-start.spec.ts`, `tests/e2e/helpers/perfStart.ts`, six tests déplacés, `src/db/index.ts` retiré.
+`src/i18n/fr.licenses.ts`, `src/features/settings/LicensesScreen.{tsx,css}`, `src/features/strength/{groupCount.ts,StrengthScore.tsx}`,
+`tests/e2e/perf-start.spec.ts`, `tests/e2e/helpers/perfStart.ts`, six tests déplacés (`src/platform` et `src/features/app/bootstrap.ts` revenus à l’état de main, barrel `src/db/index.ts` rétabli).
 
 ## Passe qa-test (rouge → vert)
 
@@ -62,3 +62,8 @@ Mesures normalisées du même poste (build du 25/11) : **origin/main 180 702** (
 ## Vérifications
 
 `npm run typecheck` propre ; eslint propre sur les fichiers touchés ; Vitest ciblés verts (`LicensesScreen`, `licences`, `third-party-notices` `--check`, `runtime`, `osUnknown`, `groupCount`, `StrengthScore`, `fixExport.texts`, `eightWeeks`, `testsFiges`, `testLayers`, les six tests déplacés, `startMeasure`, `chartData.perf` par `vitest.perf.config.ts`) ; gardes documentaires (`docs-paths`, `agents`, `backlogCount`, `privacy`, `identity`). Non lancés ici : e2e (dont la nouvelle mesure de démarrage), visual, perf Playwright, Rust (aucun fichier Rust touché).
+
+## Relecture à froid (code-reviewer, distinct) et suites
+
+Approuvé, sans défaut bloquant. Mineurs corrigés après la relecture : constat C-119 sans Recharts ni d3-ease ; liste des fichiers de la fiche ; mention d'auteur en double dans D-614 à D-617 ; garde `testLayers` étendue à `platform` (→ features, ui), avec `src/platform/signing/signing.test.ts` en exception motivée. La limite « features → db/drivers » est écrite dans la garde et dans BL-145 (13 tests trouvés, non 17). Le chargement jeté reste borné au double du budget. Le test du spec vise le code et non plus un commentaire.
+Run 45675139066 (HEAD aa6de8ad) vert, « Performance et bundle » compris : la médiane passe sous 1 500 ms (PC) et sous 2 000 ms (iPhone). Le reporter n'imprime pas les valeurs dans le journal du job, et l'annotation `mesure` reste dans le rapport Playwright.

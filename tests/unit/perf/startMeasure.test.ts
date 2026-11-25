@@ -31,7 +31,9 @@ describe('mesure de démarrage (BL-137, BL-167)', () => {
   it('les budgets du spec ne sont pas relevés et le premier chargement est jeté', () => {
     const spec = readFileSync(join(import.meta.dirname, '..', '..', 'e2e', 'perf-start.spec.ts'), 'utf8');
     expect(spec).toContain('{ pc: 1500, iphone: 2000 }');
-    expect(spec).toContain('medianMs');
-    expect(spec).toContain('jeté');
+    expect(spec).toContain('const median = medianMs(runs)');
+    expect(spec).toContain('const discarded = await loadOnce()');
+    expect(spec).toContain('expect(discarded');
+    expect(spec).toContain('.toBeLessThan(2 * BUDGET_MS[kind])');
   });
 });
