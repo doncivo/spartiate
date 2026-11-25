@@ -199,7 +199,7 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.3) :
 
 - [ ] **Migration 23** — premier lancement après la mise à jour, sur chaque appareil → Plus › Journaux : aucune erreur de migration ; une sauvegarde « Avant mise à jour » existe ; tes séances et tes profils de progression sont intacts. Date : ____ Version : ____
 - [ ] **0.29.3 (séries ajoutées)** — pendant une séance, ajoute une série, termine, puis Progrès › Entraînement › Adhérence : la ligne « Séries ajoutées en séance : 1 » apparaît, et la série n'abaisse pas les prescriptions respectées ; même chiffre sur l'autre appareil après synchro. Date : ____ Version : ____
-- [ ] **0.29.3 (planche)** — Bibliothèque › Planche : la photo s'affiche avec son auteur, sa licence et la mention de modification. Date : ____ Version : ____
+- [ ] **0.29.3 (planche)** — Entraînement › Bibliothèque › Planche : la photo s'affiche avec son auteur, sa licence et la mention de modification. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 
