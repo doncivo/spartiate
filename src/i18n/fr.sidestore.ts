@@ -4,6 +4,7 @@
  */
 export const sideStoreFr = {
   title: 'Actualiser avec SideStore',
+  link: 'Voir la procédure SideStore',
   back: 'Retour à Plus',
   intro: 'La signature de Spartiate dure 7 jours. Tant qu’elle n’est pas actualisée, l’app cesse de s’ouvrir à son expiration ; tes données ne sont pas touchées.',
   steps: [

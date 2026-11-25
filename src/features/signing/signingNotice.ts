@@ -65,8 +65,8 @@ export function signingAlertFailure(container: AppContainer): PlanFailureReason 
   return memoryOf(container).failure;
 }
 
-/** Action « Voir » (§ 18.3 a) : la procédure d'actualisation par SideStore ; la date d'expiration reste dans Plus › À propos. */
-const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'more', screen: 'sidestore' });
+/** Action « Voir » : expiration en tête de Réglages (la ligne porte le lien de la procédure SideStore, § 18.3 a). */
+const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'more', screen: 'home' });
 
 const setBanner = (state: { readonly detail: 'soon' | 'expired'; readonly message: string } | null): void => useAppStatusStore.getState().setStatus('signingExpiry', state === null ? null : { ...state, onAction: openSigningSettings });
 
