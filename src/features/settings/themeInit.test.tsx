@@ -33,6 +33,19 @@ describe('public/theme-init.js (P-02 critère 4)', () => {
     expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
   });
 
+  it('BL-033 : « système » mémorisé retire le sombre posé par index.html (le premier rendu suit le système)', () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'system');
+    run();
+    expect(document.documentElement.hasAttribute('data-theme')).toBe(false);
+  });
+
+  it('BL-033 : aucun choix mémorisé (premier lancement) garde le sombre par défaut de index.html', () => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    run();
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+  });
+
   it('est chargé de façon synchrone dans l’en-tête de index.html', () => {
     const html = readFileSync(join(process.cwd(), 'index.html'), 'utf8');
     expect(html).toMatch(/<head>[\s\S]*<script src="\/theme-init\.js"><\/script>[\s\S]*<\/head>/);
