@@ -46,23 +46,15 @@ export function UndoToast() {
 
   useEffect(() => container.shortcuts.register('app.undo', () => void runUndo()), [container, runUndo]);
 
-  if (notice) {
-    return (
-      <div className="ct-undo-host">
-        <Toast message={notice.text} resetKey={notice.id} onTimeout={clearNotice} />
-      </div>
-    );
-  }
-  if (snapshot.top === null || snapshot.pushCount === closedAt) return null;
-
+  const undoVisible = snapshot.top !== null && snapshot.pushCount !== closedAt;
+  if (!notice && !undoVisible) return null;
+  // C-120 : un message arrivé pendant le délai se pose au-dessus du bandeau « Annuler » au lieu de le masquer (le geste reste possible).
   return (
     <div className="ct-undo-host">
-      <Toast
-        message={undoMessage(snapshot.top)}
-        onAction={() => void runUndo()}
-        onTimeout={() => setClosedAt(snapshot.pushCount)}
-        resetKey={snapshot.pushCount}
-      />
+      {notice && <Toast message={notice.text} resetKey={notice.id} onTimeout={clearNotice} />}
+      {undoVisible && snapshot.top !== null && (
+        <Toast message={undoMessage(snapshot.top)} onAction={() => void runUndo()} onTimeout={() => setClosedAt(snapshot.pushCount)} resetKey={snapshot.pushCount} />
+      )}
     </div>
   );
 }
