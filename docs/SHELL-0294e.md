@@ -31,7 +31,7 @@ Fichiers : `package.json`, `package-lock.json` (`npm uninstall --package-lock-on
 | BL-145 | d137c5e0 (13 fichiers hors couches) | 9ff7d2eb |
 | BL-100 | 3793989c, test seul (aucun rouge : les anciens tests passaient) | écart consigné |
 | BL-105 | 2d5b7408, test seul | écart consigné |
-| BL-042 | dbe67595, retrait d'un fichier sans importeur ; typecheck et lint verts | écart consigné |
+| BL-042 | dbe67595 (retrait du barrel `src/db/index.ts`), rétabli ensuite : `docs-paths.test.ts` refuse les chemins cités par SPA-001 et decisions.md | écart consigné |
 | C-167 | d1684372, test seul (budget déjà tenu, aucune régression à montrer) | écart consigné |
 
 Écarts à « rouge avant vert » : BL-100, BL-105, BL-042, C-167 sont des lignes de test ou de retrait sans comportement nouveau ; un commit suffit (consigne du ticket).
@@ -45,7 +45,7 @@ Fichiers : `package.json`, `package-lock.json` (`npm uninstall --package-lock-on
 - **BL-100** : le test C-108 lit la liste `WIPED` dans `ResetDataScreen.tsx`, vérifie l'égalité avec les clés du catalogue et le mot clé précis de chaque table dans sa famille.
 - **BL-105** : valeurs exactes de la dépense lissée et brute (semaines 3, 4 et 7) ; déterminisme de `testsFiges` sans horloge (horloge simulée à deux dates). Reste : la garde avant `readPrefs` de `SupplementsView` sans cas.
 - **BL-145** : garde `tests/unit/testLayers.test.ts` ; six tests déplacés (`serializedDriver.a008` → features/app, `injuryKinds` → features/notifications, `moteur0281a`, `prescribe.i408`, `prescribe.review` → features/training, `fixExport.limits` → features/settings). Exceptions : `domain/sync/compat`, `domain/sync/devices`, `domain/syncBanners`, `domain/sync/epochCarryReport` (relecture sync-icloud), `i18n/plural` (balaie son dossier).
-- **BL-042** : un script d'atteignabilité (graphe d'imports depuis `main.tsx`, les configurations et les scripts de release) trouve 29 modules de `src` sans importeur de production : un seul n'a aucun importeur du tout, le barrel `src/db/index.ts`, retiré. Les 28 autres : code CircleTasks hérité (CLEAN-03 : `csvImport`, `taskRules`, `projectRules`…), kits de test (`testing.ts`, `testKit`), `muscleGroupLabel.ts` (prévu par BL-142, à brancher). Aucun fichier de `src/sync`.
+- **BL-042** : un script d'atteignabilité (graphe d'imports depuis `main.tsx`, les configurations et les scripts de release) trouve 29 modules de `src` sans importeur de production : un seul n'a aucun importeur du tout, le barrel `src/db/index.ts`, rétabli (cité par SPA-001 et decisions.md, `docs-paths.test.ts`). Les 28 autres : code CircleTasks hérité (CLEAN-03 : `csvImport`, `taskRules`, `projectRules`…), kits de test (`testing.ts`, `testKit`), `muscleGroupLabel.ts` (prévu par BL-142, à brancher). Aucun fichier de `src/sync`.
 - **C-167** : « graphiques < 300 ms » gardé par `src/domain/training/chartData.perf.test.ts` (séries sur trois ans, `npm run test:perf`) ; « génération < 1 s » l'était déjà (`generateSession.test.ts`) ; démarrage : BL-137.
 
 ## Ce qui reste (et pourquoi)
@@ -53,7 +53,7 @@ Fichiers : `package.json`, `package-lock.json` (`npm uninstall --package-lock-on
 - **A-004, BL-044** : relevé, rien changé. Les `test.skip` des e2e filtrent par projet (pc ou iphone) pour ne lancer un scénario qu'une fois ; `waitForTimeout(1500)` de `lot-f-qa.spec.ts` et `P-04.spec.ts` attendent l'ABSENCE d'un redémarrage (aucun signal à attendre) ; les cinq `waitForTimeout` de `tests/visual/capture.spec.ts` (300 à 500 ms) laissent finir une animation ; `timeout: 10_000` de `App.test.tsx` et `logsUnavailable.test.tsx` sont des plafonds d'attente sur signal, pas des pauses. Les remplacer par un signal exige les e2e, jamais lancés ici. Couverture par module : à établir par la CI (rapport fusionné).
 - **C-176** : « tests qui se recalculent avec le code » non recensés un à un (BL-100 et BL-105 faits).
 - **C-076, C-085** : non traités (unités et séparateurs touchent cinq catalogues ; `fr.routines` partagé avec le module séance).
-- **BL-145** : cinq exceptions. **BL-042** : 28 modules (voir plus haut).
+- **BL-145** : cinq exceptions. **BL-042** : 29 modules (voir plus haut).
 
 ## Mesure du bundle de départ
 
