@@ -136,3 +136,23 @@ Le moteur avance l'heure du dernier cycle dès que la publication a réussi, san
 - C. Avancer, mais dire « lecture partielle » à côté de l'heure.
 
 Recommandation : C. Conséquences : A ne change rien et peut afficher une heure récente alors que des changements de l'autre appareil ne sont pas lus ; B est le plus honnête mais peut figer l'heure durablement ; C demande un texte et un avertissement, sans changer le moteur de lecture (relecture sync-icloud).
+
+## Q-28 — Gilet lesté comme source de lest (BL-113, D-383) (CONTENT-0293)
+- A (recommandé) : champ optionnel « poids du gilet (kg) » au profil de matériel, lest = ce poids par crans choisis. Conséquences : l'inventaire du profil gagne un champ (table publiée `equipment_profile` : relecture sync-icloud, data-model) ; éditeur de profil à compléter.
+- B : gilet à lest modulable : saisie des plaques de gilet comme les disques de ceinture. Conséquences : plus fin, plus de saisie.
+- C : le gilet reste un simple matériel (disponibilité), sans lest proposé. Conséquences : aucun changement.
+
+## Q-29 — Droit de relicence des normes FitnessVolt (C-180, D-310) (CONTENT-0293)
+- A (recommandé) : garder la source, écrire la limite dans licences.md (fait) et écrire à FitnessVolt. Conséquences : app personnelle, risque faible ; réponse à consigner.
+- B : retirer les normes tant que le droit n'est pas confirmé. Conséquences : Strength Score sans normes.
+- C : remplacer par une source dont la licence est vérifiable. Conséquences : nouvelle étude de sources.
+
+## Q-30 — Lecture du PDF d'un programme (BL-126, D-423) (CONTENT-0293)
+- A (recommandé) : ajouter `pdfjs-dist`, chargé à la demande, texte extrait localement, aucun appel réseau. Conséquences : dépendance de plus (architect), poids hors départ, PDF scannés toujours refusés.
+- B : rester sans PDF (capture puis photo). Conséquences : aucun changement.
+- C : extracteur maison pour les PDF simples. Conséquences : texte faux possible sans signal.
+
+## Q-31 — `cable-kickback` et `cable-hip-extension` (BL-128) (CONTENT-0293)
+Constat : même mouvement, même matériel, deux ids publiés ; aucune redirection d'identifiant n'existe pour une fusion.
+- A (recommandé) : garder les deux, aucune fusion. Conséquences : deux fiches voisines, aucune référence perdue.
+- B : fusionner avec redirection d'id dans le chargeur (hors périmètre content-data : training et data-model). Conséquences : un mécanisme de plus, test d'identifiants stables à adapter.
