@@ -192,21 +192,49 @@ function recordPageBoundaries(b: SimDevice, probe: CrashProbe): number[] {
   return boundaries;
 }
 
-let reference: unknown = null;
-let boundaries: number[] = [];
-
-describe('Y-TECH-05 : reprise après arrêt brutal (critère 6)', () => {
-  it('exécution de référence sans arrêt : deux pages de reapply', async () => {
+/**
+ * A-004 (SHELL-0295, D-640) : l'exécution de référence est faite une fois (amorce dans `beforeAll`), puis gardée. Un échec la
+ * remet à zéro : le test suivant la refait au lieu de lire une référence restée nulle.
+ */
+interface ReferenceRun {
+  readonly reference: unknown;
+  readonly reportCount: number;
+  readonly boundaries: readonly number[];
+}
+let referenceRun: Promise<ReferenceRun> | null = null;
+async function runReference(): Promise<ReferenceRun> {
+  try {
     const [, b] = await replacedParent(COUNT);
     const probe = armCrash(b, null);
-    boundaries = recordPageBoundaries(b, probe);
+    const boundaries = recordPageBoundaries(b, probe);
     await b.cycle();
     probe.disarm();
     await rounds(devices);
-    expect(boundaries).toHaveLength(3);
     const reports = await reportsOf(b);
-    expect(reports).toHaveLength(1);
-    reference = stable(reports[0]);
+    return { reference: stable(reports[0]), reportCount: reports.length, boundaries };
+  } finally {
+    // Appareils et crochets propres à la référence : fermés ici, même en échec ; le test qui la demande ouvre ensuite les siens.
+    setEpochSwitchTestHooks({});
+    await Promise.all(devices.map((d) => d.close()));
+    devices = [];
+  }
+}
+const referenceOnce = (): Promise<ReferenceRun> =>
+  (referenceRun ??= runReference().catch((error: unknown) => {
+    referenceRun = null;
+    throw error;
+  }));
+
+describe('Y-TECH-05 : reprise après arrêt brutal (critère 6)', () => {
+  // Amorce hors du délai d'un test (délai de crochet par défaut) ; un échec n'est pas gardé : chaque test qui la demande la refait.
+  beforeAll(async () => {
+    await referenceOnce().catch(() => undefined);
+  });
+
+  it('exécution de référence sans arrêt : deux pages de reapply', async () => {
+    const { reference, reportCount, boundaries } = await referenceOnce();
+    expect(boundaries).toHaveLength(3);
+    expect(reportCount).toBe(1);
     expect(reference).toMatchObject({ overflow: COUNT * 2 - 500, banner: true });
   });
 
@@ -215,7 +243,7 @@ describe('Y-TECH-05 : reprise après arrêt brutal (critère 6)', () => {
     ['entre les deux pages', 1],
     ['après la dernière page', 2],
   ])('arrêt brutal %s de reapply : un seul compte rendu, identique à l’exécution sans arrêt', async (_label, index) => {
-    expect(reference).not.toBeNull();
+    const { reference, boundaries } = await referenceOnce();
     const [, b] = await replacedParent(COUNT);
     const probe = armCrash(b, boundaries[index] as number);
     await b.cycle().catch(() => undefined);

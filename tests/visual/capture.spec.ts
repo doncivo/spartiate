@@ -19,20 +19,29 @@ const WEDNESDAY = new Date('2026-09-23T08:00:00Z'); // 10:00 à Paris
 
 mkdirSync(OUT, { recursive: true });
 
+/**
+ * A-004 (SHELL-0295, D-640) : signal observable au lieu d'une pause fixe. Toutes les animations et transitions finies (les boucles
+ * infinies, comme un indicateur de chargement, exceptées), puis deux images peintes : la mise en page de la dernière est prise.
+ */
+async function settled(page: Page): Promise<void> {
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running' || a.effect?.getComputedTiming().endTime === Infinity));
+  await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))));
+}
+
 async function captureMockup(browser: Browser, viewport: { width: number; height: number }, file: string, name: string, dark = false): Promise<void> {
   // Contexte non mobile : une page statique sans balise viewport serait sinon réduite à 980 px de large.
   const context = await browser.newContext({ viewport, locale: 'fr-FR', colorScheme: dark ? 'dark' : 'light' });
   const page = await context.newPage();
   await page.goto(pathToFileURL(resolve(MOCKUPS, file)).href, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => document.fonts.ready).catch(() => undefined);
-  await page.waitForTimeout(500);
+  await settled(page);
   await page.screenshot({ path: resolve(OUT, `${name}-maquette.png`) });
   await context.close();
 }
 
 async function captureApp(page: Page, name: string, element?: string): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForTimeout(400);
+  await settled(page);
   const path = resolve(OUT, `${name}-app.png`);
   if (element) await page.locator(element).screenshot({ path });
   else await page.screenshot({ path });
@@ -317,7 +326,7 @@ test('géométrie Profil et poids 440 × 956 : cartes dans la colonne, flèche s
   await page.clock.setFixedTime(WEDNESDAY);
   await openToday(page);
   await goBody(page);
-  await page.waitForTimeout(400);
+  await settled(page);
   const geometry = await page.evaluate(() => {
     const boxes = Array.from(document.querySelectorAll('.ct-body__card, .ct-body__card *')).map((el) => {
       const r = el.getBoundingClientRect();
@@ -351,7 +360,8 @@ const PC_WIDTHS = [1024, 1099, 1100, 1210, 1279, 1280, 1440, 1920] as const;
 const openFirstExercise = async (page: Page): Promise<void> => {
   await goTraining('Bibliothèque')(page);
   await page.locator('.ct-training__row').first().click();
-  await page.waitForTimeout(300);
+  await page.locator('.ct-sheet__title').waitFor();
+  await settled(page);
 };
 const goPlusSync = async (page: Page): Promise<void> => {
   await goTab('Plus')(page);
@@ -416,7 +426,8 @@ for (const [screenName, prepare] of GEOMETRY_SCREENS) {
     const errors: string[] = [];
     for (const width of PC_WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
-      await page.waitForTimeout(300);
+      await page.waitForFunction((w) => window.innerWidth === w, width);
+      await settled(page);
       for (const p of await geometryProblems(page)) errors.push(`[${screenName}] ${String(width)} px : ${p.kind} : ${p.element} (${p.detail})`);
     }
     await context.close();
