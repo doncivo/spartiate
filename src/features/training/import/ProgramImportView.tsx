@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { importedRoutineSpec, matchExerciseName, parseProgramText, type ImportMatch, type ImportedExercise, type ProgramImport } from '../../../domain/training/programImport';
+import { importMetricNote, importedRoutineSpec, matchExerciseName, parseProgramText, type ImportMatch, type ImportedExercise, type ProgramImport } from '../../../domain/training/programImport';
 import { validateRoutine } from '../../../domain/training/routineRules';
 import type { Exercise, RoutineInput } from '../../../domain/training';
 import type { IdGenerator } from '../../../domain/id';
@@ -149,7 +149,7 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
         (s, e) => {
           const pick = picks.get(keyOf(s, e));
           const exercise = pick && !pick.removed && pick.exerciseId !== null ? byId.get(pick.exerciseId) : undefined;
-          return exercise ? { exerciseId: exercise.id, exerciseName: exercise.nameFr, defaultRestSec: exercise.defaultRestSec } : null;
+          return exercise ? { exerciseId: exercise.id, exerciseName: exercise.nameFr, defaultRestSec: exercise.defaultRestSec, metric: exercise.metric } : null;
         },
         (index) => tImport('sessionN', { n: index + 1 }),
       );
@@ -309,6 +309,7 @@ function ExerciseCard({ exercise, match, pick, chosen, groupName, onChoose, onPi
   const proposed = match.level === 'sure' ? match.choices[0] : undefined;
   const isProposed = proposed !== undefined && pick.exerciseId === proposed.id;
   const inChoices = match.level === 'doubt' && match.choices.some((c) => c.id === pick.exerciseId);
+  const metricNote = chosen ? importMetricNote(exercise, chosen.metric) : null;
   const level = match.level === 'sure' ? 'levelSure' : match.level === 'doubt' ? 'levelDoubt' : 'levelNone';
   return (
     <fieldset className="ct-training__card ct-import__exercise" aria-label={tImport('exerciseGroup', { name: exercise.name })} data-removed={pick.removed ? 'true' : undefined}>
@@ -325,6 +326,7 @@ function ExerciseCard({ exercise, match, pick, chosen, groupName, onChoose, onPi
           {note.code === 'unread' ? tImport('note_unread', { text: note.text ?? '' }) : tImport(`note_${note.code}`)}
         </p>
       ))}
+      {metricNote !== null && !pick.removed && <p className="ct-training__muted">{tImport(metricNote === 'reps-on-time' ? 'metric_reps-on-time' : 'metric_seconds-on-reps')}</p>}
       {pick.removed ? (
         <p className="ct-training__muted">{tImport('removed')}</p>
       ) : (
