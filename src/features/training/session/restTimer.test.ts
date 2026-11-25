@@ -125,3 +125,32 @@ describe('minuteur de repos', () => {
     expect(f.calls.ends).toBe(1);
   });
 });
+
+/** BL-118 : chaque transition du repos prévient la coquille (échéance en ms, ou null) pour le badge du titre de la fenêtre PC. */
+describe('minuteur de repos : badge du titre de la fenêtre (BL-118)', () => {
+  const watched = (f: ReturnType<typeof fakes>, os: 'ios' | 'other' = 'other') => {
+    const seen: Array<number | null> = [];
+    const controller = createRestTimer({ clock: db.clock, store: () => db.data.repos.workouts(), liveActivity: f.liveActivity, notifier: f.notifier, os, texts: TEXTS, onRest: (endMs) => seen.push(endMs) });
+    return { controller, seen };
+  };
+
+  it('start, « +30 s » : l’échéance ; « Passer » et l’abandon : null', async () => {
+    const { controller, seen } = watched(fakes());
+    await controller.start(150);
+    await controller.extend(30);
+    await controller.skip();
+    await controller.start(60);
+    await controller.stop();
+    expect(seen).toEqual([Date.parse('2026-11-09T17:02:30.000Z'), Date.parse('2026-11-09T17:03:00.000Z'), null, Date.parse('2026-11-09T17:01:00.000Z'), null]);
+  });
+
+  it('reprise : échéance si le repos court, null s’il est échu ou absent', async () => {
+    const { controller, seen } = watched(fakes());
+    await controller.resume();
+    await controller.start(100);
+    await controller.resume();
+    db.clock.advance(101_000);
+    await controller.resume();
+    expect(seen).toEqual([null, Date.parse('2026-11-09T17:01:40.000Z'), Date.parse('2026-11-09T17:01:40.000Z'), null]);
+  });
+});
