@@ -456,7 +456,7 @@ describe('contenu embarqué réel', () => {
     const map = JSON.parse(readFileSync(resolve(ROOT, 'scripts', 'content', 'media-map.json'), 'utf8')) as Json;
     const withMedia = (exercises as Json[]).filter((x) => x['media'].images.length > 0);
     expect(withMedia.length).toBe(map['entries'].length);
-    expect(withMedia.length).toBe(101); // 87 (I6-07) + 14 (MEDIA-02, D-303)
+    expect(withMedia.length).toBe(102); // 87 (I6-07) + 14 (MEDIA-02, D-303) + 1 (CONTENT-0293, wger)
     let total = 0;
     for (const x of withMedia) {
       expect(ALLOWED_MEDIA_LICENSES, x['id']).toContain(x['media'].license);

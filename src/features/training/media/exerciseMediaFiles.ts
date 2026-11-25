@@ -17,7 +17,9 @@ export function mediaUrl(file: string): string | null {
 /** Attribution par source vérifiée (D-231) ; `null` pour une source inconnue (le validateur de contenu la refuse). */
 const ATTRIBUTION: Readonly<Record<string, TrainingMediaTextKey>> = { everkinetic: 'attributionEverkinetic', 'everkinetic-web': 'attributionEverkineticWeb' };
 
-export function mediaAttribution(sourceId: string): string | null {
+export function mediaAttribution(sourceId: string, author: string | null = null): string | null {
+  // BL-010 : source à auteur par image (wger) : l'auteur de l'image est nommé ; sans auteur, aucune attribution (le validateur de contenu le refuse).
+  if (sourceId === 'wger') return author === null || author.trim() === '' ? null : tTrainingMedia('attributionWger', { author });
   const key = Object.hasOwn(ATTRIBUTION, sourceId) ? ATTRIBUTION[sourceId] : undefined;
   return key === undefined ? null : tTrainingMedia(key);
 }

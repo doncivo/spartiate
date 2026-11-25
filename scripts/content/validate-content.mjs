@@ -61,6 +61,17 @@ export const MEDIA_SOURCES = {
     reduceMaxHeight: 640,
   },
 };
+// BL-010 (CONTENT-0293) : source à auteur par image, licence lue par image sur wger (API publique, CC BY-SA 4). Chaque image nomme son auteur
+// (`media.author`, repris au registre) ; image adaptée (réduite, gris 8 bits), modification signalée sous l'image.
+MEDIA_SOURCES.wger = {
+  title: 'wger (images, réduites)',
+  authorPerImage: true,
+  repository: 'wger.de',
+  license: 'CC-BY-SA-4.0',
+  licenseUri: 'creativecommons.org/licenses/by-sa/4.0',
+  retrievedOn: '2026-11-25',
+  reduceMaxHeight: 640,
+};
 const NETWORK = /[a-z][a-z0-9+.-]*:\/\//i;
 
 /** Clé de comparaison des noms : sans accent ni casse, mots au singulier simple (CONTENT-0293, BL-128). */
@@ -222,9 +233,11 @@ export function validateContent(c, opts = {}) {
           const source = Object.hasOwn(MEDIA_SOURCES, sourceId) ? MEDIA_SOURCES[sourceId] : null;
           if (!source) err(w, `source de média inconnue : ${String(media.source)}`);
           else if (media.license !== source.license) err(w, `licence différente de la source ${sourceId} : ${String(media.license)}`);
+          if (source?.authorPerImage === true && !isStr(media.author)) err(w, `auteur de l’image obligatoire (source ${sourceId})`);
+          if (source && source.authorPerImage !== true && media.author !== undefined && media.author !== null) err(w, `auteur de l’image non attendu (source ${sourceId} à auteur unique)`);
           for (const f of files) {
             if (!isStr(f) || !MEDIA_EXTENSIONS.some((ext) => f.endsWith(ext)) || f.includes('/') || f.includes('\\')) err(w, `format de média non admis : ${String(f)}`);
-            else mediaFiles.push({ where: w, file: f, exerciseId: x.id, source: media.source });
+            else mediaFiles.push({ where: w, file: f, exerciseId: x.id, source: media.source, author: media.author ?? null });
           }
         }
         if (hasMedia && opts.mediaDir) {
@@ -412,6 +425,7 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
     }
     if (entry.exerciseId !== m.exerciseId || `${entry.source}:${entry.originPath}` !== m.source) err(m.where, `registre incohérent (exercice ou source) : ${m.file}`);
     if (entry.bytes !== bytes.length || entry.sha256 !== createHash('sha256').update(bytes).digest('hex')) err(m.where, `empreinte ou taille différente du registre : ${m.file}`);
+    if (Object.hasOwn(MEDIA_SOURCES, entry.source) && MEDIA_SOURCES[entry.source].authorPerImage === true && entry.author !== m.author) err(m.where, `auteur de l’image différent du registre : ${m.file}`);
     validateReduction(entry, bytes, m, err);
   }
   if (total > maxTotal) err(where, `budget total des médias dépassé : ${total} octets > ${maxTotal}`);

@@ -117,6 +117,17 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
   crédible (rendus d'origine commerciale, filigranes), image marquée générée par IA, source externe sans licence vérifiable ou mauvais
   matériel. Détail : `docs/MEDIA-02.md`. Total du catalogue : 101 exercices sur 196, 4 495 435 octets. **H-9 reste UNVERIFIED** (D-36).
 
+## Complément CONTENT-0293 (0.29.3, BL-010) : une image de wger, auteur par image
+
+- Source déclarée `wger` dans `validate-content.mjs` (source à auteur par image) : API publique `https://wger.de/api/v2/exerciseimage/346/`, licence 2 de wger =
+  « Creative Commons Attribution Share Alike 4 » (`https://creativecommons.org/licenses/by-sa/4.0/`), auteur déclaré « utkb », image non générée par IA
+  (`is_ai_generated` faux), consultée le 2026-11-25 (requête anonyme, aucune donnée personnelle). Fichier d'origine :
+  `https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png` (239 054 octets, SHA-256 au registre).
+- Un fichier embarqué : `content/exercises/media/plank.png` (exercice `plank`, « Planche »), **réduit** par `png-reduce.mjs` (gris 8 bits, hauteur ≤ 640 px) : œuvre
+  adaptée, sous CC BY-SA 4.0. L'auteur est consigné par image (`media.author` dans `exercises.json`, `author` au registre ; le validateur exige les deux et leur égalité).
+- Attribution affichée sous l'image : « Illustration : utkb (wger.de), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris ».
+  Le pictogramme de la planche est retiré (la photo est prioritaire). Total du catalogue : 102 exercices sur 196. **H-9 reste UNVERIFIED** (D-36).
+
 # Licences — normes du Strength Score (STR-01, D-310)
 
 - Fichier embarqué : `content/strength/standards.json` (centiles 10, 25, 50, 75, 90, 95, 99 du 1RM, par sexe et catégorie de poids, pour 11 mouvements), construit par `scripts/content/build-strength-standards.mjs` ; aucun nombre ajouté ni modifié (valeurs de la source au pas de 0,1 kg).

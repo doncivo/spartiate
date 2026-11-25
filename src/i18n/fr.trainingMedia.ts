@@ -13,4 +13,6 @@ export const trainingMediaFr = {
   /** MEDIA-02 (D-302) : image adaptée (réduite, niveaux de gris), modification signalée comme l'exige CC BY-SA 4.0, 3(a)(1)(B). */
   attributionEverkineticWeb:
     'Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris',
+  /** BL-010 (CONTENT-0293) : source à auteur par image (wger), CC BY-SA 4.0, image adaptée. */
+  attributionWger: 'Illustration : {author} (wger.de), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris',
 } as const;

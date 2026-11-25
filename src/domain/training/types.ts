@@ -39,6 +39,8 @@ export interface ExerciseMedia {
   readonly video: string | null;
   readonly license: string;
   readonly source: string;
+  /** BL-010 : auteur de l'image, obligatoire pour une source à auteur par image (wger) ; absent pour une source à auteur unique. */
+  readonly author?: string | null;
 }
 
 /** Champs communs d'un exercice (§ 14.1), embarqué ou personnalisé. */

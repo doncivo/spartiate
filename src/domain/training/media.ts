@@ -5,6 +5,8 @@ export interface ExerciseImage {
   readonly file: string;
   readonly sourceId: string;
   readonly license: string;
+  /** Auteur propre à l'image (source wger), sinon null : l'auteur est alors celui de la source. */
+  readonly author: string | null;
 }
 
 /**
@@ -16,5 +18,5 @@ export function exerciseImage(media: ExerciseMedia | null): ExerciseImage | null
   if (!media || file === undefined) return null;
   const separator = media.source.indexOf(':');
   if (separator <= 0) return null;
-  return { file, sourceId: media.source.slice(0, separator), license: media.license };
+  return { file, sourceId: media.source.slice(0, separator), license: media.license, author: media.author ?? null };
 }

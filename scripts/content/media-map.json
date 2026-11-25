@@ -4,6 +4,13 @@
   "commit": "446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6",
   "entries": [
     {
+      "exerciseId": "plank",
+      "source": "wger",
+      "wgerImageId": 346,
+      "author": "utkb",
+      "path": "exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png"
+    },
+    {
       "exerciseId": "bench-press-barbell",
       "everkineticId": "0042",
       "everkineticTitle": "Bench Press: Barbell",
