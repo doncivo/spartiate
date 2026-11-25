@@ -25,13 +25,13 @@ fn c144_the_diagnostic_never_returns_an_absolute_path() {
     let report = diagnose_db_dir(Ok(dir.path().to_path_buf()));
     let folder = report.config_dir.expect("nom du dossier");
     let db = report.db_path.expect("nom de la base");
-    assert!(!folder.contains(['/', '\']), "{folder}");
+    assert!(!folder.contains(['/', '\\']),"{folder}");
     assert_eq!(db, DB_FILE);
 }
 
 #[test]
 fn c144_a_folder_error_is_a_stable_code_not_a_system_message() {
-    let report = diagnose_db_dir(Err("C:\Users\quelquun\AppData introuvable".into()));
+    let report = diagnose_db_dir(Err("C:\\Users\\quelquun\\AppData introuvable".into()));
     assert_eq!(report.config_dir_error.as_deref(), Some("no-data-dir"));
 }
 
