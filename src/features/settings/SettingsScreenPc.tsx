@@ -7,7 +7,7 @@ import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { formatAppearanceParts } from './AppearanceScreen';
 import { backupStore } from './backupStore';
-import { useProfileSummary } from './ProfileCard';
+import { useProfileSummaryDetail } from './ProfileCard';
 import { SettingsPanel, type PanelId } from './SettingsPanels';
 import { settingsStore } from './settingsStore';
 import { useSyncValue } from './useSyncValue';
@@ -34,7 +34,7 @@ export function SettingsScreenPc() {
   const timeFormat = useFeatureStore(settingsStore, (s) => s.timeFormat);
   const timeZone = useAppStore((s) => s.timeZone);
   const syncValue = useSyncValue();
-  const profileParts = useProfileSummary();
+  const profileWeight = useProfileSummaryDetail().weight;
   const versions = useFeatureStore(backupStore, (s) => s.versions);
   const backupFailed = useFeatureStore(backupStore, (s) => s.failed);
   const loadBackups = useFeatureStore(backupStore, (s) => s.load);
@@ -50,7 +50,7 @@ export function SettingsScreenPc() {
 
   const [themeText = ''] = formatAppearanceParts(theme, firstWeekday, timeFormat);
   const version = container.appVersion.version;
-  const weight = profileParts.find((part) => part.includes(' kg'));
+  const weight = profileWeight ?? undefined;
   const groups: readonly { readonly title: PlusTextKey; readonly entries: readonly Entry[] }[] = [
     { title: 'groupMe', entries: [{ id: 'profile', label: tPlus('navProfile'), value: weight ?? tPlus('valueMissing') }] },
     { title: 'groupSources', entries: syncValue === null ? [] : [{ id: 'sync', label: tPlus('navSync'), value: syncValue }] },
