@@ -126,4 +126,13 @@ describe('UpdateBanner (D-03)', () => {
     screen.getByRole('button', { name: 'Installer et redémarrer' }).click();
     expect(await screen.findByRole('alert')).toHaveTextContent('La mise à jour a échoué');
   });
+
+  it('C-126 : l’échec de vérification (alerte) se ferme avec « Fermer »', async () => {
+    desktop.nextCheck = new Error('réseau absent');
+    renderBanner();
+    await check();
+    expect(screen.getByRole('alert')).toHaveTextContent('Vérification des mises à jour impossible');
+    act(() => screen.getByRole('button', { name: 'Fermer' }).click());
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
 });
