@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest';
  */
 const css = readFileSync(new URL('./TabRail.css', import.meta.url), 'utf8');
 const rule = (selector: string): string => {
-  const start = css.indexOf(`${selector} {`);
+  const start = css.indexOf(`
+${selector} {`);
   if (start < 0) throw new Error(`règle absente : ${selector}`);
   return css.slice(start, css.indexOf('}', start));
 };

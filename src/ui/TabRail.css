@@ -80,9 +80,9 @@
   display: none;
 }
 
-/* PC : barre latérale de 220 px. */
+/* PC : barre latérale de 256 px (BL-161 : 220 px coupaient « SPARTIATE » en deux lignes et collaient « Entraînement » à « Ctrl 2 »). */
 .ct-tab-rail[data-layout='pc'] {
-  width: 220px;
+  width: 256px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -117,6 +117,7 @@
   font-size: var(--ct-font-size-text-lg);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ct-color-on-nav);
 }
 
@@ -167,6 +168,7 @@
   color: var(--ct-color-nav-text);
   font-variant-numeric: tabular-nums;
   white-space: nowrap; /* « Ctrl 2 » ne passe jamais à la ligne */
+  margin-left: var(--ct-space-3); /* BL-161 : écart minimal avec le libellé */
   flex: 0 0 auto;
 }
 
