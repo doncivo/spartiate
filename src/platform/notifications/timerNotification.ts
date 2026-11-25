@@ -97,11 +97,24 @@ export function createUnavailableTimerNotifier(): TimerNotifier {
 }
 
 /** Adaptateur réel pour (`tauri`, `ios`) seulement, chargé à la demande ; le vide partout ailleurs. */
-export function openTimerNotifier(runtime: Runtime, os: OsFamily, clock: NotificationClock, kind: TimerKind = 'test'): TimerNotifier {
+export function openTimerNotifier(
+  runtime: Runtime,
+  os: OsFamily,
+  clock: NotificationClock,
+  kind: TimerKind = 'test',
+  loadBridge: () => Promise<{ readonly createIosNotificationBridge: () => IosNotificationBridge }> = () => import('./tauriNotifications'),
+): TimerNotifier {
   if (runtime !== 'tauri' || os !== 'ios') return createUnavailableTimerNotifier();
   let loaded: Promise<TimerNotifier> | null = null;
+  // SHELL-0294d (C-162) : un chargement en échec n'est pas gardé à vie (plus aucune fin de repos notifiée) : l'appel suivant le retente.
   const load = (): Promise<TimerNotifier> =>
-    (loaded ??= import('./tauriNotifications').then(({ createIosNotificationBridge }) => createIosTimerNotifier({ bridge: createIosNotificationBridge(), clock, kind })));
+    (loaded ??= loadBridge().then(
+      ({ createIosNotificationBridge }) => createIosTimerNotifier({ bridge: createIosNotificationBridge(), clock, kind }),
+      (error: unknown) => {
+        loaded = null;
+        throw error;
+      },
+    ));
   return {
     permission: async () => (await load()).permission(),
     requestPermission: async () => (await load()).requestPermission(),

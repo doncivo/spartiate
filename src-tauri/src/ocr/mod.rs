@@ -82,9 +82,14 @@ pub struct OcrCommandError {
 
 impl From<OcrError> for OcrCommandError {
     fn from(error: OcrError) -> Self {
+        // SHELL-0294d (C-148) : le texte du moteur (WinRT : chemin ou nom possibles) ne part jamais vers la WebView ; seul le code l'identifie.
+        let message = match &error {
+            OcrError::Engine(_) => "Engine".to_owned(),
+            other => format!("{other:?}"),
+        };
         Self {
             code: error.code(),
-            message: format!("{error:?}"),
+            message,
         }
     }
 }
