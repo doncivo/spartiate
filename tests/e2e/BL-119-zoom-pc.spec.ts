@@ -46,3 +46,32 @@ for (const size of SIZES) {
     }
   });
 }
+
+// BL-136 et C-135 (D-480, SHELL-0294a) : sous 1 100 px la barre latérale se replie en icônes ; sous 1 024 px Progrès › Corps reste en une colonne ;
+// les sous-écrans de Plus (Synchronisation, Apparence), ouverts par la palette Ctrl+K, ne débordent pas non plus.
+for (const size of SIZES) {
+  test(`${size.name} : barre repliée selon la place, Corps en une colonne, sous-écrans sans débordement`, async ({ page }) => {
+    await page.setViewportSize({ width: size.width, height: size.height });
+    await openToday(page);
+    await expect(page.locator('.ct-tab-rail')).toHaveAttribute('data-layout', 'pc');
+    if (size.width <= 1099) await expect(page.locator('.ct-tab-rail')).toHaveAttribute('data-collapsed', 'true');
+    else await expect(page.locator('.ct-tab-rail')).not.toHaveAttribute('data-collapsed');
+
+    await page.getByRole('navigation').getByRole('button', { name: 'Progrès', exact: true }).click();
+    const body = page.locator('.ct-bodyprogress').first();
+    await expect(body).toBeVisible();
+    if (size.width < 1024) expect(await body.evaluate((el) => getComputedStyle(el).display)).toBe('flex');
+    expect((await overflow(page)).main, 'Progrès › Corps : zone centrale plus large que sa place').toBeLessThanOrEqual(1);
+
+    for (const [query, name] of [['synchronisation', 'Plus : synchronisation'], ['apparence', 'Plus : apparence']] as const) {
+      await page.keyboard.press('Control+k');
+      await page.getByRole('combobox', { name: 'Chercher une commande' }).fill(query);
+      await page.getByRole('option', { name }).click();
+      await expect(page.getByRole('dialog', { name: 'Palette de commandes' })).toHaveCount(0);
+      await expect(page.getByRole('navigation').locator('[aria-current="page"]')).toContainText('Plus');
+      const o = await overflow(page);
+      expect(o.doc, `${name} : document plus large que la fenêtre`).toBeLessThanOrEqual(0);
+      expect(o.main, `${name} : zone centrale plus large que sa place`).toBeLessThanOrEqual(1);
+    }
+  });
+}
