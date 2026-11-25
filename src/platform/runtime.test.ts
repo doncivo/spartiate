@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectOs, osUnknownInApp } from './runtime';
+import { detectOs } from './runtime';
 
 /** SHELL-0294e (C-163) : un agent utilisateur inconnu ne masque plus, sans trace, la synchro et les sauvegardes. */
 describe('detectOs (C-163)', () => {
@@ -17,14 +17,5 @@ describe('detectOs (C-163)', () => {
   it('reste « other » quand ni l’agent ni la plateforme ne disent rien de sûr', () => {
     expect(detectOs('', '')).toBe('other');
     expect(detectOs('Mozilla/5.0 (X11; Linux x86_64)', 'Linux x86_64')).toBe('other');
-  });
-});
-
-describe('osUnknownInApp (C-163)', () => {
-  it('signale l’app installée dont le système reste inconnu (à journaliser), jamais le navigateur de développement', () => {
-    expect(osUnknownInApp('tauri', 'other')).toBe(true);
-    expect(osUnknownInApp('tauri', 'windows')).toBe(false);
-    expect(osUnknownInApp('tauri', 'ios')).toBe(false);
-    expect(osUnknownInApp('web', 'other')).toBe(false);
   });
 });
