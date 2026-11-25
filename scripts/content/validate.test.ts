@@ -618,7 +618,7 @@ function strength(): Json {
   const cls = (upToKg: number | null) => ({ upToKg, sampleSize: 100, kg: [10, 20, 30, 40, 50, 60, 70] });
   return {
     schemaVersion: 1,
-    source: { name: 'Source', dataset: 'Jeu', population: 'gym', url: 'https://exemple.invalid/', api: 'https://exemple.invalid/api', license: 'CC BY 4.0', attribution: 'Données : Source', dataVersion: '2026-01-01', consultedOn: '2026-11-16', unit: 'kg' },
+    source: { name: 'Source', dataset: 'Jeu', population: 'gym', url: 'https://exemple.invalid/', api: 'https://exemple.invalid/api', license: 'CC BY 4.0', attribution: 'Données : Source', dataVersion: '2026-01-01', consultedOn: '2026-11-16', unit: 'kg', responsesSha256: { 'bench_press/male': 'a'.repeat(64), 'bench_press/female': 'b'.repeat(64) } },
     percentiles: [10, 25, 50, 75, 90, 95, 99],
     groups: [{ id: 'chest', muscles: ['chest'] }, { id: 'back', muscles: [] }, { id: 'shoulders', muscles: [] }, { id: 'biceps', muscles: [] }, { id: 'triceps', muscles: ['triceps'] }, { id: 'quads', muscles: [] }, { id: 'hamstrings', muscles: [] }, { id: 'glutes', muscles: [] }],
     lifts: [{ key: 'bench', sourceLift: 'bench_press', groups: ['chest'], totalLoad: false, male: [cls(80), cls(null)], female: [cls(null)] }],
@@ -661,6 +661,17 @@ describe('validateContent : normes du Strength Score (STR-01)', () => {
     const group = keyed();
     group['strength'].lifts[0].groups = ['mollets'];
     expect(run(group).join('\n')).toMatch(/groupe hors liste : mollets/);
+  });
+  it('CONTENT-0293 (C-180) : une empreinte SHA-256 par réponse de la source (mouvement et sexe) est exigée, bien formée', () => {
+    const missing = keyed();
+    delete missing['strength'].source.responsesSha256['bench_press/female'];
+    expect(run(missing).join('\n')).toMatch(/source\.responsesSha256 : empreinte manquante pour bench_press\/female/);
+    const bad = keyed();
+    bad['strength'].source.responsesSha256['bench_press/male'] = 'xyz';
+    expect(run(bad).join('\n')).toMatch(/source\.responsesSha256 : empreinte illisible pour bench_press\/male/);
+    const none = keyed();
+    delete none['strength'].source.responsesSha256;
+    expect(run(none).join('\n')).toMatch(/source\.responsesSha256 manquante/);
   });
   it('refuse une source sans URL, licence ou attribution', () => {
     const b = keyed();
