@@ -154,7 +154,7 @@ export function ExportImportScreen() {
         if (theme !== undefined) await repos.settings.set('ui.theme', theme);
         return { counts: final.counts, theme };
       });
-      // C-127 : le thème importé s'applique aussitôt (réglage, document et barre de titre), pas au prochain démarrage.
+      // C-127 : le thème importé s'applique aussitôt (attribut du document et miroir local ; la barre de titre Windows suit au prochain démarrage), pas au prochain démarrage.
       if (theme === 'light' || theme === 'dark' || theme === 'system') applyImportedTheme(theme);
       setPreview(null);
       setMessage({ kind: 'ok', text: tExportImport('importDone', { add: counts.add, modify: counts.modify, delete: counts.delete }) });

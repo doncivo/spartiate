@@ -45,8 +45,8 @@ export interface AppState {
   /** Étape et erreur exactes du dernier échec de démarrage (null hors erreur). */
   readonly dbFailure: DbFailure | null;
   /**
-   * Jour local courant de l'app : posé par la coquille (`useLocalDay`, ShellChrome) au démarrage, à chaque passage de minuit et au
-   * retour au premier plan ; les écrans datés (Aujourd'hui) s'y rechargent.
+   * Jour local courant de l'app : posé par `useLocalDay` (chargé avec Aujourd'hui) à l'affichage, à chaque passage de minuit et au
+   * retour au premier plan ; Aujourd'hui s'y recharge et la barre PC y lit sa date.
    */
   readonly day: LocalDate | null;
   /** T-11 : fuseau IANA courant de l'appareil (détecté au démarrage et au retour au premier plan). */

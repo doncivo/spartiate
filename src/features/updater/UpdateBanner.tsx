@@ -19,6 +19,7 @@ export function UpdateBanner() {
   const notesOpen = useFeatureStore(updaterStore, (s) => s.notesOpen);
   const progress = useFeatureStore(updaterStore, (s) => s.progress);
   const failure = useFeatureStore(updaterStore, (s) => s.failure);
+  const failures = useFeatureStore(updaterStore, (s) => s.checkFailures);
   const install = useFeatureStore(updaterStore, (s) => s.install);
   const later = useFeatureStore(updaterStore, (s) => s.later);
   const toggleNotes = useFeatureStore(updaterStore, (s) => s.toggleNotes);
@@ -28,10 +29,10 @@ export function UpdateBanner() {
   // Échec durable sans version à proposer (vérification en échec, ou échec d'installation relu après redémarrage) : visible seul.
   // C-126 : l'alerte se ferme (pour cette session) ; un autre échec la réaffiche.
   if (visible && !version && (status === 'installFailed' || status === 'checkFailed')) {
-    const key = `${status}:${String(failure)}`;
+    const key = `${status}:${String(failure)}:${String(failures)}`;
     return dismissed === key ? null : <FailureNotice failure={status === 'installFailed' ? failure : null} onClose={close(key)} />;
   }
-  if (status === 'checkFailed') return dismissed === 'checkFailed' ? null : <FailureNotice failure={null} onClose={close('checkFailed')} />;
+  if (status === 'checkFailed') return dismissed === `checkFailed:${String(failures)}` ? null : <FailureNotice failure={null} onClose={close(`checkFailed:${String(failures)}`)} />;
 
   const offered = status === 'available' || status === 'downloading' || status === 'installFailed';
   if (!visible || !offered || !version) return null;

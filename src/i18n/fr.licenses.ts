@@ -13,8 +13,7 @@ export const licencesFr = {
     {
       name: 'd3-ease',
       licence: 'BSD-3-Clause',
-      detail:
-        'Copyright 2010-2021 Mike Bostock, Copyright 2001 Robert Penner. Redistribution et usage permis sous réserve de conserver cet avis, la liste des conditions et l’avertissement ; les noms des auteurs ne servent pas à promouvoir l’app. Le logiciel est fourni « tel quel », sans garantie.',
+      detail: 'Easing des graphiques. L’avis de copyright, les conditions et l’avertissement de la licence sont reproduits en entier ci-dessous, comme elle l’exige.',
     },
     { name: 'qrcode-generator', licence: 'MIT', detail: 'Copyright Kazuhiko Arase. Dessin du QR code d’association. « QR Code » est une marque déposée de DENSO WAVE INCORPORATED.' },
     { name: 'Ciqual (Anses)', licence: 'Licence Ouverte Etalab 2.0', detail: 'Table de composition nutritionnelle des aliments Ciqual 2025, publiée par l’Anses.' },
@@ -24,3 +23,7 @@ export const licencesFr = {
     { name: 'tauri-plugin-geolocation, tauri-plugin-dialog', licence: 'MIT ou Apache-2.0', detail: 'Plugins officiels Tauri (GPS du cardio sur iPhone, boîte « Enregistrer sous » sur PC).' },
   ],
 } as const;
+
+/** Texte intégral de node_modules/d3-ease/LICENSE (BSD-3-Clause, anglais : texte juridique) ; `LicensesScreen.test.tsx` le compare au fichier. */
+export const d3EaseNotice = "Copyright 2010-2021 Mike Bostock\nCopyright 2001 Robert Penner\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification,\nare permitted provided that the following conditions are met:\n\n* Redistributions of source code must retain the above copyright notice, this\n  list of conditions and the following disclaimer.\n\n* Redistributions in binary form must reproduce the above copyright notice,\n  this list of conditions and the following disclaimer in the documentation\n  and/or other materials provided with the distribution.\n\n* Neither the name of the author nor the names of contributors may be used to\n  endorse or promote products derived from this software without specific prior\n  written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND\nANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED\nWARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE\nDISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR\nANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES\n(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;\nLOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON\nANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT\n(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS\nSOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.\n";
+

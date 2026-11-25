@@ -25,6 +25,8 @@ export interface UpdaterState {
   readonly failure: UpdateFailureKind | null;
   /** Faux après « Plus tard » ; relevé à la vérification suivante (QB-16). */
   readonly bannerVisible: boolean;
+  /** Nombre d'échecs de vérification de cette session : un nouvel échec réaffiche l'alerte fermée (D-608). */
+  readonly checkFailures: number;
   /**
    * Interroge `latest.json`. Renvoie `ok` (même sans nouvelle version) ou `failed`.
    * Ne rejette jamais ; sans intégration PC, ne fait rien et renvoie `ok`.
@@ -56,6 +58,7 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
     progress: null,
     failure: null,
     bannerVisible: false,
+    checkFailures: 0,
 
     async restore() {
       if (get().status !== 'idle') return;
@@ -100,7 +103,7 @@ export const updaterStore = defineFeatureStore<UpdaterState>((container: AppCont
         return 'ok';
       } catch (error) {
         logDesktopFailure('updater-check', error);
-        set({ status: 'checkFailed', bannerVisible: false });
+        set((s) => ({ status: 'checkFailed', bannerVisible: false, checkFailures: s.checkFailures + 1 }));
         await recordCheck(container, { stage: 'check', kind: 'other' }, false);
         return 'failed';
       }

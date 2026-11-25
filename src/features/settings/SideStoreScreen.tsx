@@ -5,7 +5,7 @@ import { useNavigationStore } from '../app/navigation';
 import './LicensesScreen.css';
 
 /**
- * Procédure d'actualisation par SideStore (§ 18.3 a) : atteinte par « Voir » du bandeau « la signature expire dans moins de 24 h ».
+ * Procédure d'actualisation par SideStore (§ 18.3 a) : atteinte par le lien « Voir la procédure SideStore » de la ligne d'expiration de Plus (moins de 24 h, ou expirée).
  * Écran à la demande avec son catalogue ; lecture seule. Même mise en page que « Licences » (feuille de style partagée).
  */
 export function SideStoreScreen() {

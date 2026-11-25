@@ -1,5 +1,5 @@
 import { Undo2 } from 'lucide-react';
-import { licencesFr } from '../../i18n/fr.licenses';
+import { d3EaseNotice, licencesFr } from '../../i18n/fr.licenses';
 import { Icon, useLayout } from '../../ui';
 import { useNavigationStore } from '../app/navigation';
 import { SideStoreScreen } from './SideStoreScreen';
@@ -31,6 +31,11 @@ export function LicensesScreen() {
               <h2 className="ct-licenses__name">{item.name}</h2>
               <p className="ct-licenses__detail">{item.licence}</p>
               <p className="ct-licenses__detail">{item.detail}</p>
+              {item.name === 'd3-ease' && (
+                <pre className="ct-licenses__notice" data-testid="license-d3-ease">
+                  {d3EaseNotice}
+                </pre>
+              )}
             </li>
           ))}
         </ul>
