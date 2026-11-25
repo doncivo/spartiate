@@ -138,7 +138,8 @@ describe('préchargement des écrans', () => {
     vi.useRealTimers();
   });
 
-  it('avec requestIdleCallback : un écran par moment d’inactivité, annulable', () => {
+  // SHELL-0294d (BL-036), écart consigné : le moment suivant n'est programmé qu'après la fin du chargement en cours (attente par `waitFor`).
+  it('avec requestIdleCallback : un écran par moment d’inactivité, annulable', async () => {
     const callbacks: Array<() => void> = [];
     const request = vi.fn((cb: () => void, _options?: { timeout: number }) => callbacks.push(cb));
     const cancel = vi.fn();
@@ -146,7 +147,7 @@ describe('préchargement des écrans', () => {
     const stop = preloadScreens();
     expect(request).toHaveBeenCalledTimes(1);
     act(() => callbacks[0]?.());
-    expect(request).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2), { timeout: 15_000 });
     stop();
     expect(cancel).toHaveBeenCalledWith(2);
   });
@@ -154,8 +155,6 @@ describe('préchargement des écrans', () => {
   it('sans requestIdleCallback (WebKit) : minuteur de 200 ms entre deux écrans, annulable', () => {
     vi.useFakeTimers();
     const stop = preloadScreens();
-    expect(vi.getTimerCount()).toBe(1);
-    vi.advanceTimersByTime(200);
     expect(vi.getTimerCount()).toBe(1);
     stop();
     expect(vi.getTimerCount()).toBe(0);

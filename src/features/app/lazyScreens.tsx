@@ -179,13 +179,22 @@ export const UpdateBanner = lazyScreen<object>(() => import('../updater/UpdateBa
 export function preloadScreens(): () => void {
   let cancel: () => void = () => undefined;
   let index = 0;
+  let stopped = false;
   const step = (): void => {
     const load = loaders[index];
     index += 1;
     if (!load) return;
-    void load().catch((error: unknown) => logFailure('screen-preload', error));
-    cancel = whenIdle(step, 200);
+    // SHELL-0294d (BL-036) : le moment d'inactivité suivant n'est programmé qu'une fois le chargement en cours terminé (réussi ou non) ;
+    // jamais deux imports à la fois sur un iPhone lent. Arrêté entre-temps : rien n'est reprogrammé.
+    void load()
+      .catch((error: unknown) => logFailure('screen-preload', error))
+      .then(() => {
+        if (!stopped) cancel = whenIdle(step, 200);
+      });
   };
   cancel = whenIdle(step, 200);
-  return () => cancel();
+  return () => {
+    stopped = true;
+    cancel();
+  };
 }
