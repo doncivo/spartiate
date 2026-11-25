@@ -49,6 +49,13 @@ describe('ExerciseMedia', () => {
     expect(screen.getByText(/image réduite et passée en niveaux de gris$/)).toBeInTheDocument();
   });
 
+  it('BL-010 (CONTENT-0293) : l’auteur de chaque image de la source wger est affiché sous l’image, avec la licence et la modification', () => {
+    expect(mediaAttribution('wger', 'utkb')).toBe('Illustration : utkb (wger.de), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris');
+    expect(mediaAttribution('wger', null)).toBeNull();
+    render(<ExerciseMedia exercise={exercise('plank', { images: ['plank.png'], video: null, license: 'CC-BY-SA-4.0', source: 'wger:exercise-images/458/b7bd9c28.png', author: 'utkb' })} />);
+    expect(screen.getByText(/^Illustration : utkb \(wger\.de\)/)).toBeInTheDocument();
+  });
+
   it('sans média : ne rend rien (aucune icône cassée, D-71)', () => {
     const { container } = render(<ExerciseMedia exercise={exercise('plank', null)} />);
     expect(container.innerHTML).toBe('');

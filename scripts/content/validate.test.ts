@@ -308,6 +308,20 @@ describe('validateContent : médias d’exercice (I6-07)', () => {
     expect(MEDIA_SOURCES['everkinetic']).toMatchObject({ license: 'CC-BY-SA-4.0', commit: '446bb9a3d0c3beb6b84f7c9d77dfc8af707a2ab6' });
   });
 
+  it('BL-010 (CONTENT-0293) : une source par image (wger) exige l’auteur de l’image dans media.author ; une source à auteur unique n’en porte pas', () => {
+    const wger = (author?: string) => {
+      const b = bundle();
+      b['exercises'].exercises[0].media = { images: ['ex-a.png'], video: null, license: 'CC-BY-SA-4.0', source: 'wger:exercise-images/458/x.png', ...(author === undefined ? {} : { author }) };
+      return run(b).join('\n');
+    };
+    expect(wger()).toMatch(/auteur de l’image obligatoire/);
+    expect(wger('  ')).toMatch(/auteur de l’image obligatoire/);
+    expect(wger('utkb')).not.toMatch(/auteur/);
+    const b = bundle();
+    b['exercises'].exercises[0].media = { images: ['ex-a.png'], video: null, license: 'CC-BY-SA-4.0', source: 'everkinetic:dist/png/0001-tension.png', author: 'x' };
+    expect(run(b).join('\n')).toMatch(/auteur de l’image non attendu/);
+  });
+
   it('refuse une licence NC, ND ou hors liste blanche', () => {
     for (const license of ['CC-BY-NC-4.0', 'CC-BY-ND-4.0', 'tous droits réservés']) {
       const { b, dir } = withMedia();
