@@ -43,7 +43,7 @@ export function decodeXmlText(text) {
 }
 
 /**
- * Teneur d'un constituant : « 59,7 » (valeur), « - » ou vide (absente), « traces », « < 0,5 » (borne). Rien d'autre n'est admis.
+ * Teneur d'un constituant : « 59,7 » (valeur), « - » ou vide (absente), « traces » (comptée 0 g à la construction), « < 0,5 » (borne, inconnue). Rien d'autre n'est admis.
  * @returns {{kind:'value',value:number}|{kind:'missing'}|{kind:'traces'}|{kind:'below',bound:number}|{kind:'invalid'}}
  */
 export function parseDecimal(text) {
@@ -127,7 +127,11 @@ export function buildCiqual({ alim, alimGrp, compo, consts }) {
     if (parsed.kind === 'invalid') throw new Error(`teneur illisible pour l'aliment ${food.code}, constituant ${key} : « ${String(row.teneur)} »`);
     if (parsed.kind === 'value') food[key] = parsed.value;
     else if (parsed.kind === 'missing') stats.missing[key] += 1;
-    else if (parsed.kind === 'traces') stats.traces[key] += 1;
+    else if (parsed.kind === 'traces') {
+      // D-477, Q-20 B (CONTENT-0293) : « traces » compte pour 0 g, pour tous les constituants ; l'absence reste inconnue (jamais 0).
+      food[key] = 0;
+      stats.traces[key] += 1;
+    }
     else stats.below[key] += 1;
   }
   // Constituant jamais décrit pour l'aliment : inconnu aussi (compté « absent »).

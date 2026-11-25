@@ -48,7 +48,7 @@ function main() {
   writeFileSync(out, serializeCiqual(data));
   console.log(`build-ciqual : ${stats.foods} aliments, ${stats.groups} groupes -> ${out}`);
   console.log(`  absentes (null)  : ${JSON.stringify(stats.missing)}`);
-  console.log(`  « traces » (null) : ${JSON.stringify(stats.traces)}`);
+  console.log(`  « traces » (= 0 g)  : ${JSON.stringify(stats.traces)}`);
   console.log(`  « < x » (null)    : ${JSON.stringify(stats.below)}`);
 }
 
