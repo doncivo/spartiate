@@ -421,6 +421,11 @@ const real = validateContentDir(CONTENT);
 const load = (...p: string[]) => JSON.parse(readFileSync(resolve(CONTENT, ...p), 'utf8')) as Json;
 
 describe('contenu embarqué réel', () => {
+  it('BL-113 (CONTENT-0293) : le gilet lesté est au catalogue du matériel (famille accessoire), sans être imposé aux profils de départ', () => {
+    const equipment = load('exercises', 'equipment.json').equipment as Json[];
+    expect(equipment.filter((e) => e.id === 'weighted-vest')).toEqual([{ id: 'weighted-vest', nameFr: 'Gilet lesté', family: 'accessoire' }]);
+    for (const profile of load('equipment-profiles', 'profiles.json').profiles as Json[]) expect(profile.equipment as string[], String(profile.id)).not.toContain('weighted-vest');
+  });
   it('passe la validation sans aucune erreur', () => {
     expect(real.errors).toEqual([]);
   });
