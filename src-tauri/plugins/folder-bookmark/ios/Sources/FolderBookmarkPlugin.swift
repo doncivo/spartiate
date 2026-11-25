@@ -1175,11 +1175,6 @@ class FolderBookmarkPlugin: Plugin {
     }
   }
 
-  /// C-154 (DATA-0295) : fichier évincé par iOS (« Optimiser le stockage ») : seul reste son substitut `.<nom>.icloud`. Écrire `name` à
-  /// côté créerait un fichier neuf, puis une copie de conflit « nom 2 » ou l'écrasement de la version distante. Le téléchargement est
-  /// demandé et l'écriture refusée (`cloud-pending`, transitoire) : elle est reprise au cycle suivant, sur le fichier téléchargé.
-  /// Relecture sync-icloud : même règle que `status` : le substitut ne compte que si le fichier réel est absent (ENOENT) ; un substitut
-  /// périmé à côté du fichier réel ne bloque jamais l'écriture (sinon `state.spx` ne serait plus jamais réécrit).
   /// C-155 (DATA-0295), REL-0.29.5 (D-642, H-43) : `fsync` du dossier après un renommage. EINVAL ou ENOTSUP (système de fichiers
   /// sans synchro de dossier) : sans effet, pas d'erreur, sinon chaque écriture de l'état échouerait ; toute autre erreur est levée.
   private func syncDirectory(_ dirFd: Int32) throws {
@@ -1190,6 +1185,11 @@ class FolderBookmarkPlugin: Plugin {
     }
   }
 
+  /// C-154 (DATA-0295) : fichier évincé par iOS (« Optimiser le stockage ») : seul reste son substitut `.<nom>.icloud`. Écrire `name` à
+  /// côté créerait un fichier neuf, puis une copie de conflit « nom 2 » ou l'écrasement de la version distante. Le téléchargement est
+  /// demandé et l'écriture refusée (`cloud-pending`, transitoire) : elle est reprise au cycle suivant, sur le fichier téléchargé.
+  /// Relecture sync-icloud : même règle que `status` : le substitut ne compte que si le fichier réel est absent (ENOENT) ; un substitut
+  /// périmé à côté du fichier réel ne bloque jamais l'écriture (sinon `state.spx` ne serait plus jamais réécrit).
   private func refuseEvicted(_ dirFd: Int32, _ name: String, _ url: URL) throws {
     var real = stat()
     if fstatat(dirFd, name, &real, AT_SYMLINK_NOFOLLOW) == 0 {

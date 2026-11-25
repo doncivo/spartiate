@@ -219,9 +219,9 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.5) :
 
-- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › Journaux ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
-- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › Journaux). Date : ____ Version : ____
-- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › Journaux ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
+- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › APP › Logs ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
+- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › APP › Logs). Date : ____ Version : ____
+- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Logs ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
 - [ ] **C-076 (unités)** — PC puis iPhone, Aujourd'hui, une séance et Progrès : les durées (« min », « h »), les heures en 24 h et les nombres à virgule s'affichent comme avant. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
