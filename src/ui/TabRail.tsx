@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { t, type PlainMessageKey } from '../i18n';
 import { TabIcon } from './TabIcon';
-import { useLayout, useRailMustFold } from './useLayout';
+import { useLayout } from './useLayout';
 import './TabRail.css';
 
 /**
@@ -31,7 +31,7 @@ export interface TabRailProps {
 }
 
 /**
- * Navigation des cinq sections, selon la mise en page (rupture 1 024 px, `useLayout` ; PC : repli en icônes sous 1 100 px, `useRailMustFold`) :
+ * Navigation des cinq sections, selon la mise en page (rupture 1 024 px, `useLayout`) :
  * - iPhone : barre basse, icône au-dessus d'un libellé horizontal ;
  * - PC : barre latérale des maquettes (marque Λ Spartiate, icône et libellé horizontaux, raccourci, carte d'état en bas).
  * Jamais de libellé vertical. L'onglet actif est en bronze (charte § 18.4).
@@ -44,10 +44,7 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
   const pc = layout === 'pc';
   const allItems = [...items, settingsItem];
   const [collapsed, setCollapsed] = useState(false);
-  // C-135 (D-480) : repli automatique en icônes quand la place manque ; le bouton manuel n'a alors plus d'objet.
-  const mustFold = useRailMustFold();
-  const autoFolded = pc && mustFold;
-  const folded = pc && (collapsed || autoFolded);
+  const folded = pc && collapsed;
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -99,17 +96,15 @@ export function TabRail({ items, settingsItem, activeId, onSelect, shortcutHints
             {'Λ'}
           </span>
           <span className="ct-tab-rail__name">{t('app.name')}</span>
-          {autoFolded ? null : (
-            <button
-              type="button"
-              className="ct-tab-rail__toggle"
-              aria-expanded={!collapsed}
-              aria-label={t('nav.sidebar')}
-              onClick={() => setCollapsed((now) => !now)}
-            >
-              <span aria-hidden="true">‹</span>
-            </button>
-          )}
+          <button
+            type="button"
+            className="ct-tab-rail__toggle"
+            aria-expanded={!collapsed}
+            aria-label={t('nav.sidebar')}
+            onClick={() => setCollapsed((now) => !now)}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
         </div>
       ) : null}
       <div className="ct-tab-rail__list">{allItems.map((item, index) => renderTab(item, index))}</div>

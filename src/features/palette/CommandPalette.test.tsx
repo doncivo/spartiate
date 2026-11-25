@@ -7,8 +7,7 @@ import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { SHORTCUTS, toKeyInput } from '../app/shortcuts';
-import { registerShellShortcuts } from '../shortcuts/registerShellShortcuts';
-import { CommandPalette } from './CommandPalette';
+import { ShortcutsHelp } from '../shortcuts/ShortcutsHelp';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-0000000000d6');
 
@@ -32,19 +31,17 @@ describe('palette de commandes Ctrl+K (C-135, D-480)', () => {
 
   function mount() {
     const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
-    const off = registerShellShortcuts(container, { help: true });
     const onKey = (event: KeyboardEvent): void => {
       if (container.shortcuts.handle(toKeyInput(event))) event.preventDefault();
     };
     window.addEventListener('keydown', onKey);
     const view = render(
       <AppContainerProvider container={container}>
-        <CommandPalette />
+        <ShortcutsHelp />
       </AppContainerProvider>,
     );
     return () => {
       window.removeEventListener('keydown', onKey);
-      off();
       view.unmount();
     };
   }

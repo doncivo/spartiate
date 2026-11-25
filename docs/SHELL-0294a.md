@@ -18,11 +18,10 @@ prudents ci-dessous : « Claude (choix prudent) ; révisable par Ali » (D-592 �
 
 ## Passe agent du module (coquille)
 
-Fichiers : `src/features/palette/{CommandPalette.tsx,CommandPalette.css,commands.ts}` (bloc à la demande), `src/i18n/{fr.palette.ts,paletteText.ts}` (catalogue à la
-demande), `src/features/app/{navigation.ts,shortcuts.ts,screenNames.ts,lazyScreens.tsx,desktop.ts}`, `src/features/shortcuts/registerShellShortcuts.ts`,
-`src/App.tsx` (hôte monté seulement palette ouverte ; sous elle, seuls Ctrl+K et Échap agissent), `src/ui/{useLayout.ts,TabRail.tsx,TabRail.css}`,
+Fichiers : `src/features/palette/{CommandPalette.tsx,CommandPalette.css,commands.ts}` (bloc à la demande), `src/i18n/{fr.palette.ts,paletteText.ts,shortcutsUiText.ts}` (catalogues à la
+demande), `src/features/app/{navigation.ts,shortcuts.ts,restBadge.ts}`, `src/features/shortcuts/ShortcutsHelp.tsx` (hôte déjà à la demande : monte la palette et enregistre Ctrl+K), `src/ui/TabRail.css`,
 `src/platform/desktop/{types,tauriDesktop,testing}.ts`, `src-tauri/capabilities/desktop.json` (permission `core:window:allow-set-title`),
-`src/features/training/session/{restTimer.ts,SessionScreen.tsx}` (crochet `onRest`), `tests/e2e/BL-119-zoom-pc.spec.ts`. Le raccourci, la surcouche et le badge
+`src/features/training/session/{restTimer.ts,SessionScreen.tsx}` (crochet `onRest`, texte dans `fr.trainingSession.ts`), `tests/e2e/BL-119-zoom-pc.spec.ts`. Le raccourci, la surcouche et le badge
 sont dans des modules déjà du départ : `tests/bundle/start-modules.json` inchangé.
 
 - Le chapitre 18 du PRD est figé : § 18.1 (Ctrl+K « recherche ») et § 18.5 (rupture à 900 px) sont amendés par D-592 et D-593, pas dans le chapitre.
@@ -37,15 +36,24 @@ sont dans des modules déjà du départ : `tests/bundle/start-modules.json` inch
 | C-135 repli de la barre (§ 18.5 b) | e3e6bd53 | 6d71e080 |
 | BL-161 | 2c0beaad | 2a72882a |
 | BL-118 | 05df8a0b | 80aabf9d (lint du test : 016a9bf4) |
+| Compensation du bundle (D-596) | — | commit « SHELL-0294a : le départ ne grossit plus » |
 | BL-136 | — (déjà en une colonne : garde CSS et e2e, pas de rouge local possible) | b6dc7949 |
 
 Preuves : tests ciblés verts (`src/features/palette`, `src/ui`, `src/features/app/desktop*`, `src/platform/desktop`, `restTimer`, `src/features/shortcuts`, `src/i18n`) ;
 `npm run typecheck` et eslint propres ; le rouge de la palette est un échec d'import (module absent) et d'assertion de bundle ; les e2e (barre repliée, Corps,
 sous-écrans par la palette) ne tournent qu'en CI.
 
-## Mesure du bundle de départ
+## Mesure du bundle de départ (règle « le départ ne grossit jamais », D-596)
 
-Départ : 50 blocs, normalisé 183 333 octets (main : environ 181 014 ; +2 319 octets : raccourci, surcouche, badge du titre, repli de la barre, un libellé), marge 175 067 sous 358 400 ; liste blanche inchangée, deux assertions « hors du départ » ajoutées (bloc de la palette, texte « Chercher une commande »).
+| Étape | Normalisé (octets) |
+|---|---|
+| main (mesure locale du 25/11) | 181 028 |
+| première version de la PR (avant compensation) | 183 333 (+2 305) |
+| badge sorti de `desktop.ts` (module `restBadge.ts`, texte dans `fr.trainingSession.ts`) | 181 274 |
+| palette montée par l'hôte `ShortcutsHelp`, repli de la barre en CSS | 181 057 |
+| catalogue `shortcutsUi` sorti de `fr.ts` (D-583 pour précédent) | **180 714** (marge 177 686 ; main − 314) |
+
+Liste blanche : une seule ligne retirée (`src/i18n/fr.shortcuts.ts`, sorti du départ), aucune ajoutée. Assertions « hors du départ » : bloc et texte de la palette, texte du badge, texte de la liste des raccourcis (les deux dernières n'ont pas été vues rouges : les textes étaient dans le départ avant ce commit, mesure 183 333 puis 181 057 ; pas de commit rouge séparé, la correction et l'assertion sont dans le même commit).
 
 ## Statuts
 

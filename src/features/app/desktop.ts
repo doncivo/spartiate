@@ -17,55 +17,6 @@ export function trayLabels(syncConfigured = false): TrayLabels {
   };
 }
 
-/**
- * BL-118 : échéance du minuteur de repos (ms, horloge du conteneur) ou null ; poussée par le contrôleur de repos de la séance, lue ici pour le titre
- * de la fenêtre PC. État de la coquille seulement : la séance reste la source de vérité (échéance persistée).
- */
-let restEndMs: number | null = null;
-const restListeners = new Set<() => void>();
-
-export function setRestBadge(endMs: number | null): void {
-  restEndMs = endMs;
-  for (const listener of restListeners) listener();
-}
-
-/** « Repos 1:23 · Spartiate » : le reste arrondi à la seconde supérieure (jamais 0:00 tant que le repos court). */
-export function restBadgeTitle(remainingMs: number): string {
-  const seconds = Math.max(1, Math.ceil(remainingMs / 1000));
-  const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
-  return t('desktop.restBadge', { time });
-}
-
-/** Titre de la fenêtre PC selon l'échéance du repos ; repos échu ou absent : le nom de l'app. */
-function startWindowTitleBadge(container: AppContainer, desktop: NonNullable<AppContainer['desktop']>): () => void {
-  let timer: ReturnType<typeof setInterval> | null = null;
-  let last: string | null = null;
-  const push = (title: string): void => {
-    if (title === last) return;
-    last = title;
-    desktop.setWindowTitle(title).catch((error: unknown) => logDesktopFailure('window-title', error));
-  };
-  const refresh = (): void => {
-    const remaining = restEndMs === null ? 0 : restEndMs - container.clock.nowMs();
-    if (restEndMs === null || remaining <= 0) {
-      if (timer !== null) clearInterval(timer);
-      timer = null;
-      if (last !== null) push(t('app.name'));
-      return;
-    }
-    push(restBadgeTitle(remaining));
-    timer ??= setInterval(refresh, 1000);
-  };
-  restListeners.add(refresh);
-  refresh();
-  return () => {
-    restListeners.delete(refresh);
-    if (timer !== null) clearInterval(timer);
-    timer = null;
-    if (last !== null && last !== t('app.name')) push(t('app.name'));
-  };
-}
-
 export interface DesktopIntegration {
   /** Retire les écouteurs et minuteries ; sûr avant la fin de l'initialisation et idempotent. */
   dispose(): void;
@@ -139,7 +90,6 @@ export function startDesktopIntegration(container: AppContainer): DesktopIntegra
       else unlistenQuit = stop;
     })
     .catch((error: unknown) => logDesktopFailure('quitting', error));
-  const stopBadge = startWindowTitleBadge(container, desktop);
   const checks = startUpdateChecks(container);
 
   return {
@@ -150,7 +100,6 @@ export function startDesktopIntegration(container: AppContainer): DesktopIntegra
       unlistenSync?.();
       unlistenPaired?.();
       stopSyncLabels();
-      stopBadge();
       checks.dispose();
     },
   };

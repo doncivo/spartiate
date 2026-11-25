@@ -187,6 +187,22 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // SHELL-0294a (BL-118, D-596) : le badge du repos dans le titre de la fenêtre PC est chargé avec la séance, jamais dans le départ.
+  it('SHELL-0294a : le badge du titre de la fenêtre est hors du départ et présent dans le build', () => {
+    const marker = 'Repos {time} · Spartiate';
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
+  // SHELL-0294a (D-596) : le catalogue de la liste des raccourcis (shortcutsUi), sorti de fr.ts, ne revient pas dans le départ.
+  it('SHELL-0294a : les textes de la liste des raccourcis sont hors du départ et présents dans le build', () => {
+    const marker = 'Aucun raccourci ne correspond.';
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // Y-FIX-04 : les textes de la fenêtre de choix après restauration ne sont dans aucun bloc de départ (catalogue à part, chargé avec elle).
   it('les textes de la fenêtre de choix après restauration sont hors du départ', () => {
     const marker = 'Restauration : que faire de la synchronisation ?';

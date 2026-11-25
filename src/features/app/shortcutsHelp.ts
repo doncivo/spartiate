@@ -1,4 +1,5 @@
-import { t, type PlainMessageKey } from '../../i18n';
+import { t } from '../../i18n';
+import { tShortcutsUi, type ShortcutsUiKey } from '../../i18n/shortcutsUiText';
 import { tokenLabel } from '../../ui';
 import { SHORTCUTS, parseChord, type KeyChord, type ShortcutId, type ShortcutScope } from './shortcuts';
 
@@ -16,20 +17,20 @@ export function formatChord(keys: string): string {
   return keys.split('+').map(tokenLabel).join('+');
 }
 
-const SPOKEN: Readonly<Record<string, PlainMessageKey>> = {
-  Ctrl: 'shortcutsUi.spoken.ctrl',
-  Alt: 'shortcutsUi.spoken.alt',
-  Shift: 'shortcutsUi.spoken.shift',
-  Space: 'shortcutsUi.spoken.space',
-  Escape: 'shortcutsUi.spoken.escape',
-  Enter: 'shortcutsUi.spoken.enter',
-  Delete: 'shortcutsUi.spoken.delete',
-  ArrowUp: 'shortcutsUi.spoken.arrowUp',
-  ArrowDown: 'shortcutsUi.spoken.arrowDown',
-  ArrowLeft: 'shortcutsUi.spoken.arrowLeft',
-  ArrowRight: 'shortcutsUi.spoken.arrowRight',
-  ',': 'shortcutsUi.spoken.comma',
-  '/': 'shortcutsUi.spoken.slash',
+const SPOKEN: Readonly<Record<string, ShortcutsUiKey>> = {
+  Ctrl: 'spoken.ctrl',
+  Alt: 'spoken.alt',
+  Shift: 'spoken.shift',
+  Space: 'spoken.space',
+  Escape: 'spoken.escape',
+  Enter: 'spoken.enter',
+  Delete: 'spoken.delete',
+  ArrowUp: 'spoken.arrowUp',
+  ArrowDown: 'spoken.arrowDown',
+  ArrowLeft: 'spoken.arrowLeft',
+  ArrowRight: 'spoken.arrowRight',
+  ',': 'spoken.comma',
+  '/': 'spoken.slash',
 };
 
 /** Combinaison lue par un lecteur d'écran : « Contrôle plus Maj plus F ». */
@@ -38,9 +39,9 @@ export function spokenChord(keys: string): string {
     .split('+')
     .map((token) => {
       const key = SPOKEN[token];
-      return key ? t(key) : token;
+      return key ? tShortcutsUi(key) : token;
     })
-    .join(` ${t('shortcutsUi.spoken.plus')} `);
+    .join(` ${tShortcutsUi('spoken.plus')} `);
 }
 
 /** Combinaisons identiques ? (la touche est comparée sans tenir compte de la casse). */
@@ -88,11 +89,11 @@ export interface HelpGroup {
   readonly entries: readonly HelpEntry[];
 }
 
-const GROUPS: readonly { readonly scope: ShortcutScope; readonly labelKey: PlainMessageKey }[] = [
-  { scope: 'global', labelKey: 'shortcutsUi.groupGlobal' },
-  { scope: 'app', labelKey: 'shortcutsUi.groupApp' },
-  { scope: 'list', labelKey: 'shortcutsUi.groupList' },
-  { scope: 'week', labelKey: 'shortcutsUi.groupWeek' },
+const GROUPS: readonly { readonly scope: ShortcutScope; readonly labelKey: ShortcutsUiKey }[] = [
+  { scope: 'global', labelKey: 'groupGlobal' },
+  { scope: 'app', labelKey: 'groupApp' },
+  { scope: 'list', labelKey: 'groupList' },
+  { scope: 'week', labelKey: 'groupWeek' },
 ];
 
 const plain = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
@@ -121,13 +122,13 @@ export function buildHelpGroups(input: HelpInput): HelpGroup[] {
     let note: string | null = null;
     let dimmed = false;
     if (RESERVED_SHORTCUTS.includes(id)) {
-      note = t('shortcutsUi.comingSoon');
+      note = tShortcutsUi('comingSoon');
       dimmed = true;
     } else if (definition.scope === 'week' && !scopeActive('week')) {
-      note = t('shortcutsUi.inWeek');
+      note = tShortcutsUi('inWeek');
       dimmed = true;
     } else if (definition.scope === 'list' && !scopeActive('list')) {
-      note = t('shortcutsUi.inList');
+      note = tShortcutsUi('inList');
       dimmed = true;
     }
     return { id, keys: formatChord(keys), spoken: spokenChord(keys), description: t(definition.descriptionKey), note, dimmed };
@@ -135,7 +136,7 @@ export function buildHelpGroups(input: HelpInput): HelpGroup[] {
 
   return GROUPS.map(({ scope, labelKey }) => ({
     scope,
-    label: t(labelKey),
+    label: tShortcutsUi(labelKey),
     entries: (Object.keys(SHORTCUTS) as ShortcutId[])
       .filter((id) => SHORTCUTS[id].scope === scope)
       .map(entryOf)

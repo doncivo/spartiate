@@ -3,7 +3,6 @@ import { notificationsFr, remindersStatusFr } from './fr.notifications';
 import { appearanceFr } from './fr.appearance';
 import { routinesFr } from './fr.routines';
 import { eventsFr } from './fr.events';
-import { shortcutsUiFr } from './fr.shortcuts';
 import { backupFr } from './fr.backup';
 import { importCsvFr } from './fr.importCsv';
 import { syncEngineFr } from './fr.syncEngine';
@@ -133,8 +132,6 @@ export const fr = {
     saveError: 'Impossible d’enregistrer ce réglage.',
   },
   desktop: {
-    /** BL-118 : titre de la fenêtre pendant le repos entre deux séries. */
-    restBadge: 'Repos {time} · Spartiate',
     tray: {
       open: 'Ouvrir Spartiate',
       sync: 'Synchroniser maintenant',
@@ -226,7 +223,6 @@ export const fr = {
   routines: routinesFr,
   events: eventsFr,
   capture: captureFr,
-  shortcutsUi: shortcutsUiFr,
   backup: backupFr,
   importCsv: importCsvFr,
   security: securityFr,
@@ -240,7 +236,7 @@ export const fr = {
     undo: 'Annuler la dernière action',
     settings: 'Réglages',
     help: 'Liste des raccourcis',
-    palette: 'Palette de commandes',
+    palette: 'Commandes',
     escape: 'Fermer le panneau ou la fenêtre active',
   },
 } as const;

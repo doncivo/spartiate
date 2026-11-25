@@ -52,7 +52,6 @@
         "src/i18n/fr.notifications.ts",
         "src/i18n/fr.routines.ts",
         "src/i18n/fr.security.ts",
-        "src/i18n/fr.shortcuts.ts",
         "src/i18n/fr.signing.ts",
         "src/i18n/fr.syncConflicts.ts",
         "src/i18n/fr.syncEngine.ts",

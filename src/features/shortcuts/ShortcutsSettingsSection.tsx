@@ -1,4 +1,4 @@
-import { t } from '../../i18n';
+import { tShortcutsUi } from '../../i18n/shortcutsUiText';
 import { tSettingsRefonte } from '../../i18n/settingsRefonteText';
 import { Kbd, useLayout } from '../../ui';
 import { useNavigationStore } from '../app/navigation';
@@ -16,11 +16,11 @@ export function ShortcutsSettingsSection({ heading = true }: { readonly heading?
   if (layout !== 'pc') return null;
   return (
     <>
-      {heading && <h2 className="ct-settings__section ct-section-title">{t('shortcutsUi.settings.section')}</h2>}
+      {heading && <h2 className="ct-settings__section ct-section-title">{tShortcutsUi('settings.section')}</h2>}
       <button
         type="button"
         className="ct-settings__row ct-settings__rowButton"
-        aria-label={t('shortcutsUi.openHelpLabel')}
+        aria-label={tShortcutsUi('openHelpLabel')}
         onClick={() => openOverlay({ kind: 'shortcutsHelp' })}
       >
         <span>{tSettingsRefonte('allShortcuts')}</span>

@@ -4,7 +4,7 @@ import { parseRestSetting, type WorkoutWithSets } from '../../../domain/training
 import type { DataAccess } from '../../../db/repositories/dataAccess';
 import type { ClosedWorkout } from '../../../db/repositories/workoutRepository';
 import { tTraining } from '../../../i18n/trainingText';
-import { setRestBadge } from '../../app/desktop';
+import { setRestBadge } from '../../app/restBadge';
 import { liveActivity as platformLiveActivity, type LiveActivity } from '../../../platform/liveActivity';
 import { systemNotificationClock } from '../../../platform/notifications/notificationClock';
 import { openTimerNotifier, type TimerNotifier } from '../../../platform/notifications/timerNotification';
@@ -69,7 +69,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
         liveActivity: platform?.liveActivity ?? platformLiveActivity,
         notifier: platform?.notifier ?? openTimerNotifier(container.platform.runtime, container.platform.os, systemNotificationClock, 'rest'),
         os,
-        onRest: setRestBadge,
+        onRest: (endMs) => setRestBadge(container, endMs),
         texts: {
           label: tTraining('restLiveLabel'),
           finishedLabel: tTraining('restLiveFinished'),

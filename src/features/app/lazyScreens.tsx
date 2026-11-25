@@ -171,8 +171,6 @@ export const SyncDetailsScreen = lazyScreen<object>(() => import('../sync/SyncDe
 /** Focus (M10) : reprise d'une session au démarrage et affichage sur un geste ; préchargé (la reprise attend le repos qui suit le premier rendu). */
 /** Liste des raccourcis (P-08, PC) : ouverte sur Ctrl+/ ; préchargée, le raccourci (registerShellShortcuts) reste dans le départ. */
 export const ShortcutsHelp = lazyScreen<object>(() => import('../shortcuts/ShortcutsHelp').then((m) => ({ default: m.ShortcutsHelp })), 'shortcutshelp', { fallback: 'none' });
-/** Palette de commandes Ctrl+K (C-135, D-480, PC) : chargée seulement quand sa surcouche s'ouvre (jamais préchargée), avec son catalogue de textes. */
-export const CommandPalette = lazyScreen<object>(() => import('../palette/CommandPalette').then((m) => ({ default: m.CommandPalette })), 'commandpalette', { onDemand: true });
 /** Bandeau de mise à jour (D-03) : apparition pilotée par updaterStore (vérification lancée après le premier rendu) ; préchargé. */
 export const UpdateBanner = lazyScreen<object>(() => import('../updater/UpdateBanner').then((m) => ({ default: m.UpdateBanner })), 'updatebanner', { fallback: 'none' });
 /** Fiche d'un jour férié (E-03) : ouverte sur un geste (DetailTarget holiday) ; préchargée. */

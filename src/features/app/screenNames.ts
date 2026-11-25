@@ -30,5 +30,4 @@ export type ScreenName =
   | 'syncdetailsscreen'
   | 'restorechoicedialog'
   | 'shortcutshelp'
-  | 'commandpalette'
   | 'updatebanner';
