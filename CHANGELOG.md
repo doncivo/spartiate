@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.5
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.4.
+
+- **Synchro sur l'iPhone** : quand iOS a retiré un fichier de synchro de l'iPhone pour gagner de la place (il n'en reste que le substitut iCloud), l'app ne l'écrase plus. Elle demande son téléchargement et réessaie au cycle suivant. Une écriture n'est dite réussie qu'une fois enregistrée sur le disque, quand le système le permet. L'accès au dossier de synchro n'est plus rouvert à chaque cycle sans être refermé.
+- **Affichage** : les durées, unités et séparateurs passent par un seul formatage commun. L'affichage ne change pas (24 h, « min », « h », virgule décimale).
+- **Démarrage** : les textes des routines ne sont plus chargés au démarrage, seulement à l'ouverture des écrans qui s'en servent.
+- **Maintenance** : du code hérité de l'ancien schéma de synchro est retiré, et des contrôles automatiques sont ajoutés (cycles d'imports, tests liés entre eux, parité entre la base des tests et la base réelle, relevé des marqueurs de tests).
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.5). En priorité, sur l'iPhone, lance une synchro depuis Plus › Appareils et synchro : elle se termine sans erreur, et Plus › APP › Logs ne montre aucune erreur répétée.
+
 ## 0.29.4
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.3.
