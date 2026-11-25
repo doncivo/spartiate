@@ -161,3 +161,9 @@ Constat : même mouvement, même matériel, deux ids publiés ; aucune redirecti
 Constat : D-480 demande « démarrer la séance du jour » ; la palette ouvre l'écran de séance (options de départ, ou reprise de la séance ouverte), comme le bouton d'Aujourd'hui (D-592).
 - A (recommandé) : garder l'ouverture de l'écran de séance. Conséquences : un geste de plus pour lancer, aucune séance créée par une frappe de clavier.
 - B : créer la séance du jour directement depuis la palette. Conséquences : un seul geste, mais une séance peut naître d'une frappe accidentelle (annulation à prévoir côté training).
+
+## Q-33 — Entitlements du § 19.4 : `healthkit.access` et `keychain-access-groups` (SHELL-0294b)
+Constat : le § 19.4 demande trois clés ; la source durable `src-tauri/ios/Spartiate.entitlements` n'en porte qu'une (`com.apple.developer.healthkit`). La signature ad hoc de la CI ne développe pas `$(AppIdentifierPrefix)`, et changer le groupe du Trousseau d'une app installée peut rendre illisible la clé de synchro qu'il garde (D-598).
+- A (recommandé) : garder l'écart et amender le § 19.4 par une D- (une seule clé, HealthKit). Conséquences : aucun risque pour la clé de synchro ; le chapitre 19 et l'app disent la même chose.
+- B : ajouter `com.apple.developer.healthkit.access` (tableau vide) seulement. Conséquences : conforme au modèle d'Xcode pour HealthKit, sans effet tant que HealthKit direct reste BLOCKED (D-69) ; une compilation iOS et un constat d'installation par SideStore.
+- C : ajouter les deux clés. Conséquences : `keychain-access-groups` à développer par la CI avec le préfixe de l'équipe de SideStore, inconnu de la CI ; risque de perdre l'accès à la clé de synchro du Trousseau après la mise à jour (réappairage).
