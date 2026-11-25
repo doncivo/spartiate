@@ -22,6 +22,7 @@ mod ocr_vision;
 mod off;
 mod quit;
 mod restore;
+mod robustness_0294d;
 mod restore_hardening;
 mod restore_identity;
 mod restore_identity_sync;
