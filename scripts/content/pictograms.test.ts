@@ -1,5 +1,5 @@
 // MEDIA-03a : gabarit commun des pictogrammes et six essais (D-413). Le gabarit est fixe, les couleurs viennent de la charte.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { pictogramFor } from './build-pictograms.mjs';
@@ -29,7 +29,9 @@ describe('pictogrammes : gabarit et essais (MEDIA-03a)', () => {
     expect(svg).toContain(`viewBox="0 0 ${TEMPLATE.width} ${TEMPLATE.height}"`);
     expect(svg.replace(" xmlns=\"http://www.w3.org/2000/svg\"", "")).not.toMatch(/#[0-9a-fA-F]{3,8}\b|rgb|hsl|<script|\son\w+=|href|foreignObject|<style|https?:/i);
     expect(svg).toContain('stroke="currentColor"');
-    expect(svg).toContain('var(--ct-color-bronze)');
+    // SHELL-0294d (BL-144, D-611), écart consigné : l'accent est une classe (le style en ligne est bloqué par la CSP) ; la feuille livrée porte le bronze.
+    expect(svg).toContain('class="ct-picto-muscle"');
+    expect(svg).not.toMatch(/style=/);
     expect(svg.length).toBeLessThan(6000);
   });
 
@@ -56,5 +58,18 @@ describe('pictogrammes : exercices sans photo (MEDIA-03b)', () => {
     const file = readFileSync(resolve(ROOT, 'content/exercises/pictograms', `${id}.svg`), 'utf8');
     expect(file).toBe(render(id));
     expect(file).not.toMatch(/#[0-9a-fA-F]{3,8}\b|<script|href|foreignObject/);
+  });
+});
+
+describe('pictogrammes : aucun style en ligne (SHELL-0294d, BL-144)', () => {
+  it('aucun pictogramme livré ne porte un attribut style', () => {
+    const dir = resolve(ROOT, 'content/exercises/pictograms');
+    const withStyle = readdirSync(dir).filter((file) => /style=/.test(readFileSync(resolve(dir, file), 'utf8')));
+    expect(withStyle).toEqual([]);
+  });
+
+  it('la feuille livrée donne le bronze à la classe d’accent', () => {
+    const css = readFileSync(resolve(ROOT, 'src/features/training/media/ExerciseMedia.css'), 'utf8');
+    expect(css).toMatch(/[.]ct-picto-muscle[\s]*[{][^}]*stroke:[\s]*var[\(]--ct-color-bronze/);
   });
 });
