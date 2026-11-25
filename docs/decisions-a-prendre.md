@@ -187,6 +187,12 @@ Constat : si l'agent utilisateur et la plateforme du navigateur intégré ne dis
 - B : lire aussi `navigator.platform` quand l'agent utilisateur est vide (14 à 24 octets de départ, à compenser ailleurs).
 - C : afficher dans Plus une ligne « Système non reconnu : synchro et sauvegardes indisponibles ». Conséquences : cause visible, un texte et un test de plus, catalogue à charger à la demande.
 
+## Q-37 — Date de réévaluation de D-412 : Siri / App Intents, Camera Control, micronutriments (BL-158, SHELL-0294f)
+Constat : D-412 (Ali, 19/11) renvoie ces trois sujets « après quelques semaines d'usage réel » ; l'usage réel a commencé le 16/11/2026 (D-292). Aucune date n'était fixée, aucun ticket n'est ouvert.
+- A (recommandé) : lundi 4 janvier 2027 (sept semaines d'usage réel, après les fêtes). Conséquences : une ligne de rappel au registre ; ce jour-là, une question fermée par sujet (garder « pas maintenant », ou ouvrir un ticket) ; aucun travail avant.
+- B : lundi 1er février 2027 (onze semaines). Conséquences : plus de recul sur l'usage, sujets plus tard.
+- C : à la fin du dernier lot 0.29.x, sans date. Conséquences : dépend du rythme des lots ; risque d'oubli.
+
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
 ## Revue par thème des choix prudents (D-490, BL-149)
