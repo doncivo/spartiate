@@ -185,7 +185,7 @@ Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inl
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-347 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+348 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -556,7 +556,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-600 | SHELL-0294b (C-159, H-32). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (51 : 20 à trancher, 31 à confirmer seulement)
+### CI et outillage (52 : 21 à trancher, 31 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -565,6 +565,7 @@ Gardées sans question (à confirmer seulement) :
 | 6 | D-598 | SHELL-0294b (C-158, BL-129, § 19.3 a, § 19.4 a). | A garder · B réviser ; effet : synchro, données |
 | 5 | D-77 | Client Open Food Facts en Rust (I4-05, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro |
 | 5 | D-274 | PROG-01 (0.24.0) : exception chiffrée au bundle de départ (choix prudent, révisable par Ali; D-264 (3), D-265). | A garder · B réviser ; effet : schéma, chiffre |
+| 5 | D-624 | SHELL-0294f (BL-148) : matrice et ADR 0014 mises à jour par des constats déjà consignés, jamais par une lecture de code (D-36). | A garder · B réviser ; effet : synchro, écran |
 | 4 | D-122 | FIX-0171 : mise en œuvre de D-121. | A garder · B réviser ; effet : données, écran |
 | 4 | D-287 | ERGO-02b (0.25.0) : préchargement sans polyfill et sans blocs du départ entre eux (passe architect). | A garder · B réviser ; effet : moteur, chiffre |
 | 4 | D-321 | DOC-PRIV (0.28.0) : retrait des données réelles d'Ali des fichiers suivis (C-165; applique D-318 (5)). | A garder · B réviser ; effet : données, écran |

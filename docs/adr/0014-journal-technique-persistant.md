@@ -14,8 +14,8 @@ Le PRD (section 10) remplace l'inspecteur Safari par un écran de logs interne (
 
 ### 1. Stockage (Rust, `src-tauri/src/applog.rs`, sans `cfg` : PC et iPhone)
 
-- Dossier **`<app_config_dir>/logs/`** : fichiers **`circletasks.log`** (courant) et **`circletasks.log.1`** (précédent), **256 Kio chacun**, 512 Kio au total au plus. Jamais dans le dossier iCloud, jamais dans `backups/`, jamais synchronisé ni publié ; une restauration (P-04) ne touche que `circletasks.db*` et `backups/` : **le journal survit**.
-- Format : **une entrée JSON par ligne** (JSON Lines, UTF-8) `{ "at": ISO UTC, "scope", "code", "detail", "n"? }` ; ajout en fin (`append`), pas de `.tmp`. **Rotation à l'écriture** : si taille actuelle + ligne > 256 Kio, `circletasks.log` est renommé en `.1` (l'ancien `.1` est remplacé), puis un nouveau fichier est créé.
+- Dossier **`<app_config_dir>/logs/`** : fichiers **`spartiate.log`** (courant) et **`spartiate.log.1`** (précédent), **256 Kio chacun**, 512 Kio au total au plus. Jamais dans le dossier iCloud, jamais dans `backups/`, jamais synchronisé ni publié ; une restauration (P-04) ne touche que `circletasks.db*` et `backups/` : **le journal survit**.
+- Format : **une entrée JSON par ligne** (JSON Lines, UTF-8) `{ "at": ISO UTC, "scope", "code", "detail", "n"? }` ; ajout en fin (`append`), pas de `.tmp`. **Rotation à l'écriture** : si taille actuelle + ligne > 256 Kio, `spartiate.log` est renommé en `.1` (l'ancien `.1` est remplacé), puis un nouveau fichier est créé.
 - Ligne de plus de **4 Kio** : `detail` tronqué, suivi de `[tronqué]`. `scope` : `^[a-z0-9][a-z0-9-]{0,39}$` ; `code` : `^[a-z0-9][a-z0-9.-]{0,63}$` ; une valeur hors forme devient `invalid` ; `at` hors forme ISO remplacé par l'heure de Rust ; caractères de contrôle retirés.
 - **Liens** : `logs/` contrôlé par `symlink_metadata` (lien, jonction ou autre chose qu'un dossier → `unsafe-file`, rien n'est lu ni écrit) ; chaque fichier ouvert sans suivre de lien (`O_NOFOLLOW` sous `cfg(unix)`, attribut de point d'analyse refusé sous Windows) ; un fichier qui est un lien n'est ni lu ni écrit.
 - Concurrence : un `Mutex` global ; écritures et lectures hors du fil de l'interface (`spawn_blocking`).
@@ -47,7 +47,7 @@ Le PRD (section 10) remplace l'inspecteur Safari par un écran de logs interne (
 ### 4. Écran (I-04, `src/features/settings/logs/`)
 
 - Accès : lien « Logs » de la ligne « Version … » de Réglages › À PROPOS, **PC et iPhone** (code partagé ; décision du 2026-10-08, à valider par Ali). Filtres Tout / Synchro / Notifications / Erreurs ; 500 entrées au plus ; heure locale 24 h.
-- Export par **`container.files.save`** (FILES-IOS-01 sur iPhone : sélecteur « Enregistrer dans Fichiers », décision du 2026-10-08 ; PC : « Enregistrer sous ») : `circletasks-logs-AAAAMMJJ-HHMM.txt`, `text/plain`, en-tête et lignes de la fiche ; annulation = rien ; échec = message visible avec le code.
+- Export par **`container.files.save`** (FILES-IOS-01 sur iPhone : sélecteur « Enregistrer dans Fichiers », décision du 2026-10-08 ; PC : « Enregistrer sous ») : `spartiate-logs-AAAAMMJJ-HHMM.txt`, `text/plain`, en-tête et lignes de la fiche ; annulation = rien ; échec = message visible avec le code.
 - **Aucun échec silencieux** : `writeError` ou `readError` → « Le journal n'a pas pu être écrit » (ou l'échec de lecture) avec le code, en rouge, sur l'écran **et** sur la ligne « Logs » de Réglages ; les entrées de la session restent lisibles depuis le tampon ; le message disparaît à la prochaine écriture réussie.
 
 ### 5. Limites assumées
@@ -72,3 +72,7 @@ Plantages natifs (Swift, WebKit, panique Rust hors `applog`) non capturés ; ent
 ## Avenant FIX-CONFID-IOS (2026-11-20) : journal sur l'iPhone, masquage et bornes (C-147, C-140, C-151 ; D-329, D-331, D-332)
 
 Sur l'iPhone, le journal est dans `Documents/Journal` (visible dans Fichiers, pour qu'Ali le récupère), non sous `<app_config_dir>/logs` ; ce dossier est exclu de la sauvegarde iCloud au démarrage (D-329, H-38). Le masquage des valeurs corporelles est commun au TS et au Rust (vecteurs `tests/fixtures/logs/sanitize-vectors.json`, D-331). Côté Rust : 60 entrées par minute au plus, 256 couples suivis, compteurs saturés, scopes de Rust refusés à la WebView, rotation qui vide le fichier courant plutôt que de bloquer (D-332).
+
+## Avenant (SHELL-0294f, BL-148, D-624)
+
+Noms de fichiers mis à jour : depuis le renommage SPA-001a (D-32), le journal s'appelle `spartiate.log` et `spartiate.log.1` (`src-tauri/src/applog.rs`), l'export `spartiate-logs-AAAAMMJJ-HHMM.txt` (`src/features/settings/logs/logExport.ts`). Le contrat est inchangé.

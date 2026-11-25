@@ -26,10 +26,10 @@ describe('BL-148 : matrice et ADR 0014', () => {
     expect(line).not.toBe('');
     expect(line.split(' | ')[0].includes('Recharts')).toBe(false);
   });
-  it('l’ADR 0014 nomme les fichiers réels du journal (spartiate.log), plus circletasks.log', () => {
+  it('l’ADR 0014 nomme les fichiers réels du journal (spartiate.log), plus circletasks.log', () => { // ancien-ok: ancien nom du journal, assertion négative (BL-148)
     const adr = readFileSync('docs/adr/0014-journal-technique-persistant.md', 'utf8');
-    expect(adr.includes('circletasks.log')).toBe(false);
-    expect(adr.includes('circletasks-logs-')).toBe(false);
+    expect(adr.includes('circletasks.log')).toBe(false); // ancien-ok: ancien nom du journal, assertion négative (BL-148)
+    expect(adr.includes('circletasks-logs-')).toBe(false); // ancien-ok: ancien nom du journal, assertion négative (BL-148)
     expect(adr).toContain('spartiate.log');
   });
 });
