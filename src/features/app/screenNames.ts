@@ -26,6 +26,7 @@ export type ScreenName =
   | 'sectionnotice'
   | 'logsscreen'
   | 'licensesscreen'
+  | 'sidestorescreen'
   | 'recoveryfailure'
   | 'updaterestoreaction'
   | 'syncdetailsscreen'

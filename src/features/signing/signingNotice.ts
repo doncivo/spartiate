@@ -65,8 +65,8 @@ export function signingAlertFailure(container: AppContainer): PlanFailureReason 
   return memoryOf(container).failure;
 }
 
-/** Action « Voir » : expiration en tête de Réglages, avant les sections de configuration. */
-const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'more', screen: 'home' });
+/** Action « Voir » (§ 18.3 a) : la procédure d'actualisation par SideStore ; la date d'expiration reste dans Plus › À propos. */
+const openSigningSettings = (): void => useNavigationStore.getState().navigate({ tab: 'more', screen: 'sidestore' });
 
 const setBanner = (state: { readonly detail: 'soon' | 'expired'; readonly message: string } | null): void => useAppStatusStore.getState().setStatus('signingExpiry', state === null ? null : { ...state, onAction: openSigningSettings });
 
@@ -134,7 +134,11 @@ async function step(container: AppContainer, input: SigningStepInput, memory: Pr
     logFailure('signing', read.code);
     memory.failure = null;
     stopTicker(memory);
-    setBanner(null);
+    // C-126 : une échéance connue d'une lecture antérieure garde son bandeau (sous 24 h, il ne disparaît pas parce qu'une lecture échoue).
+    const known = controller.get().lastRead?.expiresAt;
+    const knownAt = known === undefined ? Number.NaN : Date.parse(known);
+    if (Number.isNaN(knownAt)) setBanner(null);
+    else keepBannerFresh(container, memory, knownAt);
     await controller.patch((current) => ({ ...current, failure: { at, code } }));
     return;
   }
