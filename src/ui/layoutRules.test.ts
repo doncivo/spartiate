@@ -47,3 +47,15 @@ describe('FIX-092 : contrôle segmenté défilant dans une colonne flex', () => 
     expect(block).toContain('min-height: calc(44px + 8px)'); // un bouton (44 px) plus le padding de 4 px de chaque côté
   });
 });
+
+describe('BL-136 : Progrès › Corps sous 1 024 px CSS (PC au zoom de 150 %)', () => {
+  const source = css('src/features/bodyProgress/BodyProgress.css');
+
+  it('la base est une seule colonne (flex en colonne, min-width: 0) ; la grille à plusieurs colonnes n’existe que dans les requêtes min-width', () => {
+    const base = rule(source, '.ct-bodyprogress');
+    expect(base).toContain('flex-direction: column');
+    expect(base).toContain('min-width: 0');
+    const outsideMedia = source.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '');
+    expect(outsideMedia).not.toMatch(/\.ct-bodyprogress--pc[^{]*\{[^}]*grid-template-columns/);
+  });
+});

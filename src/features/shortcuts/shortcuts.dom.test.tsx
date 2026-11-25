@@ -88,7 +88,7 @@ describe('liste des raccourcis (P-08, D-04)', () => {
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     });
 
-    it('liste les 9 raccourcis du registre, dans un tableau à en-têtes (critères 2 et 9)', async () => {
+    it('liste les 10 raccourcis du registre, dans un tableau à en-têtes (critères 2 et 9)', async () => {
       renderShell();
       ctrlSlash();
       const dialog = await screen.findByRole('dialog');
@@ -96,7 +96,7 @@ describe('liste des raccourcis (P-08, D-04)', () => {
       expect(within(dialog).getAllByRole('columnheader').map((h) => h.textContent).slice(0, 2)).toEqual(['Touches', 'Action']);
       expect(within(dialog).getAllByRole('rowgroup').length).toBeGreaterThanOrEqual(1);
       expect(within(dialog).getByText('Application')).toBeInTheDocument();
-      expect(dialog.querySelectorAll('[data-shortcut]')).toHaveLength(9);
+      expect(dialog.querySelectorAll('[data-shortcut]')).toHaveLength(10);
       const undo = dialog.querySelector('[data-shortcut="app.undo"]');
       expect(undo?.textContent).toContain('Ctrl+Z');
       expect(undo?.textContent).toContain('Contrôle plus Z');

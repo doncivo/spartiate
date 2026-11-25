@@ -156,3 +156,8 @@ Recommandation : C. Conséquences : A ne change rien et peut afficher une heure 
 Constat : même mouvement, même matériel, deux ids publiés ; aucune redirection d'identifiant n'existe pour une fusion.
 - A (recommandé) : garder les deux, aucune fusion. Conséquences : deux fiches voisines, aucune référence perdue.
 - B : fusionner avec redirection d'id dans le chargeur (hors périmètre content-data : training et data-model). Conséquences : un mécanisme de plus, test d'identifiants stables à adapter.
+
+## Q-32 — « Démarrer la séance du jour » dans la palette Ctrl+K (SHELL-0294a)
+Constat : D-480 demande « démarrer la séance du jour » ; la palette ouvre l'écran de séance (options de départ, ou reprise de la séance ouverte), comme le bouton d'Aujourd'hui (D-592).
+- A (recommandé) : garder l'ouverture de l'écran de séance. Conséquences : un geste de plus pour lancer, aucune séance créée par une frappe de clavier.
+- B : créer la séance du jour directement depuis la palette. Conséquences : un seul geste, mais une séance peut naître d'une frappe accidentelle (annulation à prévoir côté training).

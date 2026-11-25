@@ -29,8 +29,8 @@ function expand(cell: string): string[] {
   return cell.split(' / ').map((part) => part.trim());
 }
 
-/** Raccourcis du registre absents de la table : aucun. */
-const BEYOND_PRD: readonly ShortcutId[] = [];
+/** Raccourcis du registre absents de la table : Ctrl+K (palette de commandes, D-480 ; SHELL-0294a : test qui figeait C-135 réécrit). */
+const BEYOND_PRD: readonly ShortcutId[] = ['app.palette'];
 
 describe('liste des raccourcis = PRD section 5 (P-08 critère 4)', () => {
   const ids = Object.keys(SHORTCUTS) as ShortcutId[];
@@ -124,7 +124,8 @@ describe('appShortcutUsing (D-04 critère 6)', () => {
   });
 
   it('ignore les combinaisons libres', () => {
-    expect(appShortcutUsing('Ctrl+K')).toBeNull();
+    expect(appShortcutUsing('Ctrl+K')).toBe('app.palette');
+    expect(appShortcutUsing('Ctrl+Shift+K')).toBeNull();
     expect(appShortcutUsing('Ctrl+Shift+Space')).toBeNull();
     expect(appShortcutUsing('pas une combinaison')).toBeNull();
   });

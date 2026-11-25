@@ -1,0 +1,63 @@
+.ct-palette__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+  background: var(--ct-help-scrim);
+}
+
+.ct-palette {
+  width: min(560px, calc(100vw - 48px));
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  padding: var(--ct-space-4);
+  box-sizing: border-box;
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-lg);
+  background: var(--ct-color-surface);
+  color: var(--ct-color-text);
+}
+
+.ct-palette__input {
+  min-height: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  border: 1px solid var(--ct-color-border);
+  border-radius: var(--ct-radius-md);
+  background: var(--ct-color-surface-input);
+  color: var(--ct-color-text);
+  font: inherit;
+}
+
+.ct-palette__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ct-palette__option {
+  display: flex;
+  align-items: center;
+  min-height: var(--ct-hit-target-min);
+  padding: 0 var(--ct-space-3);
+  border-radius: var(--ct-radius-md);
+  cursor: pointer;
+}
+
+.ct-palette__option[aria-selected='true'] {
+  background: var(--ct-color-nav-active);
+  color: var(--ct-color-on-nav);
+}
+
+.ct-palette__empty {
+  margin: 0;
+  color: var(--ct-color-text-secondary);
+}

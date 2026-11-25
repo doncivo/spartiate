@@ -1,18 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { t } from '../../i18n';
+import { tShortcutsUi } from '../../i18n/shortcutsUiText';
 import { Button, useFocusTrap } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
+import { lazyScreen } from '../app/lazyScreens';
 import { buildHelpGroups } from '../app/shortcutsHelp';
 import './ShortcutsHelp.css';
+
+/**
+ * C-135 (D-480, D-596) : la palette de commandes Ctrl+K est montée par cet hôte (déjà hors du départ), mais son bloc et son catalogue de textes ne se
+ * chargent qu'à sa première ouverture (jamais préchargé, aucun repli).
+ */
+const CommandPalette = lazyScreen<object>(() => import('../palette/CommandPalette').then((m) => ({ default: m.CommandPalette })), undefined, { onDemand: true });
 
 /**
  * Fenêtre « Raccourcis clavier » (P-08), ouverte par Ctrl+/ depuis n'importe quel écran. Montée par la coquille quand la
  * surcouche `shortcutsHelp` est au sommet de la pile. PC seulement : le raccourci n'est enregistré que par la coquille PC.
  */
 export function ShortcutsHelp() {
-  const open = useNavigationStore((s) => s.overlays.at(-1)?.kind === 'shortcutsHelp');
-  return open ? <ShortcutsHelpDialog /> : null;
+  const container = useAppContainer();
+  const top = useNavigationStore((s) => s.overlays.at(-1)?.kind);
+  // C-135 (D-480, D-596) : Ctrl+K, enregistré par ce bloc (chargé et monté au rendu de la coquille PC, jamais sur iPhone) : ouvre la palette, la referme ; ignoré sous une feuille ou une fenêtre modale.
+  useEffect(
+    () =>
+      container.shortcuts.register('app.palette', (input): boolean => {
+        if (input.held === true) return true;
+        const navigation = useNavigationStore.getState();
+        if (navigation.overlays.at(-1)?.kind === 'commandPalette') navigation.closeOverlay();
+        else if (document.querySelector('[aria-modal="true"]') !== null) return false;
+        else navigation.openOverlay({ kind: 'commandPalette' });
+        return true;
+      }),
+    [container],
+  );
+  return top === 'shortcutsHelp' ? <ShortcutsHelpDialog /> : top === 'commandPalette' ? <CommandPalette /> : null;
 }
 
 function ShortcutsHelpDialog() {
@@ -29,7 +51,7 @@ function ShortcutsHelpDialog() {
       <section ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="ct-shortcuts-title" className="ct-shortcuts">
         <header className="ct-shortcuts__header">
           <h2 id="ct-shortcuts-title" className="ct-shortcuts__title">
-            {t('shortcutsUi.title')}
+            {tShortcutsUi('title')}
           </h2>
           <Button variant="secondary" onClick={closeOverlay}>
             {t('common.close')}
@@ -38,24 +60,24 @@ function ShortcutsHelpDialog() {
         <input
           type="search"
           className="ct-shortcuts__filter"
-          aria-label={t('shortcutsUi.filterLabel')}
-          placeholder={t('shortcutsUi.filterPlaceholder')}
+          aria-label={tShortcutsUi('filterLabel')}
+          placeholder={tShortcutsUi('filterPlaceholder')}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         {/* Zone défilante atteignable au clavier (Tab, puis ↑ ↓ Page ↑ Page ↓ défilent sans souris). */}
-        <div className="ct-shortcuts__scroll" tabIndex={0} role="region" aria-label={t('shortcutsUi.tableLabel')}>
+        <div className="ct-shortcuts__scroll" tabIndex={0} role="region" aria-label={tShortcutsUi('tableLabel')}>
           {groups.length === 0 ? (
             <p className="ct-shortcuts__empty" role="status">
-              {t('shortcutsUi.empty')}
+              {tShortcutsUi('empty')}
             </p>
           ) : (
             <table className="ct-shortcuts__table">
-              <caption className="ct-shortcuts__srOnly">{t('shortcutsUi.tableLabel')}</caption>
+              <caption className="ct-shortcuts__srOnly">{tShortcutsUi('tableLabel')}</caption>
               <thead className="ct-shortcuts__srOnly">
                 <tr>
-                  <th scope="col">{t('shortcutsUi.colKeys')}</th>
-                  <th scope="col">{t('shortcutsUi.colAction')}</th>
+                  <th scope="col">{tShortcutsUi('colKeys')}</th>
+                  <th scope="col">{tShortcutsUi('colAction')}</th>
                 </tr>
               </thead>
               {groups.map((group) => (

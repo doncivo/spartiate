@@ -49,6 +49,8 @@ export interface PendingUpdate {
 }
 
 export interface DesktopPlatform {
+  /** BL-118 : titre de la fenêtre principale (badge du minuteur de repos : « Repos 1:23 · Spartiate »). */
+  setWindowTitle(title: string): Promise<void>;
   /** Remplace le menu de la zone de notification par ces textes (D-01). */
   setTrayLabels(labels: TrayLabels): Promise<void>;
   /** Entrée « Synchroniser maintenant » du menu (Y-03, événement `tray-sync-now`). Renvoie la fonction de désabonnement. */

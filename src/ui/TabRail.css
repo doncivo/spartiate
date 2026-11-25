@@ -80,9 +80,9 @@
   display: none;
 }
 
-/* PC : barre latérale de 220 px. */
+/* PC : barre latérale de 256 px (BL-161 : 220 px coupaient « SPARTIATE » en deux lignes et collaient « Entraînement » à « Ctrl 2 »). */
 .ct-tab-rail[data-layout='pc'] {
-  width: 220px;
+  width: 256px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -117,6 +117,7 @@
   font-size: var(--ct-font-size-text-lg);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ct-color-on-nav);
 }
 
@@ -167,6 +168,7 @@
   color: var(--ct-color-nav-text);
   font-variant-numeric: tabular-nums;
   white-space: nowrap; /* « Ctrl 2 » ne passe jamais à la ligne */
+  margin-left: var(--ct-space-3); /* BL-161 : écart minimal avec le libellé */
   flex: 0 0 auto;
 }
 
@@ -227,4 +229,41 @@
 /* Repliée : la carte de l'appareil est masquée (CSS, et non retirée du rendu, pour tenir le bundle de départ). */
 .ct-tab-rail[data-collapsed='true'] .ct-tab-rail__footer {
   display: none;
+}
+
+/*
+ * C-135 (D-480, D-593), § 18.5 b : la place manque (1 099 px CSS et moins) : la barre latérale PC se replie d'elle-même en icônes, comme au repli manuel ;
+ * la disposition reste celle du PC. En CSS seulement (aucun JavaScript de plus dans le bundle de départ, D-596) ; le bouton de repli n'a plus d'objet.
+ */
+@media (max-width: 1099px) {
+  .ct-tab-rail[data-layout='pc'] {
+    width: 64px;
+    padding-inline: 8px;
+  }
+
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__brand {
+    flex-direction: column;
+    padding-inline: 0;
+  }
+
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__toggle,
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__footer {
+    display: none;
+  }
+
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__name,
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__label,
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__hint {
+    /* Hors de l'écran mais lu : le nom accessible de l'onglet reste son libellé. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .ct-tab-rail[data-layout='pc'] .ct-tab-rail__tab {
+    justify-content: center;
+    padding: 0;
+  }
 }

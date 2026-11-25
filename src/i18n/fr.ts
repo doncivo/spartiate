@@ -3,7 +3,6 @@ import { notificationsFr, remindersStatusFr } from './fr.notifications';
 import { appearanceFr } from './fr.appearance';
 import { routinesFr } from './fr.routines';
 import { eventsFr } from './fr.events';
-import { shortcutsUiFr } from './fr.shortcuts';
 import { backupFr } from './fr.backup';
 import { importCsvFr } from './fr.importCsv';
 import { syncEngineFr } from './fr.syncEngine';
@@ -224,7 +223,6 @@ export const fr = {
   routines: routinesFr,
   events: eventsFr,
   capture: captureFr,
-  shortcutsUi: shortcutsUiFr,
   backup: backupFr,
   importCsv: importCsvFr,
   security: securityFr,
@@ -238,6 +236,7 @@ export const fr = {
     undo: 'Annuler la dernière action',
     settings: 'Réglages',
     help: 'Liste des raccourcis',
+    palette: 'Commandes',
     escape: 'Fermer le panneau ou la fenêtre active',
   },
 } as const;

@@ -20,6 +20,8 @@ export interface RestTimerDeps {
   readonly liveActivity: LiveActivity;
   readonly notifier: TimerNotifier;
   readonly os: 'ios' | 'other';
+  /** BL-118 : prévient la coquille de l'échéance du repos (ms) ou de sa fin (null), pour le badge du titre de la fenêtre PC. */
+  readonly onRest?: (endMs: number | null) => void;
   readonly texts: { readonly label: string; readonly finishedLabel: string; readonly notificationTitle: string; readonly notificationBody: string };
 }
 
@@ -61,7 +63,7 @@ export interface RestTimerController {
 const LIVE_LABEL_MAX = 80;
 
 export function createRestTimer(deps: RestTimerDeps): RestTimerController {
-  const { clock, store, liveActivity, notifier, os, texts } = deps;
+  const { clock, store, liveActivity, notifier, os, texts, onRest } = deps;
   const ios = os === 'ios';
   /** SESS-01f : libellé de la Live Activity du repos en cours (80 caractères au plus, contrat du plugin). */
   let label = texts.label;
@@ -97,6 +99,7 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
 
   async function publish(rest: RestTimer, onlyIfMissing: boolean): Promise<RestReport> {
     const endMs = Date.parse(rest.endAt);
+    onRest?.(endMs);
     const notification = await notify(endMs, onlyIfMissing);
     const live = await startLive(endMs);
     return { ...rest, notification, ...live };
@@ -116,17 +119,22 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
 
     async skip() {
       await (await store()).skipRest();
+      onRest?.(null);
       await closeSystem();
     },
 
     async resume() {
       const repo = await store();
       const rest = await repo.getRest();
-      if (rest === null) return { phase: 'idle' };
+      if (rest === null) {
+        onRest?.(null);
+        return { phase: 'idle' };
+      }
       const remainingMs = restRemainingMs(rest.endAt, clock.nowMs());
       if (remainingMs === 0) {
         // Échéance passée (app fermée ou verrouillée) : l'activité est fermée ici, la date effacée ; la notification a déjà sonné.
         await repo.skipRest();
+        onRest?.(null);
         if (ios) await liveActivity.end();
         return { phase: 'finished' };
       }
@@ -134,6 +142,7 @@ export function createRestTimer(deps: RestTimerDeps): RestTimerController {
     },
 
     async stop() {
+      onRest?.(null);
       await closeSystem();
     },
 

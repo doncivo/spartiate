@@ -31,6 +31,8 @@ export function fakePendingUpdate(
 /** Faux `DesktopPlatform` en mémoire (tests de features, aucun IPC). */
 export interface FakeDesktop extends DesktopPlatform {
   trayLabels: TrayLabels | null;
+  /** Dernier titre de fenêtre demandé (BL-118) ; null tant qu'aucun. */
+  windowTitle: string | null;
   autostart: boolean;
   version: string;
   /** Résultat de la prochaine vérification : mise à jour, null, ou erreur à lever. */
@@ -57,6 +59,11 @@ export function createFakeDesktop(initial: Partial<Pick<FakeDesktop, 'autostart'
   const pairedHandlers = new Set<() => void>();
   const fake: FakeDesktop = {
     trayLabels: null,
+    windowTitle: null,
+    setWindowTitle: (title) => {
+      fake.windowTitle = title;
+      return Promise.resolve();
+    },
     autostart: initial.autostart ?? false,
     version: initial.version ?? '0.1.0',
     nextCheck: initial.nextCheck ?? null,

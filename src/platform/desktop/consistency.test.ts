@@ -74,3 +74,9 @@ describe('cohérence TypeScript / Rust / configuration', () => {
     expect(rust).toContain('Some(vec![MINIMIZED_ARG])');
   });
 });
+
+describe('BL-118 : titre de la fenêtre', () => {
+  it('la capability PC autorise le changement de titre de la fenêtre principale', () => {
+    expect(capability.permissions).toContain('core:window:allow-set-title');
+  });
+});
