@@ -7,6 +7,7 @@
 // Aucun nombre n'est inventé : chaque valeur est celle de la source, ramenée à 0,1 kg (la source publie des décimales à 0,1 kg écrites en
 // flottants binaires ; le script refuse toute valeur qui s'en écarte de plus de 1e-6). La ligne « all » (tous poids confondus) n'est pas reprise.
 // Usage : node scripts/content/build-strength-standards.mjs <dossier brut> [fichier de sortie]
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -80,6 +81,8 @@ export function buildStandards(rawDir) {
       dataVersion: first.data_version,
       consultedOn: '2026-11-16',
       unit: 'kg',
+      // C-180 (CONTENT-0293) : empreinte SHA-256 des octets de chaque réponse brute (clé « <mouvement>/<sexe> »), pour reconstruire et vérifier le fichier.
+      responsesSha256: Object.fromEntries(LIFTS.flatMap((l) => ['male', 'female'].map((sex) => [`${l.sourceLift}/${sex}`, createHash('sha256').update(readFileSync(join(rawDir, `gym_${l.sourceLift}_${sex}.json`))).digest('hex')]))),
     },
     percentiles: PERCENTILES,
     groups: GROUPS,

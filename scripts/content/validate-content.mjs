@@ -585,6 +585,18 @@ function validateStrength(s, exercisesById, err) {
   }
   if (s !== null) {
     for (const field of ['name', 'url', 'license', 'attribution', 'consultedOn']) if (!isObj(s.source) || !isStr(s.source[field])) err(where, `source.${field} manquante`);
+    const hashes = isObj(s.source) ? s.source.responsesSha256 : undefined;
+    if (!isObj(hashes)) err(where, 'source.responsesSha256 manquante (empreinte SHA-256 de chaque réponse de la source)');
+    else {
+      for (const l of s.lifts) {
+        if (!isObj(l) || !isStr(l.sourceLift)) continue;
+        for (const sex of ['male', 'female']) {
+          const h = hashes[`${l.sourceLift}/${sex}`];
+          if (h === undefined) err(where, `source.responsesSha256 : empreinte manquante pour ${l.sourceLift}/${sex}`);
+          else if (typeof h !== 'string' || !/^[0-9a-f]{64}$/.test(h)) err(where, `source.responsesSha256 : empreinte illisible pour ${l.sourceLift}/${sex}`);
+        }
+      }
+    }
     const p = s.percentiles;
     if (!(p.length >= 2 && p.every((v, i) => isNum(v) && v > 0 && v < 100 && (i === 0 || v > p[i - 1])))) err(where, 'percentiles : nombres croissants dans ]0, 100[ attendus');
     const ids = s.groups.map((g) => (isObj(g) ? g.id : null));
