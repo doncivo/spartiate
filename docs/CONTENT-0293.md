@@ -56,6 +56,9 @@ pull-through mis à jour (fixture du test d'identifiants stables, les identifian
 | BL-010 | 28facbcd | 77d3025d |
 | C-180 (empreintes) | e7b950af | d579d8fe |
 | C-180 (chemins, licences.md) | — (vérification) | d579d8fe (docs) |
+| BL-127 (relecture : distance, aperçu) | bca664ff | 821fae66 |
+| BL-010 (relecture : auteur au registre) | bffc7f5f | (ce commit) |
+| CI : `content.test.ts` (média avec auteur) | — | 413def83 |
 | BL-126 | — (refus déjà figé par `PhotoReader.test.tsx`, `pdfLater`) | — |
 
 Preuves : `node scripts/content/validate-content.mjs` OK (196 exercices, 4 programmes, 77 matériels) ; `build-ciqual.mjs --check` OK ; `tsc` et `eslint`
@@ -72,7 +75,7 @@ bundle de départ : 45 blocs, normalisé 182 931 octets, marge 175 469, liste bl
 | BL-113 | fait en partie (D-588) : catalogue fait ; source de lest : Q-28 |
 | BL-010 | fait (CONTENT-0293, D-589) |
 | C-180 | fait en partie (D-590) : droit de relicence D-310 : Q-29 ; le reste fait |
-| BL-126 | fait en partie (D-591) : pas de dépendance PDF sans architect : Q-30 |
+| BL-126 | à trancher par Ali (Q-30) : aucune dépendance PDF ajoutée sans architect (D-591) |
 
 ## Décisions (D-)
 
@@ -82,7 +85,7 @@ bundle de départ : 45 blocs, normalisé 182 931 octets, marge 175 469, liste bl
 - **D-588** (BL-113) : `weighted-vest` « Gilet lesté » au catalogue (accessoire), absent des trois profils de départ ; il n'alimente pas encore la progression de lest (poids du gilet inconnu). | Claude (choix prudent) ; révisable par Ali
 - **D-589** (BL-010) : source `wger` « à auteur par image » (CC BY-SA 4.0), `media.author` obligatoire et égal au registre, attribution nommant l'auteur, image réduite comme everkinetic-web ; première image : planche (wger 346, auteur utkb, vérifiée à l'œil). Le pictogramme de la planche est retiré. | Claude (choix prudent) ; révisable par Ali
 - **D-590** (C-180) : `source.responsesSha256` (22 empreintes) exigé au contenu et au validateur ; licences.md distingue images d'origine et réduites. | Claude (choix prudent) ; révisable par Ali
-- **D-591** (BL-126) : aucune dépendance npm ajoutée ; le PDF reste refusé avec sa consigne ; architect décide (Q-30). | Claude (choix prudent) ; révisable par Ali
+- **D-591** (BL-126) : aucune dépendance npm ajoutée ; le PDF reste refusé avec sa consigne ; la ligne est à trancher par Ali (Q-30, avec avis d'architect sur la dépendance). | Claude (choix prudent) ; révisable par Ali
 
 ## Questions (Q-)
 

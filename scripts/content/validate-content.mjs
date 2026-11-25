@@ -426,6 +426,7 @@ function validateMediaFiles(mediaFiles, registry, opts, err) {
     if (entry.exerciseId !== m.exerciseId || `${entry.source}:${entry.originPath}` !== m.source) err(m.where, `registre incohérent (exercice ou source) : ${m.file}`);
     if (entry.bytes !== bytes.length || entry.sha256 !== createHash('sha256').update(bytes).digest('hex')) err(m.where, `empreinte ou taille différente du registre : ${m.file}`);
     if (Object.hasOwn(MEDIA_SOURCES, entry.source) && MEDIA_SOURCES[entry.source].authorPerImage === true && entry.author !== m.author) err(m.where, `auteur de l’image différent du registre : ${m.file}`);
+    if (Object.hasOwn(MEDIA_SOURCES, entry.source) && MEDIA_SOURCES[entry.source].authorPerImage !== true && Object.hasOwn(entry, 'author')) err(m.where, `auteur de l’image au registre pour une source à auteur unique : ${m.file}`);
     validateReduction(entry, bytes, m, err);
   }
   if (total > maxTotal) err(where, `budget total des médias dépassé : ${total} octets > ${maxTotal}`);

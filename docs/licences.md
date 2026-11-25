@@ -101,7 +101,7 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Licence : **Creative Commons Attribution-ShareAlike 4.0 International** (CC BY-SA 4.0, `https://creativecommons.org/licenses/by-sa/4.0/`), texte complet dans `LICENSE.md` du dépôt, licence déclarée par GitHub `CC-BY-SA-4.0`. wger redistribue les mêmes illustrations avec l'auteur « Everkinetic » sous CC BY-SA.
 - Fichiers embarqués : `content/exercises/media/<id-exercice>.png`, copies à l'identique de `dist/png/<n>-tension.png` à l'origine (87 fichiers : aucune retouche) ; les 14 images web de MEDIA-02 et l'image wger de CONTENT-0293 sont au contraire **réduites et passées en gris** (compléments plus bas) ; un fichier par exercice, 87 exercices sur 196 (I6-07 ; 101 depuis MEDIA-02, voir plus bas). Registre de provenance : `content/exercises/media/sources.json` (fichier, exercice, chemin d'origine, taille, SHA-256), produit par `node scripts/content/build-media.mjs` depuis la correspondance relue `scripts/content/media-map.json`, vérifié par `validate-content.mjs`.
 - Attribution affichée par l'app sous chaque image (fiche d'exercice) : « Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ». Partage à l'identique : les 87 images d'origine ne sont pas modifiées (les images réduites sont signalées comme modifiées sous l'image, voir plus bas) ; le code de Spartiate n'est pas une œuvre adaptée (agrégation).
-- Refusées ou non retenues : free-exercise-db (provenance des images non déclarée), wger (licence et auteur à vérifier image par image), Wikimedia Commons (fichier par fichier, lot suivant), WorkoutLabs (droits réservés), Darebee (CC BY-NC-ND). Détail : `docs/I6-07.md`.
+- Refusées ou non retenues : free-exercise-db (provenance des images non déclarée), wger au lot I6-07 (licence et auteur à vérifier image par image : une image a été retenue ensuite, voir le complément CONTENT-0293), Wikimedia Commons (fichier par fichier, lot suivant), WorkoutLabs (droits réservés), Darebee (CC BY-NC-ND). Détail : `docs/I6-07.md`.
 - Aucun téléchargement par l'app : les images sont dans le paquet, chargées à la demande à l'ouverture d'une fiche. **H-9 reste UNVERIFIED** (D-36) : licence lue sur la page du dépôt, aucun constat d'Ali.
 
 ## Complément MEDIA-02 (0.26.0) : images web d'Everkinetic, réduites
@@ -113,7 +113,7 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
   sous CC BY-SA 4.0 ; le registre garde l'empreinte et la taille d'origine (`originSha256`, `originBytes`, `transform`).
 - Attribution affichée sous ces images : « Illustration : Everkinetic (Greg Priday et contributeurs), CC BY-SA 4.0,
   creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris » (modification signalée, CC BY-SA 4.0 § 3(a)(1)(B)).
-- wger (API publique, licence lue image par image le 2026-11-16) : **aucune image retenue** (D-300) ; candidates refusées pour licence non
+- wger (API publique, licence lue image par image le 2026-11-16) : **aucune image retenue en MEDIA-02** (D-300 ; une image retenue depuis, voir le complément CONTENT-0293) ; candidates refusées pour licence non
   crédible (rendus d'origine commerciale, filigranes), image marquée générée par IA, source externe sans licence vérifiable ou mauvais
   matériel. Détail : `docs/MEDIA-02.md`. Total du catalogue : 101 exercices sur 196, 4 495 435 octets. **H-9 reste UNVERIFIED** (D-36).
 
