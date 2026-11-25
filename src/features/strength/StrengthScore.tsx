@@ -6,6 +6,7 @@ import { formatStrengthKg, tStrength, type StrengthTextKey } from '../../i18n/st
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
+import { groupCountKey } from './groupCount';
 import './StrengthScore.css';
 
 /**
@@ -105,7 +106,7 @@ function Ready({ data }: { readonly data: Loaded }) {
             <p className="ct-strength__global">
               <span className="ct-strength__global-value">{String(result.global.score)}</span>{' '}
               <span className="ct-strength__global-label">
-                {tStrength('globalLine', { tier: tStrength(TIER_KEY[result.global.tier]), counted: tStrength(result.global.counted === 1 ? 'groupOne' : 'groupMany', { n: result.global.counted }) })}
+                {tStrength('globalLine', { tier: tStrength(TIER_KEY[result.global.tier]), counted: tStrength(groupCountKey(result.global.counted), { n: result.global.counted }) })}
               </span>
             </p>
           ) : null}

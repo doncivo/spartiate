@@ -17,7 +17,7 @@ describe('LicensesScreen (C-119)', () => {
   it('affiche chaque ressource de docs/licences.md avec sa licence', () => {
     render(<LicensesScreen />);
     const source = readFileSync(join(import.meta.dirname, '..', '..', '..', 'docs', 'licences.md'), 'utf8');
-    for (const name of ['Cinzel', 'Lucide', 'Recharts', 'd3-ease', 'qrcode-generator', 'Ciqual', 'keyring', 'aws-lc-rs', 'tauri-plugin-geolocation']) {
+    for (const name of ['Cinzel', 'Lucide', 'qrcode-generator', 'Ciqual', 'keyring', 'aws-lc-rs', 'tauri-plugin-geolocation']) {
       expect(source).toContain(name);
       expect(screen.getAllByText(new RegExp(name)).length).toBeGreaterThan(0);
     }
@@ -25,10 +25,15 @@ describe('LicensesScreen (C-119)', () => {
     expect(screen.getByText(/Licence Ouverte Etalab 2\.0/)).toBeInTheDocument();
   });
 
-  it('reproduit l’avis BSD-3-Clause de d3-ease (copyright, conditions, avertissement)', () => {
+  it('BL-116 : Recharts et d3-ease, retirés avec la dépendance jamais importée, ne sont plus crédités ni déclarés', () => {
     render(<LicensesScreen />);
-    expect(screen.getByText(/Mike Bostock/)).toBeInTheDocument();
-    expect(screen.getByText(/Robert Penner/)).toBeInTheDocument();
+    expect(screen.queryByText(/Recharts/)).toBeNull();
+    expect(screen.queryByText(/d3-ease|Mike Bostock/)).toBeNull();
+    const root = join(import.meta.dirname, '..', '..', '..');
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { dependencies: Record<string, string> };
+    expect(Object.keys(pkg.dependencies)).not.toContain('recharts');
+    expect(readFileSync(join(root, 'package-lock.json'), 'utf8')).not.toContain('node_modules/recharts');
+    expect(readFileSync(join(root, 'docs', 'licences.md'), 'utf8')).not.toMatch(/^\| `recharts` \|/m);
   });
 
   it('le retour ramène à Plus', () => {
@@ -42,13 +47,5 @@ describe('LicensesScreen (C-119)', () => {
     const settings = readFileSync(join(import.meta.dirname, 'SettingsScreen.tsx'), 'utf8');
     expect(settings).toContain("import('./LicensesScreen')");
     expect(readFileSync(join(import.meta.dirname, '..', 'app', 'screenNames.ts'), 'utf8')).not.toContain("'licensesscreen'");
-  });
-
-  it('affiche en entier l’avis de licence de d3-ease (texte de node_modules/d3-ease/LICENSE), comme l’exige docs/licences.md', () => {
-    render(<LicensesScreen />);
-    const full = readFileSync(join(import.meta.dirname, '..', '..', '..', 'node_modules', 'd3-ease', 'LICENSE'), 'utf8');
-    const norm = (text: string): string => text.split(/\s+/).join(' ').trim();
-    const shown = screen.getByTestId('license-d3-ease');
-    expect(norm(shown.textContent ?? '')).toBe(norm(full));
   });
 });

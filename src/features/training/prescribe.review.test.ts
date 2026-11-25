@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { DEFAULT_PROGRESSION_CONFIG as CFG } from './config';
-import { prescribe } from './prescribe';
-import { toEmbeddedProfile } from '../../features/training/content';
-import type { ExerciseSession, PrescribeInput } from './types';
+import { DEFAULT_PROGRESSION_CONFIG as CFG } from '../../domain/training/config';
+import { prescribe } from '../../domain/training/prescribe';
+import { toEmbeddedProfile } from './content';
+import type { ExerciseSession, PrescribeInput } from '../../domain/training/types';
 
 /**
  * Relecture à froid du moteur I2-01 (PR #60 et #61), cas réels de la salle d'Ali (Fitness Park) avant sa première séance réelle

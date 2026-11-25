@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { RESET_TABLES } from '../../domain/dataReset';
 import { dataResetFr } from '../../i18n/fr.dataReset';
@@ -25,61 +27,72 @@ describe('FIX-EXPORT C-107 : textes de l’export et de l’import', () => {
   });
 });
 
-const KEYWORD: Readonly<Record<string, RegExp>> = {
-  profile: /profil/i,
-  body_weight: /pesées/i,
-  exercise: /exercices perso/i,
-  equipment_profile: /profils de matériel/i,
-  routine: /routines/i,
-  routine_day: /programmes/i,
-  routine_exercise: /programmes/i,
-  workout: /séances/i,
-  workout_set: /séries/i,
-  progression_profile: /progression/i,
-  recommendation_decision: /progression/i,
-  mesocycle: /cycles/i,
-  food: /aliments perso/i,
-  food_portion: /aliments perso/i,
-  meal_entry: /journal alimentaire/i,
-  nutrition_target: /cibles/i,
-  day_completeness: /journées complètes/i,
-  recipe: /recettes/i,
-  recipe_ingredient: /recettes/i,
-  recovery_day: /récupération/i,
-  muscle_recovery: /récupération/i,
-  recovery_factor: /facteurs/i,
-  measurement: /mensurations/i,
-  progress_photo: /photos/i,
-  food_favorite: /favoris/i,
-  supplement: /compléments/i,
-  supplement_intake: /prises/i,
-  cardio_session: /séances de cardio/i,
+type Family = 'wipedProfile' | 'wipedTraining' | 'wipedSupplements' | 'wipedCardio' | 'wipedNutrition' | 'wipedBody' | 'wipedRecovery' | 'wipedTechnical';
+/** Chaque table effacée : la famille de l'écran qui doit la nommer et le mot clé précis qu'elle y porte (BL-100). */
+const KEYWORD: Readonly<Record<string, readonly [Family, RegExp]>> = {
+  profile: ['wipedProfile', /^Profil, objectifs/],
+  body_weight: ['wipedBody', /^Pesées/],
+  exercise: ['wipedTraining', /Exercices perso/],
+  equipment_profile: ['wipedTraining', /profils de matériel/],
+  routine: ['wipedTraining', /routines/],
+  routine_day: ['wipedTraining', /programmes/],
+  routine_exercise: ['wipedTraining', /programmes/],
+  workout: ['wipedTraining', /séances et séries/],
+  workout_set: ['wipedTraining', /séances et séries/],
+  progression_profile: ['wipedTraining', /progression et décisions/],
+  recommendation_decision: ['wipedTraining', /progression et décisions/],
+  mesocycle: ['wipedTraining', /cycles/],
+  food: ['wipedNutrition', /aliments perso/],
+  food_portion: ['wipedNutrition', /aliments perso/],
+  meal_entry: ['wipedNutrition', /^Journal alimentaire/],
+  nutrition_target: ['wipedNutrition', /cibles et check-ins/],
+  day_completeness: ['wipedNutrition', /journées complètes/],
+  recipe: ['wipedNutrition', /recettes/],
+  recipe_ingredient: ['wipedNutrition', /recettes/],
+  recovery_day: ['wipedRecovery', /^Récupération : résumés/],
+  muscle_recovery: ['wipedRecovery', /^Récupération : résumés/],
+  recovery_factor: ['wipedRecovery', /facteurs/],
+  measurement: ['wipedBody', /mensurations/],
+  progress_photo: ['wipedBody', /photos \(fiches et fichiers\)/],
+  food_favorite: ['wipedNutrition', /favoris/],
+  supplement: ['wipedSupplements', /^Compléments/],
+  supplement_intake: ['wipedSupplements', /prises$/],
+  cardio_session: ['wipedCardio', /^Séances de cardio/],
   // SYNC-0291 : gênes déclarées (table publiée injury), effacées.
-  injury: /gênes déclarées/i,
-  progress_photo_file: /photos/i,
-  cardio_track: /tracés GPS/i,
-  recovery_sample: /échantillons/i,
-  recovery_import_state: /import/i,
-  conflict_log: /conflits/i,
-  epoch_carry_report: /comptes rendus/i,
+  injury: ['wipedProfile', /gênes déclarées/],
+  progress_photo_file: ['wipedBody', /photos \(fiches et fichiers\)/],
+  cardio_track: ['wipedCardio', /tracés GPS/],
+  recovery_sample: ['wipedRecovery', /échantillons importés/],
+  recovery_import_state: ['wipedRecovery', /échantillons importés/],
+  conflict_log: ['wipedTechnical', /^Conflits de synchro/],
+  epoch_carry_report: ['wipedTechnical', /comptes rendus de report/],
 };
 
+/** Les clés réellement rendues par l'écran : la liste `WIPED` de ResetDataScreen.tsx, lue dans la source (BL-100), pas les clés du catalogue. */
+const screenSource = readFileSync(join(import.meta.dirname, 'ResetDataScreen.tsx'), 'utf8');
+const SCREEN_KEYS = [...(/const WIPED[^=]*= \[([^\]]*)\]/.exec(screenSource)?.[1] ?? '').matchAll(/'(wiped[A-Za-z]+)'/g)].map((m) => m[1] as Family);
+
 describe('FIX-EXPORT C-108 : « Ce qui est effacé » couvre chaque table effacée', () => {
-  const wipedText = Object.entries(dataResetFr)
-    .filter(([k]) => k.startsWith('wiped') && k !== 'wipedTitle')
-    .map(([, v]) => String(v))
-    .join(' | ');
+  const catalogKeys = Object.keys(dataResetFr).filter((k) => k.startsWith('wiped') && k !== 'wipedTitle');
   const wiped = Object.entries(RESET_TABLES)
     .filter(([, f]) => f === 'wiped')
     .map(([t]) => t);
-  it.each(wiped)('table %s : un mot clé est déclaré et présent dans le texte', (table) => {
-    const re = KEYWORD[table];
-    expect(re, `mot clé manquant pour ${table}`).toBeDefined();
-    expect(wipedText).toMatch(re as RegExp);
+  it('l’écran rend exactement les familles du catalogue (aucune écrite et jamais affichée)', () => {
+    expect([...SCREEN_KEYS].sort()).toEqual([...catalogKeys].sort());
+  });
+  it('chaque table effacée est déclarée, et aucune table déclarée n’est inconnue de RESET_TABLES', () => {
+    expect(Object.keys(KEYWORD).sort()).toEqual([...wiped].sort());
+  });
+  it.each(wiped)('table %s : son mot clé précis figure dans sa famille, rendue par l’écran', (table) => {
+    const entry = KEYWORD[table];
+    expect(entry, `mot clé manquant pour ${table}`).toBeDefined();
+    const [family, re] = entry as readonly [Family, RegExp];
+    expect(SCREEN_KEYS).toContain(family);
+    expect(dataResetFr[family]).toMatch(re);
   });
   it('keptContent est vrai : bibliothèque embarquée gardée, exercices perso effacés', () => {
     expect(dataResetFr.keptContent).toMatch(/bibliothèque/i);
     expect(dataResetFr.keptContent).not.toMatch(/^Le contenu fourni avec l’app : exercices,/);
-    expect(wipedText).toMatch(/exercices perso/i);
+    expect(dataResetFr.wipedTraining).toMatch(/exercices perso/i);
   });
 });

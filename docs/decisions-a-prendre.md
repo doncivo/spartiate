@@ -181,11 +181,17 @@ Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inl
 - B : rétablir `style-src 'unsafe-inline'` seulement. Conséquences : plus de risque d'affichage cassé, mais les styles injectés par une page hostile redeviennent possibles.
 - C : rétablir les deux directives. Conséquences : état d'avant, sans gain de sécurité.
 
+## Q-36 — Système inconnu dans l'app installée : message visible ? (C-163, SHELL-0294e)
+Constat : si l'agent utilisateur et la plateforme du navigateur intégré ne disent rien (cas jamais vu sur Windows ni sur l'iPhone), l'app garde le système « other » : synchro et sauvegardes indisponibles, et seul le journal le dit (`os-unknown`, D-616).
+- A (recommandé, appliqué) : journal seulement ; le cas est théorique et un bandeau de plus alourdirait le départ. Conséquences : si cela arrivait, l'utilisateur verrait des réglages absents et le journal en donnerait la cause.
+- B : lire aussi `navigator.platform` quand l'agent utilisateur est vide (14 à 24 octets de départ, à compenser ailleurs).
+- C : afficher dans Plus une ligne « Système non reconnu : synchro et sauvegardes indisponibles ». Conséquences : cause visible, un texte et un test de plus, catalogue à charger à la demande.
+
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-348 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+352 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -366,7 +372,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (35 : 13 à trancher, 22 à confirmer seulement)
+### récupération (36 : 13 à trancher, 23 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -392,6 +398,7 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-95 | I6-01 (0.12.0) : valeurs inhabituelles (§ 16.7). | à confirmer seulement : citée par D-134 d'Ali (déjà validée ?) |
 | 3 | D-357 | FIX-SAISIE-NUTRI (0.28.0) : dépense mesurée lissée sur 7 jours comme le dit § 15.1, recalculée à la lecture (C-036 ). | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-575 | DATA-0293 (BL-099). | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-616 | SHELL-0294e (C-163). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-88 | I5-01 : Exertion de récupération = musculation seule, cardio compté à zéro, dit dans l'explication (clé exertion_cardio_not_counted). | à confirmer seulement : citée par D-238, D-505 d'Ali (déjà validée ?) |
 | 1 | D-131 | FIX-0172 : épisodes de sommeil définis par les segments endormis (constat 7 de la relecture Codex du 12 nov.). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-133 | FIX-0172 : recalcul unique d'une nouvelle règle du sommeil (constat 2 de la relecture Codex). | à confirmer seulement : citée par D-134 d'Ali (déjà validée ?) |
@@ -501,7 +508,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (45 : 21 à trancher, 24 à confirmer seulement)
+### écrans (46 : 21 à trancher, 25 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -555,8 +562,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-578 | DATA-0293 (C-118). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-600 | SHELL-0294b (C-159, H-32). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (52 : 21 à trancher, 31 à confirmer seulement)
+### CI et outillage (54 : 23 à trancher, 31 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -565,11 +573,13 @@ Gardées sans question (à confirmer seulement) :
 | 6 | D-598 | SHELL-0294b (C-158, BL-129, § 19.3 a, § 19.4 a). | A garder · B réviser ; effet : synchro, données |
 | 5 | D-77 | Client Open Food Facts en Rust (I4-05, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro |
 | 5 | D-274 | PROG-01 (0.24.0) : exception chiffrée au bundle de départ (choix prudent, révisable par Ali; D-264 (3), D-265). | A garder · B réviser ; effet : schéma, chiffre |
+| 5 | D-615 | SHELL-0294e (BL-137, BL-167). | A garder · B réviser ; effet : moteur, schéma |
 | 5 | D-624 | SHELL-0294f (BL-148) : matrice et ADR 0014 mises à jour par des constats déjà consignés, jamais par une lecture de code (D-36). | A garder · B réviser ; effet : synchro, écran |
 | 4 | D-122 | FIX-0171 : mise en œuvre de D-121. | A garder · B réviser ; effet : données, écran |
 | 4 | D-287 | ERGO-02b (0.25.0) : préchargement sans polyfill et sans blocs du départ entre eux (passe architect). | A garder · B réviser ; effet : moteur, chiffre |
 | 4 | D-321 | DOC-PRIV (0.28.0) : retrait des données réelles d'Ali des fichiers suivis (C-165; applique D-318 (5)). | A garder · B réviser ; effet : données, écran |
 | 4 | D-591 | CONTENT-0293 (BL-126). | A garder · B réviser (déjà marquée « à trancher ») ; effet : durée, texte long |
+| 4 | D-617 | SHELL-0294e (C-084, BL-145, BL-100, BL-105, BL-042, C-167). | A garder · B réviser ; effet : synchro |
 | 3 | D-282 | FIX-0241 (0.25.0) : pluriels français des compteurs. | A garder · B réviser ; effet : chiffre, écran |
 | 3 | D-611 | SHELL-0294d (BL-002, BL-144, CSP). | A garder · B réviser ; effet : moteur |
 | 2 | D-400 | COQUILLE-PC-c (0.28.1) : Dynamic Type iOS par font: -apple-system-body (§ 18.6, C-113, D-372). | A garder · B réviser ; effet : chiffre, écran |
