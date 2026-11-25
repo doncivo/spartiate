@@ -71,6 +71,8 @@ export interface KeyInput {
    * un caractère, jamais un raccourci : aucune combinaison ne correspond (D-04 critère 3).
    */
   readonly altGraph?: boolean;
+  /** Touche maintenue (répétition automatique) ou saisie en composition (IME) : les raccourcis à bascule l'ignorent. */
+  readonly held?: boolean;
 }
 
 export function parseChord(keys: string): KeyChord {
@@ -99,7 +101,7 @@ export function matchesChord(chord: KeyChord, input: KeyInput): boolean {
  * faire) : l'événement n'est alors pas consommé et le comportement natif du navigateur (défilement…) reste.
  */
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- les gestionnaires existants renvoient void ; false = décline
-export type ShortcutHandler = () => boolean | void;
+export type ShortcutHandler = (input: KeyInput) => boolean | void;
 
 export interface ShortcutRegistry {
   /** Enregistre un gestionnaire ; renvoie la fonction de désenregistrement. */
@@ -132,7 +134,7 @@ export function createShortcutRegistry(): ShortcutRegistry {
         if (!matchesChord(chord, input)) continue;
         // Du plus récent au plus ancien : un gestionnaire qui décline (`false`) laisse la main au précédent.
         for (const handler of [...(handlers.get(id) ?? [])].reverse()) {
-          if (handler() !== false) return id;
+          if (handler(input) !== false) return id;
         }
       }
       return null;
@@ -156,6 +158,7 @@ export function toKeyInput(event: KeyboardEvent): KeyInput {
     shiftKey: event.shiftKey,
     metaKey: event.metaKey,
     editable,
+    held: event.repeat || event.isComposing,
     altGraph: typeof event.getModifierState === 'function' && event.getModifierState('AltGraph'),
   };
 }

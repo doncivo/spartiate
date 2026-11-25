@@ -54,8 +54,16 @@ for (const size of SIZES) {
     await page.setViewportSize({ width: size.width, height: size.height });
     await openToday(page);
     await expect(page.locator('.ct-tab-rail')).toHaveAttribute('data-layout', 'pc');
-    if (size.width <= 1099) await expect(page.locator('.ct-tab-rail')).toHaveAttribute('data-collapsed', 'true');
-    else await expect(page.locator('.ct-tab-rail')).not.toHaveAttribute('data-collapsed');
+    // Repli en CSS seul (D-596) : pas d'attribut ; on lit la largeur calculée de la barre (64 px repliée, 256 px dépliée) et le libellé masqué.
+    const railWidth = await page.locator('nav.ct-tab-rail').evaluate((el) => el.getBoundingClientRect().width);
+    const labelWidth = await page.locator('nav.ct-tab-rail .ct-tab-rail__label').first().evaluate((el) => el.getBoundingClientRect().width);
+    if (size.width <= 1099) {
+      expect(railWidth).toBe(64);
+      expect(labelWidth).toBeLessThanOrEqual(1);
+    } else {
+      expect(railWidth).toBe(256);
+      expect(labelWidth).toBeGreaterThan(1);
+    }
 
     await page.getByRole('navigation').getByRole('button', { name: 'Progrès', exact: true }).click();
     const body = page.locator('.ct-bodyprogress').first();

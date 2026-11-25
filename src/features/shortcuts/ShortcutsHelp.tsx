@@ -21,10 +21,11 @@ const CommandPalette = lazyScreen<object>(() => import('../palette/CommandPalett
 export function ShortcutsHelp() {
   const container = useAppContainer();
   const top = useNavigationStore((s) => s.overlays.at(-1)?.kind);
-  // C-135 (D-480, D-596) : Ctrl+K, enregistré par ce bloc (monté sur PC seulement, préchargé au repos) : ouvre la palette, la referme ; ignoré sous une feuille ou une fenêtre modale.
+  // C-135 (D-480, D-596) : Ctrl+K, enregistré par ce bloc (chargé et monté au rendu de la coquille PC, jamais sur iPhone) : ouvre la palette, la referme ; ignoré sous une feuille ou une fenêtre modale.
   useEffect(
     () =>
-      container.shortcuts.register('app.palette', (): boolean => {
+      container.shortcuts.register('app.palette', (input): boolean => {
+        if (input.held === true) return true;
         const navigation = useNavigationStore.getState();
         if (navigation.overlays.at(-1)?.kind === 'commandPalette') navigation.closeOverlay();
         else if (document.querySelector('[aria-modal="true"]') !== null) return false;

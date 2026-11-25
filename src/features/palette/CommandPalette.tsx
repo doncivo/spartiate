@@ -48,8 +48,8 @@ function CommandPaletteDialog() {
         <input
           type="text"
           role="combobox"
-          aria-expanded="true"
-          aria-controls="ct-palette-list"
+          aria-expanded={results.length > 0}
+          aria-controls={results.length > 0 ? 'ct-palette-list' : undefined}
           aria-activedescendant={current ? `ct-palette-${current.id}` : undefined}
           aria-label={tPalette('inputLabel')}
           placeholder={tPalette('inputPlaceholder')}

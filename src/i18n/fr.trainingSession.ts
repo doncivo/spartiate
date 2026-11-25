@@ -70,7 +70,7 @@ export const trainingSessionFr = {
   platesBelowBar: 'Charge inférieure au poids de la barre.',
   // SESS-01f — Live Activity étendue
   /** BL-118 : titre de la fenêtre PC pendant le repos entre deux séries. */
-  restBadge: 'Repos {time} · Spartiate',
+  restBadge: 'Repos {time} · {app}',
   restLiveNext: '{rest} · ensuite : {name}, {load}',
   restLiveNextNoLoad: '{rest} · ensuite : {name}',
   // SESS-01d — fatigue déclarée

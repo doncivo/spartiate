@@ -189,7 +189,7 @@ describe('bundle de départ (index.html)', () => {
 
   // SHELL-0294a (BL-118, D-596) : le badge du repos dans le titre de la fenêtre PC est chargé avec la séance, jamais dans le départ.
   it('SHELL-0294a : le badge du titre de la fenêtre est hors du départ et présent dans le build', () => {
-    const marker = 'Repos {time} · Spartiate';
+    const marker = 'Repos {time} · {app}';
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);

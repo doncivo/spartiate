@@ -14,7 +14,7 @@ let endMs: number | null = null;
 /** « Repos 1:23 · Spartiate » : le reste arrondi à la seconde supérieure (jamais 0:00 tant que le repos court). */
 export function restBadgeTitle(remainingMs: number): string {
   const seconds = Math.max(1, Math.ceil(remainingMs / 1000));
-  return tSession('restBadge', { time: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` });
+  return tSession('restBadge', { app: t('app.name'), time: `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}` });
 }
 
 function stop(): void {
