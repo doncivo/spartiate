@@ -85,6 +85,7 @@ describe('UI-REFONTE-09 — Réglages sur PC (PC-Reglages.html)', () => {
       'Fuseau et démarrage',
       'Raccourcis clavier',
       'À propos et diagnostic',
+      'Licences',
       'Export et import',
       'Journaux',
       'Repartir de zéro',
