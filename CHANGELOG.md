@@ -7,16 +7,16 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.3.
 
 - **Navigation sur le PC** : Ctrl+K ouvre une palette pour aller directement à un écran. Sous 1 100 px de large, la barre latérale se replie en icônes. Pendant un repos, le titre de la fenêtre affiche « Repos m:ss · Spartiate ».
-- **Notifications et Live Activity sur l'iPhone** : la notification de fin de repos propose « +30 s » et « Passer », appliqués à la séance dès l'ouverture de l'app. La Live Activity ne se dédouble plus quand deux séries sont validées coup sur coup. L'aperçu de l'app dans le sélecteur d'apps est masqué. Les textes des autorisations iOS sont réécrits. Les boutons sur la Live Activity elle-même ne sont pas encore faits.
+- **Notifications et Live Activity sur l'iPhone** : la notification de fin de repos propose « +30 s » et « Passer », appliqués à la séance dès l'ouverture de l'app. La Live Activity ne se dédouble plus quand deux séries sont validées coup sur coup. Quand le verrouillage est activé ou les photos ouvertes, l'aperçu de l'app dans le sélecteur d'apps est masqué dès la sortie. Les textes des autorisations iOS sont réécrits. Les boutons sur la Live Activity elle-même ne sont pas encore faits.
 - **Plus › Licences** : nouvel écran qui liste les polices, icônes et bibliothèques, avec leurs licences. Le bouton « Voir la procédure SideStore » mène à la procédure d'actualisation. « Remplacer » dans l'import demande une seconde confirmation quand des lignes vont disparaître. Aujourd'hui passe au nouveau jour à minuit sans rien toucher.
-- **Robustesse sur le PC** : « Quitter » depuis l'icône de la zone de notification ferme proprement l'app une seule fois et laisse finir la dernière écriture. Une icône de notification indisponible n'arrête plus l'app. Le diagnostic n'affiche plus que des noms de fichiers, jamais de chemin complet. « Repartir de zéro » recharge l'app même si la synchro ne répond pas, après 10 s au plus.
+- **Robustesse sur le PC** : « Quitter » depuis l'icône de la zone de notification ferme proprement l'app une seule fois et laisse finir la dernière écriture (5 s au plus). Une icône de notification indisponible n'arrête plus l'app. Le diagnostic affiché quand la base ne s'ouvre pas ne donne plus que des noms de dossier et de fichier, jamais de chemin complet. « Repartir de zéro » recharge l'app même si la synchro ne répond pas, après 10 s au plus.
 - **Sécurité** : la politique de contenu de l'app est plus stricte (aucun style ni code injecté). Les écrans s'affichent comme avant ; à vérifier sur les deux appareils (voir les constats).
 - **Notes des anciennes versions** : la publication de l'iPhone réécrit les notes de six anciennes publications, pour en retirer un nom de lieu.
 - **Maintenance** : une bibliothèque de graphiques jamais utilisée est retirée. Les contrôles automatiques du démarrage et de la qualité des tests sont renforcés.
 
 Après la mise à jour : la liste complète est dans `docs/constats-ali.md` (section 0.29.4). En priorité :
 - sur l'iPhone, pendant un repos, appuie longuement sur la notification puis sur « +30 s » ;
-- sur les deux appareils, ouvre Nutrition, Progrès et Plus › Bibliothèque, et vérifie que tout s'affiche comme avant ;
+- sur les deux appareils, ouvre Nutrition, Progrès et Entraînement › Bibliothèque, et vérifie que tout s'affiche comme avant ;
 - sur le PC, essaie Ctrl+K.
 
 ## 0.29.3
