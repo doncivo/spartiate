@@ -163,8 +163,10 @@ jobs:
           npx vitest run --merge-reports --reporter=default
       # SHELL-0295 (BL-044, D-641) : couverture par module, tirée du rapport fusionné, dans le résumé du job (lecture seule, aucun seuil).
       - name: Couverture par module
-        if: ${{ !cancelled() && hashFiles('coverage/coverage-summary.json') != '' }}
-        run: node scripts/release/coverage-by-module.mjs coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
+        if: ${{ !cancelled() }}
+        run: |
+          if [ ! -f coverage/coverage-summary.json ]; then echo "::warning::coverage/coverage-summary.json absent : pas de couverture par module"; exit 0; fi
+          node scripts/release/coverage-by-module.mjs coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() }}
         with:

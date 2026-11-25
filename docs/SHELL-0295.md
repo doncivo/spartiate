@@ -73,3 +73,16 @@ Les 17 skip filtrés par projet lancent un scénario sur un seul projet Playwrig
 Bundle de départ (même poste, `CI=1 npx vitest run --config vitest.bundle.config.ts tests/bundle/startBundle.test.ts`) : **avant 180 514 octets normalisés** (main `52722de2`) ; après C-085 180 084 (−430) ; **après C-076 et final 180 108 (brut 180 119), soit −406 contre main**. C-076 seul coûte +24 octets : le bloc partagé `units` entre dans la table de préchargement des écrans à la demande (D-639). `start-modules.json` : une ligne retirée (`fr.routines.ts`), aucune ajoutée ; 175 tests de `startBundle.test.ts` et `pairingBundle.test.ts` verts.
 
 `tsc --noEmit` propre ; eslint propre sur les fichiers touchés ; Vitest ciblés verts (`vitest related` C-076, `src/i18n`, `content02`, `hardcodedUnits`, `testIsolation`, `visualCoverage`, les deux fichiers `epochCarry*`, `testMarkers`, gardes de tests.yml `ciPub`, `ciTrigger`, `cargoAuditGate`, `cargoAuditSummary`, `purge`, `third-party-notices`) ; gardes documentaires (voir rapport de PR) ; contrôle des noms de lieux à 0. Non lancés ici : e2e, visual, perf, Rust (aucun fichier Rust touché).
+
+## Relecture à froid (code-reviewer, distinct)
+
+Aucun défaut bloquant dans le code. Un point important est corrigé : les deux tests de synchro calculaient leur référence dans un `beforeAll`. Un crochet a son propre délai par défaut, qui allonge de fait celui du test. Un dépassement y ferait aussi échouer tout le bloc, la cascade même relevée par l'audit. Les crochets sont retirés : chaque test demande la référence sous son propre délai, 28 sur 28 verts.
+
+L'étape « Couverture par module » avertit désormais quand `coverage-summary.json` manque, au lieu d'être sautée sans rien dire.
+
+Mineurs non traités, consignés ici :
+- Deux marqueurs de `startBundle.test.ts:178` n'existent plus dans le code.
+- La garde des unités ne voit ni les guillemets doubles, ni « s », ni « kcal ».
+- Le commentaire d'`undo.ts:70` est périmé.
+
+Run 45718325104 (f0e4db83) : vert.

@@ -91,7 +91,7 @@ function recordPageBoundaries(b: SimDevice, probe: CrashProbe): number[] {
 }
 
 /**
- * A-004 (SHELL-0295, D-640) : l'exécution de référence est faite une fois (amorce dans `beforeAll`), puis gardée. Un échec la
+ * A-004 (SHELL-0295, D-640) : l'exécution de référence est faite une fois, à la première demande et sous le délai du test qui la demande (jamais dans un crochet : un crochet en dépassement ferait échouer tout le bloc), puis gardée. Un échec la
  * remet à zéro : le test suivant la refait au lieu de lire une référence restée nulle (l'audit 0.26.0 y a vu trois échecs en cascade).
  */
 interface ReferenceRun {
@@ -123,10 +123,6 @@ const referenceOnce = (): Promise<ReferenceRun> =>
   }));
 
 describe('Y-FIX-04 : reprise et convergence (critères 9, 10, 14)', () => {
-  // Amorce hors du délai d'un test (délai de crochet par défaut) ; un échec n'est pas gardé : chaque test qui la demande la refait.
-  beforeAll(async () => {
-    await referenceOnce().catch(() => undefined);
-  });
 
   it('exécution de référence sans arrêt : 501 tâches rattachées, deux pages, notice bornée sans doublon', async () => {
     const { reference, boundaries } = await referenceOnce();
