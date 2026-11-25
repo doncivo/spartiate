@@ -152,7 +152,22 @@ export function createSerializedDriver(
             return rawSelect<R>(sql, params);
           },
         };
-        await rawExecute('BEGIN IMMEDIATE');
+        try {
+          await rawExecute('BEGIN IMMEDIATE');
+        } catch (beginError) {
+          // DATA-0293 (BL-095) : un BEGIN rejeté par le transport a pu être exécuté par le moteur : transaction ouverte à l'insu du pilote (même classe
+          // que A-008). Nettoyage par ROLLBACK ; « no transaction is active » : le BEGIN n'a pas eu lieu. Autre rejet : l'annulation n'est pas établie, échec fermé.
+          try {
+            await rawExecute('ROLLBACK');
+          } catch (rollbackError) {
+            if (!/no transaction is active/i.test(describeError(rollbackError))) {
+              poison(
+                new DbError('connection-poisoned', `Connexion invalidée : BEGIN rejeté et ROLLBACK impossible, une transaction peut rester ouverte. Erreur d'origine : ${describeError(beginError)}. Cause du ROLLBACK : ${describeError(rollbackError)}`, { cause: rollbackError }),
+              );
+            }
+          }
+          throw beginError;
+        }
         inTransaction = true;
         let lost = false;
         try {

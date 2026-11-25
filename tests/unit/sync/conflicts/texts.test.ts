@@ -7,6 +7,7 @@ const SYNC_TABLES = [...LEGACY_TABLES, ...SYNC_CATALOGUE.tables];
 import type { DeviceId, IsoDateTime } from '../../../../src/domain/types';
 import { translate } from '../../../../src/i18n';
 import { fr } from '../../../../src/i18n/fr';
+import { syncFieldFr } from '../../../../src/i18n/fr.syncField';
 import { setFormatPrefs } from '../../../../src/i18n/formatPrefs';
 import { conflictDeviceName, conflictSideMeta, conflictTitle, conflictValueText, fieldKey, quoted } from '../../../../src/features/sync/conflictText';
 import type { SyncStatus } from '../../../../src/platform/sync/types';
@@ -33,23 +34,20 @@ describe('libellés des champs (critère 2)', () => {
     const visible = SYNC_TABLES.flatMap((t) => t.columns.filter((c) => c.conflictVisible).map((c) => fieldKey(t, c)));
     expect(visible.length).toBeGreaterThan(100);
     for (const key of visible) {
-      expect(typeof lookup(fr, key), `fr ${key}`).toBe('string');
+      expect(typeof lookup({ sync: { field: syncFieldFr } }, key), `fr ${key}`).toBe('string');
     }
     const hidden = SYNC_TABLES.flatMap((t) => t.columns.filter((c) => !c.conflictVisible).map((c) => fieldKey(t, c)));
-    expect(hidden.every((key) => lookup(fr, key) === undefined)).toBe(true);
+    expect(hidden.every((key) => lookup({ sync: { field: syncFieldFr } }, key) === undefined)).toBe(true);
     for (const t of SYNC_TABLES) for (const c of t.columns) if (HIDDEN.includes(c.name)) expect(c.conflictVisible, `${t.name}.${c.name}`).toBe(false);
     // Aucun libellé en trop (colonne disparue du catalogue).
     // `routine` : même nom de table dans l'ancien schéma et le catalogue I1-01, libellés communs (`deleted_at`) comptés une fois.
-    expect(leaves(fr.sync.field, 'sync.field.').sort()).toEqual([...new Set(visible)].sort());
+    expect(leaves(syncFieldFr, 'sync.field.').sort()).toEqual([...new Set(visible)].sort());
   });
 
   it('sections sync.conflicts et sync.field : aucun texte français vide', () => {
-    for (const section of ['conflicts', 'field'] as const) {
-      for (const key of leaves(fr.sync[section])) {
-        expect(String(lookup(fr.sync[section], key)).length, key).toBeGreaterThan(0);
-      }
-    }
-    expect(translate('fr', 'sync.field.task.time')).toBe('heure prévue');
+    for (const key of leaves(fr.sync.conflicts)) expect(String(lookup(fr.sync.conflicts, key)).length, key).toBeGreaterThan(0);
+    for (const key of leaves(syncFieldFr)) expect(String(lookup(syncFieldFr, key)).length, key).toBeGreaterThan(0);
+    expect(syncFieldFr.task.time).toBe('heure prévue');
   });
 });
 

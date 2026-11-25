@@ -25,6 +25,6 @@ export interface NutritionTargetRepository {
   get(id: string): Promise<NutritionTargetRecord | null>;
   /** Toutes les décisions, de la plus récente à la plus ancienne (semaine, création, identifiant). */
   list(): Promise<readonly NutritionTargetRecord[]>;
-  /** Dernière cible acceptée dont la semaine a commencé le `date` ou avant. */
-  effective(date: LocalDate): Promise<NutritionTargetRecord | null>;
+  /** Dernière cible acceptée dont la semaine a commencé le `date` ou avant ; `today` (C-040) : une décision datée d'après aujourd'hui ne passe jamais devant une cible prévue. */
+  effective(date: LocalDate, today?: LocalDate): Promise<NutritionTargetRecord | null>;
 }

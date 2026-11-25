@@ -25,10 +25,13 @@ export interface RecoverySampleInput {
   readonly stage: SleepStage | null;
   /** Nom du fichier d'origine (1 à 128 caractères). */
   readonly source: string;
+  /** DATA-0293 (C-058, D-478) : décalage de la cellule d'origine en minutes (±840), absent ou nul : « Z » ou ligne d'avant (fuseau de l'appareil). */
+  readonly utcOffsetMin?: number | null;
 }
 
 export interface RecoverySample extends RecoverySampleInput {
   readonly id: number;
+  readonly utcOffsetMin: number | null;
   readonly importedAt: string;
 }
 

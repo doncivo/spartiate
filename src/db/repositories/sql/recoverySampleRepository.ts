@@ -20,6 +20,7 @@ interface SampleRow extends SqlRow {
   readonly stage: string | null;
   readonly source: string;
   readonly imported_at: string;
+  readonly utc_offset_min: number | null;
 }
 
 interface StateRow extends SqlRow {
@@ -33,7 +34,7 @@ interface StateRow extends SqlRow {
 
 const TYPES: readonly string[] = ['hrv', 'fc-repos', 'sommeil', 'pas'];
 const STAGES: readonly string[] = ['in_bed', 'asleep', 'awake', 'rem', 'deep', 'core'];
-/** 7 paramètres par ligne : 100 lignes = 700, sous la limite de 999 variables de SQLite. */
+/** 8 paramètres par ligne : 100 lignes = 800, sous la limite de 999 variables de SQLite. */
 const CHUNK = 100;
 const DAY_MS = 86_400_000;
 
@@ -46,6 +47,7 @@ const toSample = (row: SampleRow): RecoverySample => ({
   stage: row.stage as RecoverySample['stage'],
   source: row.source,
   importedAt: row.imported_at,
+  utcOffsetMin: row.utc_offset_min,
 });
 
 const toState = (row: StateRow): RecoveryImportState => ({
@@ -61,6 +63,7 @@ const isCount = (v: number): boolean => Number.isInteger(v) && v >= 0;
 
 function validSample(s: RecoverySampleInput): boolean {
   if (!TYPES.includes(s.type) || !isIsoDateTime(s.startAt) || !isIsoDateTime(s.endAt) || s.endAt < s.startAt) return false;
+  if (s.utcOffsetMin !== undefined && s.utcOffsetMin !== null && !(Number.isInteger(s.utcOffsetMin) && Math.abs(s.utcOffsetMin) <= 840)) return false;
   if (typeof s.source !== 'string' || s.source.length < 1 || s.source.length > 128) return false;
   if (s.type === 'sommeil') return s.value === null && s.stage !== null && STAGES.includes(s.stage);
   if (s.stage !== null || s.value === null || !Number.isFinite(s.value)) return false;
@@ -75,9 +78,9 @@ export function createRecoverySampleRepository(db: SqlExecutor): RecoverySampleR
     let added = 0;
     for (let i = 0; i < samples.length; i += CHUNK) {
       const chunk = samples.slice(i, i + CHUNK);
-      const params: SqlParams = chunk.flatMap((s) => [s.type, s.startAt, s.endAt, s.value, s.stage, s.source, importedAt]);
+      const params: SqlParams = chunk.flatMap((s) => [s.type, s.startAt, s.endAt, s.value, s.stage, s.source, importedAt, s.utcOffsetMin ?? null]);
       const result = await db.execute(
-        `INSERT OR IGNORE INTO recovery_sample (type, start_at, end_at, value, stage, source, imported_at) VALUES ${chunk.map(() => '(?, ?, ?, ?, ?, ?, ?)').join(', ')}`,
+        `INSERT OR IGNORE INTO recovery_sample (type, start_at, end_at, value, stage, source, imported_at, utc_offset_min) VALUES ${chunk.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ')}`,
         params,
       );
       added += result.rowsAffected;

@@ -56,7 +56,6 @@
         "src/i18n/fr.signing.ts",
         "src/i18n/fr.syncConflicts.ts",
         "src/i18n/fr.syncEngine.ts",
-        "src/i18n/fr.syncField.ts",
         "src/i18n/fr.syncFolder.ts",
         "src/i18n/fr.syncForget.ts",
         "src/i18n/fr.syncPairing.ts",

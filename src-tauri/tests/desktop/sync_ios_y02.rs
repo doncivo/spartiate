@@ -688,3 +688,69 @@ fn y_ios_02_keychain_bytes_are_zeroized_on_every_path() {
     );
     assert!(!body.contains("String::from_utf8(bytes)"));
 }
+
+// ------------------------------------------------------------------------------------------------------------------------------
+// DATA-0293 (C-142) : course sur le cache de la clé
+// ------------------------------------------------------------------------------------------------------------------------------
+
+/// Coffre dont la lecture se fige (après avoir lu la valeur) jusqu'à ce que le test la libère : une écriture de l'app passe pendant ce temps.
+struct GatedVault {
+    value: Mutex<Option<String>>,
+    read_done: std::sync::mpsc::SyncSender<()>,
+    release: Mutex<std::sync::mpsc::Receiver<()>>,
+    gate_next_read: AtomicBool,
+}
+
+struct GatedHandle(Arc<GatedVault>);
+
+impl SecretVault for GatedHandle {
+    fn set(&self, _: &str, secret: &str) -> Result<(), VaultError> {
+        *self.0.value.lock().unwrap() = Some(secret.to_owned());
+        Ok(())
+    }
+    fn get(&self, _: &str) -> Result<Option<String>, VaultError> {
+        let read = self.0.value.lock().unwrap().clone();
+        if self.0.gate_next_read.swap(false, Ordering::SeqCst) {
+            self.0.read_done.send(()).unwrap();
+            let _ = self.0.release.lock().unwrap().recv();
+        }
+        Ok(read)
+    }
+    fn delete(&self, _: &str) -> Result<(), VaultError> {
+        *self.0.value.lock().unwrap() = None;
+        Ok(())
+    }
+}
+
+#[test]
+fn data_0293_c142_a_read_racing_a_write_never_leaves_a_stale_cache() {
+    let (read_done_tx, read_done_rx) = std::sync::mpsc::sync_channel(1);
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let gated = Arc::new(GatedVault {
+        value: Mutex::new(Some("ancienne".to_owned())),
+        read_done: read_done_tx,
+        release: Mutex::new(release_rx),
+        gate_next_read: AtomicBool::new(true),
+    });
+    let cached = Arc::new(CachedVault::new(Box::new(GatedHandle(gated.clone()))));
+    // Lecture 1 : lit « ancienne » dans le Trousseau puis attend.
+    let reader = {
+        let cached = cached.clone();
+        std::thread::spawn(move || cached.get(SYNC_KEY_ACCOUNT))
+    };
+    read_done_rx.recv().unwrap();
+    // Écriture de l'app pendant que la lecture 1 est en vol.
+    let writer = {
+        let cached = cached.clone();
+        std::thread::spawn(move || cached.set(SYNC_KEY_ACCOUNT, "nouvelle"))
+    };
+    std::thread::sleep(std::time::Duration::from_millis(200));
+    release_tx.send(()).unwrap();
+    reader.join().unwrap().unwrap();
+    writer.join().unwrap().unwrap();
+    // Ni la valeur lue avant l'écriture, ni un cache périmé : la clé en mémoire est la dernière écrite.
+    assert_eq!(
+        cached.get(SYNC_KEY_ACCOUNT).unwrap().as_deref(),
+        Some("nouvelle")
+    );
+}

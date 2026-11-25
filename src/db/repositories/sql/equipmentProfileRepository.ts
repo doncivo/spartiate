@@ -71,7 +71,12 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     },
 
     async update(id, patch) {
-      const current = rowToProfile(await live(id));
+      const row = await live(id);
+      const current = rowToProfile(row);
+      // DATA-0293 (BL-037) : inventaire ou incréments illisibles non remplacés par la modification : jamais réécrits en vide (écriture refusée).
+      if ((patch.inventory === undefined && parseInventory(decodeJson(row.inventory)) === null) || (patch.increments === undefined && parseIncrements(decodeJson(row.increments)) === null)) {
+        throw new RepositoryError('invalid', 'equipment_profile', id);
+      }
       const merged: EquipmentProfileInput = {
         id,
         name: patch.name ?? current.name,

@@ -40,6 +40,7 @@ import type { IsoDateTime } from '../../../domain/types';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { RepositoryError } from '../common';
 import type { RestTimer, WorkoutRepository } from '../workoutRepository';
+import { parseCorrectedFrom, serializeCorrectedFrom } from '../../parse/correctedFromJson';
 import { readSyncMeta, type SyncRow } from './sqlHelpers';
 import { isRetainedDeload, isRevertRow } from './progressionRepository';
 import { createTrainingRoutineRepository } from './trainingRoutineRepository';
@@ -78,6 +79,10 @@ interface SetRow extends SqlRow, SyncRow {
   /** Absentes d'une base antérieure à la migration 0013 (jamais en production : le migrateur passe avant). */
   readonly circuit_id?: string | null;
   readonly circuit_rest_sec?: number | null;
+  /** Absentes d'une base antérieure à la migration 0023 (jamais en production : le migrateur passe avant). */
+  readonly added?: number | null;
+  readonly corrected_from?: string | null;
+  readonly distance_m?: number | null;
 }
 interface RoutineLineRow extends SqlRow {
   readonly exercise_id: string;
@@ -128,8 +133,15 @@ const rowToSet = (row: SetRow): WorkoutSet => ({
   difficulty: (row.difficulty ?? null) as Difficulty | null,
   circuitId: row.circuit_id ?? null,
   circuitRestSec: row.circuit_rest_sec ?? null,
+  // DATA-0293 : clés présentes seulement si renseignées (les lignes d'avant restent identiques).
+  ...(row.added === undefined || row.added === null ? {} : { added: row.added === 1 }),
+  ...((from) => (from === null ? {} : { correctedFrom: from }))(parseCorrectedFrom(row.corrected_from ?? null)),
+  ...(row.distance_m === undefined || row.distance_m === null ? {} : { distanceM: row.distance_m }),
   ...readSyncMeta(row),
 });
+
+/** BL-112 : distance maximale d'une série (100 km), en mètres. */
+const DISTANCE_MAX_M = 100_000;
 
 const isIntOrNull = (n: number | null | undefined, min: number, max: number): boolean => n === null || n === undefined || (Number.isInteger(n) && n >= min && n <= max);
 
@@ -179,7 +191,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     return rowToSet(row);
   };
 
-  const insertSet = async (workoutId: string, id: string, position: number, plan: PlannedSet): Promise<void> => {
+  const insertSet = async (workoutId: string, id: string, position: number, plan: PlannedSet, added = false): Promise<void> => {
     const live = Number((await db.select<{ n: number }>('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [workoutId]))[0]?.n ?? 0);
     // Borne de l'agrégat publié d'un bloc (WORKOUT_SETS_MAX) : refus clair, rien n'est écrit pour cette série.
     if (live >= WORKOUT_SETS_MAX) invalid('workout_set', workoutId);
@@ -188,7 +200,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     const grouped = plan.circuitId !== undefined && plan.circuitId !== null;
     await db.execute(
       `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, target_reps_min, target_reps_max, target_load_kg, target_rest_sec,
-         done${grouped ? ', circuit_id, circuit_rest_sec' : ''}, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0${grouped ? ', ?, ?' : ''}, ?, ?, ?, ?)`,
+         done${grouped ? ', circuit_id, circuit_rest_sec' : ''}${added ? ', added' : ''}, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0${grouped ? ', ?, ?' : ''}${added ? ', 1' : ''}, ?, ?, ?, ?)`,
       [
         id,
         workoutId,
@@ -681,7 +693,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         targetLoadKg: last.target_load_kg,
         targetRestSec: last.target_rest_sec,
         ...(last.circuit_id ? { circuitId: last.circuit_id, circuitRestSec: last.circuit_rest_sec ?? null } : {}),
-      });
+      }, true);
       await renumber(workoutId);
       if (last.circuit_id) await reorderCircuit(workoutId, last.circuit_id);
       return rowToSet((await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ?', [id]))[0] as SetRow);
@@ -766,16 +778,27 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     },
 
     async unvalidateSet(setId) {
-      await requireSet(setId);
+      const before = await requireSet(setId);
       const stamp = stamper.next();
       // SEANCE-0292 (C-072, D-519) : une série validée rouverte est tracée (corrected_at) ; une série à faire reste telle quelle.
-      await db.execute('UPDATE workout_set SET done = 0, done_at = NULL, corrected_at = CASE WHEN done = 1 THEN ? ELSE corrected_at END, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+      // DATA-0293 (Q-13 B) : les valeurs d'avant sont gardées (corrected_from) ; une série à faire garde la valeur qu'elle avait.
+      await db.execute('UPDATE workout_set SET done = 0, done_at = NULL, corrected_at = CASE WHEN done = 1 THEN ? ELSE corrected_at END, corrected_from = CASE WHEN done = 1 THEN ? ELSE corrected_from END, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
         stamp.at,
+        serializeCorrectedFrom({ reps: before.reps, loadKg: before.load_kg, durationSec: before.duration_sec, rir: before.rir }),
         stamp.at,
         stamp.deviceId,
         stamp.hlc,
         setId,
       ]);
+      return requireSetRow(setId);
+    },
+
+    async setDistance(setId, distanceM) {
+      const row = await requireSet(setId);
+      await requireOpen(row.workout_id);
+      if (distanceM !== null && !(Number.isFinite(distanceM) && distanceM >= 0 && distanceM <= DISTANCE_MAX_M)) invalid('workout_set', setId);
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET distance_m = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [distanceM, stamp.at, stamp.deviceId, stamp.hlc, setId]);
       return requireSetRow(setId);
     },
 
@@ -877,7 +900,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         kind === row.set_kind && entry.reps === row.reps && entry.loadKg === row.load_kg && entry.durationSec === row.duration_sec && entry.rir === row.rir && difficulty === (row.difficulty ?? null);
       if (unchanged) return rowToSet(row);
       const stamp = stamper.next();
-      await db.execute('UPDATE workout_set SET set_kind = ?, reps = ?, load_kg = ?, duration_sec = ?, rir = ?, difficulty = ?, corrected_at = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+      await db.execute('UPDATE workout_set SET set_kind = ?, reps = ?, load_kg = ?, duration_sec = ?, rir = ?, difficulty = ?, corrected_at = ?, corrected_from = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
         kind,
         entry.reps,
         entry.loadKg,
@@ -885,6 +908,7 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         entry.rir,
         difficulty,
         stamp.at,
+        serializeCorrectedFrom({ reps: row.reps, loadKg: row.load_kg, durationSec: row.duration_sec, rir: row.rir }),
         stamp.at,
         stamp.deviceId,
         stamp.hlc,

@@ -220,8 +220,9 @@ export function decideReintegration(input: ReintegrationInput): ReintegrationDec
     const local: LocalField = { value: row.values.get(f.name) ?? null, hlc: clock.hlc, base: clock.base, pending: row.pending.has(f.name) || row.pending.has('*') };
     const sameWrite = own === undefined && f.hlc === clock.hlc;
     // Avenant 39 : sans horloge propre et valeur locale nulle, le champ n'a jamais été écrit ici (colonne ajoutée nulle, toute écriture hors
-    // création pose son horloge propre) : « * » ne le date pas. Jamais pour `deleted_at` (colonne de toujours : aucune résurrection).
-    const neverWritten = own === undefined && f.name !== 'deleted_at' && local.value === null && !row.pending.has(f.name);
+    // création pose son horloge propre) : « * » ne le date pas. Jamais pour `deleted_at` (colonne de toujours : aucune résurrection). DATA-0293 (BL-099) : ni pour
+    // une ligne créée ICI et pas encore publiée (« * » en file) : la création locale est la valeur à publier, la fusion ordinaire tranche.
+    const neverWritten = own === undefined && f.name !== 'deleted_at' && local.value === null && !row.pending.has(f.name) && !row.pending.has('*');
     const decision = sameWrite || neverWritten ? { apply: true, conflict: null } : mergeField(local, [f.value, f.hlc, f.base]);
     if (decision.apply && input.missingParents.has(f.name)) {
       waiting.add(f.name);

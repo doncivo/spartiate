@@ -1,4 +1,5 @@
 import type { DecisionReference, ExerciseSession, Prescription, ProgressionProfileState } from '../../domain/training/types';
+import type { ConfigOverrides } from '../parse/configOverridesJson';
 import type { DeviceId, Hlc, IsoDateTime } from '../../domain/types';
 
 /**
@@ -73,6 +74,10 @@ export interface ProgressionRepository {
   history(exerciseId: string, limit?: number): Promise<ExerciseSession[]>;
   getProfile(exerciseId: string): Promise<ProgressionProfileRecord | null>;
   saveProfile(input: ProgressionProfileInput): Promise<ProgressionProfileRecord>;
+  /** DATA-0293 (§ 11, D-510) : surcharges valides de l'exercice (illisible, absent : objet vide). */
+  configOverrides(exerciseId: string): Promise<ConfigOverrides>;
+  /** Écrit les surcharges (objet vide : effacées) ; crée le profil s'il manque ; hors bornes ou clé inconnue : `'invalid'`, rien d'écrit. N'est jamais touchée par `saveProfile`. */
+  saveConfigOverrides(exerciseId: string, overrides: ConfigOverrides): Promise<void>;
   recordDecision(input: RecordDecisionInput): Promise<RecommendationDecisionRecord>;
   /**
    * Dernière décision non supprimée d'une séance CLOSE non supprimée (date, puis identifiant), ou null : jamais d'une séance ouverte ou

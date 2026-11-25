@@ -282,6 +282,8 @@ export interface PrescribedSet {
   readonly targetRepsMin: number | null;
   readonly targetLoadKg: number | null;
   readonly loadKg: number | null;
+  /** DATA-0293 (BL-135, D-481) : série ajoutée en séance, hors des séries proposées ; absent ou null : série du programme. */
+  readonly added?: boolean | null;
 }
 
 export interface PrescriptionAdherenceInput {
@@ -295,6 +297,9 @@ export interface PrescriptionAdherence {
   readonly setsDone: number;
   readonly setsProposed: number;
   readonly setsPercent: number;
+  /** D-481 : séries ajoutées en séance (hors des proposées) et séries proposées non faites (retirées). */
+  readonly setsAdded: number;
+  readonly setsRemoved: number;
   readonly loadsHeld: number;
   readonly loadsProposed: number;
   /** `null` : aucune charge proposée dans la fenêtre. */
@@ -305,7 +310,7 @@ export interface PrescriptionAdherence {
 /**
  * Part des prescriptions respectées sur les `adherenceWeeks` dernières semaines complètes (D-456) : série proposée = série d'un type compté
  * (`volumeSetKinds`) portant une cible (répétitions, durée ou charge) ; faite = validée. Charge proposée = cible de charge ; tenue = série
- * validée à une charge au moins égale. Séries ajoutées sans cible : non proposées. `null` sans aucune série proposée (jamais 0 %).
+ * validée à une charge au moins égale. Série ajoutée en séance (D-481) : jamais proposée, comptée à part ; proposée non faite : retirée. `null` sans aucune série proposée (jamais 0 %).
  */
 export function prescriptionAdherence(input: PrescriptionAdherenceInput): PrescriptionAdherence | null {
   const config = input.config ?? DEFAULT_PROGRESS_CONFIG;
@@ -316,11 +321,16 @@ export function prescriptionAdherence(input: PrescriptionAdherenceInput): Prescr
   let setsProposed = 0;
   let loadsHeld = 0;
   let loadsProposed = 0;
+  let setsAdded = 0;
   for (const workout of input.workouts) {
     const week = weekStartOf(workout.day, first);
     if (week < oldest || week >= current) continue;
     for (const set of workout.sets) {
       if (!config.volumeSetKinds.includes(set.setKind)) continue;
+      if (set.added === true) {
+        setsAdded += 1;
+        continue;
+      }
       if (set.targetRepsMin === null && set.targetLoadKg === null) continue;
       setsProposed += 1;
       if (set.done) setsDone += 1;
@@ -335,6 +345,8 @@ export function prescriptionAdherence(input: PrescriptionAdherenceInput): Prescr
     setsDone,
     setsProposed,
     setsPercent: Math.round((setsDone / setsProposed) * 100),
+    setsAdded,
+    setsRemoved: setsProposed - setsDone,
     loadsHeld,
     loadsProposed,
     loadsPercent: loadsProposed === 0 ? null : Math.round((loadsHeld / loadsProposed) * 100),

@@ -52,7 +52,7 @@ const seed = async (db: TestDb): Promise<void> => {
 
 describe('export / import des gênes (SYNC-0291)', () => {
   it('table exportée en dernier, depuis le schéma 21, écrite par les deux appareils, présente dans l’export complet', () => {
-    expect(EXPORT_SV).toBe(22);
+    expect(EXPORT_SV).toBe(23);
     expect(TRAINING_EXPORT_TABLES.slice(-2)).toEqual(['exercise_exclusion', 'injury']);
     expect(TABLE_SINCE_SV.injury).toBe(21);
     expect((IPHONE_WRITTEN_TABLES as readonly string[]).includes('injury')).toBe(false);

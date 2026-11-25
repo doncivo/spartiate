@@ -82,7 +82,7 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
     bodyWeights.listRecent(400),
     profiles.get(),
     targets.list(),
-    targets.effective(today),
+    targets.effective(today, today),
     settings.get('nutrition.prefs'),
     completeness.listBetween(from, today),
   ]);

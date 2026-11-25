@@ -15,6 +15,8 @@ export const SCHEMA_REPUBLISH: Readonly<Record<number, readonly string[]>> = {
   19: ['mesocycle', 'nutrition_target'],
   // PROG-04 (D-316) : jour de la semaine des jours de routine.
   20: ['routine_day'],
+  // DATA-0293 (D-566) : surcharges par exercice (petite table).
+  23: ['progression_profile'],
 };
 
 /**
@@ -26,6 +28,8 @@ export const SCHEMA_REPUBLISH_EXEMPT: Readonly<Record<number, readonly string[]>
   6: ['workout_set'],
   13: ['workout_set'],
   14: ['routine_exercise'],
+  // DATA-0293 (D-566) : distance, série ajoutée, valeur d'avant correction : nulles pour toute série d'avant, volume d'historique.
+  23: ['workout_set'],
 };
 
 /** Tables à republier par un appareil au schéma `sv` dont la dernière republication faite couvre `done` (0 : jamais). Ordre stable, sans doublon. */

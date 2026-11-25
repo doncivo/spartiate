@@ -127,3 +127,12 @@ Constat : un jour dont la seule entrée est « Renpho — total du jour » (reco
 - A (recommandé) : garder D-547. Conséquences : la dépense mesurée reste alimentée par Santé ; un renommage de l'entrée la ferait redevenir une saisie ordinaire.
 - B : complet seulement si des repas saisis existent et sont complets. Conséquences : moins de jours complets, donc moins de jours pour le TDEE mesuré.
 - C : comme A, mais l'entrée est reconnue par un marqueur (source dédiée). Conséquences : migration additive et relecture sync-icloud.
+
+## Q-27 — Heure de « Dernière synchronisation » quand tous les fichiers n'ont pas pu être lus (BL-039) (DATA-0293)
+
+Le moteur avance l'heure du dernier cycle dès que la publication a réussi, sans erreur de lecture permanente et sans fichier en attente, même si un fichier d'un autre appareil n'a pas pu être lu complètement (`allRead` faux).
+- A. Garder (l'heure dit « ce cycle s'est terminé sans erreur »).
+- B. N'avancer l'heure que si tout a été lu (un fichier évincé d'un appareil absent la figerait).
+- C. Avancer, mais dire « lecture partielle » à côté de l'heure.
+
+Recommandation : C. Conséquences : A ne change rien et peut afficher une heure récente alors que des changements de l'autre appareil ne sont pas lus ; B est le plus honnête mais peut figer l'heure durablement ; C demande un texte et un avertissement, sans changer le moteur de lecture (relecture sync-icloud).
