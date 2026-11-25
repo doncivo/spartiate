@@ -62,7 +62,7 @@ fn c143_without_any_marker_the_settlement_is_trivially_done() {
 fn c148_an_engine_error_text_never_reaches_the_command_error() {
     use spartiate_lib::ocr::{OcrCommandError, OcrError};
     let error = OcrCommandError::from(OcrError::Engine(
-        "Le chemin C:\Users\quelquun\photo.jpg est introuvable (0x80070002)".into(),
+        "Le chemin C:/Users/quelquun/photo.jpg est introuvable (0x80070002)".into(),
     ));
     assert_eq!(error.code, "ocr-engine");
     assert!(!error.message.contains("quelquun"), "{}", error.message);
