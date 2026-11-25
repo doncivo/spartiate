@@ -56,3 +56,15 @@ fn c143_without_any_marker_the_settlement_is_trivially_done() {
         &Ok(Recovery::Nothing)
     ));
 }
+
+// C-148 : le texte d'erreur du moteur (WinRT, chemin ou nom possible) n'est jamais renvoyé à la WebView ; seul le code l'est.
+#[test]
+fn c148_an_engine_error_text_never_reaches_the_command_error() {
+    use spartiate_lib::ocr::{OcrCommandError, OcrError};
+    let error = OcrCommandError::from(OcrError::Engine(
+        "Le chemin C:\Users\quelquun\photo.jpg est introuvable (0x80070002)".into(),
+    ));
+    assert_eq!(error.code, "ocr-engine");
+    assert!(!error.message.contains("quelquun"), "{}", error.message);
+    assert!(!error.message.contains("photo"), "{}", error.message);
+}
