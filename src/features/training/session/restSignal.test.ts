@@ -27,6 +27,6 @@ describe('signal « repos changé »', () => {
   it('le répartiteur des actions émet le même événement après une action de repos appliquée', () => {
     const wake = read('src/features/notifications/supplementWake.ts');
     expect(wake).toMatch(/const REST_CHANGED_EVENT = 'ct-rest-changed';/);
-    expect(wake).toMatch(/onChanged: \(\) => void document\.dispatchEvent\(new Event\(REST_CHANGED_EVENT\)\)/);
+    expect(wake).toMatch(/onChanged: \(\) => void env\.document\.dispatchEvent\?\.\(new Event\(REST_CHANGED_EVENT\)\)/);
   });
 });

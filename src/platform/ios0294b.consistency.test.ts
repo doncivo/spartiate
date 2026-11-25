@@ -112,6 +112,9 @@ describe('C-156 et C-146 : Live Activity (démarrages rapprochés, libellé, « 
   it('C-146 : date de fin bornée (pas dans le passé, au plus 8 h devant) en Swift et en Rust', () => {
     expect(swift).toMatch(/private let maxEndAheadSeconds: TimeInterval = 8 \* 3600/);
     expect(swift).toMatch(/endDate\.timeIntervalSinceNow > maxEndAheadSeconds/);
+    // Relecture : le Swift vérifie après Rust et le trajet de l'appel : sa tolérance (2 s) est plus large que celle de Rust (1 s).
+    expect(swift).toMatch(/private let maxEndBehindSeconds: TimeInterval = 2\n/);
+    expect(bridge).toMatch(/const MAX_END_BEHIND_MS: f64 = 1000\.0;/);
     expect(bridge).toMatch(/const MAX_END_AHEAD_MS: f64 = 8\.0 \* 3600\.0 \* 1000\.0;/);
     expect(bridge).toMatch(/end_date_ms > now_ms \+ MAX_END_AHEAD_MS/);
     // Libellé d'état final borné à 40 caractères côté Rust (déjà en place) et côté Swift.

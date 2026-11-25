@@ -69,10 +69,12 @@ describe('BL-163 : les scènes attendent l’état visé avant la capture', () =
     expect(ready).not.toContain('waitForTimeout');
   });
 
-  it('Dégradé apprentissage : le bloc des cadrans de la récupération (état d’apprentissage) est attendu puis amené dans le cadre', () => {
+  it('Dégradé apprentissage : la carte de récupération (rendue sans résumé dans cette scène : pas de cadrans) est attendue puis amenée dans le cadre', () => {
     expect(line('Degrade-apprentissage')).toContain('prepare: showLearning');
     const learning = block('showLearning');
-    expect(learning).toContain("locator('.ct-recovery__dials')");
+    // Correctif du run 45611919752 : sans résumé de récupération, la carte n'a pas de cadrans (.ct-recovery__dials jamais rendu).
+    expect(learning).toContain("locator('section.ct-recovery')");
+    expect(learning).not.toContain('ct-recovery__dials');
     expect(learning).toContain('scrollIntoViewIfNeeded');
     expect(learning).not.toContain('waitForTimeout');
   });

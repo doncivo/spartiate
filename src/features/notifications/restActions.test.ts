@@ -59,6 +59,8 @@ describe('actions de la notification de repos', () => {
     ]);
     expect(restNotificationsFr.actionExtend).toBe('+30 s');
     expect(restNotificationsFr.actionSkip).toBe('Passer');
+    // Relecture : texte neutre, juste pour « +30 s » comme pour « Passer ».
+    expect(restNotificationsFr.noticeNoSession).toBe('Action de repos ignorée : aucune séance n’est en cours.');
   });
 
   it('« +30 s » sur le repos annoncé : extendRest(30), séance prévenue', async () => {
