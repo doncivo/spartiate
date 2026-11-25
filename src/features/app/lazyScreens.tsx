@@ -180,17 +180,20 @@ export function preloadScreens(): () => void {
   let cancel = (): void => undefined;
   let index = 0;
   const next = (): void => {
-    cancel = whenIdle(step, 200);
+    if (index >= 0) cancel = whenIdle(step, 200);
   };
   // SHELL-0294d (BL-036) : le moment d'inactivité suivant n'est programmé qu'une fois le chargement en cours terminé (réussi ou non) ;
   // jamais deux imports à la fois sur un iPhone lent.
   const step = (): void => {
-    void loaders[index++]?.().catch((error: unknown) => logFailure('screen-preload', error)).then(next);
+    void loaders[index++]?.().then(next, (error: unknown) => {
+      logFailure('screen-preload', error);
+      next();
+    });
   };
   next();
   return () => {
-    // Arrêt : plus rien à charger ensuite.
-    index = loaders.length;
+    // Arrêt (index négatif) : le chargement en cours ne programme plus rien ensuite.
+    index = -1;
     cancel();
   };
 }

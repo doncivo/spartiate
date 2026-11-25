@@ -37,6 +37,7 @@ préchauffage de l'import dans un `beforeAll`, délai par défaut), `db_diagnost
 | C-162 | c890ebaa (rouge au typage : 5e argument absent) | 058c5b12 |
 | C-149 | aucun (texte de configuration) | 058c5b12 |
 | BL-002, BL-144 | a8a2f4d0 | a844cce6 |
+| BL-144, pictogrammes (relecture à froid) | voir le commit « tests rouges BL-144 (pictogrammes… » | voir le commit « pictogrammes sans style en ligne » |
 | C-129 | 2562a88f | de27a9ee |
 
 Chaque rouge Vitest a été lancé seul. Rust : `cargo fmt`, `cargo clippy --locked -- -D warnings` et `cargo test --locked --features test-hooks --test desktop` (voir la fin de cette fiche).
@@ -44,7 +45,7 @@ Chaque rouge Vitest a été lancé seul. Rust : `cargo fmt`, `cargo clippy --loc
 ## Passe security-privacy (lecture seule, CSP)
 
 - `script-src 'self'` : `index.html` n'a qu'un `<script src>` externe (`theme-init.js`) et le module principal ; aucun `eval`, `new Function`, script en ligne. WebAssembly : seul `src/db/drivers/sqliteWasm.ts` (développement, code mort dans un build Tauri, `database.ts`) ; l'OCR est natif ; tesseract n'est plus une dépendance (docs/CLEAN-02.md).
-- `style-src 'self'` : aucun `<style>`, `setAttribute('style')`, `cssText`, `insertRule` ni attribut `style` en balisage dans `src`, `index.html`, `public` ; les 10 usages de `style={…}` sont des propriétés React (CSSOM) ; les pictogrammes SVG (`dangerouslySetInnerHTML`) sont des fichiers du dépôt sans `style` ; `qrcode-generator` est rendu en `path` par `qrPath`. Recharts et lucide-react ne créent pas de balise `<style>`.
+- `style-src 'self'` : aucun `<style>`, `setAttribute('style')`, `cssText`, `insertRule` dans `src`, `index.html`, `public` ; les 10 usages de `style={…}` sont des propriétés React (CSSOM). **Correction après la relecture à froid : les 94 pictogrammes SVG (`dangerouslySetInnerHTML`) portaient `<g style="stroke:var(--ct-color-bronze)">`, attribut bloqué sans `'unsafe-inline'` (tracé bronze perdu).** Remplacé par la classe `ct-picto-muscle` (`scripts/content/pictograms/skeleton.mjs`, SVG et planche régénérés par `build-pictograms.mjs`), règle `.ct-exmedia__picto .ct-picto-muscle { stroke: var(--ct-color-bronze) }` dans `ExerciseMedia.css` ; `validate-content.mjs` refuse tout `style=` et toute classe autre que `ct-picto-muscle` ; tests `pictograms.test.ts` et `validate.test.ts` (rouge a1 puis vert). Aucun autre `style=` dans `content/`, `media/` ni `src/` (hors props React). `qrcode-generator` est rendu en `path` par `qrPath`. Recharts et lucide-react ne créent pas de balise `<style>`.
 - Reste non prouvable ici : un affichage réel sur Windows (WebView2) et iPhone (WKWebView) : constat d'Ali (docs/constats-ali.md, 0.29.4). Verdict : approuvé sous réserve de ce constat ; la parade, si un style est bloqué, est de le corriger à la source (Q-35).
 - `db_diagnostics` : plus aucun chemin absolu vers la WebView (ADR 0009) ; texte d'erreur OCR non renvoyé ; message libre des erreurs globales non journalisé.
 
@@ -64,7 +65,7 @@ Chaque rouge Vitest a été lancé seul. Rust : `cargo fmt`, `cargo clippy --loc
 
 ## Mesure du bundle de départ
 
-Build local du 25/11, mesure normalisée (main ≈ 180 696) : première version 180 739 (+43) ; préchargement simplifié 180 731 ; préchargement compact (`next`, `index = loaders.length`) 180 735 ; **`loadBarcodeScanner` repris tel quel (plugin étalé, `as never`) : 180 712 puis 180 653 (brut 180 652), soit −43 par rapport à main**, 45 blocs. Aucun module ajouté à `tests/bundle/start-modules.json` ; `startBundle.test.ts` vert.
+Mesures normalisées du même poste, build du 25/11 : **origin/main 180 718** (worktree de comparaison, retiré) ; première version de la PR 180 739 ; après la relecture à froid (retour à l'objet explicite de `barcodeScanner`, préchargement qui s'arrête vraiment) 180 741 ; variante dédoublonnant `signing/index.ts` 180 745 (abandonnée) ; **version finale : `loadBarcodeScanner` avec `...plugin` et enveloppes typées de `scan` et `openAppSettings` : 180 702 (brut 180 711), soit −16 contre main.** Le repère de 180 696 de la fiche SHELL-0294c ne correspond plus à main sur ce poste (180 718). Aucun module ajouté à `tests/bundle/start-modules.json` ; `startBundle.test.ts` vert.
 
 ## Vérifications
 
