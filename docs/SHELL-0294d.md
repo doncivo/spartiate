@@ -22,7 +22,7 @@ Fichiers : `src-tauri/src/{desktop,backup,startup_gate}.rs`, `src-tauri/src/ocr/
 `src/features/app/{globalErrors,logJournalBoot,timeZoneWatcher,lazyScreens}`, `src/features/settings/{ResetDataScreen,RecoveryNotificationsSection}.tsx`,
 `src/platform/notifications/timerNotification.ts`. Pas de crate nouvelle : `zeroize` est déjà dans `Cargo.toml` et `Cargo.lock`.
 Tests existants modifiés avec écart consigné : `globalErrors.test.ts` (figeait l'extrait de 120 caractères), `lazyScreens.test.tsx` (préchargement : le moment suivant attend la fin du chargement, `waitFor`
-de 15 s pour un import réel), `db_diagnostics.rs` (figeait le chemin absolu et le texte d'erreur du système).
+préchauffage de l'import dans un `beforeAll`, délai par défaut), `db_diagnostics.rs` (figeait le chemin absolu et le texte d'erreur du système).
 
 ## Passe qa-test (rouge → vert)
 
@@ -59,13 +59,13 @@ Chaque rouge Vitest a été lancé seul. Rust : `cargo fmt`, `cargo clippy --loc
 
 - C-145 (export : lecteur réseau par `GetDriveTypeW`, temporaire au-delà de 255 caractères, repli JSON avant plafond) : non commencé, API Windows et chemins longs à éprouver ; reste au registre.
 - C-146 WM_ENDSESSION : crochet de fenêtre natif invérifiable ici ; reste.
-- C-143 (jeton du marqueur définitif), C-148 (copies de clé de `sync/**`, code mort), C-149 (descriptions des capabilities), C-162 (message brut en console), C-163 (OS « other »), C-129 (synchro) : « fait en partie » au registre.
+- C-143 (jeton du marqueur définitif), C-148 (copies de clé de `sync/**`, code mort), C-149 (descriptions des capabilities), C-162 (message brut en console), C-129 (synchro) : « fait en partie » au registre. C-163 (OS « other ») : remis « à faire », non commencé en SHELL-0294d.
 - C-130 : aucune sauvegarde après l'effacement.
 
 ## Mesure du bundle de départ
 
-Build local du 25/11, mesure normalisée : **180 731 octets** (brut 180 732, 45 blocs) contre ≈ 180 696 pour main : **+35 octets** (0,02 %, marge au plafond 177 669). Causes : le journal des échecs de `timeZoneWatcher` (BL-032) et le préchargement séquentiel de `lazyScreens` (BL-036), seuls changements dans le départ ; la première version (drapeau `stopped`) pesait +43, simplifiée en +35. Aucun module ajouté à `tests/bundle/start-modules.json`. Écart à la règle « le départ ne grossit jamais » consigné et NON compensé faute de temps : à reprendre avec la qualité (A-004) ; `startBundle.test.ts` vert.
+Build local du 25/11, mesure normalisée (main ≈ 180 696) : première version 180 739 (+43) ; préchargement simplifié 180 731 ; préchargement compact (`next`, `index = loaders.length`) 180 735 ; **`loadBarcodeScanner` repris tel quel (plugin étalé, `as never`) : 180 712 puis 180 653 (brut 180 652), soit −43 par rapport à main**, 45 blocs. Aucun module ajouté à `tests/bundle/start-modules.json` ; `startBundle.test.ts` vert.
 
 ## Vérifications
 
-`cargo fmt`, `cargo clippy --locked -- -D warnings` propres ; `cargo test --locked --features test-hooks --test desktop` : 883 réussis, 0 échec (2 ignorés, déjà ignorés avant) ; `npm run typecheck` propre ; eslint propre sur les dossiers touchés ; Vitest ciblés verts (`src/features/app` ciblés, `ResetDataScreen`, `RecoveryNotificationsSection`, `timerNotification`, `lazyScreens`, `startBundle`).
+`cargo fmt`, `cargo clippy --locked -- -D warnings` propres ; `cargo test --locked --features test-hooks --test desktop` : 883 réussis, 0 échec (2 ignorés, déjà ignorés avant) ; `npm run typecheck` propre ; eslint propre sur les dossiers touchés ; Vitest ciblés verts (relancés après la compensation du bundle) (`src/features/app` ciblés, `ResetDataScreen`, `RecoveryNotificationsSection`, `timerNotification`, `lazyScreens`, `startBundle`).

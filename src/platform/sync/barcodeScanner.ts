@@ -8,14 +8,8 @@ import type { QrScanner } from './tauriSync';
 export function loadBarcodeScanner(): () => Promise<QrScanner> {
   return async () => {
     const plugin = await import('@tauri-apps/plugin-barcode-scanner');
-    return {
-      checkPermissions: () => plugin.checkPermissions(),
-      requestPermissions: () => plugin.requestPermissions(),
-      scan: (o) => plugin.scan({ windowed: o.windowed, formats: o.formats as typeof plugin.Format[keyof typeof plugin.Format][] }),
-      cancel: () => plugin.cancel(),
-      openAppSettings: () => plugin.openAppSettings(),
-      qrFormat: plugin.Format.QRCode,
-    };
+    // SHELL-0294d : plugin repris tel quel (bundle de départ) ; `QrScanner` en est un sous-ensemble.
+    return { ...plugin, qrFormat: plugin.Format.QRCode } as never;
   };
 }
 
