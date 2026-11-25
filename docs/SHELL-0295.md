@@ -1,6 +1,6 @@
 # SHELL-0295 — unités et séparateurs par src/i18n, `fr.routines` hors du départ, tests sans pause ni référence partagée, relevé des marqueurs (lot 0.29.5)
 
-Statut : **fait en partie**, branche `SHELL-0295` depuis `origin/main` `52722de2`. Registre « coquille, iOS et qualité » : les quatre dernières lignes « à faire » (C-076, C-085, A-004, BL-044), instruites en SHELL-0294e.
+Statut : **fait en partie**, PR #224, branche `SHELL-0295` depuis `origin/main` `52722de2`. Registre « coquille, iOS et qualité » : les quatre dernières lignes « à faire » (C-076, C-085, A-004, BL-044), instruites en SHELL-0294e.
 Chapitres PRD : 18 (textes, § 18.4), 23 (qualité et tests, § 23.1). Choix prudents : D-638 à D-641, « Claude (choix prudent) ; révisable par Ali ». Aucune question.
 Aucune migration, aucun fichier de `src/sync/**`, `src/domain/sync/**`, `src-tauri/**` ni Swift touché ; aucun test désactivé, allongé ni retardé, aucun `test.fixme`. Fixtures synthétiques uniquement (D-292).
 
