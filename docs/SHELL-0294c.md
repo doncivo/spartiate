@@ -63,7 +63,7 @@ Chaque rouge a été lancé seul et vu rouge (module absent ou assertion) avant 
 - `ExportImportScreen` : le thème importé est posé sans importer `theme.ts` (bundle) : la barre de titre Windows suit au prochain démarrage (D-609).
 - `signingNotice` : le bandeau gardé sur échec de lecture se recalcule chaque minute depuis la dernière échéance connue ; sans échéance connue, aucun bandeau.
 - Relecture à froid distincte (PR #218) : verdict « à corriger » ; points : assertion facultative de prog01AfterMerge, avis d3-ease en paraphrase, fermeture de l'alerte de mise à jour jamais réarmée, commentaires périmés, double lecture d'Aujourd'hui.
-- Corrigé (rouge f02f4000, vert : commit suivant) : seconde confirmation exigée ou absente selon les suppressions ; texte intégral de `node_modules/d3-ease/LICENSE` affiché (catalogue à la demande, test qui le compare au fichier) ; une nouvelle vérification réarme l'alerte ; commentaires remis à jour.
+- Corrigé (rouge f02f4000, vert : voir le commit « corrections de la relecture à froid ») : seconde confirmation exigée ou absente selon les suppressions ; texte intégral de `node_modules/d3-ease/LICENSE` affiché (catalogue à la demande, test qui le compare au fichier) ; une nouvelle vérification réarme l'alerte ; commentaires remis à jour.
 - Noté, non corrigé : au retour un autre jour, Aujourd'hui lit deux fois (le jour du store, ancien, puis le nouveau) ; sans effet visible, la seconde lecture remplace la première.
 - Verdict après corrections : approuvé, sous réserve de la CI.
 
