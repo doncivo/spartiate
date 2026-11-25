@@ -93,7 +93,7 @@ describe('palette de commandes Ctrl+K (C-135, D-480)', () => {
     fireEvent.change(input, { target: { value: '' } });
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(useNavigationStore.getState().route).toEqual({ tab: 'training' });
+    expect(useNavigationStore.getState().route).toEqual({ tab: 'nutrition', screen: 'journal', meals: true });
     stop();
   });
 });

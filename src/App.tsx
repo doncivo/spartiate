@@ -12,7 +12,7 @@ import { startAppStartup, type AppStartup } from './features/app/startup';
 import { FallbackBoundary, StartupWatchdog } from './features/app/StartupWatchdog';
 import { isDatabaseWorkStep, startupTracker } from './features/app/startupSteps';
 import { registerTabShortcuts } from './features/app/tabShortcuts';
-import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
+import { AppearanceScreen, AppleHealthScreen, BodyScreen, ExportImportScreen, LogsScreen, NutritionScreen, SectionNotice, RecoveryFailureLazy, OnboardingHost, preloadScreens, ResetDataScreen, SettingsScreen, ShortcutsHelp, CommandPalette, SyncDetailsScreen, TrainingScreen, UpdateBanner } from './features/app/lazyScreens';
 import { AppStatusBanner } from './features/app/AppStatusBanner';
 import { startNetworkStatus } from './features/app/appStatus';
 import { restoreAppearance, startThemeSync } from './features/settings';
@@ -35,6 +35,8 @@ import { useLayout } from './ui/useLayout';
 
 /** Raccourcis encore actifs pendant que la liste des raccourcis est ouverte (P-08). */
 const HELP_KEYS: readonly ShortcutId[] = ['app.shortcutsHelp', 'app.escape'];
+/** Sous la palette de commandes : Ctrl+K (ferme) et Échap seulement. */
+const PALETTE_KEYS: readonly ShortcutId[] = ['app.palette', 'app.escape'];
 
 function requireTab(id: string): TabDefinition {
   const found = TABS.find((tab) => tab.id === id);
@@ -58,6 +60,7 @@ function AppShellContent() {
   const route = useNavigationStore((s) => s.route);
   const goToTab = useNavigationStore((s) => s.goToTab);
   const layout = useLayout();
+  const paletteOpen = useNavigationStore((s) => s.overlays.at(-1)?.kind === 'commandPalette');
 
   // PERF-02 : écrans chargés à la demande, préchargés en arrière-plan après le premier rendu.
   useEffect(() => preloadScreens(), []);
@@ -82,6 +85,8 @@ function AppShellContent() {
       {/* Y-02 : choix après une restauration P-04 (aucune synchro ne part avant) ; fenêtre et textes chargés à la demande. */}
       {container.sync && <RestoreChoiceHost />}
       {layout === 'pc' && <ShortcutsHelp />}
+      {/* C-135 (D-480) : palette Ctrl+K, bloc à la demande monté seulement quand elle est ouverte. */}
+      {layout === 'pc' && paletteOpen && <CommandPalette />}
       {/* I3-07 : onboarding en 8 écrans (premier lancement sur base vide, ou « Revoir mes réglages ») ; hôte et écrans à la demande. */}
       <OnboardingHost />
       {route.tab === 'more' ? (
@@ -245,8 +250,9 @@ export function App() {
       // I-03 : aucun raccourci tant que l'app est verrouillée.
       if (isAppLocked()) return;
       // Sous la liste des raccourcis (fenêtre modale), seuls Ctrl+/ et Échap agissent : Espace, Entrée ou Suppr ne touchent pas l'écran dessous.
-      const underHelp = useNavigationStore.getState().overlays.at(-1)?.kind === 'shortcutsHelp';
-      if (container.shortcuts.handle(toKeyInput(event), underHelp ? HELP_KEYS : undefined)) event.preventDefault();
+      const top = useNavigationStore.getState().overlays.at(-1)?.kind;
+      const only = top === 'shortcutsHelp' ? HELP_KEYS : top === 'commandPalette' ? PALETTE_KEYS : undefined;
+      if (container.shortcuts.handle(toKeyInput(event), only)) event.preventDefault();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);

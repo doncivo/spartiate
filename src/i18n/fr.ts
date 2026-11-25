@@ -238,6 +238,7 @@ export const fr = {
     undo: 'Annuler la dernière action',
     settings: 'Réglages',
     help: 'Liste des raccourcis',
+    palette: 'Palette de commandes',
     escape: 'Fermer le panneau ou la fenêtre active',
   },
 } as const;

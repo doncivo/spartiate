@@ -43,6 +43,7 @@ export const SHORTCUTS = {
   'app.undo': def('Ctrl+Z', 'app', false, 'shortcuts.undo'),
   'app.settings': def('Ctrl+,', 'app', true, 'shortcuts.settings'),
   'app.shortcutsHelp': def('Ctrl+/', 'app', true, 'shortcuts.help'),
+  'app.palette': def('Ctrl+K', 'app', true, 'shortcuts.palette'),
   'app.escape': def('Escape', 'app', true, 'shortcuts.escape'),
 } as const satisfies Record<string, ShortcutDefinition>;
 
