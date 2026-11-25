@@ -219,6 +219,7 @@ export async function maintain(deps: SyncDeps, input: MaintenanceInput): Promise
   });
   for (const item of dropped) logger.log('cap-dropped', { kind: item.kind, table: item.table, id: item.rowId, reason: item.reason });
   // TRI-04 : une opération reçue abandonnée au plafond n'est plus rejouable que par la reprise complète : même avertissement que TRI-24.
-  const lostOps = dropped.filter((item) => item.kind === 'parked');
+  // DATA-0293 (BL-040) : un champ gardé pour un schéma plus récent, abandonné au plafond, est aussi une donnée reçue jamais appliquée : même signal.
+  const lostOps = dropped.filter((item) => item.kind === 'parked' || item.kind === 'unknown');
   if (lostOps.length > 0) await bumpLossCounter(data.repos.sync, META.applyRejected, lostOps.length, lostOps.map((item) => item.table));
 }

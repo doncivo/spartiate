@@ -1,6 +1,7 @@
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
-import { HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
+import { ENGINE_VERSION, HISTORY_SESSIONS_LOADED } from '../../../domain/training/config';
+import { parseConfigOverrides, serializeConfigOverrides } from '../../parse/configOverridesJson';
 import type { SetKind } from '../../../domain/training/session';
 import { isProgressionExerciseId, progressionId } from '../../../domain/sync/naturalIds';
 import { recalibrationKept } from '../../../domain/training/decision';
@@ -39,6 +40,7 @@ interface ProfileRow extends SqlRow, SyncRow {
   readonly confidence: number | null;
   readonly last_easy_recalibration_at: string | null;
   readonly engine_version: number;
+  readonly config_overrides: string | null;
 }
 interface DecisionRow extends SqlRow, SyncRow {
   readonly exercise_id: string;
@@ -249,6 +251,24 @@ export function createProgressionRepository(db: SqlExecutor, stamper: WriteStamp
     async getProfile(exerciseId) {
       const row = await selectProfile(exerciseId);
       return row ? rowToProfile(row) : null;
+    },
+
+    async configOverrides(exerciseId) {
+      const row = await selectProfile(exerciseId);
+      return row === undefined || row.deleted_at !== null ? {} : parseConfigOverrides(row.config_overrides);
+    },
+
+    async saveConfigOverrides(exerciseId, overrides) {
+      const id = progressionProfileId(exerciseId);
+      const text = serializeConfigOverrides(overrides);
+      if (!isProgressionExerciseId(exerciseId) || text === 'invalid') return invalid('progression_profile', id);
+      const stamp = stamper.next();
+      await db.execute(
+        `INSERT INTO progression_profile (id, exercise_id, estimated_1rm_kg, confidence, last_easy_recalibration_at, engine_version, config_overrides, created_at, updated_at, deleted_at, device_id, hlc)
+         VALUES (?, ?, NULL, NULL, NULL, ?, ?, ?, ?, NULL, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET config_overrides = excluded.config_overrides, updated_at = excluded.updated_at, deleted_at = NULL, device_id = excluded.device_id, hlc = excluded.hlc`,
+        [id, exerciseId, ENGINE_VERSION, text, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+      );
     },
 
     async saveProfile(input: ProgressionProfileInput) {

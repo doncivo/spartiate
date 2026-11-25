@@ -176,6 +176,7 @@ function PrescriptionLines({ prescription: p }: Pick<Loaded, 'prescription'>) {
       ) : (
         <>
           <p className="ct-today__text">{tPlural(tTrainingProgress, p.setsProposed, 'prescriptionSetsOne', 'prescriptionSets', { percent: p.setsPercent, done: p.setsDone, proposed: p.setsProposed })}</p>
+          <p className="ct-today__text">{tTrainingProgress('prescriptionAddedRemoved', { added: p.setsAdded, removed: p.setsRemoved })}</p>
           <p className="ct-today__text">
             {p.loadsPercent === null ? tTrainingProgress('prescriptionNoLoads') : tPlural(tTrainingProgress, p.loadsProposed, 'prescriptionLoadsOne', 'prescriptionLoads', { percent: p.loadsPercent, held: p.loadsHeld, proposed: p.loadsProposed })}
           </p>

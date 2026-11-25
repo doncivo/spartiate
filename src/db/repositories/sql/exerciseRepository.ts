@@ -115,7 +115,16 @@ export function createExerciseRepository(db: SqlExecutor, stamper: WriteStamper)
     },
 
     async update(id, patch) {
-      const current = rowToExercise(await live(id));
+      const row = await live(id);
+      const current = rowToExercise(row);
+      // DATA-0293 (BL-037) : une colonne JSON illisible (ligne d'une autre version) que la modification ne remplace pas n'est jamais réécrite en vide : écriture refusée, valeur d'origine intacte.
+      const unreadable =
+        (patch.aliasesEn === undefined && parseAliases(decodeJson(row.aliases_en)) === null) ||
+        (patch.muscles === undefined && parseMuscles(decodeJson(row.muscles)) === null) ||
+        (patch.equipment === undefined && parseEquipmentIds(decodeJson(row.equipment)) === null) ||
+        (patch.instructions === undefined && parseInstructions(decodeJson(row.instructions)) === null) ||
+        (patch.media === undefined && row.media !== null && parseMedia(decodeJson(row.media)) === null);
+      if (unreadable) throw new RepositoryError('invalid', 'exercise', id);
       const merged: CustomExerciseInput = {
         id,
         nameFr: patch.nameFr ?? current.nameFr,

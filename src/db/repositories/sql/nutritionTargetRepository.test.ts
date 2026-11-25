@@ -129,3 +129,14 @@ describe('NutritionTargetRepository : cible des jours de repos (PROG-01, D-271)'
     expect((await r.list()).length).toBe(2);
   });
 });
+
+describe('NutritionTargetRepository : effective(date, today) (DATA-0293, C-040)', () => {
+  it('une décision datée d’après aujourd’hui (horloge en avance) ne passe pas devant une cible prévue ; sans `today`, comportement d’avant', async () => {
+    db = await openBaseDb(DEVICE, '2026-11-20T08:00:00.000Z');
+    const r = await repo();
+    await r.record(draft({ weekStart: '2026-11-16' as LocalDate, target: { kcal: 2600, proteinG: 150, fatG: 70, carbG: 340 } }), { id: T(1) });
+    await r.record(draft({ weekStart: '2026-11-09' as LocalDate, target: { kcal: 2200, proteinG: 150, fatG: 70, carbG: 230 } }), { id: T(2) });
+    expect((await r.effective('2026-11-17' as LocalDate))?.id).toBe(T(2));
+    expect((await r.effective('2026-11-17' as LocalDate, '2026-11-12' as LocalDate))?.id).toBe(T(1));
+  });
+});

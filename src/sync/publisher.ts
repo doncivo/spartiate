@@ -393,6 +393,12 @@ export interface PublishResult {
  */
 export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: DeviceAck, maxSegment: number): Promise<PublishResult> {
   const { data, platform, deviceId, sv, logger } = deps;
+  // DATA-0293 (BL-038) : une intention d'ajout non résolue (arrêt ou échec local après un ajout réussi) interdit toute nouvelle publication : l'ajouter deux fois
+  // dupliquerait les enregistrements. Le moteur la résout (`resolveInflight`) quand la règle l'y autorise ; sinon elle reste posée et la file aussi.
+  if ((await readInflight(data.repos)) !== null) {
+    logger.log('publish-held-inflight', {});
+    return { published: 0, head, error: null };
+  }
   const rotationModule = () => import('./publishRotation');
   let rotation: PublishRotation | null = (await data.repos.sync.getMeta(META.publishRotation)) === null ? null : await (await rotationModule()).readPublishRotation(data.repos);
   let hadRotation = rotation !== null;
@@ -463,9 +469,12 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
       deps.deadline?.check('append');
       const inflight: Inflight = { epoch, segment, expect, count: batch.length, maxHlc, entries: done };
       await writeJson(data.repos, META.inflight, inflight);
+      // DATA-0293 (BL-038) : vrai dès que l'ajout natif a réussi ; un échec ensuite (retrait local) garde l'intention pour que le cycle suivant la résolve.
+      let appended = false;
       try {
         await slicer.pause();
         const result = await platform.appendJournal({ epoch, segment, expectRecords: expect, sv, maxHlc, records: batch.map((r) => r.text) });
+        appended = true;
         current = { epoch, segment: result.head.segment, record: result.head.record, hlc: maxHlc, stateSeq: current.stateSeq };
         await slicer.pause();
         await data.transaction(async (repos) => {
@@ -487,6 +496,11 @@ export async function publishOutbox(deps: SyncDeps, epoch: EpochId, head: Device
         expect = current.record;
         break;
       } catch (error) {
+        if (appended) {
+          // L'ajout a eu lieu, le retrait local a échoué : l'intention (`inflight`) reste, jamais effacée ; erreur rendue telle quelle (réessai au cycle suivant).
+          logger.log('publish-failed', { code: syncErrorCodeOf(error) });
+          throw error;
+        }
         await writeJson(data.repos, META.inflight, null);
         const code = syncErrorCodeOf(error);
         const beforeWrite = typeof error === 'object' && error !== null && (error as { appendBeforeWrite?: unknown }).appendBeforeWrite === true;

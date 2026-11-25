@@ -148,6 +148,8 @@ export interface WorkoutRepository {
    * tracée, § 13.4 ; publiée avec la séance close comme une correction du journal) ; les valeurs d'avant ne sont pas gardées.
    */
   unvalidateSet(setId: string): Promise<WorkoutSet>;
+  /** DATA-0293 (BL-112) : distance en mètres d'une série de la séance OUVERTE (0 à 100 000, null : effacée) ; close ou hors bornes : `'invalid'`. */
+  setDistance(setId: string, distanceM: number | null): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
   /**
    * I2-01 : difficulté Facile / Juste / Dur (§ 13.2) de l'exercice dans la séance OUVERTE, écrite sur toutes ses séries (null : effacée).

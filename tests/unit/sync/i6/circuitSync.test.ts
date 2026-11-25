@@ -67,9 +67,12 @@ const id = SYNC_CATALOGUE.column('workout_set', 'circuit_id');
 const rest = SYNC_CATALOGUE.column('workout_set', 'circuit_rest_sec');
 if (!id || !rest) throw new Error('colonnes absentes');
 
+const AFTER_13: readonly string[] = ['distance_m', 'added', 'corrected_from'];
+
 describe('(a) catalogue', () => {
   it('colonnes publiées après difficulty : circuit_id (texte nul, 64 au plus), circuit_rest_sec (entier nul)', () => {
-    const cols = [...publishedColumns(SYNC_CATALOGUE.table('workout_set') as never)];
+    // DATA-0293 : les colonnes de la 0023 (distance, série ajoutée, valeur d'avant correction) viennent après celles de la 0013.
+    const cols = [...publishedColumns(SYNC_CATALOGUE.table('workout_set') as never)].filter((c) => !AFTER_13.includes(c));
     expect(cols.slice(-3)).toEqual(['difficulty', 'circuit_id', 'circuit_rest_sec']);
 
     expect(SYNC_CATALOGUE.isValidValue(id, null)).toBe(true);
@@ -120,7 +123,8 @@ describe('(d) appareil resté au schéma 12 (ADR 0011 §7.2)', () => {
     await roundTrip();
     expect(await pc.driver.select('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ?', [W])).toEqual([{ n: 4 }]);
     expect(await pc.driver.select("SELECT 1 FROM pragma_table_info('workout_set') WHERE name = 'circuit_id'")).toEqual([]);
-    const kept = await pc.driver.select<{ table_name: string; field: string }>('SELECT DISTINCT table_name, field FROM sync_unknown ORDER BY field');
+    // Les colonnes de la 0023 (nulles ici) sont gardées elles aussi : seules celles de la 0013 sont jugées.
+    const kept = (await pc.driver.select<{ table_name: string; field: string }>('SELECT DISTINCT table_name, field FROM sync_unknown ORDER BY field')).filter((r) => !AFTER_13.includes(r.field));
     expect(kept).toEqual([
       { table_name: 'workout_set', field: 'circuit_id' },
       { table_name: 'workout_set', field: 'circuit_rest_sec' },
@@ -146,7 +150,8 @@ describe('(e) vecteur chiffré (tests/fixtures/sync/vectors.json)', () => {
       if (!t) throw new Error(op.t);
       expect(op.t).toBe('workout_set');
       expect(SYNC_CATALOGUE.isValidRowId(t, op.id)).toBe(true);
-      expect([...op.f.keys()].sort()).toEqual([...publishedColumns(t)].sort());
+      // Le vecteur (schéma 13) est figé : il porte les colonnes d'alors ; celles de la 0023 sont absentes d'une ligne créée au schéma 13 (ADR 0018).
+      expect([...op.f.keys()].sort()).toEqual([...publishedColumns(t)].filter((c) => !AFTER_13.includes(c)).sort());
       for (const [col, [value]] of op.f) {
         const c = SYNC_CATALOGUE.column(op.t, col);
         expect(c && SYNC_CATALOGUE.isValidValue(c, value), `${op.t}.${col}`).toBe(true);

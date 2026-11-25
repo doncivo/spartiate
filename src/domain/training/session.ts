@@ -82,6 +82,12 @@ export interface WorkoutSet extends RowMeta {
   readonly circuitId?: string | null;
   /** I6-03 : repos entre deux exercices du groupe (secondes, 0 = aucun) ; porté par chaque série du groupe, null hors groupe. */
   readonly circuitRestSec?: number | null;
+  /** DATA-0293 (BL-135, D-481) : série ajoutée en séance, en plus du programme ; absent ou null : série du programme (ou séance d'avant). */
+  readonly added?: boolean | null;
+  /** DATA-0293 (C-072, Q-13 B) : valeurs d'avant la dernière correction ; absent ou null : jamais corrigée (ou d'avant). */
+  readonly correctedFrom?: { readonly reps: number | null; readonly loadKg: number | null; readonly durationSec: number | null; readonly rir: number | null } | null;
+  /** DATA-0293 (BL-112) : distance parcourue en mètres (exercice à distance) ; absent ou null : non saisie. */
+  readonly distanceM?: number | null;
 }
 
 export interface WorkoutWithSets extends Workout {

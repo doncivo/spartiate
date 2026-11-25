@@ -35,7 +35,7 @@ import { buildZip, readZip, ZipError, type ZipEntry } from './zip';
 
 export const EXPORT_APP = 'spartiate';
 /** Version de schéma écrite au manifeste et maximale acceptée à l'import : celle de la dernière migration (vérifiée par un test). */
-export const EXPORT_SV = 22;
+export const EXPORT_SV = 23;
 /** Réglages exportés (D-57 : unités, jour de check-in, thème). Les unités sont dans `profile` ; le jour de check-in n'existe pas encore (nutrition). */
 export const EXPORT_SETTING_KEYS = ['ui.theme'] as const;
 export type ExportSettingKey = (typeof EXPORT_SETTING_KEYS)[number];
@@ -99,7 +99,9 @@ export const TRAINING_EXPORT_TABLES = ['exercise', 'equipment_profile', 'routine
  */
 // PROG-01 (schéma 19) : `mesocycle` sans `next_weeks` ni `ramp_up`, `nutrition_target` sans cible de repos (archive sv 18).
 const LATER_COLUMNS: Readonly<Partial<Record<string, readonly string[]>>> = {
-  workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec'],
+  // DATA-0293 (schéma 23) : `workout_set` sans distance, série ajoutée ni valeur d'avant correction, `progression_profile` sans surcharges (archives sv 22 et avant).
+  workout_set: ['difficulty', 'circuit_id', 'circuit_rest_sec', 'distance_m', 'added', 'corrected_from'],
+  progression_profile: ['config_overrides'],
   routine_exercise: ['circuit_id', 'circuit_rest_sec'],
   mesocycle: ['next_weeks', 'ramp_up'],
   nutrition_target: ['rest_kcal', 'rest_carb_g', 'training_days'],

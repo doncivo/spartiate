@@ -138,48 +138,34 @@ impl CachedVault {
             cache: Mutex::new(HashMap::new()),
         }
     }
-
-    fn remember(&self, account: &str, value: Option<Zeroizing<String>>) {
-        self.cache
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(account.to_owned(), value);
-    }
-
-    fn forget(&self, account: &str) {
-        self.cache
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .remove(account);
-    }
 }
 
+/// DATA-0293 (C-142) : chaque opération tient le verrou du cache pendant toute sa durée, appel au Trousseau compris. Une lecture en vol ne peut plus
+/// ranger dans le cache une valeur lue AVANT une écriture ou une suppression de l'app (cache périmé) ; les opérations sont courtes (Trousseau local).
 impl SecretVault for CachedVault {
     fn set(&self, account: &str, secret: &str) -> Result<(), VaultError> {
-        self.forget(account);
+        let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
+        cache.remove(account);
         self.inner.set(account, secret)?;
-        self.remember(account, Some(Zeroizing::new(secret.to_owned())));
+        cache.insert(account.to_owned(), Some(Zeroizing::new(secret.to_owned())));
         Ok(())
     }
 
     fn get(&self, account: &str) -> Result<Option<String>, VaultError> {
-        if let Some(cached) = self
-            .cache
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .get(account)
-        {
+        let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(cached) = cache.get(account) {
             return Ok(cached.as_ref().map(|value| value.as_str().to_owned()));
         }
         let value = self.inner.get(account)?;
-        self.remember(account, value.clone().map(Zeroizing::new));
+        cache.insert(account.to_owned(), value.clone().map(Zeroizing::new));
         Ok(value)
     }
 
     fn delete(&self, account: &str) -> Result<(), VaultError> {
-        self.forget(account);
+        let mut cache = self.cache.lock().unwrap_or_else(|e| e.into_inner());
+        cache.remove(account);
         self.inner.delete(account)?;
-        self.remember(account, None);
+        cache.insert(account.to_owned(), None);
         Ok(())
     }
 

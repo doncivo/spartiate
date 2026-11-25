@@ -127,7 +127,7 @@ describe('journal, correction, suppression', () => {
     const fixed = await r.correctSet(must(s1), { loadKg: 62.5, setKind: 'drop' });
     expect(fixed).toMatchObject({ loadKg: 62.5, setKind: 'drop', reps: 8, done: true });
     expect(fixed.correctedAt).not.toBeNull();
-    expect((await outbox()).map((o) => o.field).sort()).toEqual(['corrected_at', 'load_kg', 'set_kind']);
+    expect((await outbox()).map((o) => o.field).sort()).toEqual(['corrected_at', 'corrected_from', 'load_kg', 'set_kind']);
     await expect(r.correctSet(must(s1), { reps: 0 })).rejects.toMatchObject({ code: 'invalid' });
     const unchanged = await r.correctSet(must(s1), { loadKg: 62.5 });
     expect(unchanged.hlc).toBe(fixed.hlc);

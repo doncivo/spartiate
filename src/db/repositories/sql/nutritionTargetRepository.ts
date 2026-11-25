@@ -85,9 +85,9 @@ export function createNutritionTargetRepository(db: SqlExecutor, stamper: WriteS
       return (await db.select<TargetRow>(`SELECT * FROM nutrition_target WHERE deleted_at IS NULL ${ORDER}`)).map(toRecord);
     },
 
-    async effective(date) {
+    async effective(date, today) {
       const rows = (await db.select<TargetRow>('SELECT * FROM nutrition_target WHERE deleted_at IS NULL AND accepted = 1 AND week_start <= ?', [date])).map(toRecord);
-      return effectiveTarget(rows, date);
+      return effectiveTarget(rows, date, today);
     },
   };
 }

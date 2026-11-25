@@ -172,6 +172,7 @@ export const syncFieldFr = {
   // I2-01 : profil de progression et décisions d'Ali (seuls les champs visibles au journal des conflits).
   progression_profile: {
     exercise_id: 'exercice',
+    config_overrides: 'réglages',
     deleted_at: 'suppression',
   },
   recommendation_decision: {

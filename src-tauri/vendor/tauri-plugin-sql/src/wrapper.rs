@@ -394,6 +394,25 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
     )
 }
 
+/// Options de connexion de l'app (WAL, clés étrangères, effacement sûr) : séparées de l'ouverture du pool pour être lues par un test.
+#[cfg(feature = "sqlite")]
+fn sqlite_options(conn_url: &str) -> Result<sqlx::sqlite::SqliteConnectOptions, sqlx::Error> {
+    use std::str::FromStr;
+
+    use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqliteSynchronous};
+
+    Ok(SqliteConnectOptions::from_str(conn_url)?
+        .journal_mode(SqliteJournalMode::Wal)
+        // DATA-0293 (§ 21.2 a, C-194) : en WAL, NORMAL garde la base COHÉRENTE à toute coupure, mais une coupure de courant ou un plantage du système peut perdre TOUTES les validations
+        // faites depuis la dernière synchronisation du WAL (pas seulement la dernière) ; un plantage de l'app seule ne perd rien. FULL (défaut sqlx) fsync à chaque validation. Le moteur de synchro
+        // supporte ce retour en arrière (preuve : tests/unit/sync/data0293/walRollback.test.ts, D-584).
+        .synchronous(SqliteSynchronous::Normal)
+        .foreign_keys(true)
+        // Spartiate (FIX-CONFID-IOS, C-089) : contenu supprimé écrasé par des zéros (photo supprimée absente des pages libres). Posé ici,
+        // à l'ouverture, avant l'autorisateur : la WebView ne peut ni le lire ni le changer (pragma hors de la liste blanche de `guard`).
+        .pragma("secure_delete", "ON"))
+}
+
 /// Spartiate : pool SQLite a UNE seule connexion, mode WAL des l'ouverture.
 ///
 /// Pourquoi : le front envoie `BEGIN IMMEDIATE`, les ecritures puis `COMMIT` comme des appels separes et les attend un a un. Avec le
@@ -409,16 +428,9 @@ fn path_mapper(mut app_path: std::path::PathBuf, connection_string: &str) -> Str
 /// front (`serializedDriver.ts`) le traite en echec visible `transaction-lost`, jamais rattrape en silence.
 #[cfg(feature = "sqlite")]
 pub async fn open_sqlite_pool(conn_url: &str) -> Result<Pool<Sqlite>, sqlx::Error> {
-    use std::str::FromStr;
+    use sqlx::sqlite::SqlitePoolOptions;
 
-    use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
-
-    let options = SqliteConnectOptions::from_str(conn_url)?
-        .journal_mode(SqliteJournalMode::Wal)
-        .foreign_keys(true)
-        // Spartiate (FIX-CONFID-IOS, C-089) : contenu supprimé écrasé par des zéros (photo supprimée absente des pages libres). Posé ici,
-        // à l'ouverture, avant l'autorisateur : la WebView ne peut ni le lire ni le changer (pragma hors de la liste blanche de `guard`).
-        .pragma("secure_delete", "ON");
+    let options = sqlite_options(conn_url)?;
     // Spartiate (SEC-01) : limite d'attachement à 0 et autorisateur sur chaque connexion (voir `guard`), posés après les pragmas ci-dessus.
     let state = std::sync::Arc::new(std::sync::atomic::AtomicU8::new(0));
     let pool =
@@ -458,6 +470,28 @@ mod tests {
             .unwrap();
         assert_eq!(rows[0]["journal_mode"], JsonValue::String("wal".into()));
         db.close().await;
+    }
+
+    /// DATA-0293 (§ 21.2 a, C-194) : WAL avec synchronous = NORMAL (sqlx pose FULL par défaut) : la base reste cohérente à toute coupure, mais une coupure de courant
+    /// ou un plantage du système peut perdre toutes les validations depuis la dernière synchronisation du WAL ; FULL ajoute un fsync par validation. Lu directement sur les options du pool
+    /// (le front ne peut pas lire ce pragma : hors de la liste blanche de guard).
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn data0293_pool_is_wal_with_synchronous_normal() {
+        let dir = tempfile::Builder::new()
+            .prefix("db-sync-")
+            .tempdir_in(concat!(env!("CARGO_MANIFEST_DIR"), "/../../target"))
+            .unwrap();
+        let url = format!("sqlite:{}", dir.path().join("t.db").to_str().unwrap());
+        Sqlite::create_database(&url).await.unwrap();
+        // Options du pool lues sur une connexion directe (sans l'autorisateur, qui refuse la lecture de ce pragma).
+        let mut conn = sqlx::ConnectOptions::connect(&sqlite_options(&url).unwrap())
+            .await
+            .unwrap();
+        let mode: i64 = sqlx::query_scalar("PRAGMA synchronous")
+            .fetch_one(&mut conn)
+            .await
+            .unwrap();
+        assert_eq!(mode, 1, "synchronous doit valoir NORMAL (1), pas FULL (2)");
     }
 
     /// DEP-01 (0.18.1) : RUSTSEC-2026-0459 est corrigé à partir de SQLite 3.54.0 ; le moteur lu par sqlx doit l'être.
