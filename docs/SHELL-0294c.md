@@ -31,7 +31,7 @@ Fichiers : `src/features/settings/{LicensesScreen,SideStoreScreen,SettingsScreen
 Tests qui figeaient un défaut, modifiés avec écart consigné : `SettingsPc.test.tsx` (liste des entrées de Plus, « Licences » ajoutée), `fileSaveFailure.test.tsx`
 (texte « exporte les logs » renvoyait à un écran inexistant), `ExportImportScreen.test.tsx` (« remplacer » sans seconde confirmation), `signingNotice.test.ts`
 (« lecture en échec retire le bandeau »), `signingBannerKeep.test.ts` (3e test, corrigé avec 21a78bd5), `SideStoreScreen.test.tsx` et `LicensesScreen.test.tsx` (ces écrans sont servis par le bloc à la demande de l'écran Plus : le test vérifie ce bloc au lieu d'un nom dans l'inventaire des écrans, pour n'ajouter aucun écran au départ),
-`App.test.tsx` (retrait de `spaceFilter`).
+`App.test.tsx` (retrait de `spaceFilter`), `prog01AfterMerge.test.tsx` (le remplacement qui supprime des lignes passe par la seconde confirmation).
 
 ## Passe qa-test (rouge → vert)
 
