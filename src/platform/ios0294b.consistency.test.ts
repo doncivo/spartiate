@@ -119,3 +119,23 @@ describe('C-156 et C-146 : Live Activity (démarrages rapprochés, libellé, « 
     expect(swift).toMatch(/prefix\(40\)/);
   });
 });
+
+describe('C-157 : fichier des actions de notification écrit hors du fil principal', () => {
+  const swift = code('src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift');
+
+  it('append rend la main tout de suite (file série asynchrone) et prévient par un rappel', () => {
+    const append = body(swift, 'func append(');
+    expect(append).toMatch(/func append\(_ entry: \[String: Any\], completion: @escaping \(Bool\) -> Void\)/);
+    expect(append).toMatch(/queue\.async \{/);
+    expect(append).not.toMatch(/queue\.sync/);
+  });
+
+  it('didReceive : gestionnaire de fin et réveil du JS appelés dans le rappel, APRÈS l’écriture (jamais sur le fil principal en attente)', () => {
+    const didReceive = swift.slice(swift.indexOf('didReceive response: UNNotificationResponse'));
+    const call = didReceive.indexOf('ActionStore.shared.append(entry) { written in');
+    expect(call).toBeGreaterThan(-1);
+    const after = didReceive.slice(call);
+    expect(after.indexOf('completionHandler()')).toBeGreaterThan(0);
+    expect(after.indexOf('plugin?.wake()')).toBeGreaterThan(after.indexOf('completionHandler()'));
+  });
+});
