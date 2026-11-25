@@ -135,4 +135,15 @@ describe('UpdateBanner (D-03)', () => {
     act(() => screen.getByRole('button', { name: 'Fermer' }).click());
     expect(screen.queryByRole('alert')).toBeNull();
   });
+
+  it('C-126 (D-608) : un nouvel échec réaffiche l’alerte fermée', async () => {
+    desktop.nextCheck = new Error('réseau absent');
+    renderBanner();
+    await check();
+    act(() => screen.getByRole('button', { name: 'Fermer' }).click());
+    expect(screen.queryByRole('alert')).toBeNull();
+    desktop.nextCheck = new Error('réseau absent');
+    await check();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
 });

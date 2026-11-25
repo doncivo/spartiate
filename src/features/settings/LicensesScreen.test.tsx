@@ -43,4 +43,12 @@ describe('LicensesScreen (C-119)', () => {
     expect(settings).toContain("import('./LicensesScreen')");
     expect(readFileSync(join(import.meta.dirname, '..', 'app', 'screenNames.ts'), 'utf8')).not.toContain("'licensesscreen'");
   });
+
+  it('affiche en entier l’avis de licence de d3-ease (texte de node_modules/d3-ease/LICENSE), comme l’exige docs/licences.md', () => {
+    render(<LicensesScreen />);
+    const full = readFileSync(join(import.meta.dirname, '..', '..', '..', 'node_modules', 'd3-ease', 'LICENSE'), 'utf8');
+    const norm = (text: string): string => text.split(/\s+/).join(' ').trim();
+    const shown = screen.getByTestId('license-d3-ease');
+    expect(norm(shown.textContent ?? '')).toBe(norm(full));
+  });
 });
