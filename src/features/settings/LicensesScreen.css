@@ -67,11 +67,3 @@
   font-size: var(--ct-font-size-text);
 }
 
-.ct-licenses__notice {
-  margin: var(--ct-space-2) 0 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: var(--ct-color-text-secondary);
-  font-size: var(--ct-font-size-text-sm);
-  font-family: inherit;
-}

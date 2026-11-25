@@ -40,13 +40,9 @@ redistribue pas les fichiers de police séparément de l'application.
 - Vision (iPhone) : framework du système, appelé par le plugin Swift `vision` ; aucune donnée embarquée.
 - Plus aucun repli embarqué : `tesseract.js`, `tesseract.js-core`, `@tesseract.js-data/fra` et `chrono-node` sont retirés en CLEAN-02 (0.19.1, D-200).
 
-# Licence — Recharts (H-02 D4)
+# Licence — Recharts (retiré, BL-116)
 
-- Paquet : [`recharts`](https://www.npmjs.com/package/recharts) 3.10, licence **MIT** ; dépendances transitives (`victory-vendor` d3, `@reduxjs/toolkit`, `immer`, `reselect`, `decimal.js-light`) sous licences MIT ou ISC.
-- Usage : graphique en barres « taux de complétion par semaine » du rapport du mois (`src/features/stats/CompletionChart.tsx`), chargé à la demande par import dynamique (jamais dans le paquet de départ).
-- Texte complet de la licence : `node_modules/recharts/LICENSE`.
-- `victory-vendor` (copie des modules d3 utilisés) : licence **MIT AND ISC** (d3-array, d3-scale, d3-shape, d3-time, d3-interpolate, d3-color, d3-format, d3-path, d3-timer : ISC).
-- `d3-ease` : licence **BSD-3-Clause** (Copyright 2010-2021 Mike Bostock, Copyright 2001 Robert Penner). Cette licence demande de conserver l'avis de copyright, la liste des conditions et l'avertissement dans la documentation fournie avec le logiciel : le texte complet est dans `node_modules/d3-ease/LICENSE` ; il doit rester reproduit dans les mentions de licences de l'application. Les noms des auteurs ne servent pas à promouvoir l'application.
+- `recharts` et ses dépendances (`victory-vendor`, d3 dont `d3-ease` sous BSD-3-Clause, `@reduxjs/toolkit`, `immer`, `reselect`, `decimal.js-light`) ne sont plus livrés : la dépendance n'était jamais importée (graphiques en SVG, D-394) et a été retirée de `package.json` et du verrou en SHELL-0294e ; l'avis BSD de `d3-ease` a quitté l'écran « Licences » et `public/THIRD-PARTY-NOTICES.txt` en même temps.
 
 # Licences — export de fichiers (H-03)
 
@@ -159,7 +155,6 @@ Toutes les dépendances de `dependencies` (package.json), version et licence du 
 | `qrcode-generator` | 2.0.4 | MIT |
 | `react` | 18.3.1 | MIT |
 | `react-dom` | 18.3.1 | MIT |
-| `recharts` | 3.10.1 | MIT |
 | `zustand` | 5.0.15 | MIT |
 <!-- licences-npm:fin -->
 

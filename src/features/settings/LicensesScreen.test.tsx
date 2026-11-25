@@ -33,7 +33,7 @@ describe('LicensesScreen (C-119)', () => {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as { dependencies: Record<string, string> };
     expect(Object.keys(pkg.dependencies)).not.toContain('recharts');
     expect(readFileSync(join(root, 'package-lock.json'), 'utf8')).not.toContain('node_modules/recharts');
-    expect(readFileSync(join(root, 'docs', 'licences.md'), 'utf8')).not.toMatch(/^| `recharts` |/m);
+    expect(readFileSync(join(root, 'docs', 'licences.md'), 'utf8')).not.toMatch(/^\| `recharts` \|/m);
   });
 
   it('le retour ramène à Plus', () => {
