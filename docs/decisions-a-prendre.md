@@ -208,7 +208,7 @@ Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des 
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-365 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+369 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -233,7 +233,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-539 | SEANCE-0292b (BL-112, amende D-385). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 | 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
 
-### séance et moteur (113 : 73 à trancher, 40 à confirmer seulement)
+### séance et moteur (114 : 73 à trancher, 41 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -355,6 +355,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-594 | SHELL-0294a (BL-118). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-621 | SHELL-0294f (BL-150) : § 19.2 sans platform.kind. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
 
 ### nutrition (24 : 14 à trancher, 10 à confirmer seulement)
 
@@ -531,7 +532,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (47 : 21 à trancher, 26 à confirmer seulement)
+### écrans (48 : 22 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -548,6 +549,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-593 | SHELL-0294a (C-135, § 18.5 b, D-480, BL-161). | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-601 | SHELL-0294b (C-156, C-146). | A garder · B réviser ; effet : écran |
 | 2 | D-608 | SHELL-0294c (C-126, § 18.3 a). | A garder · B réviser ; effet : écran |
+| 2 | D-639 | SHELL-0295 (C-076) : unités, locale et séparateurs par src/i18n/units.ts. | A garder · B réviser ; effet : écran |
 | 1 | D-340 | FIX-PLANCHER (0.28.0) : cible du jour (dayTargetFor, D-270) au tableau de bord et au graphique (C-088 ). | A garder · B réviser ; effet : écran |
 | 1 | D-399 | COQUILLE-PC-b (0.28.1) : barre latérale PC rétractable, repli non persisté (§ 18.1). | A garder · B réviser ; effet : écran |
 | 1 | D-459 | COQUILLE-0291 (BL-119) : disposition PC décidée par le système, fenêtre minimale 800 × 360. | A garder · B réviser ; effet : chiffre |
@@ -588,7 +590,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (60 : 27 à trancher, 33 à confirmer seulement)
+### CI et outillage (62 : 29 à trancher, 33 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -606,6 +608,7 @@ Gardées sans question (à confirmer seulement) :
 | 4 | D-321 | DOC-PRIV (0.28.0) : retrait des données réelles d'Ali des fichiers suivis (C-165; applique D-318 (5)). | A garder · B réviser ; effet : données, écran |
 | 4 | D-591 | CONTENT-0293 (BL-126). | A garder · B réviser (déjà marquée « à trancher ») ; effet : durée, texte long |
 | 4 | D-617 | SHELL-0294e (C-084, BL-145, BL-100, BL-105, BL-042, C-167). | A garder · B réviser ; effet : synchro |
+| 4 | D-640 | SHELL-0295 (A-004) : tests sans référence partagée nulle, captures sans pause fixe. | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-282 | FIX-0241 (0.25.0) : pluriels français des compteurs. | A garder · B réviser ; effet : chiffre, écran |
 | 3 | D-611 | SHELL-0294d (BL-002, BL-144, CSP). | A garder · B réviser ; effet : moteur |
 | 2 | D-400 | COQUILLE-PC-c (0.28.1) : Dynamic Type iOS par font: -apple-system-body (§ 18.6, C-113, D-372). | A garder · B réviser ; effet : chiffre, écran |
@@ -619,6 +622,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-437 | MEDIA-03 (0.29.0) : gabarit unique des pictogrammes (D-413). | A garder · B réviser ; effet : chiffre |
 | 1 | D-483 | CI-0292 (BL-104) : erreur de codesign -d affichée; signature de l'installeur PC toujours dans le job de build. | A garder · B réviser ; effet : écran |
 | 1 | D-488 | CI-0292 (C-193) : scénarios e2e et scènes visuelles écrits sans exécution locale. | A garder · B réviser ; effet : chiffre |
+| 1 | D-641 | SHELL-0295 (BL-044) : relevé des marqueurs de tests et couverture par module, par script. | A garder · B réviser ; effet : chiffre |
 
 Gardées sans question (à confirmer seulement) :
 
