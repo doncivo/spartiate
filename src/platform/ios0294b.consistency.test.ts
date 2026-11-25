@@ -70,3 +70,52 @@ describe('C-159 : Vision n’est plus « occupé » à vie après une lecture bl
     expect(guardBlock).toMatch(/self\?\.endReading\(token\)/);
   });
 });
+
+describe('C-156 et C-146 : Live Activity (démarrages rapprochés, libellé, « Terminé » en dur, lastError, date de fin bornée)', () => {
+  const swift = code('src-tauri/plugins/live-activity/ios/Sources/LiveActivityPlugin.swift');
+  const bridge = read('src-tauri/src/live_activity.rs');
+
+  it('deux démarrages rapprochés sont exécutés l’un après l’autre (file de tâches) : jamais deux activités', () => {
+    expect(swift).toMatch(/private var tail: Task<Void, Never>\?/);
+    expect(swift).toMatch(/await previous\?\.value/);
+    for (const method of ['@objc public func start(_ invoke: Invoke)', '@objc public func end(_ invoke: Invoke)']) {
+      expect(body(swift, method), method).toMatch(/self\.enqueue \{|enqueue \{/);
+      expect(body(swift, method), method).not.toMatch(/^\s*Task \{/m);
+    }
+  });
+
+  it('activité gardée pour la même échéance : son libellé est mis à jour s’il a changé', () => {
+    const start = body(swift, '@objc public func start(_ invoke: Invoke)');
+    expect(start).toMatch(/await kept\.update\(ActivityContent\(state: state, staleDate: endDate\)\)/);
+    expect(start).toMatch(/kept\.content\.state != state/);
+  });
+
+  it('aucun « Terminé » en dur : texte d’état final obligatoire, non vide (Swift et Rust)', () => {
+    expect(read('src-tauri/plugins/live-activity/ios/Sources/LiveActivityPlugin.swift')).not.toMatch(/"Terminé"/);
+    expect(swift).toMatch(/let finishedLabel: String\n/);
+    expect(swift).toMatch(/args\.finishedLabel\.trimmingCharacters\(in: \.whitespacesAndNewlines\)\.isEmpty/);
+    expect(bridge).toMatch(/finished_label: String,/);
+    expect(bridge).toMatch(/finished_label\.trim\(\)\.is_empty\(\)/);
+  });
+
+  it('lastError lu et écrit sous verrou', () => {
+    expect(swift).toMatch(/private let errorLock = NSLock\(\)/);
+    const uses = [...swift.matchAll(/\blastErrorStore\b/g)].length;
+    expect(uses).toBeGreaterThanOrEqual(3);
+    for (const line of swift.split('\n').filter((l) => /lastErrorStore/.test(l) && !/private var lastErrorStore/.test(l))) {
+      expect(line, line).toMatch(/errorLock|return lastErrorStore|lastErrorStore = /);
+    }
+    expect(swift).toMatch(/func readLastError\(\)/);
+    expect(swift).toMatch(/func writeLastError\(/);
+  });
+
+  it('C-146 : date de fin bornée (pas dans le passé, au plus 8 h devant) en Swift et en Rust', () => {
+    expect(swift).toMatch(/private let maxEndAheadSeconds: TimeInterval = 8 \* 3600/);
+    expect(swift).toMatch(/endDate\.timeIntervalSinceNow > maxEndAheadSeconds/);
+    expect(bridge).toMatch(/const MAX_END_AHEAD_MS: f64 = 8\.0 \* 3600\.0 \* 1000\.0;/);
+    expect(bridge).toMatch(/end_date_ms > now_ms \+ MAX_END_AHEAD_MS/);
+    // Libellé d'état final borné à 40 caractères côté Rust (déjà en place) et côté Swift.
+    expect(bridge).toMatch(/FINISHED_LABEL_MAX/);
+    expect(swift).toMatch(/prefix\(40\)/);
+  });
+});

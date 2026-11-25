@@ -34,8 +34,8 @@ describe('Live Activity : adaptateur iPhone', () => {
 
   it('start : envoie la date de fin (ms) et le libellé', async () => {
     const { liveActivity, calls } = rig({ live_activity_start: { started: true } });
-    expect(await liveActivity.start({ endDateMs: 1_800_000_060_000, label: 'Minuteur de test' })).toEqual({ started: true });
-    expect(calls[0]).toEqual({ command: 'live_activity_start', args: { endDateMs: 1_800_000_060_000, label: 'Minuteur de test' } });
+    expect(await liveActivity.start({ endDateMs: 1_800_000_060_000, label: 'Minuteur de test', finishedLabel: 'Fin' })).toEqual({ started: true });
+    expect(calls[0]).toEqual({ command: 'live_activity_start', args: { endDateMs: 1_800_000_060_000, label: 'Minuteur de test', finishedLabel: 'Fin' } });
   });
 
   it('clôture I0 : le libellé de l’état final (« Terminé ») part avec la date de fin', async () => {
@@ -44,20 +44,28 @@ describe('Live Activity : adaptateur iPhone', () => {
     expect(calls[0]?.args).toEqual({ endDateMs: 1_800_000_060_000, label: 'Minuteur de test', finishedLabel: 'Terminé' });
   });
 
+  it('C-156 : sans texte d’état final, aucun appel au plugin (le Swift n’a plus de « Terminé » en dur)', async () => {
+    for (const finishedLabel of ['', '   ']) {
+      const { liveActivity, calls } = rig({ live_activity_start: { started: true } });
+      expect(await liveActivity.start({ endDateMs: 1, label: 'x', finishedLabel })).toEqual({ started: false, reason: 'failed', error: null });
+      expect(calls).toEqual([]);
+    }
+  });
+
   it('start : l’erreur native d’ActivityKit remonte en clair (domaine, code, description)', async () => {
     const native = { domain: 'com.apple.ActivityKit.ActivityInput', code: 4, description: 'Target does not include NSSupportsLiveActivities plist key' };
     const { liveActivity } = rig({ live_activity_start: { started: false, error: native } });
-    expect(await liveActivity.start({ endDateMs: 1, label: 'x' })).toEqual({ started: false, reason: 'failed', error: native });
+    expect(await liveActivity.start({ endDateMs: 1, label: 'x', finishedLabel: 'Fin' })).toEqual({ started: false, reason: 'failed', error: native });
   });
 
   it('start : code de rejet du plugin (liveactivity-disabled) devient le motif « disabled »', async () => {
     const { liveActivity } = rig({ live_activity_start: 'liveactivity-disabled' });
-    expect(await liveActivity.start({ endDateMs: 1, label: 'x' })).toEqual({ started: false, reason: 'disabled', error: null });
+    expect(await liveActivity.start({ endDateMs: 1, label: 'x', finishedLabel: 'Fin' })).toEqual({ started: false, reason: 'disabled', error: null });
   });
 
   it('start : jamais de rejet vers l’appelant', async () => {
     const { liveActivity } = rig({ live_activity_start: new Error('crash') });
-    await expect(liveActivity.start({ endDateMs: 1, label: 'x' })).resolves.toMatchObject({ started: false, reason: 'failed' });
+    await expect(liveActivity.start({ endDateMs: 1, label: 'x', finishedLabel: 'Fin' })).resolves.toMatchObject({ started: false, reason: 'failed' });
   });
 
   it('end : nombre d’activités fermées ; échec visible', async () => {
@@ -77,7 +85,7 @@ describe('Live Activity : adaptateur iPhone', () => {
 describe('Live Activity : stub PC et web', () => {
   it('non disponible, sans erreur ni rejet', async () => {
     expect(await unsupportedLiveActivity.isAvailable()).toEqual({ available: false, reason: 'unsupported', error: null });
-    expect(await unsupportedLiveActivity.start({ endDateMs: 1, label: 'x' })).toEqual({ started: false, reason: 'unsupported', error: null });
+    expect(await unsupportedLiveActivity.start({ endDateMs: 1, label: 'x', finishedLabel: 'Fin' })).toEqual({ started: false, reason: 'unsupported', error: null });
     expect(await unsupportedLiveActivity.end()).toEqual({ ended: true, count: 0 });
   });
 });
