@@ -93,4 +93,42 @@ describe('palette de commandes Ctrl+K (C-135, D-480)', () => {
     expect(useNavigationStore.getState().route).toEqual({ tab: 'nutrition', screen: 'journal', meals: true });
     stop();
   });
+
+  it('relecture : une touche répétée ou une saisie en composition n’ouvre ni ne ferme la palette', async () => {
+    const stop = mount();
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true, repeat: true });
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true, isComposing: true });
+    expect(useNavigationStore.getState().overlays).toEqual([]);
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true });
+    await screen.findByRole('dialog');
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true, repeat: true });
+    expect(useNavigationStore.getState().overlays.at(-1)?.kind).toBe('commandPalette');
+    stop();
+  });
+
+  it('relecture : le champ prend le focus à l’ouverture, l’ouvreur le retrouve à la fermeture', async () => {
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
+    const stop = mount();
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true });
+    const input = await screen.findByRole('combobox');
+    expect(input).toHaveFocus();
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(opener).toHaveFocus();
+    stop();
+    opener.remove();
+  });
+
+  it('relecture : aria-expanded et aria-controls disent la vérité quand aucune commande ne correspond', async () => {
+    const stop = mount();
+    fireEvent.keyDown(window, { key: 'k', code: 'KeyK', ctrlKey: true });
+    const input = await screen.findByRole('combobox');
+    expect(input).toHaveAttribute('aria-expanded', 'true');
+    expect(input).toHaveAttribute('aria-controls', 'ct-palette-list');
+    fireEvent.change(input, { target: { value: 'zzzz' } });
+    expect(input).toHaveAttribute('aria-expanded', 'false');
+    expect(input).not.toHaveAttribute('aria-controls');
+    stop();
+  });
 });

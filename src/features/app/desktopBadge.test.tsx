@@ -4,6 +4,7 @@ import { createHlcClock } from '../../domain/hlc';
 import { asEntityId, type DeviceId } from '../../domain/types';
 import { openTestDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { createFakeDesktop, type FakeDesktop } from '../../platform/desktop/testing';
+import { fr } from '../../i18n/fr';
 import { createAppContainer, type AppContainer } from './container';
 import { clearRestBadge, restBadgeTitle, setRestBadge } from './restBadge';
 
@@ -73,5 +74,24 @@ describe('badge du minuteur de repos dans le titre de la fenêtre PC (BL-118)', 
     desktop.setWindowTitle = () => Promise.reject(new Error('fenêtre absente'));
     setRestBadge(container, Date.parse(START) + 60_000);
     await vi.waitFor(() => expect(warn).toHaveBeenCalledWith(expect.stringContaining('fenêtre absente')));
+  });
+
+  it('relecture : le badge ne dépend d’aucun écran : quitter l’écran de séance ne le coupe pas, il court jusqu’à l’échéance', async () => {
+    setRestBadge(container, Date.parse(START) + 30_000);
+    await vi.waitFor(() => expect(desktop.windowTitle).toBe('Repos 0:30 · Spartiate'));
+    // L'écran de séance se démonte : rien n'appelle setRestBadge (seuls « Passer », la fin et l'abandon l'appellent avec null).
+    clock.advance(10_000);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(desktop.windowTitle).toBe('Repos 0:20 · Spartiate');
+    clock.advance(20_000);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(desktop.windowTitle).toBe('Spartiate');
+  });
+
+  it('relecture : le titre de repli est le nom de l’app du catalogue (app.name)', async () => {
+    setRestBadge(container, Date.parse(START) + 5_000);
+    await vi.waitFor(() => expect(desktop.windowTitle).toBe('Repos 0:05 · Spartiate'));
+    setRestBadge(container, null);
+    await vi.waitFor(() => expect(desktop.windowTitle).toBe(fr.app.name));
   });
 });
