@@ -53,6 +53,7 @@ tauriNotificationActions,fakeActions,timerNotification}.ts`, `src/platform/liveA
 | Relecture à froid (acquittement impossible vu par les compléments) | 370bc5fd | fa2946f4 |
 | C-146 (libellés du menu de la zone de notification) | 9e79f32f | c96cb874 |
 | Bundle de départ (D-604 : signal par événement, aucun bloc partagé de plus) | d194dc74 | 766e3d64 |
+| CI run 45611919752 (scène Degrade-apprentissage sans cadrans) et relecture (env.document, texte neutre, tolérance Swift de 2 s) | 1569ff4a | 9ead656b |
 
 Preuves locales : chaque rouge lancé seul et vu rouge (échec d'assertion, module absent, ou erreur de compilation Rust pour C-146) ; verts :
 `scripts/ios` (180 tests), `src/platform` (consistance Swift, Live Activity, notifications), `src/features/notifications`, `src/features/training/session`,
@@ -60,6 +61,18 @@ Preuves locales : chaque rouge lancé seul et vu rouge (échec d'assertion, modu
 `npm run typecheck`, `npm run lint`, gardes documentaires. Le Swift n'est compilé que par la CI (`build-ios.yml` en fin de lot, pas par ce ticket) ; les e2e et
 `visual` ne tournent qu'en CI. `SessionReplace.test.tsx` a échoué une fois sur une série de 99 fichiers lancée d'un seul travailleur (attente de 3 s dépassée sous
 charge) ; vert seul, puis vert dans la série complète `src/features/training` et `src/i18n` (109 fichiers, 653 tests) après le dernier commit de code ; aucun délai allongé.
+
+## Passe security-privacy (lecture seule, textes d'usage de `src-tauri/Info.ios.plist`, lignes 10 à 15)
+
+- Caméra : les quatre usages cités existent (appairage par QR, scan du code-barres en Nutrition, photos de progrès de Progrès › Corps, programme lu
+  par Vision) ; aucun usage caché. « Les photos restent sur l'iPhone » : vrai pour les photos de progrès (table locale, jamais publiée ni exportée,
+  seule la fiche datée est synchronisée, `BodyProgress.tsx`) et pour la photo d'un programme (lue sur l'appareil, copies temporaires supprimées par
+  `cleanTemporaryUploads`, aucun fournisseur IA, D-294). Le numéro du code-barres, lui, est cherché dans Open Food Facts : ce n'est pas une photo et
+  le texte ne promet rien d'autre. Aucune photothèque (clé interdite au contrat).
+- Micro et reconnaissance vocale : « Rien n'est enregistré » et « sans rien envoyer » vérifiés dans le plugin speech
+  (`requiresOnDeviceRecognition = true`, aucun fichier audio écrit).
+- Tutoiement, français, trois phrases au plus, aucune donnée personnelle ni nom de lieu ; aucun entitlement ajouté (D-598, Q-33).
+- Verdict : approuvé.
 
 ## Passe code-reviewer (relecture à froid du diff)
 
