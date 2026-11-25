@@ -6,6 +6,8 @@
   try {
     var choice = window.localStorage.getItem('ct.theme');
     if (choice === 'light' || choice === 'dark') document.documentElement.setAttribute('data-theme', choice);
+    // BL-033 : « système » (ou valeur inconnue) retire le sombre posé par index.html ; sans aucun choix mémorisé, le sombre par défaut reste.
+    else if (choice !== null) document.documentElement.removeAttribute('data-theme');
   } catch {
     /* thème système */
   }
