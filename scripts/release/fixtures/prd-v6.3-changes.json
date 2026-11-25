@@ -216,6 +216,94 @@
       "old": "dette (7 j, plafond 3 h) ;",
       "new": "dette (7 j, plafond 3 h ; compensation partielle, D-130 : nuit courte + (7 h 30 − dormi), nuit longue − min(dormi − 7 h 30, 1 h), somme bornée à [0, 3 h]) ;",
       "why": "Décision d’Ali du 12 novembre 2026 (FIX-0172) : une nuit longue rembourse au plus 1 h de dette."
+    },
+    {
+      "id": "bl150-d16",
+      "decision": "D-619",
+      "section": "21",
+      "old": "sur iPhone, la synchro iCloud reste la sauvegarde hors appareil (D-16).",
+      "new": "sur iPhone, la synchro iCloud reste la sauvegarde hors appareil (D-16). D-16 (« pas de sauvegarde locale sur iPhone au-delà de la synchro iCloud ») se lit, depuis D-619 : aucune sauvegarde hors appareil autre que la synchro iCloud ; les sauvegardes natives de `backup.rs` restent dans le conteneur de l'iPhone comme sur PC, exclues de la sauvegarde iCloud de l'appareil (H-38).",
+      "why": "BL-150 : D-16 interdisait toute sauvegarde locale sur iPhone alors que le § 21.2 et le code hérité en font ; mise en cohérence sans changement de comportement."
+    },
+    {
+      "id": "bl150-meso",
+      "decision": "D-620",
+      "section": "27",
+      "old": "| Mésocycle | Bloc de 4–6 semaines avec progression et deload |",
+      "new": "| Mésocycle | Bloc de 4–7 semaines avec progression et deload (§ 12.1, D-620) |",
+      "why": "BL-150 : le glossaire disait 4–6 semaines, le § 12.1 et le moteur (mesoWeeksRange) disent 4–7."
+    },
+    {
+      "id": "bl150-kind",
+      "decision": "D-621",
+      "section": "19",
+      "old": "la plateforme est choisie par `platform.kind`.",
+      "new": "la plateforme est détectée à l'exécution par `detectOs()` (`src/platform/runtime.ts`) et à la compilation par `#[cfg(target_os = \"ios\")]` (D-47, D-621).",
+      "why": "BL-150 : D-47 a retiré platform.kind, que le § 19.2 citait encore."
+    },
+    {
+      "id": "bl150-v001",
+      "decision": "D-622",
+      "section": "25",
+      "old": "`v0.0.1` publié ; `v0.0.2` reçue par la bannière (D-39)",
+      "new": "`v0.1.0` publié ; `v0.1.1` reçue par la bannière (D-39, D-58, D-622)",
+      "why": "BL-150 : D-58 fixe N = 0.1.0 et N+1 = 0.1.1, aucun tag 0.0.x ; le § 25.2 disait encore v0.0.1 / v0.0.2."
+    },
+    {
+      "id": "bl150-prd-24",
+      "decision": "D-623",
+      "section": "24",
+      "old": "| Spécification | Ce PRD (`docs/PRD.md`) + ADR |",
+      "new": "| Spécification | Ce PRD (`docs/prd/README.md`, par chapitre ; `docs/PRD.md` n’est qu’une page de renvoi, D-49, D-623) + ADR |",
+      "why": "BL-150 : depuis D-49, le PRD vivant est docs/prd/ ; docs/PRD.md renvoie à l’index."
+    },
+    {
+      "id": "bl150-prd-25",
+      "decision": "D-623",
+      "section": "25",
+      "old": "4. Déposer ce PRD en `docs/PRD.md` (D-22)",
+      "new": "4. Déposer ce PRD en `docs/PRD.md` (D-22 ; fait, puis découpé en `docs/prd/` : `docs/PRD.md` est la page de renvoi, D-49, D-623)",
+      "why": "BL-150 : étape historique de SPA-001a, complétée par le découpage D-49."
+    },
+    {
+      "id": "bl150-prd-28a",
+      "decision": "D-623",
+      "section": "28",
+      "old": "Spécification : docs/PRD.md (source de vérité, v6.2+).",
+      "new": "Spécification : docs/prd/README.md (chapitres, source de vérité, v6.3 ; docs/PRD.md n’est qu’une page de renvoi, D-49, D-623).",
+      "why": "BL-150 : l’annexe A recopie CLAUDE.md, qui cite docs/prd/README.md depuis D-49."
+    },
+    {
+      "id": "bl150-prd-28b",
+      "decision": "D-623",
+      "section": "28",
+      "old": "H-n dans docs/PRD.md § 26.2",
+      "new": "H-n dans le PRD § 26.2 (docs/prd/, D-623)",
+      "why": "BL-150 : même motif que bl150-prd-28a (CLAUDE.md actuel : « dans le PRD § 26.2 »)."
+    },
+    {
+      "id": "bl150-prd-29",
+      "decision": "D-623",
+      "section": "29",
+      "old": "par PR sur `docs/PRD.md` (D-22).",
+      "new": "par PR sur `docs/prd/` (D-22, D-49, D-623 ; `docs/PRD.md` reste la page de renvoi).",
+      "why": "BL-150 : la révision du PRD passe par les chapitres depuis D-49."
+    },
+    {
+      "id": "bl148-prd-26-h12",
+      "decision": "D-624",
+      "section": "26",
+      "old": "| H-12 | API Open Food Facts accessible sans clé à l'usage prévu | UNVERIFIED | Appel de test (I4) ; la présence de `reqwest` ne prouve rien |",
+      "new": "| H-12 | API Open Food Facts accessible sans clé à l’usage prévu | CONFIRMED (accès sans clé, constat d’Ali du 19/11/2026 ; débit et recherche restent à mesurer, D-624) | Matrice des capacités, ligne H-12 |",
+      "why": "BL-148 : H-12 alignée sur la matrice (accès sans clé constaté par Ali le 19/11/2026, D-36)."
+    },
+    {
+      "id": "bl148-prd-26-h15",
+      "decision": "D-624",
+      "section": "26",
+      "old": "| H-15 | Recharts tient les volumes (3 ans de séries Spartiate) en < 300 ms | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques (I2) |",
+      "new": "| H-15 | Les graphiques de Progrès (SVG de l’app) tiennent trois ans de séries Spartiate en < 300 ms (reformulée, Recharts retiré, D-614, D-624) | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques |",
+      "why": "BL-148 : H-15 reformulée, Recharts retiré en SHELL-0294e (D-614), comme la matrice."
     }
   ]
 }

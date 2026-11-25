@@ -9,7 +9,7 @@ Les deux fichiers de CircleTasks ne sont **pas remplacés** : leurs règles perm
 
 App personnelle d'entraînement, nutrition et récupération, pour un seul utilisateur. PC Windows (Tauri 2) et iPhone 16 Pro Max
 (Tauri 2 iOS), même code React, livraison unique. Fork de CircleTasks (Tauri 2, React 18, TypeScript strict, Zustand, SQLite, Rust).
-Spécification : docs/PRD.md (source de vérité, v6.2+). Décisions : docs/decisions.md et docs/adr/. Capacités : docs/capability-matrix.md.
+Spécification : docs/prd/README.md (chapitres, source de vérité, v6.3 ; docs/PRD.md n’est qu’une page de renvoi, D-49, D-623). Décisions : docs/decisions.md et docs/adr/. Capacités : docs/capability-matrix.md.
 Référence visuelle : docs/maquettes/ (24 planches du 31 octobre 2026, ouvrir index.html) ; charte en § 18.4 du PRD.
 Règles de travail (passes, git, périmètre, tri des défauts, A-09) : AGENTS.md, qui vaut pour tout agent, Claude Code compris.
 Archive CircleTasks : docs/archive/circletasks/ (lecture seule, liens de preuve).
@@ -50,7 +50,7 @@ En CI seulement : e2e (pc, iphone, iphone-webkit), visual, test:smoke, test:nsis
   création (import dynamique, catalogue i18n chargé avec lui, assertion « hors du départ »), jamais après coup. Garde par liste blanche
   tests/bundle/start-modules.json : tout module nouveau dans le départ est refusé, la liste ne s'étend que par un commit qui le justifie ;
   mesure normalisée insensible aux hachages ; le plafond reste le dernier juge.
-- Toute hypothèse non prouvée = H-n dans docs/PRD.md § 26.2 + ligne UNVERIFIED dans capability-matrix.md ; aucun CONFIRMED depuis une
+- Toute hypothèse non prouvée = H-n dans le PRD § 26.2 (docs/prd/, D-623) + ligne UNVERIFIED dans capability-matrix.md ; aucun CONFIRMED depuis une
   lecture de code. Toute décision structurante = ligne dans docs/decisions.md ou ADR numéroté.
 - Budget tokens annoncé par ticket (S 50k / M 150k / L 400k) ; dépassement = arrêt et point d'étape.
 

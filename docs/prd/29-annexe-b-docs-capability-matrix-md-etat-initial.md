@@ -26,4 +26,4 @@
 | Parité SQLite Wasm / natif | UNVERIFIED (H-18) | — | SPA-001b |
 | Verrou local Face ID / Windows Hello | DEFERRED (code conservé, entrée masquée, D-37) | — | — |
 
-*Fin du document. Toute modification passe par une nouvelle révision numérotée (v6.3, v6.4…) avec journal des changements en tête, par PR sur `docs/PRD.md` (D-22).*
+*Fin du document. Toute modification passe par une nouvelle révision numérotée (v6.3, v6.4…) avec journal des changements en tête, par PR sur `docs/prd/` (D-22, D-49, D-623 ; `docs/PRD.md` reste la page de renvoi).*

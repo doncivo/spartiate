@@ -200,7 +200,17 @@ export function deferred(logger: Logger, refused: boolean, first: LocalBound | n
  * les deux cas. Une erreur (`io`) remonte avant la transaction : `inflight` est gardé pour le cycle suivant. Chemin rare (arrêt brutal) :
  * dans ce bloc à la demande depuis Y-FIX-02 (bundle de départ).
  */
-export async function resolveInflight(deps: SyncDeps, inflight: Inflight, writeOwnState: (head: DeviceAck) => Promise<boolean>): Promise<void> {
+// BL-166 (D-627) : une intention d'une autre époque que `currentEpoch` (changement d'époque entre l'ajout et ce cycle) n'est jamais publiée
+// comme tête : abandonnée, file gardée (ses entrées repartent dans l'époque courante ; une même écriture reçue deux fois ne crée pas de conflit).
+// L'époque courante est lue ici (`META.epoch`, écrite par l'ouverture et chaque changement d'époque avant ce point du cycle) plutôt que passée
+// par `engine.ts`, qui est dans le bundle de départ.
+export async function resolveInflight(deps: SyncDeps, inflight: Inflight, writeOwnState: (head: DeviceAck) => Promise<boolean>, currentEpoch?: EpochId): Promise<void> {
+  const current = currentEpoch ?? (await readJson<EpochId>(deps.data.repos, META.epoch));
+  if (current !== null && inflight.epoch !== current) {
+    await deps.data.transaction((repos) => writeJson(repos, META.inflight, null));
+    deps.logger.log('inflight-resolved', { appended: false, staleEpoch: true });
+    return;
+  }
   const head: DeviceAck = { epoch: inflight.epoch, segment: inflight.segment, record: inflight.expect + inflight.count, hlc: inflight.maxHlc, stateSeq: 0 };
   const ok = await writeOwnState(head);
   await deps.data.transaction(async (repos) => {

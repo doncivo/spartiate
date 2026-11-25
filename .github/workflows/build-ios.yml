@@ -527,3 +527,10 @@ jobs:
               exit 1
             fi
           fi
+
+      # BL-165 (D-625) : les corps de six anciennes publications (v0.2.0 à ios-v0.3.3) portaient le nom d'un lieu réel ; ils sont réécrits
+      # par l'API (même correcteur que source.json), jamais à la main. Idempotent ; le journal ne cite que l'étiquette et l'état.
+      - name: Réécrire les notes des anciennes publications
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: node scripts/ios/redact-release-bodies.mjs

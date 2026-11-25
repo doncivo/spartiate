@@ -19,7 +19,7 @@
 | 1RM | Charge maximale théorique sur une répétition (estimée par Epley) |
 | RIR | Reps in Reserve, répétitions restantes avant l'échec |
 | Double progression | Monter les reps dans la plage puis la charge |
-| Mésocycle | Bloc de 4–6 semaines avec progression et deload |
+| Mésocycle | Bloc de 4–7 semaines avec progression et deload (§ 12.1, D-620) |
 | Deload | Semaine allégée (charge × 0,8) |
 | TDEE | Dépense énergétique quotidienne totale, ici mesurée |
 | HRV | Variabilité de la fréquence cardiaque (SDNN) |

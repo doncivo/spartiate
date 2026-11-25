@@ -1,6 +1,7 @@
 // SPA-001a, critère 8 quater (D-49) : le PRD v6.3 en chapitres conserve le texte de la v6.2, aux seules corrections listées près.
 // Source : docs/archive/PRD-v6.2.md (copie du commit de départ). Corrections : scripts/release/fixtures/prd-v6.3-changes.json
-// (D-47 à D-59 au découpage ; ensuite, seulement une décision d'Ali inscrite dans docs/decisions.md : D-130, FIX-0172).
+// (D-47 à D-59 au découpage ; ensuite, seulement une décision d'Ali inscrite dans docs/decisions.md : D-130, FIX-0172 ;
+// ou une mise en cohérence sans changement de fond, une D- chacune, révisable par Ali : D-619 à D-624, BL-150 et BL-148, SHELL-0294f).
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -43,10 +44,10 @@ describe('conservation du contenu v6.2 → v6.3', () => {
   it('les corrections listées sont motivées par une décision approuvée', () => {
     expect(changes.length).toBeGreaterThan(0);
     for (const change of changes) {
-      expect(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130']).toContain(change.decision);
+      expect(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130', 'D-619', 'D-620', 'D-621', 'D-622', 'D-623', 'D-624']).toContain(change.decision);
       expect(change.why.length).toBeGreaterThan(10);
     }
-    expect(new Set(changes.map((c) => c.decision))).toEqual(new Set(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130']));
+    expect(new Set(changes.map((c) => c.decision))).toEqual(new Set(['D-47', 'D-48', 'D-49', 'D-58', 'D-59', 'D-130', 'D-619', 'D-620', 'D-621', 'D-622', 'D-623', 'D-624']));
   });
   it('un fichier par section, nommé d’après son titre et son numéro, dans l’ordre', () => {
     expect(files).toEqual(source.map((section, index) => chapterFileName(section.heading, sectionNumber(section.heading, index))));
@@ -107,5 +108,28 @@ describe('corrections de fond D-47, D-48, D-58, D-59 présentes dans les chapitr
   it('D-58 et D-59 : versions 0.1.0 / 0.1.1 et H-3a / H-3b / H-3c', () => {
     expect(all).toContain('0.1.1');
     for (const id of ['H-3a', 'H-3b', 'H-3c']) expect(all).toContain(id);
+  });
+});
+
+describe('BL-150 (audit du 24/11, N-13) : mises en cohérence du PRD, une D- chacune (D-619 à D-623)', () => {
+  const chapter = (prefix: string): string => read(`docs/prd/${readdirSync(resolve(root, 'docs/prd')).find((f) => f.startsWith(`${prefix}-`))}`);
+  it('D-619 : § 21.2 dit comment D-16 se lit, les sauvegardes natives existant aussi sur iPhone', () => {
+    expect(chapter('21')).toContain('D-619');
+  });
+  it('D-620 : le glossaire donne au mésocycle la durée du § 12.1 (4–7 semaines)', () => {
+    expect(chapter('27')).toContain('Bloc de 4–7 semaines');
+    expect(chapter('27').includes('4–6 semaines')).toBe(false);
+  });
+  it('D-621 : § 19.2 ne cite plus platform.kind (D-47)', () => {
+    expect(chapter('19').includes('platform.kind')).toBe(false);
+    expect(chapter('19')).toContain('detectOs()');
+  });
+  it('D-622 : § 25.2 publie v0.1.0 puis v0.1.1, aucun tag 0.0.x (D-58)', () => {
+    expect(chapter('25').includes('v0.0.')).toBe(false);
+  });
+  it('D-623 : hors registre § 26, docs/PRD.md n’est cité que comme page de renvoi (D-49)', () => {
+    for (const f of readdirSync(resolve(root, 'docs/prd')).filter((x) => /^\d{2}-.+\.md$/.test(x) && !x.startsWith('26-'))) {
+      for (const line of read(`docs/prd/${f}`).split('\n').filter((l) => l.includes('docs/PRD.md'))) expect(line, f).toMatch(/renvoi/);
+    }
   });
 });
