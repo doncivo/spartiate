@@ -84,7 +84,11 @@ export function useFocusTrap<T extends HTMLElement>({ active, onEscape, initialF
         event.preventDefault();
         return;
       }
-      if (event.shiftKey && document.activeElement === firstEl) {
+      // C-121 : focus sorti du conteneur (corps de page, élément démonté) : Tab y revient au lieu de s'échapper.
+      if (!container?.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? lastEl : firstEl).focus();
+      } else if (event.shiftKey && document.activeElement === firstEl) {
         event.preventDefault();
         lastEl.focus();
       } else if (!event.shiftKey && document.activeElement === lastEl) {
@@ -98,7 +102,15 @@ export function useFocusTrap<T extends HTMLElement>({ active, onEscape, initialF
       document.removeEventListener('keydown', handleKeyDown, true);
       const index = activeTraps.indexOf(token);
       if (index >= 0) activeTraps.splice(index, 1);
-      previouslyFocused?.focus();
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+      else {
+        // C-121 : l'ouvreur a été démonté : le focus va au contenu principal plutôt que de se perdre sur le corps de page.
+        const main = document.querySelector<HTMLElement>('main');
+        if (main) {
+          if (!main.hasAttribute('tabindex')) main.setAttribute('tabindex', '-1');
+          main.focus({ preventScroll: true });
+        }
+      }
     };
   }, [active]);
 

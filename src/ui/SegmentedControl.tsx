@@ -55,6 +55,8 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
     window.addEventListener('resize', measureFade);
     return () => window.removeEventListener('resize', measureFade);
   }, [scrollable, measureFade, optionsKey]);
+  /** C-121 : arrêt de tabulation unique ; si la valeur n'est dans aucun choix, c'est le premier. */
+  const stop = options.some((o) => o.value === value) ? value : options[0]?.value;
   function onKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number): void {
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
     if (step === 0) return;
@@ -73,7 +75,7 @@ export function SegmentedControl<V extends string>({ options, value, onChange, l
           type="button"
           role="radio"
           aria-checked={value === option.value}
-          tabIndex={value === option.value ? 0 : -1}
+          tabIndex={stop === option.value ? 0 : -1}
           disabled={disabled}
           className="ct-segmented__button"
           onClick={() => onChange(option.value)}
