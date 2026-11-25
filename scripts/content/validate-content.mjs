@@ -63,6 +63,10 @@ export const MEDIA_SOURCES = {
 };
 const NETWORK = /[a-z][a-z0-9+.-]*:\/\//i;
 
+/** Clé de comparaison des noms : sans accent ni casse, mots au singulier simple (CONTENT-0293, BL-128). */
+const nameKey = (name) =>
+  name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ')
+    .map((w) => (w.length > 3 && /[sx]$/.test(w) && !/(?:ss|us)$/.test(w) ? w.slice(0, -1) : w)).join(' ');
 const KEBAB = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const isObj = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -245,6 +249,14 @@ export function validateContent(c, opts = {}) {
         if (a === x.id) err(w, 'alternative identique à l’exercice');
         else if (!exercisesById.has(a)) err(w, `alternative inconnue : ${a}`);
       }
+    }
+    const byName = new Map();
+    for (const x of list) {
+      if (!isObj(x) || !isStr(x.nameFr) || !isStr(x.id)) continue;
+      const key = nameKey(x.nameFr);
+      const first = byName.get(key);
+      if (first === undefined) byName.set(key, x.id);
+      else err(`exercises.json (${x.id})`, `nom proche de celui de ${first} : ${x.id} (« ${x.nameFr} »)`);
     }
   }
 
