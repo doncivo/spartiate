@@ -57,7 +57,7 @@ pull-through mis à jour (fixture du test d'identifiants stables, les identifian
 | C-180 (empreintes) | e7b950af | d579d8fe |
 | C-180 (chemins, licences.md) | — (vérification) | d579d8fe (docs) |
 | BL-127 (relecture : distance, aperçu) | bca664ff | 821fae66 |
-| BL-010 (relecture : auteur au registre) | bffc7f5f | (ce commit) |
+| BL-010 (relecture : auteur au registre) | bffc7f5f | 078b0a9a |
 | CI : `content.test.ts` (média avec auteur) | — | 413def83 |
 | BL-126 | — (refus déjà figé par `PhotoReader.test.tsx`, `pdfLater`) | — |
 
