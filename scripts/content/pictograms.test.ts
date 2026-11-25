@@ -70,6 +70,6 @@ describe('pictogrammes : aucun style en ligne (SHELL-0294d, BL-144)', () => {
 
   it('la feuille livrée donne le bronze à la classe d’accent', () => {
     const css = readFileSync(resolve(ROOT, 'src/features/training/media/ExerciseMedia.css'), 'utf8');
-    expect(css).toMatch(/[.]ct-picto-muscle[\s]*[{][^}]*stroke:[\s]*var[\(]--ct-color-bronze/);
+    expect(css).toMatch(/[.]ct-picto-muscle[\s]*[{][^}]*stroke:[\s]*var[(]--ct-color-bronze/);
   });
 });
