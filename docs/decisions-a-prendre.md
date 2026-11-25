@@ -197,7 +197,7 @@ Constat : D-412 (Ali, 19/11) renvoie ces trois sujets « après quelques semaine
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-352 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+353 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -570,7 +570,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (54 : 23 à trancher, 31 à confirmer seulement)
+### CI et outillage (55 : 23 à trancher, 32 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -633,5 +633,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-597 | SHELL-0294a (écart de preuve rouge, relecture à froid). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-622 | SHELL-0294f (BL-150) : versions du § 25.2 mises en cohérence avec D-58. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-625 | SHELL-0294f (BL-165) : corps des six anciennes publications réécrits par le workflow. | à confirmer seulement (aucun effet visible repéré) |
 
 <!-- revue-choix-prudents:fin -->
