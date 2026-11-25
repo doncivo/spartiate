@@ -190,6 +190,8 @@ class FolderBookmarkPlugin: Plugin {
   /// Racine résolue pour la session (accès de sécurité ouvert) ; lue et écrite sur `fileQueue` seulement.
   private var root: URL?
   private var rootPath: String?
+  /// C-153 (DATA-0295) : vrai si l'accès de sécurité de `root` a été ouvert (`startAccessingSecurityScopedResource` réussi) et pas encore refermé.
+  private var rootAccessStarted = false
   /// Sélecteur en cours (fil principal).
   private var picker: PickerDelegate?
   /// Tâche d'arrière-plan et minuteur de garde (fil principal).
@@ -615,8 +617,16 @@ class FolderBookmarkPlugin: Plugin {
     if let values = try? url.resourceValues(forKeys: [.isUbiquitousItemKey]), values.isUbiquitousItem == true {
       kind = "icloud"
     }
-    if let previous = root, previous != url {
-      previous.stopAccessingSecurityScopedResource()
+    // C-153 (DATA-0295) : chaque accès ouvert est refermé une fois. Rust résout la racine à chaque cycle : l'accès précédent est refermé
+    // après un nouvel accès réussi, même pour la même URL (le compteur d'accès du bac à sable ne grimpe plus). Même URL et nouvel accès
+    // refusé : l'accès précédent reste ouvert et compté.
+    if let previous = root, rootAccessStarted {
+      if previous != url || started {
+        previous.stopAccessingSecurityScopedResource()
+        rootAccessStarted = started
+      }
+    } else {
+      rootAccessStarted = started
     }
     root = url
     rootPath = path
@@ -988,6 +998,7 @@ class FolderBookmarkPlugin: Plugin {
           return ["missing": true]
         }
         defer { close(dirFd) }
+        try self.refuseEvicted(dirFd, name, url)
         var flags = O_WRONLY | O_APPEND | O_NOFOLLOW | O_CLOEXEC
         if input.createNew {
           flags |= O_CREAT | O_EXCL
@@ -1032,6 +1043,7 @@ class FolderBookmarkPlugin: Plugin {
           throw Failure(code: .io)
         }
         defer { close(dirFd) }
+        try self.refuseEvicted(dirFd, name, url)
         var existing = stat()
         if fstatat(dirFd, name, &existing, AT_SYMLINK_NOFOLLOW) == 0 {
           if !self.isRegular(existing.st_mode) || existing.st_nlink > 1 {
@@ -1058,7 +1070,10 @@ class FolderBookmarkPlugin: Plugin {
           unlinkat(dirFd, temp, 0)
           throw Failure(code: self.codeOf(error))
         }
-        fsync(dirFd)
+        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant (idempotente).
+        if fsync(dirFd) != 0 {
+          throw Failure(code: self.codeOf(errno))
+        }
         return [:]
       }
     }
@@ -1093,7 +1108,10 @@ class FolderBookmarkPlugin: Plugin {
         if renameat(dirFd, input.from, dirFd, input.to) != 0 {
           throw Failure(code: self.codeOf(errno))
         }
-        fsync(dirFd)
+        // C-155 (DATA-0295) : nom pas encore durable sur le disque : erreur, l'écriture est reprise au cycle suivant (idempotente).
+        if fsync(dirFd) != 0 {
+          throw Failure(code: self.codeOf(errno))
+        }
         return [:]
       }
     }
@@ -1155,6 +1173,22 @@ class FolderBookmarkPlugin: Plugin {
         return ["removed": true]
       }
     }
+  }
+
+  /// C-154 (DATA-0295) : fichier évincé par iOS (« Optimiser le stockage ») : seul reste son substitut `.<nom>.icloud`. Écrire `name` à
+  /// côté créerait un fichier neuf, puis une copie de conflit « nom 2 » ou l'écrasement de la version distante. Le téléchargement est
+  /// demandé et l'écriture refusée (`cloud-pending`, transitoire) : elle est reprise au cycle suivant, sur le fichier téléchargé.
+  private func refuseEvicted(_ dirFd: Int32, _ name: String, _ url: URL) throws {
+    let placeholder = placeholderName(name)
+    var st = stat()
+    if fstatat(dirFd, placeholder, &st, AT_SYMLINK_NOFOLLOW) != 0 {
+      if errno == ENOENT {
+        return
+      }
+      throw Failure(code: .io)
+    }
+    try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+    throw Failure(code: .cloudPending)
   }
 
   /// Y-IOS-02-FIX-02 : le fichier `name` est absent ; s'il a été évincé, son substitut `.<name>.icloud` (fichier ordinaire, un seul lien
