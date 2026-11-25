@@ -104,14 +104,28 @@ describe('répartiteur des actions de notification', () => {
     expect(restCalls).toBe(0);
   });
 
-  it('acquittement impossible : statut « ack-failed », journalisé', async () => {
+  it('relecture à froid : acquittement impossible, le processeur des compléments le voit (« ack-failed », état durable des échecs) comme avant le répartiteur', async () => {
     const source = createFakeNotificationActionSource();
     source.push(done);
     source.failNext('ack');
-    const logs: string[] = [];
-    const dispatcher = createActionDispatcher({ source, supplement: supplementRig().make, rest: async () => true, restTypes: REST_TYPES, log: (code) => logs.push(code) });
+    let ackError = false;
+    const make = (view: NotificationActionSource): SupplementActionProcessor => ({
+      register: async () => true,
+      run: async () => {
+        const drained = await view.drain();
+        try {
+          await view.ack({ lines: drained.lines, writeFailures: drained.writeFailures });
+        } catch {
+          ackError = true;
+          return { ...RUN, status: 'ack-failed' };
+        }
+        return RUN;
+      },
+    });
+    const dispatcher = createActionDispatcher({ source, supplement: make, rest: async () => true, restTypes: REST_TYPES, log: () => undefined });
     expect((await dispatcher.run()).status).toBe('ack-failed');
-    expect(logs).toContain('notification-action-ack-failed');
+    expect(ackError).toBe(true);
+    expect(source.calls).toEqual(['drain', 'ack:1']);
   });
 
   it('catégories enregistrées en UN appel (iOS remplace toutes les catégories à chaque enregistrement) : compléments puis repos', async () => {
