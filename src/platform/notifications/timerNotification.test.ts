@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TIMER_NOTIFICATION_ID } from '../../domain/syntheticTimer';
-import { createIosTimerNotifier, createUnavailableTimerNotifier } from './timerNotification';
+import { createIosTimerNotifier, createUnavailableTimerNotifier, openTimerNotifier } from './timerNotification';
 import type { IosNotificationBridge } from './tauriNotifications';
 
 /** SPA-007 lot D : notification locale du minuteur de test (identifiant fixe, jamais de doublon, secondes honorées, refus visible). */
@@ -114,5 +114,25 @@ describe('0.2.3 (point 5) : repos de séance et minuteur de test ne partagent pl
     expect(r.bridge.cancel).not.toHaveBeenCalledWith([TIMER_NOTIFICATION_ID]);
     expect(r.shown[0]?.id).toBe(REST_NOTIFICATION_ID);
     expect(r.shown[0]?.extra['sid']).toBe('timer:rest');
+  });
+});
+
+// SHELL-0294d, C-162 : un chargement du bloc en échec n'est pas gardé à vie (sinon plus aucune fin de repos notifiée).
+describe('chargement du bloc de notification (C-162)', () => {
+  it('un import en échec est retenté à l’appel suivant', async () => {
+    const bridge: IosNotificationBridge = {
+      show: vi.fn(async () => undefined),
+      cancel: vi.fn(async () => undefined),
+      pending: vi.fn(async () => []),
+      permission: vi.fn(async () => 'granted' as const),
+      requestPermission: vi.fn(async () => 'granted' as const),
+    };
+    const loadBridge = vi.fn<() => Promise<{ createIosNotificationBridge: () => IosNotificationBridge }>>();
+    loadBridge.mockRejectedValueOnce(new Error('bloc illisible'));
+    loadBridge.mockResolvedValueOnce({ createIosNotificationBridge: () => bridge });
+    const notifier = openTimerNotifier('tauri', 'ios', { nowMs: () => 0, zone: () => 'Europe/Paris' }, 'rest', loadBridge);
+    await expect(notifier.permission()).rejects.toThrow('bloc illisible');
+    await expect(notifier.permission()).resolves.toBe('granted');
+    expect(loadBridge).toHaveBeenCalledTimes(2);
   });
 });
