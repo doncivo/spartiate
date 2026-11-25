@@ -5,14 +5,14 @@
 	<!-- Fusionné par Tauri dans l'Info.plist généré (tauri ios init). Chaque clé de permission est déclarée dans
 	     scripts/ios/plist-contract.json par le lot du plugin qui la demande (ADR 0007, avenant I-01). -->
 	<!-- Y-IOS-02 (ADR 0011 §23 point 2) : scan du QR d'association par barcode-scanner. CAP-IOS-01 (ADR 0015 §4.2) : la même clé sert au choix
-	     « Prendre une photo » du scan de tâches (sélecteur de WKWebView) ; Vision lui-même n'en demande aucune. -->
+	     « Prendre une photo » (sélecteur de WKWebView : photos de progrès, programme lu par Vision ; SHELL-0294b : scan du code-barres d'un aliment) ; Vision lui-même n'en demande aucune. -->
 	<key>NSCameraUsageDescription</key>
-	<string>Spartiate utilise la caméra pour scanner le code d'association affiché sur votre PC et pour photographier une liste de tâches à lire.</string>
+	<string>Spartiate utilise la caméra pour scanner le code d'association affiché sur ton PC et le code-barres d'un aliment, et pour photographier tes progrès ou un programme à lire. Les photos restent sur l'iPhone.</string>
 	<!-- CAP-IOS-01 (ADR 0015 §4.2) : dictée de l'app (plugin speech). Sans ces deux clés, la demande d'autorisation termine l'app. -->
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Spartiate utilise le micro seulement pendant que vous dictez une tâche. Rien n'est enregistré.</string>
+	<string>Spartiate utilise le micro seulement pendant que tu dictes un texte. Rien n'est enregistré.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Spartiate transforme votre dictée en texte sur l'iPhone, sans rien envoyer.</string>
+	<string>Spartiate transforme ta dictée en texte sur l'iPhone, sans rien envoyer.</string>
 	<!-- I-03 (ADR 0013 §2.1) : verrouillage par Face ID (plugin biometric). Sans cette clé, Face ID est indisponible (constat 6). -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>Spartiate utilise Face ID pour verrouiller l’app à l’ouverture.</string>

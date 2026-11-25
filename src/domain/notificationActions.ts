@@ -11,6 +11,28 @@ import { isLocalDate, isLocalDateTime, type LocalDate, type LocalDateTime } from
 export type NotificationActionId = 'done' | 'snooze15';
 export const NOTIFICATION_ACTION_IDS: readonly NotificationActionId[] = ['done', 'snooze15'];
 
+/**
+ * SHELL-0294b (§ 13.3 b, D-599) : actions « +30 s » et « Passer » de la notification de fin de repos. Identifiants ici (module déjà partagé par
+ * la plateforme et les rappels) plutôt que dans `restNotificationActions.ts` : un module de plus partagé deviendrait un bloc de plus nommé dans
+ * les listes de préchargement du départ (D-604). Règles du repos : `restNotificationActions.ts`.
+ */
+export type RestActionId = 'extend30' | 'skip';
+export const REST_ACTION_IDS: readonly RestActionId[] = ['extend30', 'skip'];
+export const isRestActionId = (value: unknown): value is RestActionId => value === 'extend30' || value === 'skip';
+/** Catégorie de la notification de fin de repos (`actionTypeId` envoyé avec `show`). */
+export const REST_ACTION_TYPE_ID = 'sp.rest';
+
+/** Action de repos telle que la rend le fichier natif (une ligne). */
+export interface RawRestAction {
+  readonly numericId: number;
+  readonly actionId: RestActionId;
+  /** Instant de la réponse de l'utilisateur (ms UTC). */
+  readonly receivedAtMs: number;
+  readonly sid: string | null;
+  /** Échéance annoncée par la notification (`extra.at`, ms UTC) ; null si absente. */
+  readonly deliveredAt: number | null;
+}
+
 /** Plafonds de la file (avenant N3.4). */
 export const ACTION_QUEUE_MAX_ENTRIES = 100;
 export const ACTION_QUEUE_MAX_APPLIED = 200;

@@ -5,9 +5,13 @@ import type { DataAccess } from '../../db/repositories/dataAccess';
 import type { AppContainer } from '../app/container';
 import { useNoticeStore } from '../app/notice';
 import { announceLocalChanges, onSyncedDataApplied } from '../sync/remoteChanges';
+import { createActionDispatcher } from './actionDispatcher';
+import { createRestActionHandler, restActionTypes } from './restActions';
 import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
 
 const TROUBLE_KEY = 'notifications.actionTrouble';
+/** SHELL-0294b (D-604) : événement écouté par l'écran de séance (`ActiveSession.tsx`, même nom) : le repos a changé, relire l'échéance. */
+const REST_CHANGED_EVENT = 'ct-rest-changed';
 
 /** FIX-0242 : mise à jour de l'état durable, lecture et écriture dans UNE transaction (BEGIN IMMEDIATE : deux mises à jour concurrentes ne se perdent pas). */
 export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['updateTrouble'] {
@@ -24,7 +28,8 @@ export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['upda
 const SUPPLEMENT_TABLES = ['supplement', 'supplement_intake'];
 
 export interface SupplementWakeEnv {
-  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'>;
+  /** `dispatchEvent` (facultatif pour les faux) : signal « repos changé » vers l'écran de séance (SHELL-0294b, D-604). */
+  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'> & Partial<Pick<Document, 'dispatchEvent'>>;
   /** Passage de planification (défaut : le service du conteneur, chargé à la demande). */
   readonly replan?: () => Promise<unknown>;
   /** FIX-0221 : source des actions « Pris » (défaut : le plugin sur l'iPhone, `null` ailleurs). */
@@ -60,23 +65,43 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
   const stopActions = startSupplementActions({
     document: env.document,
     source,
+    // SHELL-0294b (§ 13.3 b, D-541, D-599) : un seul lecteur du fichier natif, le répartiteur ; les compléments en reçoivent une vue, les
+    // actions « +30 s » et « Passer » de la notification de fin de repos vont au gestionnaire du repos.
     makeProcessor: (actions) =>
-      createSupplementActionProcessor({
+      createActionDispatcher({
         source: actions,
-        settings: container.data.repos.settings,
-        supplements: () => container.data.repos.supplements(),
-        nowMs: () => container.notificationClock.nowMs(),
-        texts: { action: fr.actionTaken, placeholder: fr.hiddenPlaceholder },
-        onTaken: (count) => {
-          useNoticeStore.getState().show(count === 1 ? fr.noticeTakenOne : fr.noticeTakenMany.replace('{n}', String(count)));
-          // Carte d'Aujourd'hui relue ; l'abonnement ci-dessus replanifie les rappels.
-          announceLocalChanges(['supplement_intake']);
-        },
-        onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
+        restTypes: restActionTypes(),
         log: (code) => logFailure('notifications', code),
-        // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
-        updateTrouble: makeTroubleUpdater(container.data),
-        onTroubleChange: () => announceLocalChanges(['supplement_intake']),
+        rest: createRestActionHandler({
+          restEndMs: async () => {
+            const rest = await (await container.data.repos.workouts()).getRest();
+            return rest === null ? null : Date.parse(rest.endAt);
+          },
+          // D-604 : le contrôleur vient du bloc de l'Entraînement (déjà à la demande), jamais d'un bloc partagé de plus.
+          controller: () => import('../training/TrainingScreen').then((m) => m.restControllerFor(container)),
+          nowMs: () => container.notificationClock.nowMs(),
+          onChanged: () => void env.document.dispatchEvent?.(new Event(REST_CHANGED_EVENT)),
+          notice: (text) => useNoticeStore.getState().show(text),
+          log: (code) => logFailure('notifications', code),
+        }),
+        supplement: (view) =>
+          createSupplementActionProcessor({
+            source: view,
+            settings: container.data.repos.settings,
+            supplements: () => container.data.repos.supplements(),
+            nowMs: () => container.notificationClock.nowMs(),
+            texts: { action: fr.actionTaken, placeholder: fr.hiddenPlaceholder },
+            onTaken: (count) => {
+              useNoticeStore.getState().show(count === 1 ? fr.noticeTakenOne : fr.noticeTakenMany.replace('{n}', String(count)));
+              // Carte d'Aujourd'hui relue ; l'abonnement ci-dessus replanifie les rappels.
+              announceLocalChanges(['supplement_intake']);
+            },
+            onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
+            log: (code) => logFailure('notifications', code),
+            // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
+            updateTrouble: makeTroubleUpdater(container.data),
+            onTroubleChange: () => announceLocalChanges(['supplement_intake']),
+          }),
       }),
   });
   return () => {

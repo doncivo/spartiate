@@ -21,8 +21,8 @@ export interface LiveActivityStartInput {
   readonly endDateMs: number;
   /** Titre court de l'activité (texte de l'i18n) : « Repos » entre deux séries (I1-02), libellé du minuteur de test sinon. 80 caractères au plus. */
   readonly label: string;
-  /** Texte de l'état final (« Terminé »), rendu par le widget quand l'activité est périmée. */
-  readonly finishedLabel?: string;
+  /** Texte de l'état final (« Terminé », de l'i18n), rendu par le widget quand l'activité est périmée. Obligatoire et non vide (C-156) : le Swift n'a aucun texte de repli. */
+  readonly finishedLabel: string;
 }
 
 export type LiveActivityStart =

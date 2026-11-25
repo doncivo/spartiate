@@ -1,4 +1,5 @@
 import { pluginDate } from '../../domain/notificationInstant';
+import { REST_ACTION_TYPE_ID } from '../../domain/notificationActions';
 import { REST_NOTIFICATION_ID, TIMER_NOTIFICATION_ID } from '../../domain/syntheticTimer';
 import type { OsFamily, Runtime } from '../runtime';
 import { SEND_MARGIN_MS, type IosNotificationBridge } from './tauriNotifications';
@@ -69,6 +70,8 @@ export function createIosTimerNotifier(deps: { readonly bridge: IosNotificationB
           body,
           sound: 'default',
           extra: { sid: `timer:${kind}`, at: String(endMs) },
+          // SHELL-0294b (§ 13.3 b) : « +30 s » et « Passer » sur la notification de fin de repos (catégorie enregistrée au démarrage).
+          ...(kind === 'rest' ? { actionTypeId: REST_ACTION_TYPE_ID } : {}),
           schedule: { at: { date: dateWithSeconds(endMs, clock.zone()), repeating: false, allowWhileIdle: false } },
         });
         return true;

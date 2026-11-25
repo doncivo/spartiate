@@ -22,7 +22,10 @@
   border-left: 3px solid var(--ct-color-warn);
 }
 
+/* BL-162 : le bouton (« Voir ») ne rétrécit pas et ne revient pas à la ligne ; c'est le message qui se replie. */
 .ct-status-banner__action {
+  flex: none;
+  white-space: nowrap;
   min-height: var(--ct-hit-target-min);
   padding: 0 var(--ct-space-2);
   border: 0;

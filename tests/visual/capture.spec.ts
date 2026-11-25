@@ -128,11 +128,19 @@ const openAddSheet = async (page: Page): Promise<void> => {
   await page.getByLabel('Quantité (g)').waitFor();
 };
 
+/**
+ * BL-163 (relecture des paires visuelles, run 45379435573) : l'onglet Entraînement se charge à la demande ; la capture attend que plus aucun
+ * « Chargement… » ne soit affiché (état visé : Entraînement indisponible), jamais un délai fixe.
+ */
+const goTrainingReady = async (page: Page): Promise<void> => {
+  await goTab('Entraînement')(page);
+  await page.waitForFunction(() => !/(^|\n)\s*Chargement/.test(document.querySelector('main')?.innerText ?? document.body.innerText));
+};
 const SCREENS: Screen[] = [
   { name: 'Aujourdhui', mockup: 'iPhone-Aujourdhui.html', viewport: PHONE, date: WEDNESDAY, dark: true },
   { name: 'PC-Aujourdhui', mockup: 'propositions/esthetique-2026-11-12/PC-Aujourdhui-apres.dc.html', viewport: PC, date: WEDNESDAY, dark: true },
-  { name: 'Entrainement-indisponible', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
-  { name: 'PC-Entrainement-indisponible', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Entraînement') },
+  { name: 'Entrainement-indisponible', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTrainingReady },
+  { name: 'PC-Entrainement-indisponible', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTrainingReady },
   { name: 'Plus', mockup: 'propositions/esthetique-2026-11-13/Plus-apres.dc.html', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
   { name: 'PC-Plus', mockup: 'propositions/esthetique-2026-11-13/PC-Plus-apres.dc.html', viewport: PC, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
   { name: 'Profil-poids', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: goBody },
@@ -234,8 +242,17 @@ const expireSignatureAt = (expiresAt: string) => async (page: Page): Promise<voi
   }, expiresAt);
   await page.locator('.ct-status-banner').waitFor();
 };
+/**
+ * BL-163 : la carte de récupération est sous la ligne de flottaison à 956 px : attendue, puis amenée dans le cadre. Dans cette scène, aucun résumé
+ * n'existe : la carte rend son état « aucune donnée importée » (section.ct-recovery), sans cadrans (run 45611919752).
+ */
+const showLearning = async (page: Page): Promise<void> => {
+  const learning = page.locator('section.ct-recovery').first();
+  await learning.waitFor();
+  await learning.scrollIntoViewIfNeeded();
+};
 SCREENS.push(
-  { name: 'Degrade-apprentissage', mockup: 'iPhone-Degrade-Apprentissage.html', viewport: PHONE, date: WEDNESDAY, dark: true },
+  { name: 'Degrade-apprentissage', mockup: 'iPhone-Degrade-Apprentissage.html', viewport: PHONE, date: WEDNESDAY, dark: true, prepare: showLearning },
   { name: 'Degrade-signature-24h', mockup: 'iPhone-Degrade-Signature.html', viewport: PHONE, date: SIGNATURE_DATE, dark: true, init: withSigningFakes, prepare: expireSignatureAt('2026-10-08T23:30:00Z') },
   { name: 'Degrade-signature-expiree', mockup: 'iPhone-Degrade-Signature.html', viewport: PHONE, date: SIGNATURE_DATE, dark: true, init: withSigningFakes, prepare: expireSignatureAt('2026-10-08T06:00:00Z') },
 );

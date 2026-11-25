@@ -9,12 +9,13 @@
 // - aucune chaîne d'interface ici : les titres des actions viennent du JS (`src/i18n`) ;
 // - rejet = un code (`bad-args` ou `io`), jamais le texte d'une erreur système ;
 // - une action est écrite dans le fichier (écriture + `fsync`) AVANT d'appeler le gestionnaire de fin de `didReceive` ;
-// - toutes les opérations sur le fichier se font sur une file série du plugin (jamais sur le fil principal ni sur la file IPC) ;
+// - toutes les opérations sur le fichier se font sur une file série du plugin (jamais sur le fil principal ni sur la file IPC) ; l'ajout
+//   d'une action est asynchrone (C-157) : le fil principal n'attend jamais l'écriture ;
 // - écriture impossible : compteur `writeFailures` (UserDefaults) rendu par `drain`, jamais un silence ;
 // - le délégué est réaffirmé à chaque `didBecomeActive` ; `status` dit s'il est bien le nôtre.
 //
 // Fichier : Library/Application Support/ct-notification-actions/queue.jsonl, une ligne JSON par action :
-//   {"v":1,"n":<entier>,"a":"done"|"snooze15","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
+//   {"v":1,"n":<entier>,"a":"done"|"snooze15"|"extend30"|"skip","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
 // Catégories : categories.json (même dossier), relu au chargement du plugin pour que les boutons existent avant le premier JS.
 
 import Darwin
@@ -68,7 +69,7 @@ private let directoryName = "ct-notification-actions"
 private let queueFileName = "queue.jsonl"
 private let categoriesFileName = "categories.json"
 private let writeFailuresKey = "fr.spartiate.notification-actions.writeFailures"
-private let knownActions: Set<String> = ["done", "snooze15"]
+private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip"]
 
 /// Lecture et écriture du fichier ; une seule file série pour tout le plugin.
 private final class ActionStore {
@@ -131,9 +132,11 @@ private final class ActionStore {
     return lines
   }
 
-  /// Ajoute une ligne et `fsync` ; échec : compteur incrémenté, `false`.
-  func append(_ entry: [String: Any]) -> Bool {
-    return queue.sync { () -> Bool in
+  /// Ajoute une ligne et `fsync` sur la file série, sans bloquer l'appelant (C-157 : `didReceive` arrive sur le fil principal) ; `completion`
+  /// est appelée sur le fil principal, APRÈS l'écriture, avec `false` si elle a échoué (compteur incrémenté).
+  func append(_ entry: [String: Any], completion: @escaping (Bool) -> Void) {
+    queue.async { [self] in
+      let written: Bool
       do {
         guard JSONSerialization.isValidJSONObject(entry) else {
           throw Failure(code: .io)
@@ -163,12 +166,15 @@ private final class ActionStore {
           }
         }
         try writeAll(fd, line)
-        return true
+        written = true
       } catch {
         let defaults = UserDefaults.standard
         defaults.set(defaults.integer(forKey: writeFailuresKey) + 1, forKey: writeFailuresKey)
         defaults.synchronize()
-        return false
+        written = false
+      }
+      DispatchQueue.main.async {
+        completion(written)
       }
     }
   }
@@ -319,10 +325,13 @@ private final class ActionsDelegate: NSObject, UNUserNotificationCenterDelegate 
     } else {
       entry["at"] = NSNull()
     }
-    let written = ActionStore.shared.append(entry)
-    completionHandler()
-    if written {
-      plugin?.wake()
+    // C-157 : l'écriture se fait sur la file du plugin ; le gestionnaire de fin attend qu'elle soit faite (fsync compris), sans bloquer le
+    // fil principal.
+    ActionStore.shared.append(entry) { written in
+      completionHandler()
+      if written {
+        self.plugin?.wake()
+      }
     }
   }
 }

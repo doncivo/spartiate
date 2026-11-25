@@ -60,9 +60,14 @@ describe('contrat Info.plist de la capture sur iPhone (CAP-IOS-01, I-05)', () =>
       // 3 phrases au plus (I-05 critère 9, par analogie).
       expect(text.split(/[.!?]\s/).length, key).toBeLessThanOrEqual(3);
     }
+    // SHELL-0294b (BL-129, C-158) : test qui figeait les textes hérités de CircleTasks (« liste de tâches », « vous dictez ») réécrit.
     expect(plist['NSCameraUsageDescription']).toMatch(/code d'association/);
-    expect(plist['NSCameraUsageDescription']).toMatch(/photographier une liste de tâches/);
-    expect(plist['NSMicrophoneUsageDescription']).toMatch(/seulement pendant que vous dictez/);
+    expect(plist['NSCameraUsageDescription']).toMatch(/code-barres d'un aliment/);
+    expect(plist['NSMicrophoneUsageDescription']).toMatch(/seulement pendant que tu dictes/);
+    for (const key of USAGE_KEYS) {
+      expect(String(plist[key]), key).not.toMatch(/tâche/i);
+      expect(String(plist[key]), key).not.toMatch(/\b(vous|votre|vos)\b/i);
+    }
     expect(plist['NSSpeechRecognitionUsageDescription']).toMatch(/sur l'iPhone, sans rien envoyer/);
     expect(plist['NSHealthShareUsageDescription']).toMatch(/lit ton poids et tes pas/);
     expect(plist['NSHealthShareUsageDescription']).toMatch(/Aucune autre donnée de Santé n’est consultée/);

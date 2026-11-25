@@ -9,7 +9,8 @@ import { checkPlistContract, validateContract } from './check-plist-contract.mjs
 type Json = Record<string, unknown>;
 const root = resolve(__dirname, '..', '..');
 const read = (p: string): string => readFileSync(join(root, p), 'utf8');
-const CAMERA_TEXT = 'Spartiate utilise la caméra pour scanner le code d’association affiché sur votre PC et pour photographier une liste de tâches à lire.';
+// SHELL-0294b (BL-129, C-158) : texte hérité de CircleTasks (« liste de tâches ») réécrit pour Spartiate.
+const CAMERA_TEXT = "Spartiate utilise la caméra pour scanner le code d'association affiché sur ton PC et le code-barres d'un aliment, et pour photographier tes progrès ou un programme à lire. Les photos restent sur l'iPhone.";
 
 describe('contrat Info.plist du scan du QR (Y-IOS-02)', () => {
   const contract = JSON.parse(read('scripts/ios/plist-contract.json')) as Json;
@@ -21,7 +22,7 @@ describe('contrat Info.plist du scan du QR (Y-IOS-02)', () => {
   });
 
   it('Info.ios.plist porte le texte français et respecte le contrat', () => {
-    expect(String(plist['NSCameraUsageDescription']).replace("'", '’')).toBe(CAMERA_TEXT);
+    expect(String(plist['NSCameraUsageDescription'])).toBe(CAMERA_TEXT);
     expect(checkPlistContract(contract, plist)).toEqual({ errors: [], warnings: [] });
   });
 

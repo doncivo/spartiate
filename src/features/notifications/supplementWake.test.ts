@@ -66,7 +66,8 @@ describe('startSupplementReminders', () => {
     useNoticeStore.getState().clear();
     const stop = startSupplementReminders(container, { document: doc as unknown as Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'>, replan: async () => void (replans += 1), actions: source });
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(source.registered.map((t) => t.id)).toEqual(['sp.supplement']);
+    // SHELL-0294b (§ 13.3 b) : un seul enregistrement pour toutes les catégories (iOS les remplace toutes) : compléments, puis repos.
+    expect(source.registered.map((t) => t.id)).toEqual(['sp.supplement', 'sp.rest']);
     const before = replans;
     source.push({ numericId: 70001, actionId: 'done', receivedAtMs: Date.parse('2026-11-13T07:01:00Z'), sid: `supplement:${D}T${T}`, deliveredAt: Date.parse('2026-11-13T07:00:00Z') });
     await new Promise((resolve) => setTimeout(resolve, 10));

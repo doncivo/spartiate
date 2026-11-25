@@ -48,6 +48,12 @@ import { heldFor } from '../loadDisplay';
 import { announceLocalChanges } from '../../sync/remoteChanges';
 
 /**
+ * SHELL-0294b (§ 13.3 b, D-604) : événement du document émis par le répartiteur des actions de notification (`supplementWake.ts`, même nom)
+ * quand « +30 s » ou « Passer » a changé le repos. Un événement plutôt qu'un module partagé : le départ ne grossit pas.
+ */
+const REST_CHANGED_EVENT = 'ct-rest-changed';
+
+/**
  * Écran de séance active (§ 13.2–13.4 ; maquettes iPhone-Seance, PC-Seance ; I1-02). Chaque écriture passe par le repository dans une
  * transaction, puis la séance est relue (la base fait foi). Le repos démarre seul à la validation d'une série hors échauffement ; son temps
  * restant est recalculé depuis la date de fin persistée à chaque seconde d'affichage et à chaque retour au premier plan. I1-03 : « Terminer
@@ -230,10 +236,14 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       if (document.visibilityState !== 'hidden') void resume();
     };
     document.addEventListener('visibilitychange', onVisible);
+    // SHELL-0294b (§ 13.3 b) : « +30 s » ou « Passer » de la notification de fin de repos : l'échéance persistée est relue aussitôt.
+    const onRestChanged = (): void => void resume();
+    document.addEventListener(REST_CHANGED_EVENT, onRestChanged);
     return () => {
       live.current = false;
       clearTimeout(first);
       document.removeEventListener('visibilitychange', onVisible);
+      document.removeEventListener(REST_CHANGED_EVENT, onRestChanged);
     };
   }, [resume]);
 

@@ -125,3 +125,31 @@ fn labels_deserialize_from_camel_case() {
             .expect("JSON valide");
     assert!(!parsed.sync_enabled);
 }
+
+/// SHELL-0294b (C-146) : libellés du menu de la zone de notification bornés (64 caractères, sur un caractère, jamais au milieu d'un octet) ;
+/// un libellé vide ou blanc reprend le libellé de repli (« Quitter » reste toujours accessible).
+#[test]
+fn c146_tray_labels_are_bounded_and_never_empty() {
+    use spartiate_lib::desktop::TRAY_LABEL_MAX;
+    assert_eq!(TRAY_LABEL_MAX, 64);
+    let long = TrayLabels {
+        open: "é".repeat(200),
+        sync: "s".repeat(65),
+        quit: "   ".into(),
+        sync_enabled: true,
+    };
+    let fallback = fallback_labels();
+    let texts: Vec<String> = menu_layout(&long)
+        .into_iter()
+        .filter_map(|entry| match entry {
+            TrayEntry::Item { label, .. } => Some(label),
+            TrayEntry::Separator => None,
+        })
+        .collect();
+    assert_eq!(texts[0], "é".repeat(64));
+    assert_eq!(texts[1], "s".repeat(64));
+    assert_eq!(texts[2], fallback.quit);
+    for text in &texts {
+        assert!(text.chars().count() <= TRAY_LABEL_MAX);
+    }
+}

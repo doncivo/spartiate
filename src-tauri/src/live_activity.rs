@@ -1,7 +1,7 @@
 //! Commandes iPhone de la Live Activity du compteur (SPA-007). Les réponses et erreurs du plugin ne contiennent que des codes, des dates et des
 //! erreurs natives d'ActivityKit (domaine, code, description) : aucune donnée de santé ni de tâche.
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde_json::{json, Value};
 use tauri::{AppHandle, Manager, Runtime};
@@ -13,6 +13,11 @@ const START_DEADLINE: Duration = Duration::from_secs(10);
 const END_DEADLINE: Duration = Duration::from_secs(10);
 /// Longueur maximale du libellé affiché dans l'extension.
 const LABEL_MAX: usize = 80;
+/// Longueur maximale du texte de l'état final (obligatoire : aucun texte en dur côté Swift, C-156).
+const FINISHED_LABEL_MAX: usize = 40;
+/// C-146 : date de fin au plus 8 h devant (durée maximale d'une Live Activity) et au plus une seconde dans le passé (trajet de l'appel).
+const MAX_END_AHEAD_MS: f64 = 8.0 * 3600.0 * 1000.0;
+const MAX_END_BEHIND_MS: f64 = 1000.0;
 
 async fn call<R: Runtime>(
     app: AppHandle<R>,
@@ -48,16 +53,27 @@ pub async fn live_activity_start<R: Runtime>(
     app: AppHandle<R>,
     end_date_ms: f64,
     label: String,
-    finished_label: Option<String>,
+    finished_label: String,
 ) -> Result<Value, String> {
-    if !end_date_ms.is_finite() || end_date_ms <= 0.0 || label.trim().is_empty() {
+    let now_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|elapsed| elapsed.as_secs_f64() * 1000.0)
+        .unwrap_or(0.0);
+    if !end_date_ms.is_finite()
+        || end_date_ms <= 0.0
+        || label.trim().is_empty()
+        || finished_label.trim().is_empty()
+        || end_date_ms < now_ms - MAX_END_BEHIND_MS
+        || end_date_ms > now_ms + MAX_END_AHEAD_MS
+    {
         return Err("liveactivity-bad-args".to_owned());
     }
     let label: String = label.chars().take(LABEL_MAX).collect();
+    let finished_label: String = finished_label.chars().take(FINISHED_LABEL_MAX).collect();
     call(
         app,
         "start",
-        json!({ "endDateMs": end_date_ms, "label": label, "finishedLabel": finished_label.map(|text| text.chars().take(40).collect::<String>()) }),
+        json!({ "endDateMs": end_date_ms, "label": label, "finishedLabel": finished_label }),
         START_DEADLINE,
     )
     .await

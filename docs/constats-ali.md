@@ -201,6 +201,15 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.3) :
 - [ ] **0.29.3 (séries ajoutées)** — pendant une séance, ajoute une série, termine, puis Progrès › Entraînement › Adhérence : la ligne « Séries ajoutées en séance : 1 » apparaît, et la série n'abaisse pas les prescriptions respectées ; même chiffre sur l'autre appareil après synchro. Date : ____ Version : ____
 - [ ] **0.29.3 (planche)** — Entraînement › Bibliothèque › Planche : la photo s'affiche avec son auteur, sa licence et la mention de modification. Date : ____ Version : ____
 
+## 0.29.4
+
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
+
+- [ ] **§ 13.3 b (« +30 s » de la notification)** — iPhone, pendant une séance, valide une série, verrouille l'iPhone et attends la notification de fin de repos ; appuie longuement dessus puis sur « +30 s » : l'app s'ouvre (après Face ID) et la séance affiche un repos d'environ 30 s, une nouvelle notification sonne à la fin. Date : ____ Version : ____
+- [ ] **BL-108 (« Passer » de la notification)** — même geste avec « Passer » : l'app s'ouvre, aucun repos n'est en cours et la Live Activity a quitté l'écran verrouillé et la Dynamic Island. Date : ____ Version : ____
+- [ ] **C-156 (Live Activity, deux départs rapprochés)** — iPhone, valide deux séries coup sur coup (moins d'une seconde d'écart) : une seule Live Activity dans la Dynamic Island, avec le libellé de la dernière série. Date : ____ Version : ____
+- [ ] **C-159 (écran de confidentialité, H-32)** — iPhone, Progrès › Corps (photos ouvertes), balaie depuis le bas et garde le doigt pour ouvrir le sélecteur d'apps sans quitter l'app : l'aperçu de Spartiate est uni, sans photo. Date : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
@@ -255,6 +264,10 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | CHANGELOG 0.29.0 (repas rapides) | iPhone › Nutrition |
 | CHANGELOG 0.29.0 (verrou, essai Apple Intelligence, programme, photo, pictogrammes) | iPhone › Plus ; iPhone › Routines ; iPhone › Bibliothèque ; PC › Routines |
 | 0.29.1 (Progrès, Adhérence, Recommandations) | 0.29.1 |
+| § 13.3 b | 0.29.4 |
+| BL-108 | 0.29.4 |
+| C-156 | 0.29.4 |
+| C-159 | 0.29.4 |
 
 ## Doutes à trancher
 

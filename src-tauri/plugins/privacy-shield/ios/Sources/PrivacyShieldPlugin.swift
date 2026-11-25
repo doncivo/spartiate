@@ -5,7 +5,12 @@
 // et la retire à `didBecomeActive`. Le JS garde son propre cache et décide du verrou au retour.
 //
 // Règles : état et vues sur le fil principal seulement ; aucune chaîne d'interface ; rejet = code seul (`invalid-argument`).
+//
+// SHELL-0294b (C-159, H-32) : le cache est posé dès la désactivation de la scène (`UIScene.willDeactivateNotification`, envoyée avant celle
+// de l'app), dessiné tout de suite (mise en page et `CATransaction.flush()`) pour qu'il soit déjà à l'écran quand iOS prend l'aperçu du
+// sélecteur d'apps ; activé alors que l'app n'est déjà plus au premier plan, il est posé aussitôt.
 
+import QuartzCore
 import Tauri
 import UIKit
 import WebKit
@@ -25,6 +30,9 @@ class PrivacyShieldPlugin: Plugin {
   @objc public override func load(webview: WKWebView) {
     self.webview = webview
     let center = NotificationCenter.default
+    center.addObserver(
+      self, selector: #selector(appWillResignActive),
+      name: UIScene.willDeactivateNotification, object: nil)
     center.addObserver(
       self, selector: #selector(appWillResignActive),
       name: UIApplication.willResignActiveNotification, object: nil)
@@ -87,6 +95,9 @@ class PrivacyShieldPlugin: Plugin {
     window.addSubview(view)
     window.bringSubviewToFront(view)
     shield = view
+    // Dessiné dans ce passage même : sans cela, la vue n'apparaîtrait qu'au prochain tour de la boucle, après l'aperçu d'iOS.
+    window.layoutIfNeeded()
+    CATransaction.flush()
   }
 
   private func hideShield() {
@@ -103,6 +114,9 @@ class PrivacyShieldPlugin: Plugin {
       self.enabled = args.enabled
       if !args.enabled {
         self.hideShield()
+      } else if UIApplication.shared.applicationState != .active {
+        // L'app est déjà inactive (sélecteur d'apps ouvert pendant l'appel) : la notification de désactivation est passée.
+        self.showShield()
       }
       invoke.resolve(["enabled": args.enabled])
     }

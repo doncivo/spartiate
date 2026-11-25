@@ -49,8 +49,10 @@ export function createTauriLiveActivity(options: { readonly invoke?: LiveActivit
     },
 
     async start(input: LiveActivityStartInput): Promise<LiveActivityStart> {
+      // C-156 : sans texte d'état final, aucun appel (le plugin le refuserait : il n'a plus de « Terminé » en dur).
+      if (input.finishedLabel.trim() === '') return { started: false, reason: 'failed', error: null };
       try {
-        const result = await invoke(START_COMMAND, { endDateMs: input.endDateMs, label: input.label, ...(input.finishedLabel === undefined ? {} : { finishedLabel: input.finishedLabel }) });
+        const result = await invoke(START_COMMAND, { endDateMs: input.endDateMs, label: input.label, finishedLabel: input.finishedLabel });
         if (typeof result === 'object' && result !== null && (result as { started?: unknown }).started === true) return { started: true };
         return { started: false, reason: 'failed', error: nativeErrorOf((result as { error?: unknown } | null)?.error) };
       } catch (error) {

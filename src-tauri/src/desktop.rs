@@ -106,19 +106,35 @@ pub enum TrayEntry {
     Separator,
 }
 
+/// SHELL-0294b (C-146) : longueur maximale d'un libellé du menu (caractères). Un texte reçu du front plus long est coupé.
+pub const TRAY_LABEL_MAX: usize = 64;
+
+/// Libellé borné à `TRAY_LABEL_MAX` caractères ; vide ou blanc : le libellé de repli (une entrée vide serait invisible, et
+/// « Quitter » doit toujours rester accessible).
+fn bounded_label(label: &str, fallback: &str) -> String {
+    let source = if label.trim().is_empty() {
+        fallback
+    } else {
+        label
+    };
+    source.chars().take(TRAY_LABEL_MAX).collect()
+}
+
 /// Disposition du menu (D-01, critère 3) : Ouvrir, Synchroniser maintenant, séparateur, Quitter. Toutes les entrées
 /// sont actives (Y-03 D1 : sans synchro configurée, « Synchroniser maintenant » guide vers Réglages au lieu d'être grisée).
+/// Libellés bornés (C-146).
 pub fn menu_layout(labels: &TrayLabels) -> Vec<TrayEntry> {
-    let item = |action, label: &str, enabled| TrayEntry::Item {
+    let fallback = fallback_labels();
+    let item = |action, label: &str, fallback: &str, enabled| TrayEntry::Item {
         action,
-        label: label.to_owned(),
+        label: bounded_label(label, fallback),
         enabled,
     };
     vec![
-        item(TrayAction::Open, &labels.open, true),
-        item(TrayAction::Sync, &labels.sync, true),
+        item(TrayAction::Open, &labels.open, &fallback.open, true),
+        item(TrayAction::Sync, &labels.sync, &fallback.sync, true),
         TrayEntry::Separator,
-        item(TrayAction::Quit, &labels.quit, true),
+        item(TrayAction::Quit, &labels.quit, &fallback.quit, true),
     ]
 }
 
