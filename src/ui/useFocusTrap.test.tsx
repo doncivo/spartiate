@@ -179,4 +179,53 @@ describe('useFocusTrap : pièges imbriqués et feuilles (Q-05, revue I2)', () =>
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onSheetClose).toHaveBeenCalledTimes(1);
   });
+
+  it('C-121 : focus sorti du piège (corps de page), Tab le ramène dans le conteneur', () => {
+    render(<Harness onEscape={() => undefined} />);
+    (document.activeElement as HTMLElement).blur();
+    expect(screen.getByTestId('trap').contains(document.activeElement)).toBe(false);
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    document.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(screen.getByRole('button', { name: FIRST })).toHaveFocus();
+  });
+
+  it('C-121 : ouvreur démonté à la fermeture, le focus ne se perd pas sur le corps de page (repli sur le contenu principal)', () => {
+    function Gone() {
+      const [open, setOpen] = useState(false);
+      const [opener, setOpener] = useState(true);
+      const ref = useFocusTrap<HTMLDivElement>({ active: open });
+      return (
+        <div>
+          <main tabIndex={-1} data-testid="main">
+            {opener && (
+              <button type="button" onClick={() => setOpen(true)}>
+                Ouvreur
+              </button>
+            )}
+          </main>
+          {open && (
+            <div ref={ref} tabIndex={-1}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpener(false);
+                  setOpen(false);
+                }}
+              >
+                Fermer
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+    render(<Gone />);
+    const opener = screen.getByRole('button', { name: 'Ouvreur' });
+    opener.focus();
+    fireEvent.click(opener);
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
+    expect(screen.queryByRole('button', { name: 'Ouvreur' })).toBeNull();
+    expect(screen.getByTestId('main')).toHaveFocus();
+  });
 });
