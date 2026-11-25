@@ -144,7 +144,6 @@ export function TodayScreen() {
 
   useEffect(() => {
     let live = true;
-    setFailed(false);
     void (async () => {
       try {
         const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
@@ -184,7 +183,10 @@ export function TodayScreen() {
     const note = failed ? (
       <>
         <p className="ct-today__muted">{tToday('loadFailed')}</p>
-        <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+        <Button variant="secondary" onClick={() => {
+            setFailed(false);
+            setAttempt((n) => n + 1);
+          }}>
           {t('files.retry')}
         </Button>
       </>

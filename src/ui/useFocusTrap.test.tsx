@@ -12,6 +12,8 @@ const DEACTIVATE = 'Désactiver';
 const TARGET = 'Champ visé';
 const OTHER = 'Champ automatique';
 const ACTIVE = 'Déjà actif';
+const OPENER = 'Ouvreur';
+const CLOSER = 'Fermer';
 
 function Harness({ onEscape }: { onEscape: () => void }) {
   const [active, setActive] = useState(true);
@@ -200,7 +202,7 @@ describe('useFocusTrap : pièges imbriqués et feuilles (Q-05, revue I2)', () =>
           <main tabIndex={-1} data-testid="main">
             {opener && (
               <button type="button" onClick={() => setOpen(true)}>
-                Ouvreur
+                {OPENER}
               </button>
             )}
           </main>
@@ -213,7 +215,7 @@ describe('useFocusTrap : pièges imbriqués et feuilles (Q-05, revue I2)', () =>
                   setOpen(false);
                 }}
               >
-                Fermer
+                {CLOSER}
               </button>
             </div>
           )}
