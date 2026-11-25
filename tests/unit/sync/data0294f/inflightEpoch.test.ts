@@ -15,8 +15,8 @@ const OLD = 'e-0001' as EpochId;
 const CURRENT = 'e-0002' as EpochId;
 const INFLIGHT: Inflight = { epoch: OLD, segment: 3, expect: 10, count: 2, maxHlc: '0000000000001:0000:aaaa' as Hlc, entries: [] };
 
-function fakeDeps() {
-  const meta = new Map<string, string | null>([['inflight', JSON.stringify(INFLIGHT)]]);
+function fakeDeps(epoch: EpochId | null = null) {
+  const meta = new Map<string, string | null>([['inflight', JSON.stringify(INFLIGHT)], ['epoch', epoch === null ? null : JSON.stringify(epoch)]]);
   const cleared: unknown[] = [];
   const repos = {
     sync: {
@@ -26,7 +26,7 @@ function fakeDeps() {
     },
   };
   const logger = createMemorySyncLogger();
-  const deps = { data: { transaction: async <T>(work: (r: typeof repos) => Promise<T>) => work(repos) }, logger } as never;
+  const deps = { data: { repos, transaction: async <T>(work: (r: typeof repos) => Promise<T>) => work(repos) }, logger } as never;
   return { deps, meta, cleared, logger };
 }
 
@@ -51,5 +51,17 @@ describe('BL-166 : intention d’ajout d’une époque passée', () => {
     expect(JSON.parse(f.meta.get('head') ?? 'null')).toMatchObject({ epoch: OLD, segment: 3, record: 12 });
     expect(f.meta.get('inflight')).toBeNull();
     expect(f.logger.entries).toEqual([{ event: 'inflight-resolved', detail: { appended: true } }]);
+  });
+
+  it('sans époque passée en argument (appel du moteur), l’époque courante est lue dans sync_meta', async () => {
+    const stale = fakeDeps(CURRENT);
+    const heads: unknown[] = [];
+    await resolveInflight(stale.deps, INFLIGHT, async (h) => (heads.push(h), true));
+    expect(heads).toEqual([]);
+    expect(stale.cleared).toEqual([]);
+    const same = fakeDeps(OLD);
+    await resolveInflight(same.deps, INFLIGHT, async (h) => (heads.push(h), true));
+    expect(heads).toHaveLength(1);
+    expect(same.cleared).toHaveLength(1);
   });
 });
