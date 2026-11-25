@@ -64,9 +64,10 @@ describe('DATA-0293 : appareil resté au schéma 22', () => {
     await writeOnA(a);
     await roundTrip(3);
     expect(await sets(b, 'reps, load_kg, done')).toEqual([{ reps: 8, load_kg: 82.5, done: 1 }, { reps: 8, load_kg: 80, done: 1 }]);
-    expect(await b.driver.select("SELECT config_overrides FROM progression_profile WHERE exercise_id = 'bench-press-barbell'").catch(() => 'absent')).toBeDefined();
-    const fields = await unknownFields(b);
-    expect(fields).toEqual(expect.arrayContaining(['workout_set.added', 'workout_set.corrected_from']));
+    // Le profil arrive (sans la colonne inconnue) ; la surcharge est gardée dans sync_unknown, avec sa valeur.
+    expect(await b.driver.select("SELECT exercise_id FROM progression_profile WHERE exercise_id = 'bench-press-barbell'")).toEqual([{ exercise_id: 'bench-press-barbell' }]);
+    expect(await b.driver.select("SELECT value FROM sync_unknown WHERE table_name = 'progression_profile' AND field = 'config_overrides'")).toEqual([{ value: JSON.stringify('{"deloadLoad":0.9}') }]);
+    expect(await unknownFields(b)).toEqual(expect.arrayContaining(['progression_profile.config_overrides', 'workout_set.added', 'workout_set.corrected_from', 'workout_set.distance_m']));
     expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
     expect((await b.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n).toBe(0);
   });
@@ -83,6 +84,21 @@ describe('DATA-0293 : appareil resté au schéma 22', () => {
     ]);
     expect(await b.driver.select("SELECT config_overrides FROM progression_profile WHERE exercise_id = 'bench-press-barbell'")).toEqual([{ config_overrides: '{"deloadLoad":0.9}' }]);
     expect(await sets(a, 'added, corrected_from')).toEqual(await sets(b, 'added, corrected_from'));
+    expect(await unknownFields(b)).toEqual([]);
+  });
+
+  it('B (22) recalcule le profil entre la réception et sa mise à jour : la surcharge de A est réintégrée, rien n’est écrasé, aucun conflit chez A', async () => {
+    const { a, b } = await mixed();
+    await writeOnA(a);
+    await roundTrip(3);
+    b.clock.advance(5_000);
+    await b.data.transaction(async (repos) => (await repos.progression()).saveProfile({ exerciseId: 'bench-press-barbell', estimated1rmKg: 100, confidence: 0.7, lastEasyRecalibrationAt: null, engineVersion: 3 }));
+    await b.upgradeSchema('i0');
+    await roundTrip(3);
+    const overrides = "SELECT config_overrides, estimated_1rm_kg FROM progression_profile WHERE exercise_id = 'bench-press-barbell'";
+    expect(await b.driver.select(overrides)).toEqual([{ config_overrides: '{"deloadLoad":0.9}', estimated_1rm_kg: 100 }]);
+    expect(await a.driver.select(overrides)).toEqual([{ config_overrides: '{"deloadLoad":0.9}', estimated_1rm_kg: 100 }]);
+    expect((await a.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n).toBe(0);
     expect(await unknownFields(b)).toEqual([]);
   });
 });
