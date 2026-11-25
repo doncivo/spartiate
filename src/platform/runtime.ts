@@ -15,8 +15,19 @@ export function detectRuntime(): Runtime {
   return isTauri() ? 'tauri' : 'web';
 }
 
-export function detectOs(userAgent: string = globalThis.navigator?.userAgent ?? ''): OsFamily {
+/**
+ * Système cible. L'agent utilisateur d'abord, puis `navigator.platform` quand il ne dit rien (C-163) ; « other » seulement si les deux
+ * sont muets. Dans l'app installée, `osUnknownInApp` demande de le journaliser : la synchro et les sauvegardes ne sont plus masquées sans trace.
+ */
+export function detectOs(userAgent: string = globalThis.navigator?.userAgent ?? '', platform: string = globalThis.navigator?.platform ?? ''): OsFamily {
   if (/iPhone|iPad|iPod/i.test(userAgent)) return 'ios';
   if (/Windows/i.test(userAgent)) return 'windows';
+  if (/iPhone|iPad|iPod/i.test(platform)) return 'ios';
+  if (/^Win/i.test(platform)) return 'windows';
   return 'other';
+}
+
+/** Vrai quand l'app installée ne reconnaît pas son système (synchro et sauvegardes indisponibles) : à journaliser, jamais en silence. */
+export function osUnknownInApp(runtime: Runtime, os: OsFamily): boolean {
+  return runtime === 'tauri' && os === 'other';
 }

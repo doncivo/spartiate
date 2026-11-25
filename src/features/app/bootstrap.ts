@@ -11,7 +11,7 @@ import { publishedAppVersion, readAppVersion, type AppVersionRead } from '../../
 import { migrationPlan } from '../../db/migrations/manifest';
 import type { SyncCatalogue } from '../../domain/sync/syncTables';
 import { createDataAccess, createStorage, reintegrateUnknownFields, SYNC_STORAGE, type SyncStorage, type ReintegrationReport } from '../../db/repositories';
-import { detectOs, detectRuntime, openDesktopPlatform, type DesktopPlatform } from '../../platform';
+import { detectOs, detectRuntime, osUnknownInApp, openDesktopPlatform, type DesktopPlatform } from '../../platform';
 import { openBackupService, type BackupService } from '../../platform/backup';
 import { openFileService, type FileService } from '../../platform/files';
 import { createLedgerStore, openNotificationScheduler, systemNotificationClock, type NotificationClock, type NotificationScheduler } from '../../platform/notifications';
@@ -304,6 +304,7 @@ export async function bootstrapApp(options: BootstrapAppOptions = {}): Promise<A
     const notificationClock = options.notificationClock ?? systemNotificationClock;
     const runtime = at('detectRuntime', () => detectRuntime());
     const os = detectOs();
+    if (osUnknownInApp(runtime, os)) logFailure('app', 'os-unknown');
     const desktop = options.desktop === undefined ? await at('openDesktopPlatform', () => openDesktopPlatform()) : options.desktop;
     const opened = options.syncPlatform === undefined ? at('openSyncPlatform', () => openSyncPlatform(detectRuntime(), detectOs())) : options.syncPlatform;
     const syncPlatform = at('syncPlatform.available', () => opened?.available()) ? opened : null;
