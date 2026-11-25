@@ -61,3 +61,11 @@ Chaque rouge Vitest a été lancé seul. Rust : `cargo fmt`, `cargo clippy --loc
 - C-146 WM_ENDSESSION : crochet de fenêtre natif invérifiable ici ; reste.
 - C-143 (jeton du marqueur définitif), C-148 (copies de clé de `sync/**`, code mort), C-149 (descriptions des capabilities), C-162 (message brut en console), C-163 (OS « other »), C-129 (synchro) : « fait en partie » au registre.
 - C-130 : aucune sauvegarde après l'effacement.
+
+## Mesure du bundle de départ
+
+Build local du 25/11, mesure normalisée : **180 731 octets** (brut 180 732, 45 blocs) contre ≈ 180 696 pour main : **+35 octets** (0,02 %, marge au plafond 177 669). Causes : le journal des échecs de `timeZoneWatcher` (BL-032) et le préchargement séquentiel de `lazyScreens` (BL-036), seuls changements dans le départ ; la première version (drapeau `stopped`) pesait +43, simplifiée en +35. Aucun module ajouté à `tests/bundle/start-modules.json`. Écart à la règle « le départ ne grossit jamais » consigné et NON compensé faute de temps : à reprendre avec la qualité (A-004) ; `startBundle.test.ts` vert.
+
+## Vérifications
+
+`cargo fmt`, `cargo clippy --locked -- -D warnings` propres ; `cargo test --locked --features test-hooks --test desktop` : 883 réussis, 0 échec (2 ignorés, déjà ignorés avant) ; `npm run typecheck` propre ; eslint propre sur les dossiers touchés ; Vitest ciblés verts (`src/features/app` ciblés, `ResetDataScreen`, `RecoveryNotificationsSection`, `timerNotification`, `lazyScreens`, `startBundle`).

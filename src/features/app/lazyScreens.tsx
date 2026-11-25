@@ -179,7 +179,6 @@ export const UpdateBanner = lazyScreen<object>(() => import('../updater/UpdateBa
 export function preloadScreens(): () => void {
   let cancel: () => void = () => undefined;
   let index = 0;
-  let stopped = false;
   const step = (): void => {
     const load = loaders[index];
     index += 1;
@@ -189,12 +188,13 @@ export function preloadScreens(): () => void {
     void load()
       .catch((error: unknown) => logFailure('screen-preload', error))
       .then(() => {
-        if (!stopped) cancel = whenIdle(step, 200);
+        cancel = whenIdle(step, 200);
       });
   };
   cancel = whenIdle(step, 200);
   return () => {
-    stopped = true;
+    // Arrêt : plus rien à charger ensuite (un chargement en cours reprogramme un passage vide, sans effet).
+    index = loaders.length;
     cancel();
   };
 }
