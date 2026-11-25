@@ -43,8 +43,9 @@ private let finishedVisibleSeconds: TimeInterval = 5 * 60
 /// Écart maximal entre maintenant et la date de fin acceptée (s) : une Live Activity ne vit pas plus de 8 h.
 private let maxEndAheadSeconds: TimeInterval = 8 * 3600
 
-/// Retard toléré d'une date de fin (s) : le trajet de l'appel depuis le JS.
-private let maxEndBehindSeconds: TimeInterval = 1
+/// Retard toléré d'une date de fin (s) : le trajet de l'appel depuis le JS. Plus large que celui de Rust (1 s), qui vérifie avant le trajet
+/// jusqu'ici : une date acceptée par Rust n'est pas refusée ici pour quelques millisecondes.
+private let maxEndBehindSeconds: TimeInterval = 2
 
 class LiveActivityPlugin: Plugin {
   private var observer: NSObjectProtocol?

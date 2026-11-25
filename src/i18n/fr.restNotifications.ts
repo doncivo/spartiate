@@ -8,6 +8,6 @@ export const restNotificationsFr = {
   actionSkip: 'Passer',
   /** Bandeaux brefs dans l'app quand l'action n'a pas pu être appliquée. */
   noticeLate: '« +30 s » est arrivé plus de cinq minutes après la fin du repos : rien n’a été ajouté.',
-  noticeNoSession: '« +30 s » ignoré : aucune séance n’est en cours.',
+  noticeNoSession: 'Action de repos ignorée : aucune séance n’est en cours.',
   noticeFailed: 'L’action de la notification de repos n’a pas pu être appliquée : règle le repos dans la séance.',
 } as const;

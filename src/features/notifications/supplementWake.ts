@@ -28,7 +28,8 @@ export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['upda
 const SUPPLEMENT_TABLES = ['supplement', 'supplement_intake'];
 
 export interface SupplementWakeEnv {
-  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'>;
+  /** `dispatchEvent` (facultatif pour les faux) : signal « repos changé » vers l'écran de séance (SHELL-0294b, D-604). */
+  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'> & Partial<Pick<Document, 'dispatchEvent'>>;
   /** Passage de planification (défaut : le service du conteneur, chargé à la demande). */
   readonly replan?: () => Promise<unknown>;
   /** FIX-0221 : source des actions « Pris » (défaut : le plugin sur l'iPhone, `null` ailleurs). */
@@ -79,7 +80,7 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
           // D-604 : le contrôleur vient du bloc de l'Entraînement (déjà à la demande), jamais d'un bloc partagé de plus.
           controller: () => import('../training/TrainingScreen').then((m) => m.restControllerFor(container)),
           nowMs: () => container.notificationClock.nowMs(),
-          onChanged: () => void document.dispatchEvent(new Event(REST_CHANGED_EVENT)),
+          onChanged: () => void env.document.dispatchEvent?.(new Event(REST_CHANGED_EVENT)),
           notice: (text) => useNoticeStore.getState().show(text),
           log: (code) => logFailure('notifications', code),
         }),

@@ -22,7 +22,7 @@ export interface StartupTimers {
 
 /** Cibles d'événements injectables (tests). */
 export interface StartupEnv {
-  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'>;
+  readonly document: Pick<Document, 'addEventListener' | 'removeEventListener' | 'visibilityState'> & Partial<Pick<Document, 'dispatchEvent'>>;
   readonly window: Pick<Window, 'addEventListener' | 'removeEventListener'>;
   /** Détection du fuseau (tests) ; défaut : fuseau du système. */
   readonly detectTimeZone?: () => string | null;

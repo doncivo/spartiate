@@ -242,9 +242,12 @@ const expireSignatureAt = (expiresAt: string) => async (page: Page): Promise<voi
   }, expiresAt);
   await page.locator('.ct-status-banner').waitFor();
 };
-/** BL-163 : les cadrans de la récupération (état « en apprentissage ») sont sous la ligne de flottaison à 956 px : attendus, puis amenés dans le cadre. */
+/**
+ * BL-163 : la carte de récupération est sous la ligne de flottaison à 956 px : attendue, puis amenée dans le cadre. Dans cette scène, aucun résumé
+ * n'existe : la carte rend son état « aucune donnée importée » (section.ct-recovery), sans cadrans (run 45611919752).
+ */
 const showLearning = async (page: Page): Promise<void> => {
-  const learning = page.locator('.ct-recovery__dials').first();
+  const learning = page.locator('section.ct-recovery').first();
   await learning.waitFor();
   await learning.scrollIntoViewIfNeeded();
 };
