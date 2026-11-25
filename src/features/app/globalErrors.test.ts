@@ -15,13 +15,13 @@ describe('capture globale des erreurs', () => {
   });
   afterEach(() => stop());
 
-  it('error : nom de l’erreur et message tronqué à 120 caractères', () => {
+  // SHELL-0294d (C-123), écart consigné : le message libre n'est plus gardé (seul un code technique l'est) ; ce test figeait l'extrait de 120 caractères.
+  it('error : nom de l’erreur seul pour un message libre', () => {
     window.dispatchEvent(new ErrorEvent('error', { error: new TypeError(`x`.repeat(500)), message: 'x' }));
     expect(logFailure).toHaveBeenCalledTimes(1);
     const [scope, error] = logFailure.mock.calls[0] as [string, Error];
     expect(scope).toBe('app');
-    expect(error.message.startsWith('typeerror ')).toBe(true);
-    expect(error.message.length).toBeLessThanOrEqual('typeerror '.length + 120);
+    expect(error.message).toBe('typeerror');
   });
 
   it('unhandledrejection : raison Error ou autre valeur', () => {
@@ -32,8 +32,8 @@ describe('capture globale des erreurs', () => {
     other.reason = 'texte brut';
     window.dispatchEvent(other);
     expect(logFailure).toHaveBeenCalledTimes(2);
-    expect((logFailure.mock.calls[0] as [string, Error])[1].message).toBe('rangeerror hors limites');
-    expect((logFailure.mock.calls[1] as [string, Error])[1].message).toBe('unknown texte brut');
+    expect((logFailure.mock.calls[0] as [string, Error])[1].message).toBe('rangeerror');
+    expect((logFailure.mock.calls[1] as [string, Error])[1].message).toBe('unknown');
   });
 
   it('après l’arrêt, plus rien n’est noté ; une seule installation à la fois', () => {

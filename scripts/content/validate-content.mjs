@@ -439,8 +439,10 @@ const SVG_PAINT_OK = /^(none|currentColor|var\(--ct-[a-z0-9-]+\))$/;
 
 /** Revue à froid de MEDIA-03 : liste BLANCHE (le SVG est inséré tel quel dans la page), la liste noire ci-dessous ne reste qu'en appoint. */
 const SVG_ELEMENTS = new Set(['svg', 'g', 'path', 'circle', 'line', 'ellipse', 'rect', 'polyline']);
-const SVG_ATTRIBUTES = new Set(['viewBox', 'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'width', 'height', 'points', 'transform', 'opacity', 'fill', 'stroke', 'style', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-opacity', 'fill-opacity']);
+const SVG_ATTRIBUTES = new Set(['viewBox', 'd', 'cx', 'cy', 'r', 'rx', 'ry', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'width', 'height', 'points', 'transform', 'opacity', 'fill', 'stroke', 'class', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-opacity', 'fill-opacity']);
 const SVG_NS = 'http://www.w3.org/2000/svg';
+/** SHELL-0294d (BL-144, D-611) : seule classe admise (accent bronze, règle dans `ExerciseMedia.css`) ; jamais d'attribut `style` (bloqué par la CSP, SVG inséré par innerHTML). */
+const SVG_CLASS_OK = 'ct-picto-muscle';
 
 /**
  * Raisons de refus d'un SVG hors liste blanche : aucune entité ni déclaration (`&`, `<!`, `<?`), éléments et attributs admis seulement,
@@ -470,6 +472,7 @@ export function svgWhitelistErrors(text) {
       if (key === 'xmlns') {
         if (name !== 'svg' || value !== SVG_NS) out.push(`xmlns ${value}`);
       } else if (!SVG_ATTRIBUTES.has(key)) out.push(`attribut ${key}`);
+      else if (key === 'class' && value !== SVG_CLASS_OK) out.push(`class ${value}`);
       if (/data:|url\(|javascript/i.test(value)) out.push(`valeur ${key}`);
     }
     rest = rest.replace(/\s+([A-Za-z][A-Za-z0-9:-]*)="([^"]*)"/g, '');
@@ -503,13 +506,8 @@ function validatePictograms(files, list, err) {
     if (NETWORK.test(body) || /url\(/i.test(body)) err(w, 'adresse externe interdite dans un pictogramme');
     for (const m of body.matchAll(/\b(?:fill|stroke)="([^"]*)"/g)) if (!SVG_PAINT_OK.test(m[1])) err(w, `couleur en dur interdite : ${m[1]}`);
     for (const reason of svgWhitelistErrors(text)) err(w, `pictogramme non admis : ${reason}`);
-    for (const m of body.matchAll(/style="([^"]*)"/g)) {
-      for (const decl of m[1].split(';').filter((d) => d.trim() !== '')) {
-        const [prop, ...rest] = decl.split(':');
-        const value = rest.join(':').trim();
-        if (/^(fill|stroke)$/.test(prop.trim()) ? !SVG_PAINT_OK.test(value) : true) err(w, `style non admis : ${decl.trim()}`);
-      }
-    }
+    // SHELL-0294d (BL-144, D-611) : la CSP n'a plus 'unsafe-inline' : un attribut style venu d'innerHTML serait bloqué ; l'accent passe par une classe.
+    if (/\sstyle\s*=/i.test(body)) err(w, 'style interdit dans un pictogramme (utiliser la classe ct-picto-muscle)');
   }
 }
 

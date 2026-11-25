@@ -1,5 +1,6 @@
 import { detectTimeZoneChange, type TimeZoneChange } from '../../domain/timeZone';
 import { detectTimeZone } from '../../platform';
+import { logFailure } from '../../platform/desktop/log';
 import type { AppContainer } from './container';
 
 export interface TimeZoneWatcherOptions {
@@ -9,7 +10,7 @@ export interface TimeZoneWatcherOptions {
   readonly onCurrent?: (timeZone: string) => void;
   /**
    * Point d'extension N-06 : appelé après chaque CHANGEMENT de fuseau (jamais au premier
-   * enregistrement), une fois `general.timeZone` mis à jour. Ne rejette pas : les erreurs sont absorbées.
+   * enregistrement), une fois `general.timeZone` mis à jour. Ne rejette pas : une erreur est notée au journal.
    */
   readonly onChange?: (change: TimeZoneChange) => void | Promise<void>;
 }
@@ -38,8 +39,9 @@ export function createTimeZoneWatcher(container: Pick<AppContainer, 'data'>, opt
       if (!change) return;
       await container.data.repos.settings.set('general.timeZone', current);
       if (change.previous !== null) await options.onChange?.(change);
-    } catch {
-      // Lecture / écriture du réglage impossible : nouvel essai au prochain retour au premier plan.
+    } catch (error) {
+      // Lecture / écriture du réglage impossible : nouvel essai au prochain retour au premier plan ; l'échec est noté (BL-032).
+      logFailure('timezone', error);
     }
   };
 

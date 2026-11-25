@@ -12,7 +12,7 @@ export const TEMPLATE = {
   lengths: { torso: 34, upperArm: 18, forearm: 17, thigh: 24, shin: 24, foot: 8, headGap: 9, headRadius: 6.5 },
   widths: { torso: 7, limb: 4.5, prop: 2.5, floor: 1.5 },
   startOpacity: 0.5,
-  accentColor: 'var(--ct-color-bronze)',
+  accentClass: 'ct-picto-muscle',
 };
 
 const RAD = Math.PI / 180;
@@ -229,7 +229,7 @@ function silhouette(J, pose, muscles, props, S) {
       accent.push(line([lerp(p0, p1, a), lerp(p0, p1, b)], width + 0.6));
     }
   }
-  const acc = accent.length === 0 ? '' : `<g style="stroke:${TEMPLATE.accentColor}">${accent.join('')}</g>`;
+  const acc = accent.length === 0 ? '' : `<g class="${TEMPLATE.accentClass}">${accent.join('')}</g>`;
   const pr = props.flatMap((f) => f(S, J)).map(primitive).join('');
   return { body: parts.join(''), accent: acc, props: pr };
 }

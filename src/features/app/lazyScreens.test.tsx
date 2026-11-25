@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { lazyScreen, preloadScreens, SCREEN_LOADED_PREFIX } from './lazyScreens';
 
 /** Écrans à la demande (PERF-02) : repli neutre, voisin affiché, rendu direct une fois chargé, échec avec « Réessayer », préchargement. */
@@ -132,13 +132,19 @@ describe('écran chargé à la demande : instances et échecs répétés', () =>
 });
 
 describe('préchargement des écrans', () => {
+  // SHELL-0294d (BL-036) : le premier écran préchargé (SettingsScreen) est importé une fois ici, au délai par défaut : le test attend ensuite un
+  // import déjà en cache, sans délai allongé.
+  beforeAll(async () => {
+    await import('../settings/SettingsScreen');
+  });
   afterEach(() => {
     Reflect.deleteProperty(window, 'requestIdleCallback');
     Reflect.deleteProperty(window, 'cancelIdleCallback');
     vi.useRealTimers();
   });
 
-  it('avec requestIdleCallback : un écran par moment d’inactivité, annulable', () => {
+  // SHELL-0294d (BL-036), écart consigné : le moment suivant n'est programmé qu'après la fin du chargement en cours (attente par `waitFor` au délai par défaut).
+  it('avec requestIdleCallback : un écran par moment d’inactivité, annulable', async () => {
     const callbacks: Array<() => void> = [];
     const request = vi.fn((cb: () => void, _options?: { timeout: number }) => callbacks.push(cb));
     const cancel = vi.fn();
@@ -146,16 +152,15 @@ describe('préchargement des écrans', () => {
     const stop = preloadScreens();
     expect(request).toHaveBeenCalledTimes(1);
     act(() => callbacks[0]?.());
-    expect(request).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
     stop();
     expect(cancel).toHaveBeenCalledWith(2);
   });
 
-  it('sans requestIdleCallback (WebKit) : minuteur de 200 ms entre deux écrans, annulable', () => {
+  // SHELL-0294d (BL-036), écart consigné : le minuteur suivant ne naît qu'à la fin du chargement (couvert par preloadWait0294d.test.tsx) ; ce test garde le minuteur initial et l'arrêt.
+  it('sans requestIdleCallback (WebKit) : un minuteur de 200 ms au départ, annulable', () => {
     vi.useFakeTimers();
     const stop = preloadScreens();
-    expect(vi.getTimerCount()).toBe(1);
-    vi.advanceTimersByTime(200);
     expect(vi.getTimerCount()).toBe(1);
     stop();
     expect(vi.getTimerCount()).toBe(0);

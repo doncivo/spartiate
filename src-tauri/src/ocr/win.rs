@@ -13,7 +13,8 @@ use windows::{
 use super::{check_dimensions, pick_french, OcrError, OcrStatus};
 
 fn engine_error(error: windows::core::Error) -> OcrError {
-    OcrError::Engine(error.to_string())
+    // C-148 : le code HRESULT seul (texte du système non gardé).
+    OcrError::Engine(format!("hresult-{:08x}", error.code().0 as u32))
 }
 
 /// Maintient l'appartement multithread (MTA) du processus en vie jusqu'à sa fin.

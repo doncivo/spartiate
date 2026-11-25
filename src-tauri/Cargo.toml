@@ -1,7 +1,7 @@
 [package]
 name = "spartiate"
 version = "0.29.3"
-description = "Spartiate : planificateur personnel (PC Windows et iPhone)"
+description = "Spartiate : entraînement, nutrition et récupération (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
 rust-version = "1.80"

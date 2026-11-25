@@ -15,12 +15,13 @@ let starting: Promise<void> | null = null;
 export function startLogJournal(windowLabel: 'main' | 'focus'): Promise<void> {
   // Jamais deux journaux : déjà installé -> rien ; chargement en cours -> le même (revue, mineur : « Réessayer » répété).
   if (currentLogJournal()) return Promise.resolve();
+  // SHELL-0294d (C-123) : la capture des erreurs non gérées (0.2.4 point 2, scope `app`) est posée AVANT le chargement du journal (les entrées
+  // attendent dans `log.ts`) : une erreur survenue pendant ce chargement n'est plus perdue. Une seule installation à la fois.
+  installGlobalErrorCapture(window);
   starting ??= import('../../platform/logs').then(
     ({ openLogJournal }) => {
       installError = null;
       if (!currentLogJournal()) installLogJournal(openLogJournal(detectRuntime(), detectOs(), windowLabel));
-      // 0.2.4 point 2 : erreurs non gérées de la fenêtre dans le journal (scope `app`), dès que le journal existe.
-      installGlobalErrorCapture(window);
     },
     (error: unknown) => {
       installError = 'load-failed';

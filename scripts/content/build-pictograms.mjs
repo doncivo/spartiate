@@ -30,6 +30,7 @@ body{margin:0;font-family:system-ui,sans-serif}
 .theme{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px}
 .light{--ct-color-bronze:#8e6530;background:#ffffff;color:#15171c}
 .dark{--ct-color-bronze:#c28e4c;background:#15171c;color:#ede7dc}
+.svg .ct-picto-muscle{stroke:var(--ct-color-bronze)}
 figure{margin:0;padding:8px;border:1px solid #8884;border-radius:8px}
 .svg svg{width:100%;height:auto;display:block}
 figcaption{font-size:13px;margin-top:4px}

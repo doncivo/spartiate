@@ -23,7 +23,10 @@ const reloadApp = (): void => globalThis.location.reload();
  * gardé, que c'est irréversible et que cela vaut pour les deux appareils ; le bouton ne s'active qu'avec le mot EFFACER tapé (D-182). Refus visible si
  * une séance est en cours (D-184). Après l'effacement : synchro demandée (la remise à zéro part vers l'autre appareil), puis rechargement.
  */
-export function ResetDataScreen({ onDone = reloadApp }: { readonly onDone?: () => void } = {}) {
+/** C-130 : attente maximale de la synchro demandée après l'effacement ; au-delà, l'app redémarre quand même (la remise à zéro est en file). */
+export const SYNC_WAIT_MS = 10_000;
+
+export function ResetDataScreen({ onDone = reloadApp, syncWaitMs = SYNC_WAIT_MS }: { readonly onDone?: () => void; readonly syncWaitMs?: number } = {}) {
   const container = useAppContainer();
   const layout = useLayout();
   const navigate = useNavigationStore((s) => s.navigate);
@@ -45,7 +48,18 @@ export function ResetDataScreen({ onDone = reloadApp }: { readonly onDone?: () =
       }
       setMessage({ kind: 'ok', key: 'done' });
       try {
-        await container.sync?.syncNow('manual');
+        const pending = container.sync?.syncNow('manual');
+        if (pending) {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const late = new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, syncWaitMs);
+          });
+          try {
+            await Promise.race([pending, late]);
+          } finally {
+            clearTimeout(timer);
+          }
+        }
       } catch (error) {
         // La remise à zéro est en file d'envoi : elle partira au prochain cycle (démarrage). Journalisé, jamais bloquant.
         logFailure('data-reset-sync', error);

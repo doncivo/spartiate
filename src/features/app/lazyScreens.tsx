@@ -177,15 +177,23 @@ export const UpdateBanner = lazyScreen<object>(() => import('../updater/UpdateBa
 
 /** Charge tous les écrans à la demande, un par un, aux moments d'inactivité (repli 200 ms sur iPhone). Rend l'arrêt. */
 export function preloadScreens(): () => void {
-  let cancel: () => void = () => undefined;
+  let cancel = (): void => undefined;
   let index = 0;
-  const step = (): void => {
-    const load = loaders[index];
-    index += 1;
-    if (!load) return;
-    void load().catch((error: unknown) => logFailure('screen-preload', error));
-    cancel = whenIdle(step, 200);
+  const next = (): void => {
+    if (index >= 0) cancel = whenIdle(step, 200);
   };
-  cancel = whenIdle(step, 200);
-  return () => cancel();
+  // SHELL-0294d (BL-036) : le moment d'inactivité suivant n'est programmé qu'une fois le chargement en cours terminé (réussi ou non) ;
+  // jamais deux imports à la fois sur un iPhone lent.
+  const step = (): void => {
+    void loaders[index++]?.().then(next, (error: unknown) => {
+      logFailure('screen-preload', error);
+      next();
+    });
+  };
+  next();
+  return () => {
+    // Arrêt (index négatif) : le chargement en cours ne programme plus rien ensuite.
+    index = -1;
+    cancel();
+  };
 }

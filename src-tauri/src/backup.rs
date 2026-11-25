@@ -164,10 +164,17 @@ pub struct BackupOutcome {
 /// Horodatage attendu : `AAAAMMJJTHHMMSSZ` (UTC), fourni par le front (horloge injectée).
 pub fn is_valid_stamp(stamp: &str) -> bool {
     let b = stamp.as_bytes();
-    b.len() == 16
+    let digits = b.len() == 16
         && b[8] == b'T'
         && b[15] == b'Z'
-        && b[..8].iter().chain(&b[9..15]).all(u8::is_ascii_digit)
+        && b[..8].iter().chain(&b[9..15]).all(u8::is_ascii_digit);
+    // SHELL-0294d (C-144) : une vraie date (mois, jour, année bissextile) et une vraie heure, pas seulement des chiffres.
+    digits && is_valid_day(&stamp[..8]) && {
+        let hour: u32 = stamp[9..11].parse().unwrap_or(99);
+        let minute: u32 = stamp[11..13].parse().unwrap_or(99);
+        let second: u32 = stamp[13..15].parse().unwrap_or(99);
+        hour < 24 && minute < 60 && second < 60
+    }
 }
 
 /// Jour attendu : `AAAAMMJJ` (date locale de l'appareil, fournie par le front), mois 01-12 et jour 01-31.
@@ -2039,19 +2046,23 @@ pub fn diagnose_db_dir(dir: Result<PathBuf, String>) -> DbDiagnostics {
         Ok(dir) => {
             let db = dir.join(DB_FILE);
             let meta = fs::metadata(&db).ok().filter(|m| m.is_file());
+            // SHELL-0294d (C-144, ADR 0009) : jamais de chemin absolu vers la WebView : le nom du dossier et celui de la base seulement.
             DbDiagnostics {
-                config_dir: Some(dir.to_string_lossy().into_owned()),
+                config_dir: dir
+                    .file_name()
+                    .map(|name| name.to_string_lossy().into_owned()),
                 config_dir_error: None,
                 dir_exists: dir.is_dir(),
-                db_path: Some(db.to_string_lossy().into_owned()),
+                db_path: Some(DB_FILE.to_owned()),
                 file_exists: meta.is_some(),
                 file_bytes: meta.map(|m| m.len()),
                 wal_exists: dir.join(format!("{DB_FILE}-wal")).is_file(),
             }
         }
-        Err(error) => DbDiagnostics {
+        // Le texte d'erreur du système peut citer un chemin : seul un code stable est rendu (C-144).
+        Err(_) => DbDiagnostics {
             config_dir: None,
-            config_dir_error: Some(error),
+            config_dir_error: Some("no-data-dir".to_owned()),
             dir_exists: false,
             db_path: None,
             file_exists: false,

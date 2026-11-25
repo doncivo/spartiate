@@ -710,7 +710,7 @@ describe('contenu réel : normes et clés du Strength Score (STR-01)', () => {
 
 // MEDIA-03c : pictogrammes SVG (D-413). Chaque règle a un cas rouge ; le contenu réel les passe.
 describe('validateContent : pictogrammes SVG', () => {
-  const GOOD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" fill="none" stroke="currentColor"><path d="M0 0L9 9" stroke-width="3" style="stroke:var(--ct-color-bronze)"/></svg>\n';
+  const GOOD = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" fill="none" stroke="currentColor"><path d="M0 0L9 9" stroke-width="3" class="ct-picto-muscle"/></svg>\n';
   const withSvg = (text: string, file = 'ex-a.svg') => ({ ...bundle(), pictograms: [{ file, text }] });
   const errorsOf = (text: string, file?: string) => run(withSvg(text, file)).join('\n');
 
@@ -742,8 +742,11 @@ describe('validateContent : pictogrammes SVG', () => {
     ['une adresse externe', '<path d="M0 0" data-x="https://exemple.test/x"/>', /adresse externe interdite/],
     ['une couleur hexadécimale', '<path d="M0 0" stroke="#ff0000"/>', /couleur en dur interdite : #ff0000/],
     ['un nom de couleur', '<path d="M0 0" fill="red"/>', /couleur en dur interdite : red/],
-    ['une couleur en dur dans style', '<path d="M0 0" style="stroke:#8e6530"/>', /style non admis/],
-    ['un style autre que fill ou stroke', '<path d="M0 0" style="filter:blur(2px)"/>', /style non admis/],
+    // SHELL-0294d (BL-144, D-611), écart consigné : ces deux cas figeaient l'attribut `style` admis ; la CSP sans 'unsafe-inline' le bloque (innerHTML) : tout `style=` est refusé.
+    ['une couleur en dur dans style', '<path d="M0 0" style="stroke:#8e6530"/>', /style interdit/],
+    ['un style autre que fill ou stroke', '<path d="M0 0" style="filter:blur(2px)"/>', /style interdit/],
+    ['le style bronze en ligne', '<g style="stroke:var(--ct-color-bronze)"><path d="M0 0"/></g>', /style interdit/],
+    ['une classe inconnue', '<g class="autre"><path d="M0 0"/></g>', /class/],
   ])('refuse %s', (_label, fragment, pattern) => {
     expect(errorsOf(GOOD.replace('</svg>', `${fragment}</svg>`))).toMatch(pattern);
   });

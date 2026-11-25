@@ -1,12 +1,17 @@
 import { logFailure } from '../../platform/desktop/log';
 
-const MAX_MESSAGE = 120;
+/** Forme d'un code technique (`load-failed`, `sql-refused`) : seul un message de cette forme est gardé (SHELL-0294d, C-123). */
+const CODE_SHAPE = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
-/** Erreur à noter : le nom (en minuscules, forme d'un code) puis le message tronqué ; le journal assainit le détail (seconde barrière). */
+/**
+ * Erreur à noter : le nom (en minuscules, forme d'un code), puis le message SEULEMENT s'il a la forme d'un code technique. Un message libre
+ * peut citer une valeur saisie (poids, repas) : il n'entre jamais au journal (C-123 ; le journal assainit en seconde barrière).
+ */
 function toLoggable(value: unknown): Error {
   const name = value instanceof Error ? value.name.toLowerCase() : 'unknown';
   const message = value instanceof Error ? value.message : typeof value === 'string' ? value : '';
-  return new Error(`${/^[a-z0-9][a-z0-9-]*$/.test(name) ? name : 'unknown'} ${message.slice(0, MAX_MESSAGE)}`.trimEnd());
+  const code = CODE_SHAPE.test(message) ? message : '';
+  return new Error(`${/^[a-z0-9][a-z0-9-]*$/.test(name) ? name : 'unknown'} ${code}`.trimEnd());
 }
 
 type Target = Pick<Window, 'addEventListener' | 'removeEventListener'>;

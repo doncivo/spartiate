@@ -184,6 +184,15 @@ pub fn hides_on_close(window_label: &str) -> bool {
     window_label == MAIN_WINDOW
 }
 
+/// SHELL-0294d (C-139) : la fermeture ne masque la fenêtre que si l'icône de la zone de notification existe (sinon l'app serait
+/// inatteignable, sans fenêtre ni menu : la fermeture quitte alors normalement).
+pub fn close_hides_window(window_label: &str, tray_available: bool) -> bool {
+    tray_available && hides_on_close(window_label)
+}
+
+/// Icône de la zone de notification créée (géré par Tauri) ; absente si la création a échoué (Windows sans zone de notification).
+pub struct TrayAvailable;
+
 fn build_menu(app: &AppHandle, labels: &TrayLabels) -> tauri::Result<Menu<Wry>> {
     let mut items: Vec<Box<dyn IsMenuItem<Wry>>> = Vec::new();
     for entry in menu_layout(labels) {
@@ -244,6 +253,18 @@ pub struct QuitGate {
 }
 
 impl QuitGate {
+    /// SHELL-0294d (C-139) : comme `begin`, mais une sortie déjà en cours n'est jamais remplacée (un second « Quitter » coupait l'attente du
+    /// front) : `None` si une demande attend encore sa confirmation.
+    pub fn begin_once(&self) -> Option<mpsc::Receiver<()>> {
+        let mut guard = self.sender.lock().unwrap_or_else(|e| e.into_inner());
+        if guard.is_some() {
+            return None;
+        }
+        let (tx, rx) = mpsc::channel();
+        *guard = Some(tx);
+        Some(rx)
+    }
+
     /// Ouvre une demande de sortie ; le récepteur reçoit la confirmation du front.
     pub fn begin(&self) -> mpsc::Receiver<()> {
         let (tx, rx) = mpsc::channel();
@@ -265,7 +286,10 @@ pub fn wait_for_confirmation(receiver: &mpsc::Receiver<()>, grace: Duration) -> 
 }
 
 fn quit_gracefully(app: &AppHandle) {
-    let receiver = app.state::<QuitGate>().begin();
+    // C-139 : une sortie est déjà en cours (second « Quitter ») : l'attente du front n'est pas coupée.
+    let Some(receiver) = app.state::<QuitGate>().begin_once() else {
+        return;
+    };
     if app.emit_to(MAIN_WINDOW, QUITTING_EVENT, ()).is_err() {
         app.exit(0);
         return;
@@ -460,7 +484,8 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
         .plugin(tauri_plugin_dialog::init())
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                if hides_on_close(window.label()) {
+                let tray_ok = window.app_handle().try_state::<TrayAvailable>().is_some();
+                if close_hides_window(window.label(), tray_ok) {
                     api.prevent_close();
                     let _ = window.hide();
                 }
@@ -495,7 +520,13 @@ pub fn configure(builder: tauri::Builder<Wry>) -> tauri::Builder<Wry> {
             }
             app.manage(QuitGate::default());
             app.manage(TraySyncState::default());
-            create_tray(app.handle())?;
+            // C-139 : une icône impossible à créer n'est plus un plantage : l'échec est journalisé, la fenêtre se ferme alors normalement.
+            match create_tray(app.handle()) {
+                Ok(()) => {
+                    app.manage(TrayAvailable);
+                }
+                Err(_) => crate::applog::write("window", "tray-failed"),
+            }
             if !is_minimized_launch(std::env::args()) {
                 show_main_window(app.handle());
             }

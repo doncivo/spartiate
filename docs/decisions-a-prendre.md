@@ -173,3 +173,9 @@ Constat : Plus affiche « Journaux » dans le sommaire PC (`navLogs`) mais l'éc
 - A (recommandé) : « Journaux » partout (écran, ligne, export). Conséquences : un seul mot, comme le reste de Plus ; les e2e se mettent à jour dans une PR dont la CI les lance (impossible en local).
 - B : « Logs » partout, y compris le sommaire PC. Conséquences : anglicisme gardé, un seul libellé de plus à changer, aucun e2e touché.
 - C : garder les deux (état actuel). Conséquences : l'utilisateur voit deux mots pour un même écran.
+
+## Q-35 — Essai de la CSP stricte sur l'appareil (SHELL-0294d)
+Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inline'` (D-611). Aucun essai n'est possible sur ce PC ni sur l'iPhone par un agent ; un style ou un module qui ne s'afficherait pas serait vu à la première ouverture de la version.
+- A (recommandé, appliqué) : garder la CSP stricte ; Ali ouvre les écrans listés dans docs/constats-ali.md (0.29.4, « CSP ») et signale tout défaut d'affichage. Conséquences : un défaut éventuel est corrigé à la source (style en ligne retiré).
+- B : rétablir `style-src 'unsafe-inline'` seulement. Conséquences : plus de risque d'affichage cassé, mais les styles injectés par une page hostile redeviennent possibles.
+- C : rétablir les deux directives. Conséquences : état d'avant, sans gain de sécurité.

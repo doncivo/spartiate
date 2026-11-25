@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RecoveryNotificationPrefs } from '../../domain/recovery';
 import { DEFAULT_RECOVERY_NOTIFICATION_PREFS } from '../../domain/recovery';
 import { tRn, type RecoveryNotificationsTextKey } from '../../i18n/fr.recoveryNotifications';
+import { logFailure } from '../../platform/desktop/log';
 import { Switch } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { recoveryNotificationsFor, type RecoveryNotificationResult } from '../notifications';
@@ -37,11 +38,17 @@ export function RecoveryNotificationsSection() {
   useEffect(() => {
     live.current = true;
     if (pc) return () => undefined;
+    // SHELL-0294d (C-129) : une lecture en échec est dite et journalisée (jamais un rejet non géré).
     void (async () => {
-      const [p, q] = await Promise.all([service.readPrefs(), service.readProposal()]);
-      if (!live.current) return;
-      setPrefs(p);
-      setProposal(q);
+      try {
+        const [p, q] = await Promise.all([service.readPrefs(), service.readProposal()]);
+        if (!live.current) return;
+        setPrefs(p);
+        setProposal(q);
+      } catch (error) {
+        logFailure('recovery-notifications', error);
+        if (live.current) setMessage('loadError');
+      }
     })();
     return () => {
       live.current = false;
@@ -50,15 +57,26 @@ export function RecoveryNotificationsSection() {
 
   const change = useCallback(
     async (next: RecoveryNotificationPrefs) => {
+      const previous = prefs;
       setBusy(true);
       setMessage(null);
-      setPrefs(next);
-      const result = await service.requestPermissionAndReplan(next);
-      if (!live.current) return;
-      setMessage(MESSAGE[result.status]);
-      setBusy(false);
+      try {
+        const result = await service.requestPermissionAndReplan(next);
+        if (!live.current) return;
+        // C-129 : le nouvel état n'est annoncé qu'à la réponse du service, jamais avant (l'interrupteur ne ment pas pendant l'attente) ;
+        // un refus ou un échec le laisse à son état d'avant.
+        setPrefs(result.status === 'planned' || result.status === 'off' ? next : previous);
+        setMessage(MESSAGE[result.status]);
+      } catch (error) {
+        logFailure('recovery-notifications', error);
+        if (!live.current) return;
+        setPrefs(previous);
+        setMessage('failed');
+      } finally {
+        if (live.current) setBusy(false);
+      }
     },
-    [service],
+    [service, prefs],
   );
 
   if (pc) {
