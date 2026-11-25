@@ -113,6 +113,9 @@ describe('PROG-01 : Repartir de zéro → onboarding → import Remplacer sv 18'
     const preview = await screen.findByRole('region', { name: 'Aperçu de l’import' });
     fireEvent.click(within(preview).getByRole('radio', { name: 'Remplacer' }));
     fireEvent.click(screen.getByRole('button', { name: 'Confirmer l’import' }));
+    // C-127 : un remplacement qui supprime des lignes demande une seconde confirmation.
+    const second = screen.queryByRole('alertdialog');
+    if (second) fireEvent.click(within(second).getByRole('button', { name: 'Remplacer et supprimer' }));
     expect(await screen.findByRole('status')).toHaveTextContent('Import terminé');
     expect(await db.driver.select('SELECT name FROM routine WHERE deleted_at IS NULL')).toEqual([{ name: 'Programme sv18' }]);
     expect(await db.driver.select('SELECT kcal, rest_kcal, training_days FROM nutrition_target WHERE deleted_at IS NULL')).toEqual([{ kcal: 2500, rest_kcal: null, training_days: null }]);

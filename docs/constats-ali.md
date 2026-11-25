@@ -209,6 +209,9 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
 - [ ] **BL-108 (« Passer » de la notification)** — même geste avec « Passer » : l'app s'ouvre, aucun repos n'est en cours et la Live Activity a quitté l'écran verrouillé et la Dynamic Island. Date : ____ Version : ____
 - [ ] **C-156 (Live Activity, deux départs rapprochés)** — iPhone, valide deux séries coup sur coup (moins d'une seconde d'écart) : une seule Live Activity dans la Dynamic Island, avec le libellé de la dernière série. Date : ____ Version : ____
 - [ ] **C-159 (écran de confidentialité, H-32)** — iPhone, Progrès › Corps (photos ouvertes), balaie depuis le bas et garde le doigt pour ouvrir le sélecteur d'apps sans quitter l'app : l'aperçu de Spartiate est uni, sans photo. Date : ____ Version : ____
+- [ ] **C-119 (Licences)** — iPhone, Plus › APP › Licences : la liste des polices, icônes et bibliothèques s'affiche (Cinzel, Lucide, Recharts, d3-ease…), le retour ramène à Plus ; même chose sur le PC (Plus › Licences, panneau de droite). Date : ____ Version : ____
+- [ ] **§ 18.3 a (procédure SideStore)** — iPhone, quand la signature expire dans moins de 24 h, « Voir » du bandeau « Spartiate expire dans … » ouvre Plus, et le bouton « Voir la procédure SideStore » de la ligne « Expire le … » ouvre « Actualiser avec SideStore » ; les libellés cités (« Mes apps », « Actualiser ») correspondent à ceux de ton SideStore. Date : ____ Version : ____
+- [ ] **C-074 (minuit)** — PC, laisse Aujourd'hui ouvert au passage de minuit : la date de la barre du haut et le contenu passent au nouveau jour sans rien toucher. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 
@@ -268,6 +271,9 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | BL-108 | 0.29.4 |
 | C-156 | 0.29.4 |
 | C-159 | 0.29.4 |
+| C-119 | 0.29.4 |
+| § 18.3 a | 0.29.4 |
+| C-074 | 0.29.4 |
 
 ## Doutes à trancher
 

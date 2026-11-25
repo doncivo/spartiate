@@ -167,3 +167,9 @@ Constat : le § 19.4 demande trois clés ; la source durable `src-tauri/ios/Spar
 - A (recommandé) : garder l'écart et amender le § 19.4 par une D- (une seule clé, HealthKit). Conséquences : aucun risque pour la clé de synchro ; le chapitre 19 et l'app disent la même chose.
 - B : ajouter `com.apple.developer.healthkit.access` (tableau vide) seulement. Conséquences : conforme au modèle d'Xcode pour HealthKit, sans effet tant que HealthKit direct reste BLOCKED (D-69) ; une compilation iOS et un constat d'installation par SideStore.
 - C : ajouter les deux clés. Conséquences : `keychain-access-groups` à développer par la CI avec le préfixe de l'équipe de SideStore, inconnu de la CI ; risque de perdre l'accès à la clé de synchro du Trousseau après la mise à jour (réappairage).
+
+## Q-34 — Libellé « Logs » ou « Journaux » (SHELL-0294c)
+Constat : Plus affiche « Journaux » dans le sommaire PC (`navLogs`) mais l'écran, la ligne de Réglages et l'export disent « Logs » (`fr.logs.ts`, 11 textes) ; trois suites e2e (`I-04`, `lot-f-qa`, `lot-f-screens`) et huit tests unitaires nomment « Logs » (C-131). Le renvoi du texte d'échec de fichier a été corrigé vers « Plus › Journaux » (D-605).
+- A (recommandé) : « Journaux » partout (écran, ligne, export). Conséquences : un seul mot, comme le reste de Plus ; les e2e se mettent à jour dans une PR dont la CI les lance (impossible en local).
+- B : « Logs » partout, y compris le sommaire PC. Conséquences : anglicisme gardé, un seul libellé de plus à changer, aucun e2e touché.
+- C : garder les deux (état actuel). Conséquences : l'utilisateur voit deux mots pour un même écran.
