@@ -287,6 +287,11 @@
       "family": "accessoire"
     },
     {
+      "id": "weighted-vest",
+      "nameFr": "Gilet lesté",
+      "family": "accessoire"
+    },
+    {
       "id": "ankle-anchor",
       "nameFr": "Support d'ancrage pour chevilles",
       "family": "accessoire"
