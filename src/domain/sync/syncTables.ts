@@ -445,7 +445,7 @@ const WORKOUT_SET_TABLE = table(
     // Masquées du journal des conflits : aucun déclencheur ne les capture (séance ouverte seulement), un « Rétablir » sur une séance close ne serait pas publié (relecture sync-icloud).
     c('circuit_id', 'text', true, { max: 64, ...hidden }),
     c('circuit_rest_sec', 'int', true, hidden),
-    // DATA-0293 (migration 0023) : distance (m), série ajoutée en séance (D-481) et valeurs d'avant la dernière correction (Q-13), publiées avec la séance close ; masquées (aucun déclencheur : séance ouverte seulement).
+    // DATA-0293 (migration 0023) : distance (m), série ajoutée en séance (D-481) et valeurs d'avant la dernière correction (Q-13), publiées avec la séance close ; masquées du journal des conflits. Aucun déclencheur pour distance_m et added (séance ouverte seulement) ; corrected_from a un déclencheur propre (sync_workout_set_corrected_from_au, séance close).
     c('distance_m', 'real', true, hidden),
     c('added', 'int', true, { values: [0, 1], ...hidden }),
     c('corrected_from', 'text', true, { max: 200, ...hidden }),

@@ -5,8 +5,9 @@ import type { Migration } from '../migrator';
  *
  * - `recovery_sample.utc_offset_min` (LOCALE, C-058, D-478) : décalage de la cellule d'origine, en minutes (±840) ; nul : « Z » ou ligne d'avant.
  * - `workout_set.distance_m` (BL-112), `added` (BL-135, D-481 : série ajoutée en séance), `corrected_from` (C-072, Q-13 B : valeurs d'avant la
- *   dernière correction, JSON) : colonnes PUBLIÉES avec la séance close, SANS déclencheur (modèle de la 0013) : elles ne s'écrivent que sur une
- *   séance ouverte et la clôture met la ligne entière en file. Toutes nulles pour les lignes d'avant.
+ *   dernière correction, JSON) : colonnes PUBLIÉES avec la séance close (modèle de la 0013) : `distance_m` et `added` n'ont AUCUN déclencheur (elles ne s'écrivent que sur
+ *   une séance ouverte, la clôture met la ligne entière en file) ; `corrected_from` a un déclencheur PROPRE (`sync_workout_set_corrected_from_au`, séance close
+ *   seulement : une correction après clôture part champ par champ). Toutes nulles pour les lignes d'avant.
  * - `progression_profile.config_overrides` (§ 11, D-510) : surcharges par exercice (JSON), PUBLIÉE, capturée par un déclencheur PROPRE (modèle de la 0020).
  *
  * Un appareil resté au schéma 22 garde ces champs dans `sync_unknown` (ADR 0011 § 7.2) et les réintègre après sa migration.
