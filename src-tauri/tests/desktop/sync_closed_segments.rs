@@ -447,3 +447,29 @@ fn spartiate_lib_backend(
         fs.clone(),
     )
 }
+
+/// DATA-0295 (réserve 4 de la relecture sync-icloud, C-155) : `writeAtomic` a remplacé `state.spx` (numéro N sur le disque), puis le fsync du
+/// dossier échoue et l'appel rend `Io` : Rust ne retient pas N (`own.json` reste à N - 1). Émulé ici par `own.json` remis à N - 1 (même
+/// état que Rust après `Io`, le faux dossier en mémoire n'a pas d'écriture « faite puis en échec »). Au cycle suivant, le moteur propose
+/// N + 1 (maximum de son numéro local et de l'état relu sur le disque, `engine.ts`) : accepté, publié, relu sans rejet pour rejeu.
+#[test]
+fn data0295_c155_a_state_written_then_io_is_followed_by_n_plus_1_without_replay_refusal() {
+    let (mut d, _fs) = device();
+    d.setup(DEV_A);
+    let ep = epoch(1, DEV_A);
+    d.core.write_state(14, state(&ep, 1, 0, 0, None)).unwrap();
+    assert_eq!(published(&d).state_seq, 1);
+    let path = d.base.path().join("sync").join("own.json");
+    let mut own: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    assert_eq!(own["stateSeq"], json!(1));
+    own["stateSeq"] = json!(0);
+    std::fs::write(&path, serde_json::to_vec(&own).unwrap()).unwrap();
+    d.restart();
+    // L'état N est toujours relu tel quel (accepté, pas « rejoué »).
+    assert_eq!(published(&d).state_seq, 1);
+    d.core.write_state(14, state(&ep, 2, 0, 0, None)).unwrap();
+    let scan = d.core.scan(&[]).unwrap();
+    let mine = scan.devices.iter().find(|s| s.device_id == DEV_A).unwrap();
+    assert_eq!(mine.state_status, "ok");
+    assert_eq!(mine.state.as_ref().unwrap().state_seq, 2);
+}

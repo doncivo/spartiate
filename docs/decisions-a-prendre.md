@@ -208,7 +208,7 @@ Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des 
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-356 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+365 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -231,9 +231,9 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 | 9 | D-539 | SEANCE-0292b (BL-112, amende D-385). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
-| 8 | D-78 | I4-05 : Open Food Facts et scan, choix prudents de l'agent (mission de nuit du 2026-11-09), révisables par Ali. | A garder · B réviser ; effet : schéma, chiffre, écran |
+| 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
 
-### séance et moteur (112 : 73 à trancher, 39 à confirmer seulement)
+### séance et moteur (113 : 73 à trancher, 40 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -354,6 +354,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-590 | CONTENT-0293 (C-180). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-594 | SHELL-0294a (BL-118). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-621 | SHELL-0294f (BL-150) : § 19.2 sans platform.kind. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
 
 ### nutrition (24 : 14 à trancher, 10 à confirmer seulement)
 
@@ -435,7 +436,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (81 : 49 à trancher, 32 à confirmer seulement)
+### synchro et données (85 : 51 à trancher, 34 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -453,6 +454,7 @@ Gardées sans question (à confirmer seulement) :
 | 8 | D-210 | I6-05 (0.20.0) : modèle des compléments. | A garder · B réviser ; effet : synchro, schéma, écran |
 | 8 | D-430 | SUIVIS-029d (0.29.0) : bilans VISBODY en genres nouveaux de measurement, sans migration. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
 | 8 | D-561 | NUTRI-0292. | A garder · B réviser ; effet : moteur, synchro, schéma |
+| 8 | D-630 | DATA-0295 (BL-003) : réparations de l'ancien schéma sorties de SyncRepository. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 7 | D-75 | Catalogue alimentaire et journal persistant (I4-02, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro, schéma |
 | 7 | D-100 | I6-02 (0.13.0) : mensurations et migration 0012 (schéma 12). | A garder · B réviser ; effet : schéma, données, écran |
 | 7 | D-275 | PROG-01 (0.24.0) : limite connue de la synchro entre schémas, consignée (relecture sync-icloud du 14/11 ). | A garder · B réviser ; effet : synchro, schéma |
@@ -485,6 +487,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-466 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-467 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-609 | SHELL-0294c (C-127). | A garder · B réviser ; effet : données |
+| 2 | D-632 | DATA-0295 (C-154) : aucune écriture à côté d'un fichier évincé. | A garder · B réviser ; effet : données |
 | 1 | D-281 | FIX-0241 (0.25.0) : plafond de 560 px des notices levé sur PC dans Corps. | A garder · B réviser ; effet : chiffre |
 | 1 | D-335 | FIX-EXPORT (0.28.0) : plafond d'import des archives aligné sur 24 Mio, export refusé au-delà (C-136 ). | A garder · B réviser ; effet : chiffre |
 | 1 | D-421 | IMPORT-029a (0.29.0) : rapprochement des noms avec la bibliothèque. | A garder · B réviser ; effet : chiffre |
@@ -511,6 +514,8 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-571 | DATA-0293 (§ 21.2 a). | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-584 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-619 | SHELL-0294f (BL-150) : D-16 et § 21.2 mis en cohérence. | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-631 | DATA-0295 (C-153) : un seul accès de sécurité ouvert pour la racine de synchro. | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-637 | DATA-0295 (réserves de la relecture sync-icloud de la PR #223) : C-154 et C-153 resserrés. | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-135 | FIX-0172 : relecture de sante après l'ouverture (automatisation « Lorsque Spartiate est ouverte »). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-280 | FIX-0241 (0.25.0) : colonnes de Progrès › Corps selon la largeur. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-329 | FIX-CONFID-IOS (0.28.0) : base, sauvegardes locales et journal exclus de la sauvegarde iCloud de l'iPhone (audit Claude C-152, C-147; applique D-99 … | à confirmer seulement (aucun effet visible repéré) |
@@ -583,11 +588,12 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (56 : 24 à trancher, 32 à confirmer seulement)
+### CI et outillage (60 : 27 à trancher, 33 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
 | 11 | D-618 | SHELL-0294f (BL-149, D-490) : revue par thème des choix prudents, produite par script. | A garder · B réviser ; effet : moteur, synchro, schéma, données |
+| 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 6 | D-222 | I6-06 : GPS sur l'iPhone par le plugin OFFICIEL Tauri geolocation, au premier plan seulement (passe architect, décision de l'agent révisable par Ali). | A garder · B réviser ; effet : synchro, écran |
 | 6 | D-598 | SHELL-0294b (C-158, BL-129, § 19.3 a, § 19.4 a). | A garder · B réviser ; effet : synchro, données |
 | 5 | D-77 | Client Open Food Facts en Rust (I4-05, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro |
@@ -605,6 +611,8 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-400 | COQUILLE-PC-c (0.28.1) : Dynamic Type iOS par font: -apple-system-body (§ 18.6, C-113, D-372). | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-401 | COQUILLE-PC (0.28.1) : zoom PC 150 % (§ 18.6) non testé, à examiner par Ali. | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-610 | SHELL-0294c (BL-143, BL-164, BL-033 et bundle de départ). | A garder · B réviser ; effet : chiffre |
+| 2 | D-634 | DATA-0295 (BL-005) : cause de la copie de conflit state 2.spx écrite comme hypothèse H-42. | A garder · B réviser ; effet : données |
+| 2 | D-636 | DATA-0295 (BL-166) : trois tests de non-régression de resolveInflight, verts d'emblée. | A garder · B réviser ; effet : moteur |
 | 1 | D-105 | CI : projet dom à 2 workers (12/11/2026). | A garder · B réviser ; effet : écran |
 | 1 | D-363 | TESTS-FIGES (0.28.0) : seuil de couverture de src/domain/training à 90 % (C-170, § 11.6 ). | A garder · B réviser ; effet : chiffre |
 | 1 | D-372 | A11Y (0.28.0) : Dynamic Type iOS reporté en 0.28.1, avec capture CI et constat d'Ali (C-113, H-19a ). | A garder · B réviser ; effet : écran |
@@ -648,5 +656,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-622 | SHELL-0294f (BL-150) : versions du § 25.2 mises en cohérence avec D-58. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-625 | SHELL-0294f (BL-165) : corps des six anciennes publications réécrits par le workflow. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-629 | DATA-0295 (BL-035) : cycle statique goalRules → week → todayList rompu. | à confirmer seulement (aucun effet visible repéré) |
 
 <!-- revue-choix-prudents:fin -->

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Task } from './model';
 import { sortTasksForDay } from './taskSchedule';
 import { asEntityId, asLocalDate, asLocalTime, type SpaceId } from './types';
-import { addWeeks, buildWeek, firstWeekdayIso, isoWeekOf, rowIndexForDrop, weekDays, weekdayOrder, weekStartOf } from './week';
+import { addWeeks, firstWeekdayIso, isoWeekOf, weekDays, weekdayOrder, weekStartOf } from './week';
+import { buildWeek, rowIndexForDrop } from './weekList';
 
 const PRO = asEntityId<SpaceId>('10000000-0000-4000-8000-000000000001');
 const PERSO = asEntityId<SpaceId>('10000000-0000-4000-8000-000000000002');
