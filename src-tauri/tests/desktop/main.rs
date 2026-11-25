@@ -61,5 +61,6 @@ mod sync_tz;
 mod sync_y_tech_02;
 mod training_schema;
 mod updater;
+mod wasm_native_parity;
 mod window;
 mod window_fit;

@@ -1,0 +1,129 @@
+{
+  "note": "DATA-0295 (§ 23.1 c, H-18) : scénario rejoué à l'identique sur la base Wasm des tests (src/db/wasmNativeParity.test.ts) et sur le plugin SQL natif (src-tauri/tests/desktop/wasm_native_parity.rs), après les migrations de l'app. Valeurs synthétiques. Les deux moteurs doivent rendre exactement `expect`.",
+  "steps": [
+    {
+      "sql": "INSERT INTO profile (id, created_at, updated_at, device_id, hlc) VALUES ('profile|singleton', '2026-10-01T08:00:00.000Z', '2026-10-01T08:00:00.000Z', 'dev-a', '0000000000001:0000:dev-a')",
+      "params": []
+    },
+    {
+      "sql": "UPDATE profile SET height_cm = ?, updated_at = ?, hlc = ? WHERE id = 'profile|singleton'",
+      "params": [
+        180,
+        "2026-10-01T08:00:01.000Z",
+        "0000000000002:0000:dev-a"
+      ]
+    },
+    {
+      "sql": "INSERT INTO sync_guard (id) VALUES (1)",
+      "params": []
+    },
+    {
+      "sql": "INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES ('weight|2026-10-01|manual', '2026-10-01', 70, 'manual', 'UTC', '2026-10-01T08:00:02.000Z', '2026-10-01T08:00:02.000Z', 'dev-b', '0000000000003:0000:dev-b')",
+      "params": []
+    },
+    {
+      "sql": "DELETE FROM sync_guard",
+      "params": []
+    },
+    {
+      "sql": "INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES ('weight|2026-10-02|manual', '2026-10-02', 71, 'manual', 'UTC', '2026-10-02T08:00:00.000Z', '2026-10-02T08:00:00.000Z', 'dev-a', '0000000000004:0000:dev-a')",
+      "params": []
+    },
+    {
+      "sql": "BEGIN IMMEDIATE",
+      "params": []
+    },
+    {
+      "sql": "INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES ('weight|2026-10-03|manual', '2026-10-03', 72, 'manual', 'UTC', '2026-10-03T08:00:00.000Z', '2026-10-03T08:00:00.000Z', 'dev-a', '0000000000005:0000:dev-a')",
+      "params": []
+    },
+    {
+      "sql": "ROLLBACK",
+      "params": []
+    },
+    {
+      "sql": "UPDATE body_weight SET deleted_at = ?, updated_at = ?, hlc = ? WHERE id = 'weight|2026-10-02|manual'",
+      "params": [
+        "2026-10-02T09:00:00.000Z",
+        "2026-10-02T09:00:00.000Z",
+        "0000000000006:0000:dev-a"
+      ]
+    }
+  ],
+  "failing": [
+    {
+      "sql": "INSERT INTO body_weight (id, date, kg, source, timezone, created_at, updated_at, device_id, hlc) VALUES ('weight|2026-10-04|manual', '2026-10-04', 0, 'manual', 'UTC', '2026-10-04T08:00:00.000Z', '2026-10-04T08:00:00.000Z', 'dev-a', '0000000000007:0000:dev-a')",
+      "params": []
+    },
+    {
+      "sql": "INSERT INTO profile (id, created_at, updated_at, device_id, hlc) VALUES ('autre', '2026-10-04T08:00:00.000Z', '2026-10-04T08:00:00.000Z', 'dev-a', '0000000000008:0000:dev-a')",
+      "params": []
+    }
+  ],
+  "checks": [
+    {
+      "sql": "SELECT table_name, row_id, field FROM sync_outbox ORDER BY seq",
+      "expect": [
+        [
+          "profile",
+          "profile|singleton",
+          "*"
+        ],
+        [
+          "profile",
+          "profile|singleton",
+          "height_cm"
+        ],
+        [
+          "body_weight",
+          "weight|2026-10-02|manual",
+          "*"
+        ],
+        [
+          "body_weight",
+          "weight|2026-10-02|manual",
+          "deleted_at"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT id, kg, deleted_at FROM body_weight ORDER BY id",
+      "expect": [
+        [
+          "weight|2026-10-01|manual",
+          70,
+          null
+        ],
+        [
+          "weight|2026-10-02|manual",
+          71,
+          "2026-10-02T09:00:00.000Z"
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT height_cm FROM profile",
+      "expect": [
+        [
+          180
+        ]
+      ]
+    },
+    {
+      "sql": "SELECT COUNT(*) AS n FROM sync_guard",
+      "expect": [
+        [
+          0
+        ]
+      ]
+    },
+    {
+      "sql": "PRAGMA foreign_keys",
+      "expect": [
+        [
+          1
+        ]
+      ]
+    }
+  ]
+}
