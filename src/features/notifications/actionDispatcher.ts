@@ -7,10 +7,10 @@ import type { SupplementActionProcessor, SupplementActionRun } from './supplemen
  * n'a qu'un lecteur : ce répartiteur. Un passage :
  *   1. un seul `drain` ;
  *   2. les actions de repos (« +30 s », « Passer ») vont au gestionnaire du repos ;
- *   3. le processeur des compléments reçoit une VUE de la source : son `drain` rend le même tirage sans les actions de repos, son `ack` est
- *      seulement noté ;
- *   4. un seul `ack` à la fin, des lignes notées, et seulement si le gestionnaire du repos a tout réglé : sinon rien n'est acquitté et tout est
- *      rejoué au passage suivant (les compléments écartent leurs doublons par leurs clés appliquées, le repos par les siennes).
+ *   3. le processeur des compléments reçoit une VUE de la source : son `drain` rend le même tirage sans les actions de repos ;
+ *   4. son `ack` (après l'écriture de sa file locale, comme avant) est le seul acquittement du fichier, et seulement si le gestionnaire du repos
+ *      a tout réglé : sinon rien n'est acquitté et tout est rejoué au passage suivant (les compléments écartent leurs doublons par leurs clés
+ *      appliquées, le repos par les siennes). Un acquittement impossible remonte au processeur des compléments (« ack-failed », état durable).
  * L'enregistrement des catégories se fait en UN appel (iOS remplace toutes les catégories à chaque enregistrement) : compléments, puis repos.
  * Les passages sont sérialisés. Rend l'interface du processeur des compléments, pour garder ses déclencheurs (`startSupplementActions`).
  */
@@ -27,7 +27,8 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
   const { source } = deps;
   /** Tirage du passage en cours (null hors passage, ou tirage impossible). */
   let snapshot: ActionDrain | null = null;
-  let noted: { readonly lines: number; readonly writeFailures: number } | null = null;
+  /** Le gestionnaire du repos a réglé toutes les actions de repos du tirage en cours. */
+  let restSettled = true;
   let supplementTypes: readonly ActionTypeSpec[] = [];
 
   const view: NotificationActionSource = {
@@ -39,7 +40,11 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
       return { entries: snapshot.entries, rest: [], lines: snapshot.lines, unreadable: snapshot.unreadable, writeFailures: snapshot.writeFailures };
     },
     ack: async (done) => {
-      noted = done;
+      if (!restSettled) {
+        deps.log('rest-action-retry');
+        return;
+      }
+      await source.ack(done);
     },
     status: () => source.status(),
     onWake: (listener) => source.onWake(listener),
@@ -55,13 +60,12 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
 
   async function pass(): Promise<SupplementActionRun> {
     snapshot = null;
-    noted = null;
+    restSettled = true;
     try {
       snapshot = await source.drain();
     } catch {
       snapshot = null;
     }
-    let restSettled = true;
     const restActions = snapshot?.rest ?? [];
     if (restActions.length > 0) {
       try {
@@ -70,26 +74,12 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
         restSettled = false;
       }
     }
-    let run: SupplementActionRun;
     try {
-      run = await supplement.run();
+      return await supplement.run();
     } finally {
       snapshot = null;
+      restSettled = true;
     }
-    const toAck: { readonly lines: number; readonly writeFailures: number } | null = noted;
-    noted = null;
-    if (toAck === null) return run;
-    if (!restSettled) {
-      deps.log('rest-action-retry');
-      return run;
-    }
-    try {
-      await source.ack(toAck);
-    } catch {
-      deps.log('notification-action-ack-failed');
-      return { ...run, status: 'ack-failed' };
-    }
-    return run;
   }
 
   return {
