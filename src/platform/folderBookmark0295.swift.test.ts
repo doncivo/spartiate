@@ -62,3 +62,21 @@ describe('C-154 : aucune écriture sur un fichier évincé (substitut `.<nom>.ic
     expect(refused).toBeLessThan(write.indexOf('openat('));
   });
 });
+
+describe('Relecture sync-icloud de DATA-0295 (réserves)', () => {
+  it('C-154 : refus seulement si le fichier réel est absent (ENOENT) et le substitut présent, comme `status`', () => {
+    const guard = body('private func refuseEvicted(');
+    const real = guard.indexOf('fstatat(dirFd, name, ');
+    expect(real).toBeGreaterThan(-1);
+    expect(real).toBeLessThan(guard.indexOf('fstatat(dirFd, placeholder'));
+    expect(guard).toMatch(/errno != ENOENT/);
+    expect(guard).toMatch(/self\.isRegular\(st\.st_mode\)|isRegular\(st\.st_mode\)/);
+  });
+
+  it('C-153 : même URL et nouvel accès refusé : la racine reste l’instance qui détient l’accès ouvert', () => {
+    const resolve = body('private func resolveBookmark(');
+    expect(resolve).toMatch(/kept = previous/);
+    expect(resolve).toMatch(/root = kept\n/);
+    expect(resolve).not.toMatch(/root = url\n/);
+  });
+});
