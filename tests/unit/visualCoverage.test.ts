@@ -51,3 +51,29 @@ describe('C-193 (relecture 1, point 6) : préparation de la fiche d\'exercice', 
     expect(block).toContain('.ct-sheet__title');
   });
 });
+
+describe('BL-163 : les scènes attendent l’état visé avant la capture', () => {
+  const line = (name: string): string => spec.split('\n').find((l) => l.includes(`{ name: '${name}',`)) ?? '';
+  const block = (name: string): string => {
+    const start = spec.indexOf(`const ${name} =`);
+    return start < 0 ? '' : spec.slice(start, spec.indexOf('\n};', start) + 3);
+  };
+
+  it('Entraînement indisponible (440 et 1 440 px) : capture après la fin du chargement, jamais sur « Chargement… »', () => {
+    expect(line('Entrainement-indisponible')).toContain('prepare: goTrainingReady');
+    expect(line('PC-Entrainement-indisponible')).toContain('prepare: goTrainingReady');
+    const ready = block('goTrainingReady');
+    expect(ready).toContain("goTab('Entraînement')");
+    expect(ready).toContain('waitForFunction');
+    expect(ready).toContain('Chargement');
+    expect(ready).not.toContain('waitForTimeout');
+  });
+
+  it('Dégradé apprentissage : le bloc des cadrans de la récupération (état d’apprentissage) est attendu puis amené dans le cadre', () => {
+    expect(line('Degrade-apprentissage')).toContain('prepare: showLearning');
+    const learning = block('showLearning');
+    expect(learning).toContain("locator('.ct-recovery__dials')");
+    expect(learning).toContain('scrollIntoViewIfNeeded');
+    expect(learning).not.toContain('waitForTimeout');
+  });
+});
