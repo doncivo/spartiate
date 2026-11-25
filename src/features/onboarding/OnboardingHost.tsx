@@ -18,7 +18,7 @@ const MARK = 'data-ct-onboarding';
  */
 export function OnboardingHost() {
   const container = useAppContainer();
-  const requested = useNavigationStore((s) => s.overlays.at(-1)?.kind === 'onboarding');
+  const requested = useNavigationStore((s) => s.overlays.some((o) => o.kind === 'onboarding'));
   const closeOverlay = useNavigationStore((s) => s.closeOverlay);
   const [auto, setAuto] = useState<'pending' | 'show' | 'none'>('pending');
   const { data } = container;
