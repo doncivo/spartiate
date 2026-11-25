@@ -15,7 +15,7 @@
 // - le délégué est réaffirmé à chaque `didBecomeActive` ; `status` dit s'il est bien le nôtre.
 //
 // Fichier : Library/Application Support/ct-notification-actions/queue.jsonl, une ligne JSON par action :
-//   {"v":1,"n":<entier>,"a":"done"|"snooze15","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
+//   {"v":1,"n":<entier>,"a":"done"|"snooze15"|"extend30"|"skip","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
 // Catégories : categories.json (même dossier), relu au chargement du plugin pour que les boutons existent avant le premier JS.
 
 import Darwin
@@ -69,7 +69,7 @@ private let directoryName = "ct-notification-actions"
 private let queueFileName = "queue.jsonl"
 private let categoriesFileName = "categories.json"
 private let writeFailuresKey = "fr.spartiate.notification-actions.writeFailures"
-private let knownActions: Set<String> = ["done", "snooze15"]
+private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip"]
 
 /// Lecture et écriture du fichier ; une seule file série pour tout le plugin.
 private final class ActionStore {

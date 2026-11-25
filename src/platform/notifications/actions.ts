@@ -1,4 +1,5 @@
 import type { NotificationActionId, RawNotificationAction } from '../../domain/notificationActions';
+import type { RawRestAction, RestActionId } from '../../domain/restNotificationActions';
 
 /**
  * Source des actions de notification « Fait » et « +15 min » (N-03, ADR 0012 avenant N3.2) : port de plateforme. Sur l'iPhone, le plugin
@@ -11,7 +12,8 @@ import type { NotificationActionId, RawNotificationAction } from '../../domain/n
  * réveille l'app en arrière-plan, le plugin écrit l'action dans son fichier durable, l'app l'applique au passage suivant (« Pris », FIX-0221, D-251).
  */
 export interface ActionSpec {
-  readonly id: NotificationActionId;
+  /** SHELL-0294b : « +30 s » et « Passer » de la notification de fin de repos (`extend30`, `skip`). */
+  readonly id: NotificationActionId | RestActionId;
   readonly title: string;
   readonly foreground: boolean;
 }
@@ -30,6 +32,11 @@ export interface ActionTypeSpec {
 /** Contenu du fichier natif, lu sans l'effacer. */
 export interface ActionDrain {
   readonly entries: readonly RawNotificationAction[];
+  /**
+   * SHELL-0294b (§ 13.3 b) : actions de la notification de fin de repos (`extend30`, `skip`), à part des actions de rappel. Comptées dans
+   * `lines`, jamais dans `unreadable`. Absent : aucune (faux et réponses d'avant).
+   */
+  readonly rest?: readonly RawRestAction[];
   /** Lignes physiques lues (à acquitter, illisibles comprises). */
   readonly lines: number;
   /** Lignes illisibles (comptées dans `lines`, absentes de `entries`). */

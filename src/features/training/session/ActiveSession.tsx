@@ -42,6 +42,7 @@ import { SessionStrip } from './SessionStrip';
 import { DeclaredFatigueBar } from './DeclaredFatigueBar';
 import { parseDeclaredFatigue, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
 import { SetRow } from './SetRow';
+import { onRestChanged } from './restSignal';
 import { recordText } from './SummaryFigures';
 import { useKeyboardSelect } from './keyboardSelect';
 import { heldFor } from '../loadDisplay';
@@ -230,10 +231,13 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       if (document.visibilityState !== 'hidden') void resume();
     };
     document.addEventListener('visibilitychange', onVisible);
+    // SHELL-0294b (§ 13.3 b) : « +30 s » ou « Passer » de la notification de fin de repos : l'échéance persistée est relue aussitôt.
+    const offRest = onRestChanged(() => void resume());
     return () => {
       live.current = false;
       clearTimeout(first);
       document.removeEventListener('visibilitychange', onVisible);
+      offRest();
     };
   }, [resume]);
 

@@ -1,0 +1,108 @@
+import type { RawRestAction } from '../../domain/restNotificationActions';
+import { NotificationActionSourceError, type ActionDrain, type ActionTypeSpec, type NotificationActionSource } from '../../platform/notifications';
+import type { SupplementActionProcessor, SupplementActionRun } from './supplementActions';
+
+/**
+ * Répartiteur unique des actions de notification (SHELL-0294b, § 13.3 b, D-541 (1), D-599). Le fichier natif du plugin `notification-actions`
+ * n'a qu'un lecteur : ce répartiteur. Un passage :
+ *   1. un seul `drain` ;
+ *   2. les actions de repos (« +30 s », « Passer ») vont au gestionnaire du repos ;
+ *   3. le processeur des compléments reçoit une VUE de la source : son `drain` rend le même tirage sans les actions de repos, son `ack` est
+ *      seulement noté ;
+ *   4. un seul `ack` à la fin, des lignes notées, et seulement si le gestionnaire du repos a tout réglé : sinon rien n'est acquitté et tout est
+ *      rejoué au passage suivant (les compléments écartent leurs doublons par leurs clés appliquées, le repos par les siennes).
+ * L'enregistrement des catégories se fait en UN appel (iOS remplace toutes les catégories à chaque enregistrement) : compléments, puis repos.
+ * Les passages sont sérialisés. Rend l'interface du processeur des compléments, pour garder ses déclencheurs (`startSupplementActions`).
+ */
+export interface ActionDispatcherDeps {
+  readonly source: NotificationActionSource;
+  readonly supplement: (view: NotificationActionSource) => SupplementActionProcessor;
+  /** Rend vrai si toutes les actions sont réglées (appliquées ou ignorées), faux s'il faut les rejouer. */
+  readonly rest: (actions: readonly RawRestAction[]) => Promise<boolean>;
+  readonly restTypes: readonly ActionTypeSpec[];
+  readonly log: (code: string) => void;
+}
+
+export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementActionProcessor {
+  const { source } = deps;
+  /** Tirage du passage en cours (null hors passage, ou tirage impossible). */
+  let snapshot: ActionDrain | null = null;
+  let noted: { readonly lines: number; readonly writeFailures: number } | null = null;
+  let supplementTypes: readonly ActionTypeSpec[] = [];
+
+  const view: NotificationActionSource = {
+    registerActionTypes: async (types) => {
+      supplementTypes = types;
+    },
+    drain: async () => {
+      if (snapshot === null) throw new NotificationActionSourceError('rejected');
+      return { entries: snapshot.entries, rest: [], lines: snapshot.lines, unreadable: snapshot.unreadable, writeFailures: snapshot.writeFailures };
+    },
+    ack: async (done) => {
+      noted = done;
+    },
+    status: () => source.status(),
+    onWake: (listener) => source.onWake(listener),
+  };
+  const supplement = deps.supplement(view);
+
+  let chain: Promise<unknown> = Promise.resolve();
+  const serial = <T>(task: () => Promise<T>): Promise<T> => {
+    const next = chain.then(task, task);
+    chain = next.catch(() => undefined);
+    return next;
+  };
+
+  async function pass(): Promise<SupplementActionRun> {
+    snapshot = null;
+    noted = null;
+    try {
+      snapshot = await source.drain();
+    } catch {
+      snapshot = null;
+    }
+    let restSettled = true;
+    const restActions = snapshot?.rest ?? [];
+    if (restActions.length > 0) {
+      try {
+        restSettled = await deps.rest(restActions);
+      } catch {
+        restSettled = false;
+      }
+    }
+    let run: SupplementActionRun;
+    try {
+      run = await supplement.run();
+    } finally {
+      snapshot = null;
+    }
+    const toAck: { readonly lines: number; readonly writeFailures: number } | null = noted;
+    noted = null;
+    if (toAck === null) return run;
+    if (!restSettled) {
+      deps.log('rest-action-retry');
+      return run;
+    }
+    try {
+      await source.ack(toAck);
+    } catch {
+      deps.log('notification-action-ack-failed');
+      return { ...run, status: 'ack-failed' };
+    }
+    return run;
+  }
+
+  return {
+    register: async () => {
+      await supplement.register();
+      try {
+        await source.registerActionTypes([...supplementTypes, ...deps.restTypes]);
+        return true;
+      } catch {
+        deps.log('notification-action-register-failed');
+        return false;
+      }
+    },
+    run: () => serial(pass),
+  };
+}

@@ -1,4 +1,5 @@
 import type { RawNotificationAction } from '../../domain/notificationActions';
+import { isRestActionId, type RawRestAction } from '../../domain/restNotificationActions';
 import { NotificationActionSourceError, type ActionDrain, type ActionTypeSpec, type NotificationActionSource } from './actions';
 
 /**
@@ -8,13 +9,13 @@ import { NotificationActionSourceError, type ActionDrain, type ActionTypeSpec, t
  */
 export interface FakeNotificationActionSource extends NotificationActionSource {
   /** Lignes du fichier natif, dans l'ordre. */
-  readonly file: RawNotificationAction[];
+  readonly file: (RawNotificationAction | RawRestAction)[];
   /** Appels reçus, dans l'ordre : `registerActionTypes`, `drain`, `ack:{lines}`, `status`. */
   readonly calls: string[];
   /** Catégories reçues au dernier `registerActionTypes`. */
   registered: readonly ActionTypeSpec[];
   /** Écrit une ligne dans le fichier et réveille les écouteurs (le plugin émet `action` après chaque ligne). */
-  push(action: RawNotificationAction, options?: { readonly wake?: boolean }): void;
+  push(action: RawNotificationAction | RawRestAction, options?: { readonly wake?: boolean }): void;
   /** Ajoute des lignes illisibles ou des écritures impossibles vues par le natif. */
   addUnreadable(count: number): void;
   addWriteFailures(count: number): void;
@@ -26,7 +27,7 @@ export interface FakeNotificationActionSource extends NotificationActionSource {
 }
 
 export function createFakeNotificationActionSource(): FakeNotificationActionSource {
-  const file: RawNotificationAction[] = [];
+  const file: (RawNotificationAction | RawRestAction)[] = [];
   const calls: string[] = [];
   const listeners = new Set<() => void>();
   let unreadable = 0;
@@ -79,7 +80,9 @@ export function createFakeNotificationActionSource(): FakeNotificationActionSour
       } catch (error) {
         return Promise.reject(error as Error);
       }
-      return Promise.resolve({ entries: [...file], lines: file.length + unreadable, unreadable, writeFailures });
+      const entries = file.filter((line): line is RawNotificationAction => !isRestActionId(line.actionId));
+      const rest = file.filter((line): line is RawRestAction => isRestActionId(line.actionId));
+      return Promise.resolve({ entries, rest, lines: file.length + unreadable, unreadable, writeFailures });
     },
     ack: ({ lines, writeFailures: failures }) => {
       calls.push(`ack:${String(lines)}`);

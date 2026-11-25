@@ -5,6 +5,9 @@ import type { DataAccess } from '../../db/repositories/dataAccess';
 import type { AppContainer } from '../app/container';
 import { useNoticeStore } from '../app/notice';
 import { announceLocalChanges, onSyncedDataApplied } from '../sync/remoteChanges';
+import { announceRestChanged } from '../training/session/restSignal';
+import { createActionDispatcher } from './actionDispatcher';
+import { createRestActionHandler, restActionTypes } from './restActions';
 import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
 
 const TROUBLE_KEY = 'notifications.actionTrouble';
@@ -60,23 +63,42 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
   const stopActions = startSupplementActions({
     document: env.document,
     source,
+    // SHELL-0294b (§ 13.3 b, D-541, D-599) : un seul lecteur du fichier natif, le répartiteur ; les compléments en reçoivent une vue, les
+    // actions « +30 s » et « Passer » de la notification de fin de repos vont au gestionnaire du repos.
     makeProcessor: (actions) =>
-      createSupplementActionProcessor({
+      createActionDispatcher({
         source: actions,
-        settings: container.data.repos.settings,
-        supplements: () => container.data.repos.supplements(),
-        nowMs: () => container.notificationClock.nowMs(),
-        texts: { action: fr.actionTaken, placeholder: fr.hiddenPlaceholder },
-        onTaken: (count) => {
-          useNoticeStore.getState().show(count === 1 ? fr.noticeTakenOne : fr.noticeTakenMany.replace('{n}', String(count)));
-          // Carte d'Aujourd'hui relue ; l'abonnement ci-dessus replanifie les rappels.
-          announceLocalChanges(['supplement_intake']);
-        },
-        onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
+        restTypes: restActionTypes(),
         log: (code) => logFailure('notifications', code),
-        // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
-        updateTrouble: makeTroubleUpdater(container.data),
-        onTroubleChange: () => announceLocalChanges(['supplement_intake']),
+        rest: createRestActionHandler({
+          restEndMs: async () => {
+            const rest = await (await container.data.repos.workouts()).getRest();
+            return rest === null ? null : Date.parse(rest.endAt);
+          },
+          controller: () => import('./restController').then((m) => m.restControllerFor(container)),
+          nowMs: () => container.notificationClock.nowMs(),
+          onChanged: announceRestChanged,
+          notice: (text) => useNoticeStore.getState().show(text),
+          log: (code) => logFailure('notifications', code),
+        }),
+        supplement: (view) =>
+          createSupplementActionProcessor({
+            source: view,
+            settings: container.data.repos.settings,
+            supplements: () => container.data.repos.supplements(),
+            nowMs: () => container.notificationClock.nowMs(),
+            texts: { action: fr.actionTaken, placeholder: fr.hiddenPlaceholder },
+            onTaken: (count) => {
+              useNoticeStore.getState().show(count === 1 ? fr.noticeTakenOne : fr.noticeTakenMany.replace('{n}', String(count)));
+              // Carte d'Aujourd'hui relue ; l'abonnement ci-dessus replanifie les rappels.
+              announceLocalChanges(['supplement_intake']);
+            },
+            onTrouble: (kind) => useNoticeStore.getState().show(kind === 'failed' ? fr.noticeFailed : fr.noticeLost),
+            log: (code) => logFailure('notifications', code),
+            // FIX-0242 : état durable des échecs changé (posé ou levé) : la carte d'Aujourd'hui le relit.
+            updateTrouble: makeTroubleUpdater(container.data),
+            onTroubleChange: () => announceLocalChanges(['supplement_intake']),
+          }),
       }),
   });
   return () => {
