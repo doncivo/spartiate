@@ -1575,3 +1575,20 @@ fn health_files_read_is_registered_in_its_own_ios_capability() {
     }
     assert!(found, "capability health-files-ios.json absente");
 }
+
+/// SHELL-0294d (BL-002, BL-144, D-611) : la CSP n'autorise ni l'évaluation WebAssembly ni les styles en ligne ; aucune dépendance livrée
+/// n'en a besoin (le moteur SQLite Wasm n'est que du développement, l'OCR est natif, les styles dynamiques passent par le CSSOM).
+#[test]
+fn csp_allows_neither_wasm_eval_nor_inline_styles() {
+    let conf = conf();
+    let csp = conf["app"]["security"]["csp"].as_object().expect("csp");
+    for (directive, value) in csp {
+        let value = value.as_str().expect("directive texte");
+        assert!(
+            !value.contains("unsafe-inline") && !value.contains("unsafe-eval"),
+            "{directive} : {value}"
+        );
+    }
+    assert_eq!(csp["script-src"], "'self'");
+    assert_eq!(csp["style-src"], "'self'");
+}
