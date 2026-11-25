@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global console, process, URL */
 // SHELL-0295 (BL-044, D-641) : relevé par script des « skip » conditionnels, pauses et plafonds de délai des tests (D-51).
 // `node scripts/release/test-markers.mjs` imprime le relevé par module ; `--check` compare à tests/test-markers.json (exact dans les deux
 // sens) ; `--write` réécrit la liste (un ajout se justifie dans le commit qui la réécrit).

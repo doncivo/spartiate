@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global console, process */
 // SHELL-0295 (BL-044, D-641) : couverture par module tirée du rapport fusionné (coverage/coverage-summary.json, reporter json-summary).
 // `node scripts/release/coverage-by-module.mjs coverage/coverage-summary.json` imprime un tableau Markdown (résumé du job de la CI).
 import { readFileSync } from 'node:fs';
