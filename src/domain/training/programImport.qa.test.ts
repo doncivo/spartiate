@@ -99,8 +99,8 @@ describe('IMPORT-029 qa : rapprochement', () => {
         expect(match.choices.map((c) => c.id)).toContain(exercise.id);
       }
     }
-    // « Extension de hanches à la poulie » / « Extension de hanche à la poulie » : écart de contenu signalé à content-data (fiche IMPORT-029).
-    expect(homonyms.sort()).toEqual(['cable-kickback', 'cable-pull-through']);
+    // CONTENT-0293 (BL-128) : plus aucun homonyme (le pull-through porte son propre nom).
+    expect(homonyms).toEqual([]);
   });
 
   it('score borné à [0, 1] et nul pour un nom vide', () => {

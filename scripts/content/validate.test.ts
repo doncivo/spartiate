@@ -258,6 +258,15 @@ describe('validateContent : jeu minimal', () => {
     expect(out).toMatch(/profil par défaut inconnu/);
   });
 
+  it('refuse deux exercices dont le nom ne diffère que par un pluriel, une casse ou un accent (CONTENT-0293, BL-128)', () => {
+    const b = bundle();
+    b['exercises'].exercises[0].nameFr = 'Extension de hanches à la poulie';
+    b['exercises'].exercises[1].nameFr = 'extension de hanche a la poulie';
+    expect(run(b).join('\n')).toMatch(/nom proche de celui de ex-a : ex-b/);
+    b['exercises'].exercises[1].nameFr = 'Pull-through à la poulie';
+    expect(run(b).join('\n')).not.toMatch(/nom proche/);
+  });
+
   it('applique les comptages attendus par défaut (150 exercices, 4 programmes)', () => {
     const out = run(bundle(), {}).join('\n');
     expect(out).toMatch(/au moins 150 exercices attendus, 3 trouvés/);
