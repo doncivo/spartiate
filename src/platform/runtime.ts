@@ -15,10 +15,8 @@ export function detectRuntime(): Runtime {
   return isTauri() ? 'tauri' : 'web';
 }
 
-/** Système cible : l'agent utilisateur d'abord, puis `navigator.platform` quand il ne dit rien (C-163) ; « other » si les deux sont muets (journalisé, D-616). */
-export function detectOs(userAgent: string = globalThis.navigator?.userAgent ?? '', platform: string = globalThis.navigator?.platform ?? ''): OsFamily {
+export function detectOs(userAgent: string = globalThis.navigator?.userAgent ?? ''): OsFamily {
   if (/iPhone|iPad|iPod/i.test(userAgent)) return 'ios';
   if (/Windows/i.test(userAgent)) return 'windows';
-  if (/iPhone|iPad|iPod/i.test(platform)) return 'ios';
-  return /^Win/i.test(platform) ? 'windows' : 'other';
+  return 'other';
 }
