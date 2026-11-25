@@ -1,8 +1,35 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { todayLocal, type Clock } from '../../domain/clock';
+import type { LocalDate } from '../../domain/types';
 import { t, type PlainMessageKey } from '../../i18n';
 import { statusLine } from '../sync/syncText';
 import { useAppContainer } from './AppContainerContext';
 import './ShellChrome.css';
+
+/**
+ * C-074, C-124 : jour local de l'horloge, relu à minuit et au retour au premier plan (veille longue) : l'écran ouvert la nuit ou
+ * laissé ouvert ne garde pas la date de la veille. Hébergé ici (module du départ) pour ne pas ajouter de module au bundle de départ.
+ */
+export function useLocalDay(clock: Clock): LocalDate {
+  const [day, setDay] = useState(() => todayLocal(clock));
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = (): void => {
+      setDay(todayLocal(clock));
+      clearTimeout(timer);
+      const now = new Date(clock.nowMs());
+      const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime();
+      timer = setTimeout(refresh, Math.max(1000, midnight - now.getTime() + 50));
+    };
+    refresh();
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [clock]);
+  return day;
+}
 
 const subscribeNone = (): (() => void) => () => undefined;
 

@@ -4,7 +4,7 @@
  */
 export const todayFr = {
   title: 'Aujourd’hui',
-  loadFailed: 'Lecture impossible : réessaie en rouvrant l’écran.',
+  loadFailed: 'Lecture impossible : réessaie.',
   welcomeEyebrow: 'Bienvenue',
   welcomeTitle: 'Trois réglages, puis on s’entraîne.',
   welcomeText: 'Ton profil sert à calibrer les charges et la dépense. Rien n’est obligatoire : un champ vide reste vide.',

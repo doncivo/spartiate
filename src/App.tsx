@@ -26,9 +26,8 @@ import type { startSigningIntegration } from './features/signing/signingRun';
 import { t } from './i18n';
 import { formatPrefsVersion, subscribeFormatPrefs } from './i18n/formatPrefs';
 import { AppShell, Button, TabRail } from './ui';
-import { PcTopBar, SidebarSyncCard } from './features/app/ShellChrome';
+import { PcTopBar, SidebarSyncCard, useLocalDay } from './features/app/ShellChrome';
 import { SHORTCUTS } from './features/app/shortcuts';
-import { todayLocal } from './domain/clock';
 import { logFailure } from './platform/desktop/log';
 import { formatDetailDate } from './i18n/format';
 import { useLayout } from './ui/useLayout';
@@ -58,6 +57,7 @@ function AppShellContent() {
   const route = useNavigationStore((s) => s.route);
   const goToTab = useNavigationStore((s) => s.goToTab);
   const layout = useLayout();
+  const day = useLocalDay(container.clock);
 
   // PERF-02 : écrans chargés à la demande, préchargés en arrière-plan après le premier rendu.
   useEffect(() => preloadScreens(), []);
@@ -75,7 +75,7 @@ function AppShellContent() {
     <AppShell
       detailOverlay={false}
       tabRail={<TabRail items={RAIL_ITEMS} settingsItem={MORE_ITEM} activeId={route.tab} shortcutHints={SHORTCUT_HINTS} footer={<SidebarSyncCard />} onSelect={(id) => goToTab(id as TabDefinition['id'])} />}
-      topBar={<PcTopBar labelKey={requireTab(route.tab).labelKey} date={route.tab === 'today' ? formatDetailDate(todayLocal(container.clock)) : undefined} />}
+      topBar={<PcTopBar labelKey={requireTab(route.tab).labelKey} date={route.tab === 'today' ? formatDetailDate(day) : undefined} />}
     >
       <AppStatusBanner />
       <UpdateBanner />
