@@ -5,6 +5,7 @@ import type { DeviceId, LocalDate } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../app/AppContainerContext';
 import { createAppContainer } from '../app/container';
+import type { SyncEngineService } from '../../platform/sync/types';
 import { ResetDataScreen } from './ResetDataScreen';
 
 /** RESET-01 (D-180 à D-186) : Plus › Données › « Repartir de zéro ». Données synthétiques. */
@@ -13,11 +14,11 @@ const W = '7e2d1c3a-0000-4000-8000-0000000000e7';
 
 describe('Plus › Repartir de zéro', () => {
   let db: TestDb;
-  const open = (onDone: () => void) => {
-    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data });
+  const open = (onDone: () => void, sync: SyncEngineService | null = null, syncWaitMs?: number) => {
+    const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, sync });
     return render(
       <AppContainerProvider container={container}>
-        <ResetDataScreen onDone={onDone} />
+        <ResetDataScreen onDone={onDone} {...(syncWaitMs === undefined ? {} : { syncWaitMs })} />
       </AppContainerProvider>,
     );
   };
@@ -74,5 +75,16 @@ describe('Plus › Repartir de zéro', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('Une séance est en cours');
     expect(onDone).not.toHaveBeenCalled();
     expect(await weights()).toBe(1);
+  });
+
+  // SHELL-0294d, C-130 : une synchro qui ne répond pas ne bloque plus le rechargement après l'effacement.
+  it('syncNow ne répond jamais : le rechargement a lieu quand même après l’attente bornée', async () => {
+    const onDone = vi.fn();
+    const hanging = { syncNow: () => new Promise<never>(() => undefined) } as unknown as SyncEngineService;
+    open(onDone, hanging, 30);
+    fireEvent.change(screen.getByLabelText('Pour confirmer, tape EFFACER'), { target: { value: 'EFFACER' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Tout effacer' }));
+    await waitFor(() => expect(onDone).toHaveBeenCalledTimes(1), { timeout: 3000 });
+    expect(await weights()).toBe(0);
   });
 });
