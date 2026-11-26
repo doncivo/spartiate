@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, cpSync, mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 // @ts-expect-error -- module JavaScript sans déclaration de types (script d'outillage)
 import { ICON_SOURCE, ICON_TARGET, compareIcons, iconFiles, tauriIconArgs } from './generate-icons.mjs';
 
@@ -9,7 +9,16 @@ import { ICON_SOURCE, ICON_TARGET, compareIcons, iconFiles, tauriIconArgs } from
  * § 18.4 b (C-194) : les icônes de l'app (src-tauri/icons, iPhone compris) sont générées par script depuis content/brand/spartiate.svg
  * (`node scripts/release/generate-icons.mjs`, qui appelle `tauri icon` du CLI déjà installé ; `--check` compare sans écrire).
  */
-const tmp = (): string => mkdtempSync(join(resolve('.codex-tmp'), 'icons-test-'));
+const made: string[] = [];
+const tmp = (): string => {
+  const dir = mkdtempSync(join(resolve('.codex-tmp'), 'icons-test-'));
+  made.push(dir);
+  return dir;
+};
+// CLEAN-0296 : dossiers temporaires retirés après chaque test.
+afterEach(() => {
+  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
 function tree(root: string, files: Record<string, string>): string {
   for (const [path, content] of Object.entries(files)) {
     mkdirSync(join(root, path, '..'), { recursive: true });
@@ -45,19 +54,26 @@ describe('§ 18.4 b : icônes générées depuis spartiate.svg', () => {
     for (const f of files) expect(f).toMatch(/^(ios\/AppIcon-[\d.x@-]+\.png|icon\.(png|ico|icns)|\d+x\d+(@2x)?\.png|Square\d+x\d+Logo\.png|StoreLogo\.png)$/);
   });
 
-  // CLEAN-0296 (§ 18.4 b) : la suite lance elle-même `--check` ; `--target` désigne un autre dossier (copie altérée sous .codex-tmp/).
-  it('--check : les icônes suivies sont identiques à la génération ; une icône retouchée à la main est refusée', () => {
-    const script = resolve('scripts/release/generate-icons.mjs');
-    const check = (...extra: string[]) => spawnSync(process.execPath, [script, '--check', ...extra], { encoding: 'utf8' });
-    const real = check();
-    expect(real.stdout).toContain('icônes identiques');
-    expect(real.status).toBe(0);
+  // CLEAN-0296 (§ 18.4 b, test réécrit après la relecture à froid) : le `--check` réel tourne dans une étape de tests.yml ; ici, le
+  // chemin `--check` du script sur des arbres synthétiques (`--from` : sortie déjà générée, `--target` : dossier comparé), sans `tauri icon`.
+  it('--check : arbres identiques acceptés ; une icône retouchée à la main est refusée et nommée', () => {
     mkdirSync(resolve('.codex-tmp'), { recursive: true });
-    const copy = tmp();
-    cpSync(resolve(ICON_TARGET), copy, { recursive: true });
-    appendFileSync(join(copy, 'ios', 'AppIcon-60x60@3x.png'), Buffer.from([0]));
-    const altered = check('--target', copy);
+    const script = resolve('scripts/release/generate-icons.mjs');
+    const check = (from: string, target: string) => spawnSync(process.execPath, [script, '--check', '--from', from, '--target', target], { encoding: 'utf8' });
+    const files = { 'icon.png': 'a', 'ios/AppIcon-60x60@3x.png': 'b', 'icon.icns': 'c' };
+    const gen = tree(tmp(), files);
+    const same = check(gen, tree(tmp(), { ...files, 'icon.icns': 'autre' }));
+    expect(same.stdout).toContain('3 icônes identiques');
+    expect(same.status).toBe(0);
+    const altered = check(gen, tree(tmp(), { ...files, 'ios/AppIcon-60x60@3x.png': 'b retouché' }));
     expect(altered.status).toBe(1);
     expect(altered.stderr).toContain('ios/AppIcon-60x60@3x.png');
-  }, 60_000);
+    expect(readFileSync(join(gen, 'icon.png'), 'utf8')).toBe('a');
+  });
+
+  it('tests.yml lance le --check réel (job « Lint et typecheck »)', () => {
+    const workflow = readFileSync(resolve('.github/workflows/tests.yml'), 'utf8');
+    const job = workflow.slice(workflow.indexOf('\n  qualite:'), workflow.indexOf('\n  vitest-node:'));
+    expect(job).toContain('run: node scripts/release/generate-icons.mjs --check');
+  });
 });
