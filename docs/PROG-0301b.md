@@ -27,6 +27,11 @@ Préparation : docs/PROGRES-0301.md. Aucun écran, aucun texte, aucune table, au
      « en apprentissage », jamais 0 (D-718).
   9. Given une dernière mesure saisie et un rythme de 7, 14 ou 28 jours, Then dernière séance, jours écoulés, prochaine conseillée ; échéance
      passée : « aujourd'hui », jamais un nombre négatif ; sans mesure : aucune séance, sans prochaine (D-713).
-- **domain-logic** — à compléter.
+- **domain-logic** — Six modules purs neufs dans `src/domain/bodyProgress` (non réexportés par `index.ts` : l'écran de BL-179 les
+  importera directement, le bundle de départ ne change pas) : `period.ts` (périodes, série d'une zone, arrondis), `zoneTrend.ts`
+  (`zoneTrend`, `zoneTrends`, `monthlyRate`), `ratios.ts` (`resolveHeight`, `bodyRatio`, `bodyRatios`, sans repère), `symmetry.ts`
+  (`symmetry`, `symmetryAll`), `weightEvolution.ts` (sur `computeTrend` et `isTrendLearning` de la nutrition), `measurementSchedule.ts`
+  (`lastMeasurementSession`, `measurementSchedule`, `parseMeasurementRhythm`). Choix non tranchés : D-730 à D-734. Aucun import React ni
+  Tauri ; aucune table, aucun écran, aucun texte.
 - **qa-test** — à compléter.
 - **code-reviewer** — à compléter.
