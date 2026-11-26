@@ -4,7 +4,7 @@ import type { SyncColumn, SyncTable } from '../../domain/sync/syncTables';
 import type { DeviceId } from '../../domain/types';
 import { t, tDynamic, type MessageKey } from '../../i18n';
 import { syncFieldFr } from '../../i18n/fr.syncField';
-import { tBody } from '../../i18n/bodyText';
+import { tBody, type BodyPlainKey } from '../../i18n/bodyText';
 import { formatDayMonth, formatTime } from '../../i18n/format';
 import type { SyncStatus } from '../../platform/sync/types';
 import type { ConflictSideView, ConflictView, RestoreRefusal, RestoreResult } from './syncConflictUseCases';
@@ -47,7 +47,7 @@ const ENUM_LABELS: Readonly<Record<string, Readonly<Record<string, MessageKey>>>
 };
 
 /** Profil (0.1.4) : mêmes libellés que l'écran Profil et poids. */
-const BODY_ENUMS: Readonly<Record<string, Readonly<Record<string, Parameters<typeof tBody>[0]>>>> = {
+const BODY_ENUMS: Readonly<Record<string, Readonly<Record<string, BodyPlainKey>>>> = {
   'profile.sex': { male: 'sexMale', female: 'sexFemale' },
   'profile.goal': { gain: 'goalGain', loss: 'goalLoss', maintain: 'goalMaintain' },
   'profile.experience': { beginner: 'experienceBeginner', intermediate: 'experienceIntermediate', advanced: 'experienceAdvanced' },
@@ -60,7 +60,7 @@ function enumLabel(table: SyncTable, column: SyncColumn, value: string): string 
   if (id === 'profile.units') return value === 'metric' ? t('sync.conflicts.values.unitsMetric') : value;
   if (id === 'body_weight.source') return value === 'health' ? t('sync.conflicts.values.sourceHealth') : value === 'manual' ? t('sync.conflicts.values.sourceManual') : value;
   const body = has(BODY_ENUMS, id) ? BODY_ENUMS[id] : undefined;
-  if (body && has(body, value)) return tBody(body[value] as Parameters<typeof tBody>[0]);
+  if (body && has(body, value)) return tBody(body[value] as BodyPlainKey);
   const labels = has(ENUM_LABELS, id) ? ENUM_LABELS[id] : undefined;
   const key = labels && has(labels, value) ? labels[value] : undefined;
   return key ? tDynamic(key) : value;
