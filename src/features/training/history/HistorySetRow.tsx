@@ -3,7 +3,7 @@ import { Check } from 'lucide-react';
 import { useState, type KeyboardEvent } from 'react';
 import { SET_KINDS, correctionIssues, entryOf, validateSetBounds, validateSetEntry, type ExerciseMetric, type LoadField, type SetEntry, type SetKind, type WorkoutSet } from '../../../domain/training';
 import type { SetCorrection } from '../../../db/repositories/workoutRepository';
-import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
+import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingPlainKey } from '../../../i18n/trainingText';
 import { Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
 import { NONE } from '../../../i18n/units';
@@ -14,7 +14,7 @@ import { NONE } from '../../../i18n/units';
  * la saisie suit les règles du domaine avant tout envoi au repository. Champs à 17 px (pas de zoom iOS), Entrée enregistre, Échap annule.
  */
 
-const KIND_TEXT: Record<SetKind, TrainingTextKey> = {
+const KIND_TEXT: Record<SetKind, TrainingPlainKey> = {
   work: 'kindWork',
   warmup: 'kindWarmup',
   drop: 'kindDrop',
@@ -57,7 +57,7 @@ export interface HistorySetRowProps {
   readonly onCorrect: (patch: SetCorrection) => Promise<boolean>;
 }
 
-const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
+const LOAD_LABEL: Readonly<Record<LoadField, TrainingPlainKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
 
 export function HistorySetRow({ set, number, timedExercise, held = null, loadField = 'load', metric, busy, onCorrect }: HistorySetRowProps) {
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -115,7 +115,7 @@ export function HistorySetRow({ set, number, timedExercise, held = null, loadFie
     }
   };
 
-  const field = (key: 'load' | 'reps' | 'duration' | 'rir', labelKey: TrainingTextKey, mode: 'decimal' | 'numeric') => (
+  const field = (key: 'load' | 'reps' | 'duration' | 'rir', labelKey: TrainingPlainKey, mode: 'decimal' | 'numeric') => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
       <input

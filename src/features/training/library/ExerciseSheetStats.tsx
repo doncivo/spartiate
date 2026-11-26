@@ -2,7 +2,7 @@ import { tPlural } from '../../../i18n/plural';
 import type { Exercise, ExerciseSession } from '../../../domain/training/types';
 import type { IsoDateTime } from '../../../domain/types';
 import { confidencePercent } from '../../../domain/training/explain';
-import { formatExerciseLoad, formatNumber, formatShortDay, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
+import { formatExerciseLoad, formatNumber, formatShortDay, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../../i18n/trainingText';
 import { HeroFigure, SectionTitle } from '../../../ui';
 import type { Held } from '../loadDisplay';
 import { sheetStats, type SheetOneRm, type SheetSession } from '../../../domain/training/exerciseSheet';
@@ -23,7 +23,7 @@ interface StatsProps {
   readonly now: IsoDateTime;
 }
 
-const REASON_KEY: Readonly<Record<Extract<SheetOneRm, { kind: 'none' }>['reason'], TrainingTextKey>> = {
+const REASON_KEY: Readonly<Record<Extract<SheetOneRm, { kind: 'none' }>['reason'], TrainingPlainKey>> = {
   noHistory: 'sheetNoHistory',
   noValid: 'sheetNoValid',
   notLoad: 'sheetNotLoad',

@@ -5,7 +5,7 @@ import { Check, X } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { defaultEntry, draftEntryPatch, validateSetEntry, type LoadField, type SetEntry, type SetKind, type WorkoutSet, type WorkoutSource } from '../../../domain/training';
 import { stepLoad } from '../../../domain/training/loadGrid';
-import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../../i18n/trainingText';
+import { formatExerciseLoad, formatNumber, parseNumber, tTraining, type TrainingPlainKey } from '../../../i18n/trainingText';
 import { Button, ConfirmDialog, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
 import { useKeyboardSelect } from './keyboardSelect';
@@ -110,7 +110,7 @@ function outlierText(outlier: OutlierAsk, held: Held): string {
   return tTraining(outlier.perDumbbell ? 'sessionPlausibleAskDumbbell' : 'sessionPlausibleAsk', { load, body, multiple: formatNumber(outlier.multiple) });
 }
 
-const LOAD_LABEL: Readonly<Record<LoadField, TrainingTextKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
+const LOAD_LABEL: Readonly<Record<LoadField, TrainingPlainKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
 
 export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onDraft, onUnvalidate, onKind, onRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
@@ -224,7 +224,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
       return next === null ? now : { ...now, [key]: formatNumber(next) };
     });
   }
-  const stepper = (key: 'load' | 'reps', down: TrainingTextKey, up: TrainingTextKey) => (
+  const stepper = (key: 'load' | 'reps', down: TrainingPlainKey, up: TrainingPlainKey) => (
     <div className="ct-session__stepper">
       <button type="button" className="ct-session__step" aria-label={tTraining(down)} disabled={busy} onClick={() => step(key, -1)}>
         {tTraining('sessionStepMinus')}
@@ -237,7 +237,7 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   const steps = current && !timed;
   // ERGO-02 (D-261) : deux haltères, le libellé « 2 × 26 kg » suit la saisie et le « − / + » ; la valeur saisie reste celle d'un haltère.
   const pairLoad = held === 2 ? parseNumber(draft.load) : null;
-  const field = (key: keyof Draft, labelKey: TrainingTextKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>, describedBy?: string) => (
+  const field = (key: keyof Draft, labelKey: TrainingPlainKey, mode: 'decimal' | 'numeric', ref?: RefObject<HTMLInputElement>, describedBy?: string) => (
     <label className="ct-session__field">
       <span className="ct-training__label">{tTraining(labelKey)}</span>
       <input
