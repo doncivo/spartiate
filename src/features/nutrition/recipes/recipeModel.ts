@@ -1,13 +1,13 @@
 import { recipePerServing, recipeTotals, type Per100g, type Recipe, type RecipeProblem, type RecipeProblemCode, type RecipeTotals } from '../../../domain/nutrition';
 import { formatTenth } from '../../../i18n/nutritionText';
-import { tRecipes, type RecipesTextKey } from '../../../i18n/recipesText';
+import { tRecipes, type RecipesTextKey, type RecipesPlainKey } from '../../../i18n/recipesText';
 
 /**
  * Mise en forme des recettes (I4-07). Les calculs sont ceux du domaine (`recipeTotals`, `recipePerServing`) ; ici seulement l'affichage :
  * un nutriment inconnu dans un ingrédient s'écrit « — » avec sa cause, jamais une somme partielle, jamais 0.
  */
 
-const PROBLEM_KEY: Readonly<Record<RecipeProblemCode, RecipesTextKey>> = {
+const PROBLEM_KEY = {
   'name-empty': 'problemNameEmpty',
   'name-too-long': 'problemNameTooLong',
   'servings-invalid': 'problemServings',
@@ -20,7 +20,7 @@ const PROBLEM_KEY: Readonly<Record<RecipeProblemCode, RecipesTextKey>> = {
   'ingredient-source-invalid': 'problemIngredientSource',
   'ingredient-grams-invalid': 'problemIngredientGrams',
   'ingredient-value-invalid': 'problemIngredientValue',
-};
+} as const satisfies Readonly<Record<RecipeProblemCode, RecipesTextKey>>;
 
 /** Message français d'un problème de validation ; un problème d'ingrédient cite son nom (ou son rang s'il n'en a pas). */
 export function problemMessage(problem: RecipeProblem, ingredientNames: readonly string[]): string {
@@ -45,7 +45,7 @@ export interface TotalsRow {
   readonly unknownIn: string | null;
 }
 
-const ROWS: readonly (readonly [NutrientKey, RecipesTextKey])[] = [
+const ROWS: readonly (readonly [NutrientKey, RecipesPlainKey])[] = [
   ['kcal', 'rowKcal'],
   ['proteinG', 'rowProtein'],
   ['carbG', 'rowCarb'],

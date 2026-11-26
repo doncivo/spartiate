@@ -1,7 +1,6 @@
 [
   "src/i18n/index.ts:tDynamic",
   "src/i18n/progressionText.ts:tProgression",
-  "src/i18n/recipesText.ts:tRecipes",
   "src/i18n/recoveryText.ts:tRecovery",
   "src/i18n/settingsRefonteText.ts:tSettingsRefonte",
   "src/i18n/strengthText.ts:tStrength",
