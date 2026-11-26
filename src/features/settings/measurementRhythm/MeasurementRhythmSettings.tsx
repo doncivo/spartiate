@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DEFAULT_MEASUREMENT_RHYTHM_DAYS, MEASUREMENT_RHYTHMS_DAYS, measurementSchedule, parseMeasurementRhythm, type MeasurementRhythmDays } from '../../../domain/bodyProgress/measurementSchedule';
 import { todayLocal } from '../../../domain/clock';
 import type { LocalDate } from '../../../domain/types';
@@ -7,6 +7,7 @@ import { tPlural } from '../../../i18n/plural';
 import { SegmentedControl } from '../../../ui/SegmentedControl';
 import { Switch } from '../../../ui/Switch';
 import { useAppContainer } from '../../app/AppContainerContext';
+import { measurementNotificationsFor } from '../../notifications';
 import type { MeasurementNotificationResult, MeasurementPrefs } from '../../notifications/measurementNotifications';
 
 export interface MeasurementRhythmProps {
@@ -26,17 +27,18 @@ function nextText(daysUntil: number): string {
   return tPlural(tMeasurementRhythm, daysUntil, 'nextOne', 'nextMany');
 }
 
-/** État du rappel dit en texte (PC, autorisation, échec) ; rien quand il est posé ou coupé. */
+/** État du rappel dit en texte (PC, autorisation, échec, fuseau illisible) ; rien quand il est posé ou coupé. */
 function reminderNote(result: MeasurementNotificationResult | null): string | null {
   if (result === null) return null;
   if (result.status === 'unsupported') return tMeasurementRhythm('reminderPc');
   if (result.saveFailed === true) return null;
   if (result.status === 'permission') return tMeasurementRhythm('reminderPermission');
-  if (result.status === 'failed') return tMeasurementRhythm('reminderFailed');
+  if (result.status === 'failed' || result.status === 'no-zone') return tMeasurementRhythm('reminderFailed');
   return null;
 }
 
-const loadService = (container: ReturnType<typeof useAppContainer>) => import('../../notifications').then((m) => m.measurementNotificationsFor(container));
+/** Service du conteneur, importé avec ce bloc (déjà à la demande) : aucun second chargement avant d'afficher l'état du rappel. */
+const loadService = (container: ReturnType<typeof useAppContainer>) => Promise.resolve().then(() => measurementNotificationsFor(container));
 
 /**
  * Corps › Mesures, rythme des mesures (CORPS-0301d, BL-180 ; D-713, D-714, D-760 à D-764) : rythme local (7, 14 ou 28 jours), « dernière séance
@@ -50,6 +52,8 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
   const [prefs, setPrefs] = useState<MeasurementPrefs>({ rhythm: DEFAULT_MEASUREMENT_RHYTHM_DAYS, reminder: true });
   const [result, setResult] = useState<MeasurementNotificationResult | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  // Relecture (point 4) : une lecture des réglages arrivée après un choix de l'utilisateur ne l'écrase pas.
+  const touched = useRef(false);
   const schedule = measurementSchedule(
     samples.map((s) => ({ kind: s.kind, date: s.day })),
     prefs.rhythm,
@@ -60,12 +64,17 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
 
   useEffect(() => {
     let live = true;
-    void loadService(container).then(async (service) => {
-      const read = await service.readPrefs();
-      if (live) setPrefs(read);
-      const replanned = await service.replan();
-      if (live) setResult(replanned);
-    }, () => undefined);
+    void loadService(container)
+      .then(async (service) => {
+        const read = await service.readPrefs();
+        if (live && !touched.current) setPrefs(read);
+        const replanned = await service.replan();
+        if (live) setResult(replanned);
+      })
+      // Service introuvable (bloc non chargé) : l'échec est dit à l'écran, jamais avalé.
+      .catch(() => {
+        if (live) setResult({ status: 'failed', planned: 0, reason: 'unknown' });
+      });
     return () => {
       live = false;
     };
@@ -73,9 +82,12 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
 
   const save = async (next: MeasurementPrefs, askPermission: boolean): Promise<void> => {
     const previous = prefs;
+    touched.current = true;
     setPrefs(next);
-    const service = await loadService(container);
-    const done = await service.savePrefs(next, { askPermission });
+    const done = await loadService(container).then(
+      (service) => service.savePrefs(next, { askPermission }),
+      (): MeasurementNotificationResult => ({ status: 'failed', planned: 0, reason: 'unknown', saveFailed: true }),
+    );
     if (done.saveFailed === true) {
       setPrefs(previous);
       setSaveFailed(true);
@@ -86,7 +98,8 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
   };
 
   const note = reminderNote(result);
-  const pc = result?.status === 'unsupported';
+  // Relecture (point 1) : l'interrupteur se décide dès l'affichage, d'après la plateforme ; le PC dit que le rappel est émis sur l'iPhone.
+  const pc = container.platform.os !== 'ios' || result?.status === 'unsupported';
   return (
     <section className="ct-flat" aria-labelledby="ct-measurement-rhythm">
       <h3 id="ct-measurement-rhythm" className="ct-section-title">
@@ -106,13 +119,17 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
         value={String(prefs.rhythm)}
         onChange={(value) => void save({ ...prefs, rhythm: parseMeasurementRhythm(value) }, false)}
       />
-      {result !== null && !pc ? (
+      {!pc ? (
         <>
           <Switch checked={prefs.reminder} label={tMeasurementRhythm('reminderLabel')} onChange={(reminder) => void save({ ...prefs, reminder }, reminder)} />
           <p className="ct-today__muted">{tMeasurementRhythm('reminderHint')}</p>
         </>
       ) : null}
-      {note !== null ? <p className="ct-today__muted">{note}</p> : null}
+      {note !== null ? (
+        <p role="status" className="ct-today__muted">
+          {note}
+        </p>
+      ) : null}
       {saveFailed ? (
         <p role="alert" className="ct-today__text">
           {tMeasurementRhythm('saveFailed')}

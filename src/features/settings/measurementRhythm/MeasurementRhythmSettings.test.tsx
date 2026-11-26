@@ -82,6 +82,7 @@ describe('rythme des mesures', () => {
 
   it('iPhone : l’interrupteur est rendu dès l’affichage, sans attendre le passage de planification (relecture CORPS-0301d, point 1)', async () => {
     const scheduler = createFakeNotificationScheduler();
+    await seed('2026-11-09');
     mount([waist('2026-11-09')], scheduler);
     expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toBeInTheDocument();
     await waitFor(async () => expect(await scheduler.pending()).toHaveLength(1));
