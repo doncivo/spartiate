@@ -1,3 +1,4 @@
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
 import type { Recommendation, RecommendationKind, RecommendationRule, RecommendationSource, RecommendationTheme } from '../domain/review/weeklyRecommendations';
 import type { FactKey, ReviewSentence, ReviewSource, ReviewTheme, WeekReview } from '../domain/review/weeklyReview';
 import type { LocalDate } from '../domain/types';
@@ -10,13 +11,17 @@ import { tPlural } from './plural';
  * et dans la liste de ses sources (`reviewSourceValues`), ce que vérifie weeklyReviewText.test.ts.
  */
 export type WeeklyReviewTextKey = keyof typeof weeklyReviewFr;
+/** CLEAN-0297 (C-085) : clés sans paramètre `{x}` (tables de libellés passées sans paramètre). */
+export type WeeklyReviewPlainKey = PlainCatalogKey<typeof weeklyReviewFr>;
 
-export function tWeeklyReview(key: WeeklyReviewTextKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: WeeklyReviewTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = weeklyReviewFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tWeeklyReview: CatalogTranslator<typeof weeklyReviewFr> = translate;
 
-const SOURCE: Readonly<Record<ReviewTheme, WeeklyReviewTextKey>> = {
+const SOURCE: Readonly<Record<ReviewTheme, WeeklyReviewPlainKey>> = {
   sessions: 'sourceSessions',
   records: 'sourceRecords',
   volume: 'sourceVolume',
@@ -25,13 +30,12 @@ const SOURCE: Readonly<Record<ReviewTheme, WeeklyReviewTextKey>> = {
   sleep: 'sourceSleep',
   cycle: 'sourceCycle',
 };
-const INSUFFICIENT: Readonly<Record<ReviewTheme, WeeklyReviewTextKey>> = {
+const INSUFFICIENT: Readonly<Record<Exclude<ReviewTheme, 'sleep'>, WeeklyReviewPlainKey>> = {
   sessions: 'insufficientSessions',
   records: 'insufficientRecords',
   volume: 'insufficientVolume',
   weight: 'insufficientWeight',
   nutrition: 'insufficientNutrition',
-  sleep: 'insufficientSleep',
   cycle: 'insufficientCycle',
 };
 
@@ -156,8 +160,8 @@ export function reviewFileName(weekStart: LocalDate): string {
 
 // --- Recommandations (BL-125, D-452, D-457) ---------------------------------------------------------------------------------------------
 
-const REC_THEME: Readonly<Record<RecommendationTheme, WeeklyReviewTextKey>> = { training: 'recThemeTraining', nutrition: 'recThemeNutrition', recovery: 'recThemeRecovery' };
-const REC_TEXT: Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyReviewTextKey>> = {
+const REC_THEME: Readonly<Record<RecommendationTheme, WeeklyReviewPlainKey>> = { training: 'recThemeTraining', nutrition: 'recThemeNutrition', recovery: 'recThemeRecovery' };
+const REC_TEXT = {
   trainingSessions: 'recTrainingSessions',
   trainingLight: 'recTrainingLight',
   trainingDeload: 'recTrainingDeload',
@@ -170,8 +174,8 @@ const REC_TEXT: Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyRevie
   nutritionKeep: 'recNutritionKeep',
   recoverySleep: 'recRecoverySleep',
   recoveryKeep: 'recRecoveryKeep',
-};
-const REC_RULE: Readonly<Record<RecommendationRule, WeeklyReviewTextKey>> = {
+} as const satisfies Readonly<Record<Exclude<RecommendationKind, 'none'>, WeeklyReviewTextKey>>;
+const REC_RULE: Readonly<Record<RecommendationRule, WeeklyReviewPlainKey>> = {
   plannedSessions: 'rulePlannedSessions',
   lightWeek: 'ruleLightWeek',
   setRange: 'ruleSetRange',

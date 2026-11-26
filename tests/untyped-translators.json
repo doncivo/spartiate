@@ -1,26 +1,4 @@
 [
-  "src/i18n/appUpdateRestoreText.ts:tUpdateRestore",
-  "src/i18n/bodyProgressText.ts:tBodyProgress",
-  "src/i18n/cardioText.ts:tCardio",
-  "src/i18n/fr.recoveryNotifications.ts:tRn",
-  "src/i18n/fr.startupBlocked.ts:tStartupBlocked",
-  "src/i18n/healthText.ts:tHealth",
   "src/i18n/index.ts:tDynamic",
-  "src/i18n/logsText.ts:tLogs",
-  "src/i18n/nutritionText.ts:tNutrition",
-  "src/i18n/onboardingText.ts:tOnboarding",
-  "src/i18n/plusText.ts:tPlus",
-  "src/i18n/progressionText.ts:tProgression",
-  "src/i18n/recipesText.ts:tRecipes",
-  "src/i18n/recoveryText.ts:tRecovery",
-  "src/i18n/settingsRefonteText.ts:tSettingsRefonte",
-  "src/i18n/strengthText.ts:tStrength",
-  "src/i18n/syncOwnDeletionText.ts:tOwnDeletion",
-  "src/i18n/syncRefonteText.ts:tSyncRefonte",
-  "src/i18n/todayText.ts:tToday",
-  "src/i18n/trainingGenerationText.ts:tGeneration",
-  "src/i18n/trainingSessionText.ts:tSession",
-  "src/i18n/trainingText.ts:tTraining",
-  "src/i18n/visbodyText.ts:tVisbody",
-  "src/i18n/weeklyReviewText.ts:tWeeklyReview"
+  "src/i18n/progressionText.ts:tProgression"
 ]

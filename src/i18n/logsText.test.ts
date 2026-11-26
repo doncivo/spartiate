@@ -5,6 +5,7 @@ import { tLogs } from './logsText';
 describe('textes de l’écran Logs', () => {
   it('lit le français et interpole', () => {
     expect(tLogs('errorCode', { code: 'io' })).toBe('Code : io');
+    // @ts-expect-error CLEAN-0297 (C-085) : le type exige `{count}` ; à l'exécution, un paramètre absent reste visible.
     expect(tLogs('repeated', {})).toBe('×{count}');
   });
 });

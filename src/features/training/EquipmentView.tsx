@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
-import { formatNumber, parseNumber, tTraining, type TrainingTextKey } from '../../i18n/trainingText';
+import { formatNumber, parseNumber, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
 import { Button, ConfirmDialog, SectionTitle, SegmentedControl, Switch } from '../../ui';
 import { duplicateEmbeddedProfile } from './content';
 import { PROFILE_KIND_KEY } from './labels';
@@ -31,7 +31,7 @@ function VerifyTag({ show }: { readonly show: boolean }) {
 
 function verifyLabel(key: string): string {
   if (key.startsWith('barbell:')) return key.slice('barbell:'.length);
-  const known: Readonly<Record<string, TrainingTextKey>> = { plates: 'platesCountUnknown', dumbbells: 'dumbbells', kettlebells: 'kettlebells', machines: 'machines', cables: 'cables' };
+  const known: Readonly<Record<string, TrainingPlainKey>> = { plates: 'platesCountUnknown', dumbbells: 'dumbbells', kettlebells: 'kettlebells', machines: 'machines', cables: 'cables' };
   const k = known[key];
   return k ? tTraining(k) : key;
 }

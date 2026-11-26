@@ -2,7 +2,7 @@ import { useEffect, useState, type KeyboardEvent } from 'react';
 import { summarizeBackups } from '../../domain/backupSchedule';
 import { t } from '../../i18n';
 import { formatBackupSummary } from '../../i18n/formatBackup';
-import { tPlus, type PlusTextKey } from '../../i18n/plusText';
+import { tPlus, type PlusPlainKey } from '../../i18n/plusText';
 import { useAppContainer, useFeatureStore } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
 import { formatAppearanceParts } from './AppearanceScreen';
@@ -51,7 +51,7 @@ export function SettingsScreenPc() {
   const [themeText = ''] = formatAppearanceParts(theme, firstWeekday, timeFormat);
   const version = container.appVersion.version;
   const weight = profileWeight ?? undefined;
-  const groups: readonly { readonly title: PlusTextKey; readonly entries: readonly Entry[] }[] = [
+  const groups: readonly { readonly title: PlusPlainKey; readonly entries: readonly Entry[] }[] = [
     { title: 'groupMe', entries: [{ id: 'profile', label: tPlus('navProfile'), value: weight ?? tPlus('valueMissing') }] },
     { title: 'groupSources', entries: syncValue === null ? [] : [{ id: 'sync', label: tPlus('navSync'), value: syncValue }] },
     {

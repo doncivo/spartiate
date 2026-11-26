@@ -20,7 +20,7 @@ import {
 } from '../../domain/onboarding';
 import { logFailure } from '../../platform/desktop/log';
 import { healthKit as platformHealthKit, type HealthKit } from '../../platform/healthkit';
-import { formatDecimal, tOnboarding, type OnboardingTextKey } from '../../i18n/onboardingText';
+import { formatDecimal, tOnboarding, type OnboardingTextKey, type OnboardingPlainKey } from '../../i18n/onboardingText';
 import { Button, Icon, useFocusTrap, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useAppStore } from '../app/appStore';
@@ -32,7 +32,7 @@ import { StepAvailability, StepExperience, StepGoal, StepYou, type FieldTexts, t
 import { StepEquipment, StepPriorities, StepResult, StepSplit } from './StepsPlan';
 import './OnboardingFlow.css';
 
-const TITLE_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
+const TITLE_KEY: Readonly<Record<OnboardingStepId, OnboardingPlainKey>> = {
   you: 'youTitle',
   goal: 'goalTitle',
   experience: 'experienceTitle',
@@ -42,7 +42,7 @@ const TITLE_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
   split: 'splitTitle',
   result: 'resultTitle',
 };
-const NAME_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
+const NAME_KEY: Readonly<Record<OnboardingStepId, OnboardingPlainKey>> = {
   you: 'stepNameYou',
   goal: 'stepNameGoal',
   experience: 'stepNameExperience',
@@ -52,7 +52,7 @@ const NAME_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
   split: 'stepNameSplit',
   result: 'stepNameResult',
 };
-const TEXT_KEY: Readonly<Record<OnboardingStepId, OnboardingTextKey>> = {
+const TEXT_KEY: Readonly<Record<OnboardingStepId, OnboardingPlainKey>> = {
   you: 'youText',
   goal: 'goalText',
   experience: 'experienceText',

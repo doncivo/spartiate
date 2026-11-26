@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { currentBodyweightKg } from '../../domain/training/bodyweight';
 import { strengthScore, type GroupNoneReason, type GroupScore, type ScoreBound, type StrengthExercise, type StrengthGroup, type StrengthResult, type StrengthStandards, type StrengthTier } from '../../domain/training/strengthScore';
 import type { Sex } from '../../domain/bodyProfile';
-import { formatStrengthKg, tStrength, type StrengthTextKey } from '../../i18n/strengthText';
+import { formatStrengthKg, tStrength, type StrengthPlainKey } from '../../i18n/strengthText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -29,7 +29,7 @@ interface Loaded {
 
 type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | ({ readonly status: 'ready' } & Loaded);
 
-const GROUP_KEY: Readonly<Record<StrengthGroup, StrengthTextKey>> = {
+const GROUP_KEY: Readonly<Record<StrengthGroup, StrengthPlainKey>> = {
   chest: 'groupChest',
   back: 'groupBack',
   shoulders: 'groupShoulders',
@@ -39,8 +39,8 @@ const GROUP_KEY: Readonly<Record<StrengthGroup, StrengthTextKey>> = {
   hamstrings: 'groupHamstrings',
   glutes: 'groupGlutes',
 };
-const TIER_KEY: Readonly<Record<StrengthTier, StrengthTextKey>> = { iron: 'tierIron', bronze: 'tierBronze', silver: 'tierSilver', gold: 'tierGold' };
-const REASON_KEY: Readonly<Record<Exclude<GroupNoneReason, 'noSession'>, StrengthTextKey>> = { noSex: 'reasonSex', noBodyweight: 'reasonBodyweight', noStandard: 'reasonStandard' };
+const TIER_KEY: Readonly<Record<StrengthTier, StrengthPlainKey>> = { iron: 'tierIron', bronze: 'tierBronze', silver: 'tierSilver', gold: 'tierGold' };
+const REASON_KEY: Readonly<Record<Exclude<GroupNoneReason, 'noSession'>, StrengthPlainKey>> = { noSex: 'reasonSex', noBodyweight: 'reasonBodyweight', noStandard: 'reasonStandard' };
 
 const scoreText = (score: number, bound: ScoreBound): string => (bound === 'below' ? tStrength('below') : bound === 'above' ? tStrength('above') : String(score));
 

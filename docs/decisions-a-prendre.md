@@ -208,7 +208,7 @@ Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des 
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-372 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+374 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -222,6 +222,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 12 | D-113 | I6-04 (0.16.0) : import Renpho / Santé par Raccourcis, SANS MIGRATION (schéma 13 inchangé). | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
 | 12 | D-402 | BLESSURES (0.28.1) : gênes en stockage local (§ 10.2). | A garder · B réviser (déjà marquée « à trancher ») ; effet : synchro, schéma, données |
 | 11 | D-618 | SHELL-0294f (BL-149, D-490) : revue par thème des choix prudents, produite par script. | A garder · B réviser ; effet : moteur, synchro, schéma, données |
+| 11 | D-645 | CLEAN-0297 (C-085) : 22 traducteurs de plus typés comme catalogText, par leur corps d'origine. | A garder · B réviser ; effet : moteur, synchro, données, chiffre, écran |
 | 10 | D-79 | I4-06 favoris : stockage local, non synchronisé, ne passent pas d'un appareil à l'autre (mission de nuit du 2026-11-09). | A garder · B réviser ; effet : synchro, schéma, données, écran |
 | 10 | D-116 | CLEAN-01 (0.17.0) : le banc legacy et ce que les gardes citent sont CONSERVÉS. | A garder · B réviser ; effet : moteur, synchro, schéma, écran |
 | 10 | D-172 | FIX-0181 : migration 0015 (schéma 15). | A garder · B réviser ; effet : synchro, schéma, données, écran |
@@ -231,7 +232,6 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
-| 9 | D-539 | SEANCE-0292b (BL-112, amende D-385). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 
 ### séance et moteur (114 : 73 à trancher, 41 à confirmer seulement)
 
@@ -534,10 +534,11 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (48 : 22 à trancher, 26 à confirmer seulement)
+### écrans (49 : 23 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
+| 11 | D-645 | CLEAN-0297 (C-085) : 22 traducteurs de plus typés comme catalogText, par leur corps d'origine. | A garder · B réviser ; effet : moteur, synchro, données, chiffre, écran |
 | 6 | D-223 | I6-06 : écrans du cardio (sans maquette : motifs de Progrès › Corps, AGENTS.md). | A garder · B réviser ; effet : schéma, données |
 | 5 | D-144 | FIX-0173 : petites suites. | A garder · B réviser ; effet : synchro, écran |
 | 5 | D-390 | PROGRES-a (0.28.1) : volume affiché sans plage cible (§ 17.1 « vs plage »). | A garder · B réviser (déjà marquée « à trancher ») ; effet : écran |
@@ -592,7 +593,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (63 : 30 à trancher, 33 à confirmer seulement)
+### CI et outillage (64 : 30 à trancher, 34 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -636,6 +637,7 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-535 | DATA-0292 (BL-138, compensation du bundle de départ). | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-564 | REL-0.29.2 (complément d'audit, D-489). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-604 | SHELL-0294b (bundle de départ, règle « le départ ne grossit jamais »). | à confirmer seulement (aucun effet visible repéré) |
+| 1 | D-646 | CLEAN-0297 (C-085) : la garde des traducteurs voit un alias de type local. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-302 | MEDIA-02 : réduction des images web par un script Node sans dépendance (révisable par Ali). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-358 | CI-PUB (0.28.0) : actions des workflows de publication figées par SHA, identiques à tests.yml, test statique (C-166 ). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-359 | CI-PUB (0.28.0) : job « garde » : aucun build ni signature sur tag sans « suite verte » verte sur le SHA (C-172 ). | à confirmer seulement (aucun effet visible repéré) |

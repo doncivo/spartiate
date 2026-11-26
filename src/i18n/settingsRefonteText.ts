@@ -1,3 +1,4 @@
+import type { CatalogTranslator } from './catalogText';
 
 /**
  * Textes propres à la refonte de Réglages sur PC (UI-REFONTE-09, PC-Reglages.html) : chargés avec l'écran Réglages, hors du bundle de
@@ -13,8 +14,10 @@ const fr = {
 } as const;
 export type SettingsRefonteKey = keyof typeof fr;
 
-export function tSettingsRefonte(key: SettingsRefonteKey, params: Record<string, string> = {}): string {
+function translate(key: SettingsRefonteKey, params: Readonly<Record<string, string | number>> = {}): string {
   let text: string = fr[key];
-  for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, value);
+  for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, String(value));
   return text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tSettingsRefonte: CatalogTranslator<typeof fr> = translate;

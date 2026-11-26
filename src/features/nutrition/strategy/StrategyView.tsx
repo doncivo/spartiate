@@ -1,7 +1,7 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { ACTIVITY_LEVELS, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
 import type { NutritionTargetRecord } from '../../../db/repositories/nutritionTargetRepository';
-import { formatDayMonth, formatInt, formatKgDelta, formatWeekdayDate, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
+import { formatDayMonth, formatInt, formatKgDelta, formatWeekdayDate, tNutrition, weekdayNames, type NutritionPlainKey } from '../../../i18n/nutritionText';
 import { Button, HeroFigure, SegmentedControl } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { useNavigationStore } from '../../app/navigation';
@@ -13,10 +13,10 @@ import { TargetForm, type TargetSaveResult } from './TargetForm';
 import { collapseRecopies, defaultTrainingDays, restTargetFromGap, targetDecidedOn, targetInForceSince, upcomingTargets, type RestPlan } from '../../../domain/nutrition';
 import { SEP } from '../../../i18n/units';
 
-const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
-const STYLE_KEY: Readonly<Record<CheckInStyle, NutritionTextKey>> = { guided: 'styleGuided', collaborative: 'styleCollaborative', manual: 'styleManual' };
-const GOAL_KEY: Readonly<Record<NutritionPrefs['goal']['kind'], NutritionTextKey>> = { maintain: 'goalMaintain', loss: 'goalLoss', gain: 'goalGain' };
-const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionTextKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
+const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionPlainKey>> = { guided: 'styleGuidedHint', collaborative: 'styleCollaborativeHint', manual: 'styleManualHint' };
+const STYLE_KEY: Readonly<Record<CheckInStyle, NutritionPlainKey>> = { guided: 'styleGuided', collaborative: 'styleCollaborative', manual: 'styleManual' };
+const GOAL_KEY: Readonly<Record<NutritionPrefs['goal']['kind'], NutritionPlainKey>> = { maintain: 'goalMaintain', loss: 'goalLoss', gain: 'goalGain' };
+const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionPlainKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
 /** Vitesse proposée au choix de « Perte » ou « Prise » : visible et modifiable, le moteur la borne encore à 1 % du poids par semaine. */
 const DEFAULT_RATE_KG = 0.25;
 const MIN_RATE_KG = 0.05;

@@ -1,3 +1,4 @@
+import type { CatalogTranslator } from './catalogText';
 
 /**
  * Textes propres à la refonte de l'écran Synchronisation (UI-REFONTE-04, Synchro-v4.html) : chargés avec l'écran, hors du bundle de départ.
@@ -14,8 +15,10 @@ const fr = {
   resetBodyStrong: 'Tes autres appareils devront être associés de nouveau',
   resetBodyAfter: ' (QR code ou clé de secours) et l’historique partagé repart à zéro. Tes données ne sont pas supprimées.',
 } as const;
-export function tSyncRefonte(key: keyof typeof fr, params: Record<string, string> = {}): string {
+function translate(key: keyof typeof fr, params: Readonly<Record<string, string | number>> = {}): string {
   let text: string = fr[key];
-  for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, value);
+  for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, String(value));
   return text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tSyncRefonte: CatalogTranslator<typeof fr> = translate;

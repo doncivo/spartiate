@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { BODY_FILE_NAMES, BODY_METRIC_OF } from '../../domain/health/bodyShortcutFiles';
 import { MAX_LINES, SHORTCUT_REJECT_REASONS, type ShortcutRejectReason } from '../../domain/recovery/shortcutFiles';
 import { utcToLocal } from '../../domain/timeZone';
-import { tHealth, type HealthTextKey } from '../../i18n/healthText';
+import { tHealth, type HealthPlainKey } from '../../i18n/healthText';
 import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { detectTimeZone } from '../../platform/timeZone';
 import { Button } from '../../ui';
@@ -11,7 +11,7 @@ import { useAppContainer } from '../app/AppContainerContext';
 import { bodyImportLog, healthBodyImportFor, parseBodyImportSummary, type BodyFileOutcome, type BodyImportResult, type BodyImportSummary } from './healthBodyImport';
 import { formatLocaleNumber } from '../../i18n/units';
 
-const reasonLabel = (reason: ShortcutRejectReason): string => tHealth(`recReason_${reason}` as HealthTextKey);
+const reasonLabel = (reason: ShortcutRejectReason): string => tHealth(`recReason_${reason}` as HealthPlainKey);
 
 function dateText(iso: string): string {
   const local = utcToLocal(iso, detectTimeZone() ?? 'Europe/Paris');
@@ -144,7 +144,7 @@ function FileRow({ name, outcome, summary, at }: { readonly name: (typeof BODY_F
   const reasons = imported?.rejected ? SHORTCUT_REJECT_REASONS.filter((r) => (imported.rejected?.[r] ?? 0) > 0) : [];
   return (
     <div className="ct-body__hint">
-      <strong>{tHealth(`bodyType_${BODY_METRIC_OF[name]}` as HealthTextKey)}</strong>
+      <strong>{tHealth(`bodyType_${BODY_METRIC_OF[name]}` as HealthPlainKey)}</strong>
       <p>{at === null || (stored === null && imported === null) ? tHealth('bodyNever') : dateText(at)}</p>
       {outcome?.state === 'absent' && <p>{tHealth('bodyFileAbsent')}</p>}
       {outcome?.state === 'unreadable' && <p>{tHealth('bodyFileUnreadable')}</p>}

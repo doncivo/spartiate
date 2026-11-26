@@ -1,3 +1,5 @@
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
+
 /**
  * Textes des réglages « Sommeil et rappels » (Plus, I5-02 point 2.3) et des notifications de récupération, à part du catalogue principal
  * (bundle de départ) : chargés avec l'écran, ou à la demande par le service au moment de composer une notification.
@@ -29,8 +31,12 @@ export const recoveryNotificationsFr = {
 } as const;
 
 export type RecoveryNotificationsTextKey = keyof typeof recoveryNotificationsFr;
+/** CLEAN-0297 (C-085) : clés sans paramètre `{x}` (tables de libellés passées sans paramètre). */
+export type RecoveryNotificationsPlainKey = PlainCatalogKey<typeof recoveryNotificationsFr>;
 
-export function tRn(key: RecoveryNotificationsTextKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: RecoveryNotificationsTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = recoveryNotificationsFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tRn: CatalogTranslator<typeof recoveryNotificationsFr> = translate;

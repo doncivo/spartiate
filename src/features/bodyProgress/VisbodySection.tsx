@@ -2,7 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { todayLocal } from '../../domain/clock';
 import { parseVisbodyForm, VISBODY_FIELDS, VISBODY_KINDS, visbodyChange, visbodyDisplayValue, visbodyReports, type VisbodyField, type VisbodyFieldIssue, type VisbodyKind, type VisbodyReport } from '../../domain/bodyProgress/visbody';
 import type { LocalDate } from '../../domain/types';
-import { tVisbody, type VisbodyTextKey } from '../../i18n/visbodyText';
+import { tVisbody, type VisbodyPlainKey } from '../../i18n/visbodyText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -17,7 +17,7 @@ import { formatLocaleNumber } from '../../i18n/units';
 type Texts = Partial<Record<VisbodyKind, string>>;
 type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | { readonly status: 'ready'; readonly reports: readonly VisbodyReport[] };
 
-const label = (kind: VisbodyKind): string => tVisbody(`field_${kind}` as VisbodyTextKey);
+const label = (kind: VisbodyKind): string => tVisbody(`field_${kind}` as VisbodyPlainKey);
 const unitText = (f: VisbodyField): string => tVisbody(`unit_${f.unit}`);
 const num = (v: number): string => formatLocaleNumber(v, { maximumFractionDigits: 1 });
 const signed = (v: number): string => (v > 0 ? `+${num(v)}` : v < 0 ? `−${num(-v)}` : num(0));

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { addTrackPoint, emptyTrack, trackLastKmSecPerKm, paceSecPerKm, type TrackState } from '../../domain/cardio';
 import type { Clock } from '../../domain/clock';
-import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey } from '../../i18n/cardioText';
+import { formatChrono, formatDuration, formatKm, formatPace, kmValue, tCardio, type CardioTextKey, type CardioPlainKey } from '../../i18n/cardioText';
 import type { GeoEvent, GeolocationLoader } from '../../platform/geolocation';
 import { Button, ConfirmDialog, HeroFigure } from '../../ui';
 import type { GpsReport } from './CardioView';
@@ -135,7 +135,7 @@ export function CardioGps({ load, clock, onReport }: { readonly load: Geolocatio
     onReport({ startedAt: new Date(current.startMs).toISOString(), durationSec, distanceM: Math.round(current.track.distanceM), track: current.track.points });
   };
 
-  const line = (key: CardioTextKey): string => tCardio(key);
+  const line = (key: CardioPlainKey): string => tCardio(key);
   const live = state.kind === 'running' ? state : null;
   const elapsedSec = live === null ? 0 : (clock.nowMs() - live.startMs) / 1000;
   const distanceM = live === null ? 0 : live.track.distanceM;

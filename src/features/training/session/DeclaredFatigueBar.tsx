@@ -1,12 +1,12 @@
 import { DECLARED_FATIGUE_LEVELS, type DeclaredFatigue } from '../../../domain/training/declaredFatigue';
-import { tSession, type TrainingSessionTextKey } from '../../../i18n/trainingSessionText';
+import { tSession, type TrainingSessionPlainKey } from '../../../i18n/trainingSessionText';
 
 /**
  * SESS-01d (§ 13.2 « Fatigue déclarée ») : Frais / Normal / Fatigué en tête de séance, facultatif, jamais bloquant ; un second appui efface. État
  * dit par `aria-pressed` et le texte, jamais par la couleur seule. L'effet (« Fatigué » : aucune hausse de charge) est dit dans chaque proposition.
  */
 
-const KEYS: Readonly<Record<DeclaredFatigue, TrainingSessionTextKey>> = { fresh: 'fatigueFresh', normal: 'fatigueNormal', tired: 'fatigueTired' };
+const KEYS: Readonly<Record<DeclaredFatigue, TrainingSessionPlainKey>> = { fresh: 'fatigueFresh', normal: 'fatigueNormal', tired: 'fatigueTired' };
 
 export function DeclaredFatigueBar({ level, busy, onChange }: { readonly level: DeclaredFatigue | null; readonly busy: boolean; readonly onChange: (level: DeclaredFatigue | null) => void }) {
   return (

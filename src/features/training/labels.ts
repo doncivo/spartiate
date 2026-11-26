@@ -1,5 +1,5 @@
 import type { EquipmentProfileKind, ExerciseKind, ExerciseMetric, ExercisePattern } from '../../domain/training';
-import { tTraining, type TrainingTextKey } from '../../i18n/trainingText';
+import { tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
 
 /** Libellés français des listes fermées de l'entraînement. */
 
@@ -27,7 +27,7 @@ export const METRIC_KEY = {
 
 export const PROFILE_KIND_KEY = { salle: 'kindSalle', maison: 'kindMaison', voyage: 'kindVoyage' } as const satisfies Record<EquipmentProfileKind, TrainingTextKey>;
 
-const GROUP_KEY: Readonly<Record<string, TrainingTextKey>> = {
+const GROUP_KEY: Readonly<Record<string, TrainingPlainKey>> = {
   chest: 'groupChest',
   back: 'groupBack',
   shoulders: 'groupShoulders',
