@@ -208,7 +208,7 @@ Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des 
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-370 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+372 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -225,13 +225,13 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 10 | D-79 | I4-06 favoris : stockage local, non synchronisé, ne passent pas d'un appareil à l'autre (mission de nuit du 2026-11-09). | A garder · B réviser ; effet : synchro, schéma, données, écran |
 | 10 | D-116 | CLEAN-01 (0.17.0) : le banc legacy et ce que les gardes citent sont CONSERVÉS. | A garder · B réviser ; effet : moteur, synchro, schéma, écran |
 | 10 | D-172 | FIX-0181 : migration 0015 (schéma 15). | A garder · B réviser ; effet : synchro, schéma, données, écran |
+| 10 | D-644 | CLEAN-0296 (C-085) : traducteurs à part typés comme catalogText, garde à liste figée. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
 | 9 | D-81 | I4-07 « journée complète » : table day_completeness publiée (mission de nuit du 2026-11-09; tranche D-74 point 2 et D-76 point 2). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-85 | REV-01 (0.9.3) : séances ouvertes dans l'archive d'export (constat 1 de la relecture Codex du 9 novembre). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 | 9 | D-539 | SEANCE-0292b (BL-112, amende D-385). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
-| 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
 
 ### séance et moteur (114 : 73 à trancher, 41 à confirmer seulement)
 
@@ -437,7 +437,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (86 : 51 à trancher, 35 à confirmer seulement)
+### synchro et données (87 : 52 à trancher, 35 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -447,6 +447,7 @@ Gardées sans question (à confirmer seulement) :
 | 10 | D-79 | I4-06 favoris : stockage local, non synchronisé, ne passent pas d'un appareil à l'autre (mission de nuit du 2026-11-09). | A garder · B réviser ; effet : synchro, schéma, données, écran |
 | 10 | D-116 | CLEAN-01 (0.17.0) : le banc legacy et ce que les gardes citent sont CONSERVÉS. | A garder · B réviser ; effet : moteur, synchro, schéma, écran |
 | 10 | D-172 | FIX-0181 : migration 0015 (schéma 15). | A garder · B réviser ; effet : synchro, schéma, données, écran |
+| 10 | D-644 | CLEAN-0296 (C-085) : traducteurs à part typés comme catalogText, garde à liste figée. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
 | 9 | D-81 | I4-07 « journée complète » : table day_completeness publiée (mission de nuit du 2026-11-09; tranche D-74 point 2 et D-76 point 2). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
@@ -591,7 +592,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (62 : 29 à trancher, 33 à confirmer seulement)
+### CI et outillage (63 : 30 à trancher, 33 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -617,6 +618,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-610 | SHELL-0294c (BL-143, BL-164, BL-033 et bundle de départ). | A garder · B réviser ; effet : chiffre |
 | 2 | D-634 | DATA-0295 (BL-005) : cause de la copie de conflit state 2.spx écrite comme hypothèse H-42. | A garder · B réviser ; effet : données |
 | 2 | D-636 | DATA-0295 (BL-166) : trois tests de non-régression de resolveInflight, verts d'emblée. | A garder · B réviser ; effet : moteur |
+| 2 | D-643 | CLEAN-0296 (§ 18.4 b) : le --check des icônes est lancé par la CI. | A garder · B réviser ; effet : chiffre |
 | 1 | D-105 | CI : projet dom à 2 workers (12/11/2026). | A garder · B réviser ; effet : écran |
 | 1 | D-363 | TESTS-FIGES (0.28.0) : seuil de couverture de src/domain/training à 90 % (C-170, § 11.6 ). | A garder · B réviser ; effet : chiffre |
 | 1 | D-372 | A11Y (0.28.0) : Dynamic Type iOS reporté en 0.28.1, avec capture CI et constat d'Ali (C-113, H-19a ). | A garder · B réviser ; effet : écran |
