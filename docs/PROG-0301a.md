@@ -70,10 +70,10 @@ rendu complet ; **la PR BL-179 (CORPS-0301c) modifiera `BodyProgress` ensuite et
 
 Agent code-reviewer distinct, sur le diff 5191d828..083c41bd : **approuvé**, aucun bloquant (100 tests ciblés relancés verts). Remarques
 non bloquantes traitées : repères « ailleurs » de P-07, P-29, P-36 retirés (le test « lecture impossible » les prouve) ; aiguille de P-37
-renforcée ; module simulé du test P-37 sans trace parasite ; barre d'onglets qui ne fait défiler que sa liste (plus de ).
-Noté pour BL-179 : chaque sous-onglet de Corps remonte son bloc et relit ses données ().
+renforcée ; module simulé du test P-37 sans trace parasite ; barre d'onglets qui ne fait défiler que sa liste (plus de `scrollIntoView`).
+Noté pour BL-179 : chaque sous-onglet de Corps remonte son bloc et relit ses données (`key`).
 
 ## Constats à faire par Ali
 
-Section « 0.30.1 (Progrès en onglets et Mensurations) » de  (BL-177, iPhone et PC). Libellé nouveau : Corps › Santé sans
+Section « 0.30.1 (Progrès en onglets et Mensurations) » de `docs/constats-ali.md` (BL-177, iPhone et PC). Libellé nouveau : Corps › Santé sans
 import, « Aucune valeur importée de Santé pour l’instant. » (D-720).
