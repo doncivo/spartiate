@@ -1,5 +1,5 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
-import { ACTIVITY_LEVELS, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
+import { ACTIVITY_LEVELS, effectiveGoal, GOAL_RATE_MAX_KG, type ActivityLevel, type CheckInStyle, type NutritionPrefs, type Target } from '../../../domain/nutrition';
 import type { NutritionTargetRecord } from '../../../db/repositories/nutritionTargetRepository';
 import { formatDayMonth, formatInt, formatKgDelta, formatWeekdayDate, tNutrition, weekdayNames, type NutritionPlainKey } from '../../../i18n/nutritionText';
 import { Button, HeroFigure, SegmentedControl } from '../../../ui';
@@ -17,12 +17,10 @@ const STYLE_HINT: Readonly<Record<CheckInStyle, NutritionPlainKey>> = { guided: 
 const STYLE_KEY: Readonly<Record<CheckInStyle, NutritionPlainKey>> = { guided: 'styleGuided', collaborative: 'styleCollaborative', manual: 'styleManual' };
 const GOAL_KEY: Readonly<Record<NutritionPrefs['goal']['kind'], NutritionPlainKey>> = { maintain: 'goalMaintain', loss: 'goalLoss', gain: 'goalGain' };
 const ACTIVITY_KEY: Readonly<Record<ActivityLevel, NutritionPlainKey>> = { sedentary: 'activitySedentary', light: 'activityLight', moderate: 'activityModerate', active: 'activityActive' };
-/** Vitesse proposée au choix de « Perte » ou « Prise » : visible et modifiable, le moteur la borne encore à 1 % du poids par semaine. */
-const DEFAULT_RATE_KG = 0.25;
+/** Vitesse minimale acceptée à la saisie ; le moteur borne encore à 1 % du poids par semaine. */
 const MIN_RATE_KG = 0.05;
 
-type GoalKind = NutritionPrefs['goal']['kind'];
-type RowId = 'style' | 'weekday' | 'goal' | 'activity';
+type RowId = 'style' | 'weekday' | 'rate' | 'activity';
 
 export function describeDecision(record: NutritionTargetRecord): string {
   if (record.source === 'manual') return tNutrition('historyManual');
@@ -84,7 +82,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const { data } = useAppContainer();
   const navigate = useNavigationStore((s) => s.navigate);
   const [prefs, setPrefs] = useState<NutritionPrefs>(snapshot.prefs);
-  const [rate, setRate] = useState(snapshot.prefs.goal.kind === 'maintain' ? '' : String(snapshot.prefs.goal.weeklyRateKg));
+  const [rate, setRate] = useState(snapshot.goal.kind === 'maintain' ? '' : String(snapshot.goal.weeklyRateKg));
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [restPartial, setRestPartial] = useState(false);
@@ -94,6 +92,8 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
   const [openRow, setOpenRow] = useState<RowId | null>(null);
   const [editing, setEditing] = useState(false);
   const { profile, target, targets } = snapshot;
+  // NUTRI-0299 (BL-173, D-669) : la sorte vient du profil (lecture seule), le rythme des préférences (réglé ici).
+  const goal = effectiveGoal(profile?.goal ?? null, prefs.goal);
   // D-295 : la plus proche des cibles à venir (acceptée, datée après aujourd'hui, en vigueur à sa date).
   const upcoming = upcomingTargets(targets, snapshot.today)[0] ?? null;
   const profileComplete = profile !== null && profile.sex !== null && profile.birthYear !== null && profile.heightCm !== null;
@@ -131,23 +131,14 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
     }
   }
 
-  function chooseGoal(kind: GoalKind): void {
-    if (kind === 'maintain') {
-      setRate('');
-      void update({ ...prefs, goal: { kind } });
-    } else {
-      setRate(String(DEFAULT_RATE_KG));
-      void update({ ...prefs, goal: { kind, weeklyRateKg: DEFAULT_RATE_KG } });
-    }
-  }
-
+  /** Le rythme s'enregistre avec la sorte suivie (forme de `nutrition.prefs` inchangée, aucun champ de plus). */
   function changeRate(value: string): void {
     setRate(value);
     const n = parseNumber(value);
-    if (prefs.goal.kind !== 'maintain' && typeof n === 'number' && n >= MIN_RATE_KG && n <= GOAL_RATE_MAX_KG) void update({ ...prefs, goal: { kind: prefs.goal.kind, weeklyRateKg: n } });
+    if (goal.kind !== 'maintain' && typeof n === 'number' && n >= MIN_RATE_KG && n <= GOAL_RATE_MAX_KG) void update({ ...prefs, goal: { kind: goal.kind, weeklyRateKg: n } });
   }
   const rateParsed = parseNumber(rate);
-  const rateInvalid = prefs.goal.kind !== 'maintain' && !(typeof rateParsed === 'number' && rateParsed >= MIN_RATE_KG && rateParsed <= GOAL_RATE_MAX_KG);
+  const rateInvalid = goal.kind !== 'maintain' && !(typeof rateParsed === 'number' && rateParsed >= MIN_RATE_KG && rateParsed <= GOAL_RATE_MAX_KG);
 
   async function saveRest(restPlan: RestPlan | null, lowFloorConfirmed = false): Promise<RestSaveResult> {
     if (target === null) return 'error';
@@ -181,8 +172,9 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
     }
   }
 
-  const goalName = tNutrition(GOAL_KEY[prefs.goal.kind]);
-  const goalValue = prefs.goal.kind === 'maintain' ? goalName : tNutrition('goalValueRate', { goal: goalName, rate: formatKgDelta(prefs.goal.weeklyRateKg).replace(/^[+−]/, '') });
+  const goalName = tNutrition(GOAL_KEY[goal.kind]);
+  const goalLine = tNutrition(profile?.goal == null ? 'goalProfileMissing' : 'goalProfileValue', { goal: goalName });
+  const rateValue = goal.kind === 'maintain' ? '' : tNutrition('goalRateValue', { rate: formatKgDelta(goal.weeklyRateKg).replace(/^[+−]/, '') });
   const targetButton = tNutrition(target === null ? 'targetFormTitle' : 'editTarget');
 
   return (
@@ -234,30 +226,22 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         <h2 id="ct-nutrition-goal" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('goalTitle')}
         </h2>
-        <StrategyRow label={tNutrition('goalTitle')} value={goalValue} open={openRow === 'goal'} onToggle={toggle('goal')}>
-          <SegmentedControl
-            label={tNutrition('goalTitle')}
-            value={prefs.goal.kind}
-            onChange={chooseGoal}
-            options={[
-              { value: 'maintain', label: tNutrition('goalMaintain') },
-              { value: 'loss', label: tNutrition('goalLoss') },
-              { value: 'gain', label: tNutrition('goalGain') },
-            ]}
-          />
-          {prefs.goal.kind === 'maintain' ? (
-            <p className="ct-nutrition__muted">{tNutrition('goalDefaultHint')}</p>
-          ) : (
-            <>
-              <NumberField label={tNutrition('goalRate')} value={rate} onChange={changeRate} step="0.05" invalid={rateInvalid} />
-              {rateInvalid ? (
-                <p role="alert" className="ct-nutrition__warning">
-                  {tNutrition('goalRateInvalid')}
-                </p>
-              ) : null}
-            </>
-          )}
-        </StrategyRow>
+        {/* NUTRI-0299 (BL-173, D-669) : l'objectif est celui du profil, en lecture seule ; il se change dans Réglages › Corps. */}
+        <p className="ct-strategy__static">{goalLine}</p>
+        <p className="ct-nutrition__muted">{tNutrition('goalProfileHint')}</p>
+        <Button variant="secondary" onClick={() => navigate({ tab: 'more', screen: 'body' })}>
+          {tNutrition('goalProfileOpen')}
+        </Button>
+        {goal.kind === 'maintain' ? null : (
+          <StrategyRow label={tNutrition('goalRateTitle')} value={rateValue} open={openRow === 'rate'} onToggle={toggle('rate')}>
+            <NumberField label={tNutrition('goalRate')} value={rate} onChange={changeRate} step="0.05" invalid={rateInvalid} />
+            {rateInvalid ? (
+              <p role="alert" className="ct-nutrition__warning">
+                {tNutrition('goalRateInvalid')}
+              </p>
+            ) : null}
+          </StrategyRow>
+        )}
         <StrategyRow
           label={tNutrition('activityTitle')}
           value={tNutrition(prefs.activity === null ? 'activityNone' : ACTIVITY_KEY[prefs.activity])}

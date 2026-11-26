@@ -107,10 +107,15 @@ Pour chaque bloc :
    - Trier par : **Date de début** · Ordre : **Plus ancien en premier**
 2. **Répéter avec chaque** (élément : *Échantillons Santé*). À l’intérieur de la boucle : voir le détail par bloc ci-dessous.
 3. Après **Fin de la répétition** : **Combiner le texte** · *Résultats de la répétition* · avec **Nouvelles lignes**
-4. **Définir le nom** (entre Combiner et Enregistrer)
+3 bis. **Saut de ligne final (obligatoire depuis la version qui livre BL-172, D-664)** : ajoute une action **Texte** juste après
+   **Combiner le texte**. Dans son champ, touche *Texte combiné*, puis la touche **Retour** du clavier (le curseur passe à la ligne
+   suivante, vide ; à vérifier sur ton iPhone, constat BL-172 dans docs/constats-ali.md). Les étapes 4 et 5 utilisent ce *Texte*, et non plus le *Texte combiné*. Sans ce saut de ligne final, Spartiate refuse le
+   fichier en entier (« Fichier refusé : il ne finit pas par un saut de ligne ») : une dernière ligne coupée pendant l’écriture serait
+   sinon lue comme juste (C-056). Seuls les quatre fichiers de cette partie sont concernés ; `poids.csv` et la partie C restent acceptés sans.
+4. **Définir le nom** (entre Texte et Enregistrer), sur le *Texte* de l’étape 3 bis
    - Nom : le nom complet du fichier du bloc (ex. `hrv.csv`) ; active **Ne pas inclure d’extension de fichier** : sans cela Raccourcis ajoute `.txt` (`hrv.csv.txt`) et Spartiate ne trouve pas le fichier
 5. **Enregistrer le fichier**
-   - Fichier : *Texte combiné*
+   - Fichier : le *Texte* de l’étape 3 bis (avec son saut de ligne final)
    - Désactive **Demander où enregistrer**
    - Destination : **iCloud Drive** · sous-chemin : le nom du fichier du bloc, dans `Spartiate/sante/` (ex. `Spartiate/sante/hrv.csv`)
    - Active **Remplacer si le fichier existe**
@@ -365,6 +370,8 @@ La nutrition se saisit dans Spartiate (décision d’Ali du 15/11, D-293). Ne cr
 
 - « Aucune pesée lisible » (partie A) : ouvre `poids.csv` dans Fichiers et vérifie qu’une ligne ressemble à l’exemple de la partie A
   (date avec `+01:00` ou `Z` à la fin, point-virgule, valeur).
+- Partie B : « Fichier refusé : il ne finit pas par un saut de ligne » : ajoute l’étape 3 bis de B.1 (action **Texte** après
+  **Combiner le texte**, terminée par un retour à la ligne) dans chacun des quatre blocs, puis relance le raccourci.
 - Une ligne sans fuseau horaire est ignorée (heure ambiguë). C’est le cas le plus fréquent avec une date écrite à la main.
 - Une ligne au stade inconnu (sommeil) est ignorée : vérifie le libellé du stade dans la section B.1.
 - Une valeur écrite avec un espace de milliers (ex. `8 200`) est rejetée : vérifie que `pas.csv` contient `8200`.

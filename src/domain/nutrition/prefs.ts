@@ -7,6 +7,7 @@
 import { addDays, weekdayOf } from '../localDate';
 import { isWeekday, type LocalDate, type Weekday } from '../types';
 import { ACTIVITY_LEVELS, NUTRITION_CONFIG, type ActivityLevel } from './config';
+import type { BodyGoal } from '../bodyProfile';
 import type { CheckInStyle, Goal } from './checkIn';
 
 export interface NutritionPrefs {
@@ -19,6 +20,8 @@ export interface NutritionPrefs {
 export const CHECK_IN_STYLES: readonly CheckInStyle[] = ['guided', 'collaborative', 'manual'];
 /** Vitesse hebdomadaire maximale acceptée à la saisie (le moteur borne encore à 1 % du poids par semaine). */
 export const GOAL_RATE_MAX_KG = 1;
+/** Rythme pris quand le profil vise une perte ou une prise sans rythme gardé pour cette sorte (visible et modifiable en Stratégie). */
+export const DEFAULT_GOAL_RATE_KG = 0.25;
 
 export const DEFAULT_NUTRITION_PREFS: NutritionPrefs = {
   activity: null,
@@ -48,6 +51,18 @@ export function parseNutritionPrefs(raw: unknown): NutritionPrefs {
     goal: parseGoal(raw['goal']),
     checkInWeekday: typeof weekday === 'number' && Number.isInteger(weekday) && isWeekday(weekday) ? weekday : DEFAULT_NUTRITION_PREFS.checkInWeekday,
   };
+}
+
+/**
+ * NUTRI-0299 (BL-173, D-669, C-106) : objectif suivi par Stratégie et le check-in. La SORTE vient du profil (`profile.goal`, Réglages › Corps,
+ * synchronisé) ; le RYTHME reste dans les préférences nutrition (réglage local), et n'est repris que s'il a été choisi pour la même sorte (jamais
+ * celui d'une perte pour une prise, par exemple après un changement du profil sur l'autre appareil) ; sinon `DEFAULT_GOAL_RATE_KG`. Profil sans
+ * objectif : l'ancien choix des préférences est gardé (rien de perdu ; maintien par défaut, Q-7). Avis de data-model consigné dans docs/NUTRI-0299.md.
+ */
+export function effectiveGoal(profileGoal: BodyGoal | null, prefsGoal: Goal): Goal {
+  if (profileGoal === null) return prefsGoal;
+  if (profileGoal === 'maintain') return { kind: 'maintain' };
+  return { kind: profileGoal, weeklyRateKg: prefsGoal.kind === profileGoal ? prefsGoal.weeklyRateKg : DEFAULT_GOAL_RATE_KG };
 }
 
 export interface CheckInPeriod {

@@ -7,15 +7,14 @@ import { describe, expect, it } from 'vitest';
  * src/i18n (fichiers `.ts` hors tests), commentaires retirés, et refuse le mot « log » ou « logs », quelle que soit la casse, dans tout
  * littéral qui contient une espace ou une capitale initiale (les chemins d'import et les clés techniques n'en ont pas).
  *
- * Exception, qui ne peut que se réduire : `fr.health.ts` (module santé, PR parallèle du lot 0.29.9 ; D-686) garde ses renvois
- * « Plus › Logs » jusqu'à la PR qui le reprend (reste de BL-168).
+ * Plus aucune exception : les renvois de `fr.health.ts` sont passés à « Journaux » (NUTRI-0299, D-692), fin de BL-168.
  */
 const BANNED = /\blogs?\b/i;
 const LITERAL = /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g;
 const dir = fileURLToPath(new URL('.', import.meta.url));
 const strip = (source: string): string => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/.*$/gm, '');
 
-const EXEMPT = new Set(['fr.health.ts']);
+const EXEMPT = new Set<string>();
 
 const CATALOGS = readdirSync(dir)
   .filter((name) => name.endsWith('.ts') && !name.endsWith('.test.ts') && !name.endsWith('.d.ts'))

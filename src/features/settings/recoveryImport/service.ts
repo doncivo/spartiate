@@ -1,6 +1,7 @@
 import type { Clock } from '../../../domain/clock';
 import {
   buildSleepNights,
+  lacksFinalNewline,
   parseShortcutHrv,
   localDayAt,
   parseShortcutRestingHr,
@@ -40,6 +41,7 @@ export const IMPORT_LOG_EVENTS = [
   'recovery-import-busy',
   'recovery-import-throttled',
   'recovery-import-done',
+  'recovery-import-file-unterminated',
   'recovery-import-run-failed',
   'recovery-import-diag-folder',
   'recovery-import-diag-entry',
@@ -85,7 +87,8 @@ export const AUTO_IMPORT_INTERVAL_MS = 30 * 60 * 1000;
 
 export interface FileOutcome {
   readonly type: RecoverySampleType;
-  readonly state: 'imported' | 'absent' | 'unreadable' | 'failed';
+  /** `unterminated` (BL-172, D-664) : fichier sans saut de ligne final, refusé en entier, rien d'écrit pour ce type. */
+  readonly state: 'imported' | 'absent' | 'unreadable' | 'unterminated' | 'failed';
   /** Lignes lues et acceptées (doublons d'export compris). */
   readonly read: number;
   readonly added: number;
@@ -408,6 +411,11 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
     const files: FileOutcome[] = [];
     for (const [index, read] of reads.entries()) {
       const type = TYPE_OF[read.name as ShortcutFileName];
+      if (read.state === 'ok' && lacksFinalNewline(read.text)) {
+        deps.log('recovery-import-file-unterminated', { type_index: index });
+        files.push({ type, state: 'unterminated', read: 0, added: 0, duplicates: 0, updated: 0, rejectedTotal: 0, rejected: null, truncated: false });
+        continue;
+      }
       if (read.state === 'ok') {
         files.push(await importFile(samples, type, read.text, today, at, index));
         continue;
@@ -438,7 +446,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       if (rules !== null) ({ recomputedDays, recomputeFailed } = rules);
     }
     const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
-    deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), failed: count('failed') });
+    deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), unterminated_count: count('unterminated'), failed: count('failed') });
     const issue = source.probe?.()?.santeListError ?? '';
     return { status: 'done', files, recomputedDays, recomputeFailed, at, ...(issue === '' ? {} : { folderIssue: issue }) };
   }
