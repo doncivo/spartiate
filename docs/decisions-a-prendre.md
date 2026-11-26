@@ -6,7 +6,7 @@ Le lot continue sans la réponse : le comportement actuel reste en place tant qu
 forme « Q-n : option ». Une question tranchée devient une D- dans docs/decisions.md et sort de ce fichier.
 
 
-Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 (docs/decisions.md). La revue par thème des choix prudents (D-490, BL-149) est
+Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 (docs/decisions.md). Q-40 est réservée à la question d'Ali sur la validation des seuils du Strength Score. La revue par thème des choix prudents (D-490, BL-149) est
 en fin de fichier, générée par `node scripts/release/prudent-review.mjs --write` (sections « séance et moteur », « nutrition »,
 « récupération », « synchro et données », « écrans », « CI et outillage »).
 
@@ -157,52 +157,6 @@ Recommandation : C. Conséquences : A ne change rien et peut afficher une heure 
 Constat : même mouvement, même matériel, deux ids publiés ; aucune redirection d'identifiant n'existe pour une fusion.
 - A (recommandé) : garder les deux, aucune fusion. Conséquences : deux fiches voisines, aucune référence perdue.
 - B : fusionner avec redirection d'id dans le chargeur (hors périmètre content-data : training et data-model). Conséquences : un mécanisme de plus, test d'identifiants stables à adapter.
-
-## Q-32 — « Démarrer la séance du jour » dans la palette Ctrl+K (SHELL-0294a)
-Constat : D-480 demande « démarrer la séance du jour » ; la palette ouvre l'écran de séance (options de départ, ou reprise de la séance ouverte), comme le bouton d'Aujourd'hui (D-592).
-- A (recommandé) : garder l'ouverture de l'écran de séance. Conséquences : un geste de plus pour lancer, aucune séance créée par une frappe de clavier.
-- B : créer la séance du jour directement depuis la palette. Conséquences : un seul geste, mais une séance peut naître d'une frappe accidentelle (annulation à prévoir côté training).
-
-## Q-33 — Entitlements du § 19.4 : `healthkit.access` et `keychain-access-groups` (SHELL-0294b)
-Constat : le § 19.4 demande trois clés ; la source durable `src-tauri/ios/Spartiate.entitlements` n'en porte qu'une (`com.apple.developer.healthkit`). La signature ad hoc de la CI ne développe pas `$(AppIdentifierPrefix)`, et changer le groupe du Trousseau d'une app installée peut rendre illisible la clé de synchro qu'il garde (D-598).
-- A (recommandé) : garder l'écart et amender le § 19.4 par une D- (une seule clé, HealthKit). Conséquences : aucun risque pour la clé de synchro ; le chapitre 19 et l'app disent la même chose.
-- B : ajouter `com.apple.developer.healthkit.access` (tableau vide) seulement. Conséquences : conforme au modèle d'Xcode pour HealthKit, sans effet tant que HealthKit direct reste BLOCKED (D-69) ; une compilation iOS et un constat d'installation par SideStore.
-- C : ajouter les deux clés. Conséquences : `keychain-access-groups` à développer par la CI avec le préfixe de l'équipe de SideStore, inconnu de la CI ; risque de perdre l'accès à la clé de synchro du Trousseau après la mise à jour (réappairage).
-
-## Q-34 — Libellé « Logs » ou « Journaux » (SHELL-0294c)
-Constat : Plus affiche « Journaux » dans le sommaire PC (`navLogs`) mais l'écran, la ligne de Réglages et l'export disent « Logs » (`fr.logs.ts`, 11 textes) ; trois suites e2e (`I-04`, `lot-f-qa`, `lot-f-screens`) et huit tests unitaires nomment « Logs » (C-131). Le renvoi du texte d'échec de fichier a été corrigé vers « Plus › Journaux » (D-605).
-- A (recommandé) : « Journaux » partout (écran, ligne, export). Conséquences : un seul mot, comme le reste de Plus ; les e2e se mettent à jour dans une PR dont la CI les lance (impossible en local).
-- B : « Logs » partout, y compris le sommaire PC. Conséquences : anglicisme gardé, un seul libellé de plus à changer, aucun e2e touché.
-- C : garder les deux (état actuel). Conséquences : l'utilisateur voit deux mots pour un même écran.
-
-## Q-35 — Essai de la CSP stricte sur l'appareil (SHELL-0294d)
-Constat : la CSP ne contient plus `'wasm-unsafe-eval'` ni `style-src 'unsafe-inline'` (D-611). Aucun essai n'est possible sur ce PC ni sur l'iPhone par un agent ; un style ou un module qui ne s'afficherait pas serait vu à la première ouverture de la version.
-- A (recommandé, appliqué) : garder la CSP stricte ; Ali ouvre les écrans listés dans docs/constats-ali.md (0.29.4, « CSP ») et signale tout défaut d'affichage. Conséquences : un défaut éventuel est corrigé à la source (style en ligne retiré).
-- B : rétablir `style-src 'unsafe-inline'` seulement. Conséquences : plus de risque d'affichage cassé, mais les styles injectés par une page hostile redeviennent possibles.
-- C : rétablir les deux directives. Conséquences : état d'avant, sans gain de sécurité.
-
-## Q-36 — Système inconnu dans l'app installée : message visible ? (C-163, SHELL-0294e)
-Constat : si l'agent utilisateur et la plateforme du navigateur intégré ne disent rien (cas jamais vu sur Windows ni sur l'iPhone), l'app garde le système « other » : synchro et sauvegardes indisponibles, et seul le journal le dit (`os-unknown`, D-616).
-- A (recommandé, appliqué) : journal seulement ; le cas est théorique et un bandeau de plus alourdirait le départ. Conséquences : si cela arrivait, l'utilisateur verrait des réglages absents et le journal en donnerait la cause.
-- B : lire aussi `navigator.platform` quand l'agent utilisateur est vide (14 à 24 octets de départ, à compenser ailleurs).
-- C : afficher dans Plus une ligne « Système non reconnu : synchro et sauvegardes indisponibles ». Conséquences : cause visible, un texte et un test de plus, catalogue à charger à la demande.
-
-## Q-37 — Date de réévaluation de D-412 : Siri / App Intents, Camera Control, micronutriments (BL-158, SHELL-0294f)
-Constat : D-412 (Ali, 19/11) renvoie ces trois sujets « après quelques semaines d'usage réel » ; l'usage réel a commencé le 16/11/2026 (D-292). Aucune date n'était fixée, aucun ticket n'est ouvert.
-- A (recommandé) : lundi 4 janvier 2027 (sept semaines d'usage réel, après les fêtes). Conséquences : une ligne de rappel au registre ; ce jour-là, une question fermée par sujet (garder « pas maintenant », ou ouvrir un ticket) ; aucun travail avant.
-- B : lundi 1er février 2027 (onze semaines). Conséquences : plus de recul sur l'usage, sujets plus tard.
-- C : à la fin du dernier lot 0.29.x, sans date. Conséquences : dépend du rythme des lots ; risque d'oubli.
-
-## Q-38 — Swipe et appui long sur l'iPhone (§ 18.1 c, C-192, SHELL-0294f)
-Constat : le § 18.1 cite « swipe, long-press » et le § 13 « swipe » sur les séries, sans dire l'action de chaque geste ; rien n'est codé. Un geste sur une ligne entre en concurrence avec le défilement et ne se prouve que par un e2e iPhone (CI) et un constat d'Ali : non fait en SHELL-0294f.
-- A (recommandé) : swipe vers la gauche sur une série = « Supprimer » (avec annulation), appui long sur une vignette d'exercice = réordonner ; rien d'autre. Conséquences : deux gestes dans l'écran de séance (bloc à la demande, hors départ), un e2e iPhone, un constat d'Ali.
-- B : appui long = menu (supprimer, dupliquer, type de série) partout où le PC a un clic droit. Conséquences : plus de surfaces, un composant de menu commun.
-- C : pas de geste (boutons seulement, état actuel) ; § 18.1 amendé. Conséquences : aucun risque de geste involontaire.
-
-## Q-39 — Garde du découpage du PRD ouverte à des décisions de Claude (SHELL-0294f)
-Constat : `scripts/release/prd-split.test.ts` n’admettait jusqu’ici que des changements du PRD tirés d’une décision d’Ali ; SHELL-0294f y a ajouté D-619 à D-624 (choix prudents de Claude, mise en cohérence du PRD, BL-150 et BL-148). Chaque changement reste listé et motivé.
-- A (recommandé) : garder, en réservant ces ajouts à la mise en cohérence (aucun changement de comportement). Conséquences : rien à refaire.
-- B : refuser ; les corrections du PRD repartent en attente de ta décision. Conséquences : contradictions du PRD rétablies jusqu’à ta réponse.
 
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
