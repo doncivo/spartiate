@@ -240,8 +240,8 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
 Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écrans sur les deux appareils ; un élément sans mise en forme, une barre vide, un graphique ou un pictogramme absent est un défaut d'affichage à signaler (BL-002, BL-144).
 
-- [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Nutrition › Journal (barres de macros) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
-- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Logs. Date : ____ Version : ____
+- [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Aujourd'hui, colonne de droite (barres de macros) ; Nutrition › Journal, Nutrition › Tableau de bord (graphiques) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
+- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Logs (« Journaux » après BL-168). Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 

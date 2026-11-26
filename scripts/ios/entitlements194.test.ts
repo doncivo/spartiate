@@ -1,5 +1,5 @@
-// SHELL-0294b (C-158, § 19.4) : entitlements durables relus contre le chapitre 19.4 du PRD. L'écart (healthkit.access et
-// keychain-access-groups absents) est une décision écrite (D-598), jamais un oubli : toute clé ajoutée ou retirée fait échouer ce test.
+// SHELL-0294b (C-158, § 19.4), DEC-0298 (D-648, Ali, 26/11, Q-33) : entitlements durables relus contre le bloc XML du § 19.4 du PRD,
+// qui ne demande plus que la clé HealthKit. Toute clé ajoutée ou retirée d'un seul côté fait échouer ce test.
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -13,9 +13,12 @@ describe('C-158 : entitlements contre § 19.4', () => {
   const chapter = read('docs/prd/19-plugins-swift-et-contrat-ios.md');
   const decisions = read('docs/decisions.md');
 
-  it('le § 19.4 demande trois clés ; la source durable n’en porte qu’une, HealthKit', () => {
-    for (const key of ['com.apple.developer.healthkit', 'com.apple.developer.healthkit.access', 'keychain-access-groups']) expect(chapter).toContain(key);
-    expect(Object.keys(entitlements).sort()).toEqual(['com.apple.developer.healthkit']);
+  it('les clés du bloc XML du § 19.4 égalent celles de la source durable : HealthKit seule (D-648)', () => {
+    const section = chapter.split('### 19.4')[1] ?? '';
+    const xml = /```xml\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+    const keys = [...xml.matchAll(/<key>([^<]+)<\/key>/g)].map((m) => m[1]).sort();
+    expect(keys).toEqual(['com.apple.developer.healthkit']);
+    expect(Object.keys(entitlements).sort()).toEqual(keys);
     expect(entitlements['com.apple.developer.healthkit']).toBe(true);
   });
 
