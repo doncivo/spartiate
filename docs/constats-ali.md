@@ -230,6 +230,12 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 
 - [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Logs › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
+## 0.29.7
+
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
+
+- [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement (génère une séance, puis ouvre-la), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
@@ -300,7 +306,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | H-42 | 0.29.5 |
 | C-154 | 0.29.5 |
 | C-076 | 0.29.5 |
-| C-085 | 0.29.6 |
+| C-085 | 0.29.6 ; 0.29.7 |
 
 ## Doutes à trancher
 
