@@ -30,6 +30,13 @@ describe('inventaire du banc legacy (BL-133)', () => {
     }
   });
 
+  // TECH-0298 (CLEAN-03, BL-133) : plafond du banc legacy. Un fichier nouveau sur le banc est refusé ; le plafond ne fait que baisser,
+  // à chaque lot migré, par un commit qui le justifie (docs/TECH-0298.md).
+  it('plafond : jamais plus de 131 fichiers (101 tests) sur le banc legacy', () => {
+    expect(rows.length).toBeLessThanOrEqual(131);
+    expect(rows.filter((r) => r.test).length).toBeLessThanOrEqual(101);
+  });
+
   it('les dépendances réelles restent comptées : simulateur, kit qui l’importe, dépôt hérité appelé', () => {
     expect(paths.has('tests/sim/syncDevice.ts')).toBe(true);
     expect(paths.has('tests/unit/sync/hostile/scenario1Orphan.test.ts')).toBe(true);
