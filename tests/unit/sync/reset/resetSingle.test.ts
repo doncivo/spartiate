@@ -2,6 +2,10 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { SyncPlatformError } from '../../../../src/platform/sync/types';
 import { RESET_META } from '../../../../src/sync/reset';
 import { closeAll, meta, publishedState, recoveryOf, setupRoom, titles, type Room } from './resetKit';
+import { selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * Y-11 critères 2, 4 à 7, 14 et 17 avec un seul appareil (ADR 0011 §14.3) : la bascule se fait au premier cycle, sans liste ni rappel ;

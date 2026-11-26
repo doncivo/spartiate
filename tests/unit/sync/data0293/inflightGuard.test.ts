@@ -1,10 +1,13 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { createSimDevice, SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, I0_SCHEMA_VERSION, setupFirst, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
 import { publishOutbox } from '../../../../src/sync/publisher';
 import { META, readJson } from '../../../../src/sync/meta';
 import type { SyncDeps } from '../../../../src/sync/deps';
 import type { DeviceAck } from '../../../../src/domain/sync/format';
-import { LEGACY_SYNC_CATALOGUE } from '../../../fixtures/legacy-schema/catalogue';
+import { SYNC_CATALOGUE } from '../../../../src/domain/sync/syncTables';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * DATA-0293 (BL-038, relecture à froid) : tant qu'une intention d'ajout (`inflight`) n'est pas résolue, `publishOutbox` ne publie rien : un instantané
@@ -28,7 +31,7 @@ describe('publishOutbox et intention d’ajout non résolue', () => {
     const head = await readJson<DeviceAck>(dev.data.repos, META.head);
     if (!head) throw new Error('tête absente');
     await dev.createTask('Après');
-    const deps: SyncDeps = { catalogue: LEGACY_SYNC_CATALOGUE, data: dev.data, platform: dev.platform, deviceId: dev.id, devicePlatform: dev.devicePlatform, hlc: dev.hlc, clock: dev.clock, logger: dev.logger, sv: SCHEMA_VERSION, appVersion: '0.3.3' };
+    const deps: SyncDeps = { catalogue: SYNC_CATALOGUE, data: dev.data, platform: dev.platform, deviceId: dev.id, devicePlatform: dev.devicePlatform, hlc: dev.hlc, clock: dev.clock, logger: dev.logger, sv: I0_SCHEMA_VERSION, appVersion: '0.3.3' };
     const inflight = { epoch: head.epoch, segment: head.segment, expect: head.record, count: 1, maxHlc: head.hlc, entries: [] };
     await dev.data.repos.sync.setMeta(META.inflight, JSON.stringify(inflight));
     let appends = 0;
