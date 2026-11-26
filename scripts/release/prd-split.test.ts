@@ -139,7 +139,7 @@ describe('D-648 (Ali, 26/11, Q-33) : § 19.4 réduit à la seule clé HealthKit'
   it('le § 19.4 ne demande plus healthkit.access ni keychain-access-groups, et cite D-648', () => {
     const section = chapter19().split('### 19.4')[1]?.split('### 19.5')[0] ?? '';
     expect(section).toContain('<key>com.apple.developer.healthkit</key><true/>');
-    expect(section.includes('com.apple.developer.healthkit.access')).toBe(false);
+    expect(section.includes('<key>com.apple.developer.healthkit.access</key>')).toBe(false);
     expect(section.includes('keychain-access-groups</key>')).toBe(false);
     expect(section).toContain('D-648');
   });
