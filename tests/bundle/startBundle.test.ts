@@ -419,7 +419,7 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
-  // STR-01 : Progrès › Strength Score (écran, catalogue fr.strength, normes content/strength/standards.json) : bloc à la demande, hors du départ.
+  // STR-01, STR-0300 : Progrès › Force, Strength Score maison (écran, catalogue fr.strength, mouvements de référence content/strength/standards.json) : bloc à la demande, hors du départ.
   it.each(['src/features/strength/StrengthScore.tsx', 'content/strength/standards.json'])('STR-01 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
     const chunk = manifest[source];
@@ -428,7 +428,7 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
-  it.each(['Normes : FitnessVolt Strength Standards', 'Sexe non renseigné dans le profil', 'symmetric strength self-reported gym dataset'])('STR-01 : « %s » hors du départ et présent dans le build', (marker) => {
+  it.each(['Méthode maison, version', 'Sexe non renseigné dans le profil', 'Figé pendant la décharge'])('STR-0300 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').toLowerCase().includes(marker.toLowerCase()), chunk.file).toBe(false);
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').toLowerCase().includes(marker.toLowerCase()))).toBe(true);
