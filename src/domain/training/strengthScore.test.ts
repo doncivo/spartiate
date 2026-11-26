@@ -17,7 +17,7 @@ import type { ExerciseSession } from './types';
 
 /**
  * STR-0300 (BL-174, D-675, D-741, D-742) : Strength Score maison. Vecteurs calculés à la main sur des seuils SYNTHÉTIQUES (les seuils
- * proposés sont dans config.ts, en attente de Q-42) ; valeurs inventées uniquement. Repères de score : 20, 40, 60, 80, 100.
+ * validés sont dans config.ts, Q-42, D-744) ; valeurs inventées uniquement. Repères de score : 20, 40, 60, 80, 100.
  */
 
 const M = [40, 60, 80, 100, 120] as const;
@@ -248,7 +248,7 @@ describe('figé pendant une semaine de décharge (D-742)', () => {
   });
 });
 
-describe('seuils proposés dans config.ts (proposition non validée, Q-42)', () => {
+describe('seuils validés dans config.ts (Q-42, D-744)', () => {
   it('5 niveaux dans l’ordre ; version du score 1', () => {
     expect([...STRENGTH_LEVELS]).toEqual(['beginner', 'novice', 'intermediate', 'advanced', 'elite']);
     expect(STRENGTH_SCORE_VERSION).toBe(1);

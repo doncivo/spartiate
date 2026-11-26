@@ -126,7 +126,7 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 
 # Licences — Strength Score maison (STR-0300, D-675)
 
-- Aucune donnée tierce : le Strength Score est calculé par un moteur maison (`src/domain/training/strengthScore.ts`) à partir des séances de l'utilisateur, de son poids de corps et de seuils proposés par Claude à partir de nos formules (`src/domain/training/config.ts`, docs/STR-0300-seuils.md ; validation d'Ali en attente, Q-42).
+- Aucune donnée tierce : le Strength Score est calculé par un moteur maison (`src/domain/training/strengthScore.ts`) à partir des séances de l'utilisateur, de son poids de corps et de seuils proposés par Claude à partir de nos formules (`src/domain/training/config.ts`, docs/STR-0300-seuils.md ; validés par Ali, Q-42, D-744).
 - Fichier embarqué : `content/strength/standards.json` (schéma 2) ne porte que les mouvements de référence, leurs groupes et la charge totale ; aucun chiffre, aucune source, aucune attribution à afficher.
 - Les normes tierces embarquées jusqu'à la 0.29.x et leur script de construction sont retirés (D-675, D-679, D-695) ; l'historique reste dans docs/STR-01.md, docs/decisions.md (D-310, D-503) et le CHANGELOG.
 

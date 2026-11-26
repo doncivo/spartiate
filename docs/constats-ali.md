@@ -259,7 +259,7 @@ Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écran
 
 ## 0.30.0 (Strength Score maison)
 
-Après ta réponse à Q-42 (seuils) et la mise à jour des deux appareils le même jour (version qui livre BL-174 ; D-740 à D-743, docs/STR-0300.md). Libellés nouveaux : « inconnu », « Détail par mouvement », « Méthode », « Méthode maison, version 1. », les niveaux Débutant, Novice, Intermédiaire, Avancé, Élite. Aucune valeur réelle notée ici.
+Seuils validés (Q-42, D-744 : tractions et dips en simple proportion) ; après la mise à jour des deux appareils le même jour (version qui livre BL-174 ; D-740 à D-743, docs/STR-0300.md). Libellés nouveaux : « inconnu », « Détail par mouvement », « Méthode », « Méthode maison, version 1. », les niveaux Débutant, Novice, Intermédiaire, Avancé, Élite. Aucune valeur réelle notée ici.
 
 - [ ] **BL-174 (carte Force)** — iPhone puis PC, Progrès › Force (ou la carte Strength Score de Progrès avant les onglets) : un score global avec son niveau et « N groupes sur 8 », les 8 groupes avec un score et « niveau · mouvement », ou « inconnu » et sa raison, jamais 0 ; plus aucun Fer, Bronze, Argent ni Or ; plus aucune mention de source ni de licence en bas de la carte. Date : ____ Version : ____
 - [ ] **BL-174 (détail et contexte)** — même carte : la ligne de contexte dit ton poids, ton sexe et « catégorie : tous poids, ramenés à 80 kg » ; « Détail par mouvement » liste chaque mouvement fait avec e1RM, force relative, score et niveau ; la méthode se lit en quatre phrases. Date : ____ Version : ____

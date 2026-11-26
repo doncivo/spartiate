@@ -26,7 +26,8 @@ export { STRENGTH_GROUPS, type StrengthGroup, type StrengthLevel };
  *
  * - e1RM d'un mouvement : celui du moteur de prescription (Epley, `analyzeHistory` puis `current1rmFromSessions`, § 11.3) ; tractions et
  *   dips (charge totale) : poids de corps + lest. Même clé sur plusieurs exercices : le meilleur e1RM.
- * - Force relative = e1RM × (80 / poids de corps)^(2/3). Sans poids de corps connu ni sexe : aucun score, jamais 0.
+ * - Force relative = e1RM × (80 / poids de corps)^(2/3) à la barre ; charge totale (tractions, dips) : e1RM × 80 / poids de corps, simple
+ *   proportion (Q-42, D-744 : à une traction chacun, 100 kg et 60 kg de poids de corps sont à égalité). Sans poids de corps connu ni sexe : aucun score, jamais 0.
  * - Score 0–100 : interpolation linéaire entre deux seuils du mouvement pour le sexe (config.ts, repères 20, 40, 60, 80, 100), arrondi vers
  *   le bas pour rester dans le niveau atteint ; sous Débutant, de 0 kg à 20 points (au moins 1) ; au-delà d'Élite, 100.
  * - Groupe : meilleur score parmi ses mouvements chiffrés (à égalité, le premier des mouvements de référence) ; sinon « inconnu » avec sa
@@ -55,7 +56,7 @@ export interface StrengthInput {
   readonly weighIns: readonly WeighIn[];
   readonly lifts: readonly ReferenceLift[];
   readonly exercises: readonly StrengthExercise[];
-  /** Seuils par mouvement ; défaut : la proposition de config.ts (Q-42). */
+  /** Seuils par mouvement ; défaut : le tableau de config.ts (validé par Ali, Q-42, D-744). */
   readonly thresholds?: StrengthThresholds;
 }
 
@@ -89,7 +90,9 @@ export interface StrengthResult {
   readonly global: { readonly score: number; readonly level: StrengthLevel; readonly counted: number } | null;
 }
 
-export const relativeStrength = (e1rmKg: number, bodyweightKg: number): number => e1rmKg * (STRENGTH_NORMALIZED_BODYWEIGHT_KG / bodyweightKg) ** STRENGTH_BODYWEIGHT_EXPONENT;
+/** Force relative : barre, e1RM × (80 / poids de corps)^(2/3) ; charge totale (tractions, dips), e1RM × 80 / poids de corps (Q-42, D-744). */
+export const relativeStrength = (e1rmKg: number, bodyweightKg: number, totalLoad = false): number =>
+  e1rmKg * (STRENGTH_NORMALIZED_BODYWEIGHT_KG / bodyweightKg) ** (totalLoad ? 1 : STRENGTH_BODYWEIGHT_EXPONENT);
 
 /** Niveau d'un score : la bande de repères atteinte (< 40 Débutant … 100 Élite). */
 export function levelOfScore(score: number): StrengthLevel {
@@ -176,7 +179,7 @@ export function strengthScore(input: StrengthInput): StrengthResult {
       if (e1rmKg !== null && (best === null || e1rmKg > best.e1rmKg)) best = { exercise, e1rmKg };
     }
     if (best === null) continue;
-    const relativeKg = relativeStrength(best.e1rmKg, bodyweightKg);
+    const relativeKg = relativeStrength(best.e1rmKg, bodyweightKg, lift.totalLoad);
     scored.push({ key: lift.key, exerciseId: best.exercise.id, nameFr: best.exercise.nameFr, groups: lift.groups, e1rmKg: best.e1rmKg, relativeKg, ...scoreFromThresholds(relativeKg, t) });
   }
 

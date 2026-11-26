@@ -398,7 +398,8 @@ export const STRENGTH_LEVELS = ['beginner', 'novice', 'intermediate', 'advanced'
 export type StrengthLevel = (typeof STRENGTH_LEVELS)[number];
 export const STRENGTH_LEVEL_SCORES = Object.freeze([20, 40, 60, 80, 100] as const);
 
-/** Poids de corps de normalisation et exposant : force relative = e1RM × (80 / poids de corps)^(2/3) (D-675). */
+/** Poids de corps de normalisation et exposant : force relative = e1RM × (80 / poids de corps)^(2/3) à la barre (D-675) ; charge totale
+ * (tractions, dips) : exposant 1, simple proportion e1RM × 80 / poids de corps (Q-42, D-744). */
 export const STRENGTH_NORMALIZED_BODYWEIGHT_KG = 80;
 export const STRENGTH_BODYWEIGHT_EXPONENT = 2 / 3;
 
@@ -456,7 +457,7 @@ export function deriveStrengthThresholds(method: StrengthThresholdMethod): Stren
 
 /**
  * Seuils du Strength Score maison, en kg de force relative (e1RM ramené à 80 kg ; tractions et dips : charge totale).
- * PROPOSITION NON VALIDÉE (Q-42, D-678) : rien n'est publié avec ce tableau avant la décision d'Ali.
+ * Validés tels quels par Ali le 26/11/2026 (Q-42, D-744), avec la force relative en simple proportion sur la charge totale.
  * Ordre : Débutant, Novice, Intermédiaire, Avancé, Élite.
  */
 export const STRENGTH_LIFT_THRESHOLDS: StrengthThresholds = Object.freeze({

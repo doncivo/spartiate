@@ -1,15 +1,19 @@
-# STR-0300 — Seuils du Strength Score maison : proposition soumise à Ali (Q-42, D-678)
+# STR-0300 — Seuils du Strength Score maison (validés par Ali, Q-42, D-744)
 
-**Statut : proposition non validée.** Rien n'est publié avec ce tableau (aucune version, aucun tag) avant la décision d'Ali, consignée
-par une D- (D-678). Le tableau est dans `src/domain/training/config.ts` (`STRENGTH_LIFT_THRESHOLDS`, marqué « proposition non validée
-(Q-42) »), et un test vérifie qu'il est la copie exacte de la méthode ci-dessous (`deriveStrengthThresholds`). Aucune donnée d'Ali,
-aucune norme tierce recopiée : chaque nombre sort des cinq paramètres de la méthode.
+**Statut : validé par Ali le 26/11/2026 (Q-42, réponse A avec un correctif, D-744).** Les seuils du tableau sont validés tels quels ;
+correctif : sur la charge totale (tractions pronation et supination, dips), la force relative est une simple proportion, sans l'exposant
+2/3. Le tableau est dans `src/domain/training/config.ts` (`STRENGTH_LIFT_THRESHOLDS`), et un test vérifie qu'il est la copie exacte de
+la méthode ci-dessous (`deriveStrengthThresholds`). Aucune donnée d'Ali, aucune norme tierce recopiée : chaque nombre sort des cinq
+paramètres de la méthode.
 
 ## Unité
 
-Force relative en kg : e1RM (Epley, moteur de prescription) × (80 / poids de corps)^(2/3), donc **un e1RM ramené à 80 kg de poids de
-corps**. Pour un pratiquant de 80 kg, la force relative est son e1RM. Tractions et dips : e1RM de la **charge totale** (poids de corps +
-lest). Le score vaut 20, 40, 60, 80 et 100 aux seuils Débutant, Novice, Intermédiaire, Avancé et Élite, interpolé entre deux (D-741).
+Force relative en kg : **un e1RM ramené à 80 kg de poids de corps**. Mouvements à la barre : e1RM (Epley, moteur de prescription) ×
+(80 / poids de corps)^(2/3). Tractions et dips : e1RM de la **charge totale** (poids de corps + lest) × 80 / poids de corps, **simple
+proportion** (D-744). Pour un pratiquant de 80 kg, la force relative est son e1RM.
+
+Raison du correctif (Ali, Q-42) : avec l'exposant, à une traction chacun, une personne de 100 kg passe Débutant (89 kg) et une de 60 kg
+reste sous Débutant (75 kg) ; avec la proportion, les deux sont à égalité (82,7 kg). Un test rejoue ces deux cas (valeurs inventées). Le score vaut 20, 40, 60, 80 et 100 aux seuils Débutant, Novice, Intermédiaire, Avancé et Élite, interpolé entre deux (D-741).
 
 ## Méthode (à partir de nos formules)
 
@@ -73,10 +77,10 @@ Avancé.
 
 - Les ancres et les coefficients sont des choix ronds, non mesurés sur une population : le score situe une progression personnelle, il
   ne classe pas parmi d'autres pratiquants (pas de centile).
-- L'exposant 2/3 (loi d'échelle des surfaces musculaires) avantage un peu les poids légers face aux formules de compétition ; sur la
-  charge totale des tractions et dips, il porte aussi sur le poids de corps.
+- L'exposant 2/3 (loi d'échelle des surfaces musculaires) avantage un peu les poids légers face aux formules de compétition ; il ne porte
+  que sur les mouvements à la barre (la charge totale passe par une simple proportion, D-744).
 - Fessiers et Ischios partagent les mêmes seuils (soulevé de terre et sumo à la même ancre) : un seul mouvement les distingue peu.
 - Aucun mouvement aux haltères ni aux machines n'est pris en référence (charges peu comparables d'une salle à l'autre).
 - L'âge n'entre pas dans les seuils.
-- Option B de Q-42 : un coefficient global (par exemple 0,9 ou 1,1) multiplierait tous les seuils ; il se règle en un seul paramètre
-  de la méthode et relève `STRENGTH_SCORE_VERSION`.
+- Un coefficient global (par exemple 0,9 ou 1,1) multiplierait tous les seuils ; il se règlerait en un seul paramètre de la méthode et
+  relèverait `STRENGTH_SCORE_VERSION`.
