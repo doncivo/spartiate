@@ -35,11 +35,25 @@ docs/PROGRES-0301.md. Domaine pur utilisé tel quel (PROG-0301b) : `zoneTrend`, 
   des séries de Santé pour Mesures seulement ; période ; montage), `BodyProgress.css` (tokens `--ct-color-ok`, `--ct-color-warn`,
   `--ct-color-text-secondary`, aucune couleur en dur), 97 textes dans `fr.bodyProgress.ts` (catalogue déjà à la demande). Choix non
   tranchés : D-750 à D-754.
-- **qa-test** — voir « Résultats ».
-- **code-reviewer** — voir « Résultats ».
+- **qa-test** — Rouge `a26aa70c` : 19 tests (un par critère ou sous-critère), tous rouges. Vert `26124613` : module
+  (`src/features/bodyProgress`, inventaire P-01 à P-38, SectionNotice, règles CSS, thème) 17 fichiers, 309 tests verts ; `npx tsc --noEmit`,
+  `npx eslint src/features/bodyProgress` verts ; `npm run test:bundle` vert (4 fichiers, 196 tests) ; contrôles documentaires
+  (`--project node scripts/release/`) 25 fichiers, 291 tests verts. Valeurs inventées seulement (profil, pesées, mesures).
+- **code-reviewer** — Relecture à froid par un agent distinct, sur le diff : **approuvé**, aucun bloquant. Remarques traitées : focus au
+  résumé et au retour au bouton « Saisie guidée » (6), « Arrêter » inactif pendant un enregistrement (7), pesées lues sans plafond pratique
+  pour « Tout » (3, 10 000 au lieu de 400), comparateur des pesées antisymétrique (4) ; test de relecture rouge `0793b63f`, vert REVUE_SHA.
+  Gardé et consigné : un échec de lecture du profil ou des pesées fait passer le bloc en « Lecture impossible. Réessaie. » (2) ; un repli
+  silencieux sur « objectif non renseigné » afficherait un état faux (AGENTS : aucune défaillance silencieuse). Gardé : `curveGeometry`
+  (plafond de 12 points), plus appelé par l'écran, encore couvert par `bodyZone.test.ts` (5) : à retirer avec CLEAN-03. Non traité :
+  message d'erreur de la saisie guidée non relié au champ par `aria-describedby` (8, `role="alert"` suffit au minimum § 18.6).
 
 ## Résultats
 
-- Rouge : `a26aa70c` (19 tests de `BodyProgressMeasures0301c.test.tsx`, tous rouges). Vert : VERT_SHA.
+- Rouge : `a26aa70c` (19 tests de `BodyProgressMeasures0301c.test.tsx`, tous rouges). Vert : `26124613`. Relecture : rouge `0793b63f`, vert REVUE_SHA.
 - Écart au rouge, consigné : l'assertion PC « Cou décrit "pas assez de mesures" » est devenue « Cou garde la description de FIX-0241 et
   reste gris » (une zone sans mesure dit déjà « aucune mesure » ; le test existant de FIX-0241 fige cette description exacte ; D-752).
+- Test d'inventaire rouge 2 fois sur 5 en local sous charge (17 fichiers ensemble), vert seul : cause probable et correctif dans
+  docs/journal.md (2026-11-26) ; aucun délai allongé.
+- Constats d'Ali : à faire (docs/constats-ali.md, section 0.30.1, lignes BL-179 et D-703). Hors périmètre, en parallèle : BL-180
+  (CORPS-0301d).
+- CI : CI_LINE

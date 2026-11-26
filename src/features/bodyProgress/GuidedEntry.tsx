@@ -49,6 +49,7 @@ export function GuidedEntry({ today, pointsOf, save, onClose }: GuidedEntryProps
   const [skipped, setSkipped] = useState(0);
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
   const kind = stage.step === 'zone' ? MEASUREMENT_KINDS[stage.index] : undefined;
 
   // Dernière valeur avant la date de la séance, et valeur déjà saisie à cette date (rappelée, préremplie).
@@ -57,9 +58,12 @@ export function GuidedEntry({ today, pointsOf, save, onClose }: GuidedEntryProps
   const previous = points.filter((p) => p.date < date).at(-1) ?? null;
 
   const index = stage.step === 'zone' ? stage.index : -1;
+  // Focus : le champ de chaque zone, puis le titre au résumé (relecture : jamais un focus perdu sur la page).
+  const done = stage.step === 'done';
   useEffect(() => {
     if (index >= 0) input.current?.focus();
-  }, [index]);
+    else if (done) heading.current?.focus();
+  }, [index, done]);
 
   /** Ouvre la zone `at` : la valeur déjà saisie à la date de la séance est préremplie (D-719), sinon le champ est vide. */
   const open = (at: number): void => {
@@ -120,7 +124,7 @@ export function GuidedEntry({ today, pointsOf, save, onClose }: GuidedEntryProps
 
   return (
     <section className="ct-bodyprogress__guided" aria-labelledby="ct-bodyprogress-guided">
-      <h4 id="ct-bodyprogress-guided" className="ct-bodyprogress__heading ct-section-title">
+      <h4 id="ct-bodyprogress-guided" ref={heading} tabIndex={-1} className="ct-bodyprogress__heading ct-section-title">
         {tBodyProgress('guidedTitle')}
       </h4>
       {stage.step === 'date' ? (
@@ -168,7 +172,7 @@ export function GuidedEntry({ today, pointsOf, save, onClose }: GuidedEntryProps
             {tBodyProgress('guidedSkip')}
           </Button>
           {errorLine}
-          <Button variant="secondary" fullWidth onClick={onClose}>
+          <Button variant="secondary" fullWidth onClick={onClose} disabled={busy}>
             {tBodyProgress('guidedStop')}
           </Button>
         </form>

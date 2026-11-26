@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   HEALTH_METRIC_KINDS,
   MEASUREMENT_BOUNDS_CM,
@@ -69,6 +69,8 @@ interface MeasuresExtra {
   readonly healthWaist: readonly MeasurementRecord[];
   readonly healthHeight: readonly MeasurementRecord[];
 }
+/** Pesées lues pour la période « Tout » : plus de 27 ans à une pesée par jour (la période n'est jamais coupée en silence). */
+const WEIGHT_READ_LIMIT = 10_000;
 const NO_EXTRA: MeasuresExtra = { goal: null, sex: null, heightCm: null, weighIns: [], healthWaist: [], healthHeight: [] };
 
 /** Au plus deux photos côte à côte. */
@@ -125,6 +127,14 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
   // CORPS-0301c (D-706, D-718) : période de la courbe, 3 mois par défaut ; saisie guidée (D-709) à la place du formulaire zone par zone.
   const [period, setPeriod] = useState<BodyPeriod>(DEFAULT_BODY_PERIOD);
   const [guided, setGuided] = useState(false);
+  // Relecture : à la fermeture de la saisie guidée, le focus revient sur son bouton d'ouverture.
+  const guidedStart = useRef<HTMLDivElement>(null);
+  const guidedClosed = useRef(false);
+  useEffect(() => {
+    if (guided || !guidedClosed.current) return;
+    guidedClosed.current = false;
+    guidedStart.current?.querySelector('button')?.focus();
+  }, [guided]);
   const [reload, setReload] = useState(0);
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
@@ -163,9 +173,9 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
         part === undefined || part === 'measures'
           ? (async () => {
               const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
-              const [profile, weights] = await Promise.all([profiles.get(), bodyWeights.listRecent(400)]);
+              const [profile, weights] = await Promise.all([profiles.get(), bodyWeights.listRecent(WEIGHT_READ_LIMIT)]);
               const weighIns = [...weights]
-                .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.measuredAt ?? '') < (b.measuredAt ?? '') ? -1 : 1))
+                .sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.measuredAt ?? '') < (b.measuredAt ?? '') ? -1 : (a.measuredAt ?? '') > (b.measuredAt ?? '') ? 1 : 0))
                 .map((w) => ({ date: w.date, kg: w.kg }));
               return { goal: profile?.goal ?? null, sex: profile?.sex ?? null, heightCm: profile?.heightCm ?? null, weighIns };
             })()
@@ -386,7 +396,15 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
           <WeightLine evolution={weightEvolution(extra.weighIns, period, today)} />
         </div>
         {guided ? (
-          <GuidedEntry today={today} pointsOf={pointsOf} save={saveGuided} onClose={() => setGuided(false)} />
+          <GuidedEntry
+            today={today}
+            pointsOf={pointsOf}
+            save={saveGuided}
+            onClose={() => {
+              guidedClosed.current = true;
+              setGuided(false);
+            }}
+          />
         ) : (
           <>
             <form className="ct-bodyprogress__entry" onSubmit={(event) => void saveMeasure(event)} noValidate>
@@ -405,16 +423,18 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
               </Button>
             </form>
             {pc ? <p className="ct-today__muted">{tBodyProgress('entryKeys')}</p> : null}
-            <Button
-              variant="secondary"
-              fullWidth
-              onClick={() => {
-                setMeasureMessage(null);
-                setGuided(true);
-              }}
-            >
-              {tBodyProgress('guidedStart')}
-            </Button>
+            <div ref={guidedStart}>
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => {
+                  setMeasureMessage(null);
+                  setGuided(true);
+                }}
+              >
+                {tBodyProgress('guidedStart')}
+              </Button>
+            </div>
           </>
         )}
         {measureMessage && (
