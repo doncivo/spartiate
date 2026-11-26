@@ -285,7 +285,7 @@ describe('déterminisme, version, explication (critère 9)', () => {
   it('version du moteur et configuration active jointes', () => {
     const p = prescribe(input({ history }));
     expect(p.engineVersion).toBe(ENGINE_VERSION);
-    expect(ENGINE_VERSION).toBe(5); // MOTEUR-0281a (poids du corps et chronométrés) ; I2-04 : raison `grid-to-verify` (matériel à vérifier) ; SEANCE-0292b (D-542) : 5 (D-496, D-539)
+    expect(ENGINE_VERSION).toBe(6); // SEANCE-0299 (D-681) : 6 (D-657, décision réduite) ; MOTEUR-0281a (poids du corps et chronométrés) ; I2-04 : raison `grid-to-verify` (matériel à vérifier) ; SEANCE-0292b (D-542) : 5 (D-496, D-539)
     expect(p.activeConfig).toEqual(DEFAULT_PROGRESSION_CONFIG);
   });
 

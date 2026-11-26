@@ -167,11 +167,16 @@ describe('journée rouge acceptée : prescription (D-93 révisée par Ali le 12/
     expect(iso.sets).toHaveLength(2);
   });
 
-  it('décision d’Ali : jamais modulée', () => {
+  // Attente changée en SEANCE-0299 (BL-171, D-657, Q-11 option B) : la journée rouge réduit la décision comme une référence d'historique.
+  it('décision d’Ali : réduite comme une séance (110 × 0,95 = 104,5 → 102,5 kg), la phrase est celle de la journée rouge', () => {
     const decided = { decidedAt: daysAgo(1), accepted: false, loadKg: 110, reps: [8, 8, 8] };
     const p = prescribe(input({ history: top, lastDecision: decided, recovery: redDaySnapshot(20, 'accepted', CFG) }));
-    expect(p.loadKg).toBe(110);
-    expect(p.reasons).not.toContain('recovery-red-day');
+    expect(p.loadKg).toBe(102.5);
+    expect(p.sets.map((s) => s.reps)).toEqual([8, 8, 8]);
+    expect(p.reasons).toContain('recovery-red-day');
+    expect(p.reasons).toContain('decision-reference');
+    expect(explainPrescription(p)).toEqual({ key: 'redDay', params: { cut: 5, delta: 7.5 } });
+    expect(explanationNotes(p)).toEqual([{ key: 'noteDecisionReference', params: {} }]);
   });
 });
 

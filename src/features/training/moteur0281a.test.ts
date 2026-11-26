@@ -208,8 +208,8 @@ describe('MOTEUR-0281a : contraintes, validation, référence', () => {
       expect(ranks.every((r) => r >= 0)).toBe(true);
       expect([...ranks].sort((x, y) => x - y)).toEqual(ranks);
     }
-    expect(ENGINE_VERSION).toBe(5); // SEANCE-0292b (D-542) : 4 → 5
-    expect(bw({ history }).engineVersion).toBe(5);
+    expect(ENGINE_VERSION).toBe(6); // SEANCE-0292b (D-542) : 4 → 5 ; SEANCE-0299 (D-681) : 5 → 6
+    expect(bw({ history }).engineVersion).toBe(6);
   });
 
   it('A11 portés (distance) et traction assistée du catalogue : toujours hors moteur', () => {

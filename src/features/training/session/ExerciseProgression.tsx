@@ -532,7 +532,8 @@ export function ExerciseProgression({ access, workout, exerciseId, sets, exercis
             ) : null}
           </>
         ) : null}
-        {ownDecision === null && editing === null && p.status === 'prescribed' && p.reference !== null ? (
+        {/* SEANCE-0299 (BL-171, D-657) : une décision d'Ali se réduit aussi par le deload ; le bouton reste pour l'activer ou le rétablir. */}
+        {ownDecision === null && editing === null && p.status === 'prescribed' && (p.reference !== null || p.reasons.includes('decision-reference')) ? (
           <div className="ct-progression__deload">
             <Button variant="secondary" pressed={deload} disabled={busy} onClick={() => setDeload((on) => !on)}>
               {tProgression('deloadToggle')}
