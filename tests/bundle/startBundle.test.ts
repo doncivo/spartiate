@@ -513,6 +513,19 @@ describe('bundle de départ (index.html)', () => {
     for (const [name, c] of Object.entries(manifest)) if (start.has(c.file)) expect(/src\/domain\/tracking|src\/features\/tracking|fr\.tracking|trackingText/.test(name), name).toBe(false);
   });
 
+  // PROG-0301a (BL-177, D-701) : hôte de Progrès en onglets (barre d'onglets src/ui/Tabs, catalogue fr.progressTabs) : bloc à la demande, hors du départ.
+  it('PROG-0301a : src/features/app/SectionNoticeProgress.tsx est un bloc à la demande, hors du départ ; ni les onglets ni leurs textes au départ', () => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest['src/features/app/SectionNoticeProgress.tsx'];
+    if (!chunk) throw new Error('bloc SectionNoticeProgress absent du manifeste');
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes('src/features/app/SectionNoticeProgress.tsx'))).toBe(true);
+    for (const c of startChunks().filter((s) => s.file.endsWith('.js'))) {
+      const code = readFileSync(join(outDir, c.file), 'utf8');
+      for (const marker of ['ct-tabs__tab', 'ct-progress-tabs']) expect(code.includes(marker), `${c.file} : ${marker}`).toBe(false);
+    }
+  });
+
   // I6-06 : cardio (écran, carte de Progrès, catalogue fr.cardio, dépôt) : blocs à la demande, hors du départ.
   it.each(['src/features/cardio/CardioView.tsx', 'src/features/cardio/CardioProgress.tsx', 'src/db/repositories/sql/cardioRepository.ts'])('I6-06 : %s est un bloc à la demande, hors du départ', (source) => {
     const start = new Set(startChunks().map((chunk) => chunk.file));

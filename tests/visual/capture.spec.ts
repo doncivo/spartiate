@@ -63,6 +63,12 @@ interface Screen {
 const goTab = (name: string) => async (page: Page): Promise<void> => {
   await page.getByRole('navigation').getByRole('button', { name }).click();
 };
+/** PROG-0301a (BL-177) : ouvre un onglet de Progrès et, pour Corps, un sous-onglet. */
+const goProgressTab = (tab: string, body?: string) => async (page: Page): Promise<void> => {
+  await goTab('Progrès')(page);
+  await page.getByRole('tablist', { name: 'Progrès' }).getByRole('tab', { name: tab }).click();
+  if (body) await page.getByRole('tablist', { name: 'Corps' }).getByRole('tab', { name: body }).click();
+};
 /** Applique réellement le thème clair par Plus › Apparence (le thème vient du réglage de l'app, pas du système), puis revient à Aujourd'hui. */
 const goLight = async (page: Page): Promise<void> => {
   await goTab('Plus')(page);
@@ -176,7 +182,7 @@ const SCREENS: Screen[] = [
 SCREENS.push(
   { name: 'PC-Aujourdhui-1280', viewport: PC_1280, date: WEDNESDAY, dark: true },
   { name: 'PC-Plus-1280', viewport: PC_1280, date: WEDNESDAY, dark: true, prepare: goTab('Plus') },
-  { name: 'PC-Corps-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: async (page) => { await goTab('Progrès')(page); await page.locator('.ct-bodyprogress').scrollIntoViewIfNeeded(); } },
+  { name: 'PC-Corps-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: async (page) => { await goTab('Progrès')(page); await page.getByRole('tablist', { name: 'Progrès' }).getByRole('tab', { name: 'Corps' }).click(); await page.locator('.ct-bodyprogress').scrollIntoViewIfNeeded(); } },
   { name: 'PC-Nutrition-journal-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: goNutrition() },
   { name: 'PC-Progres-1280', viewport: PC_1280, date: SUNDAY, dark: true, prepare: goTab('Progrès') },
 );
@@ -376,7 +382,10 @@ const GEOMETRY_SCREENS: ReadonlyArray<readonly [string, (page: Page) => Promise<
   ['Entraînement matériel', goTraining('Matériel')],
   ['Nutrition journal', goNutrition()],
   ['Nutrition dashboard', goNutrition('Tableau de bord')],
-  ['Progrès (Récupération, Corps, Cardio)', goTab('Progrès')],
+  // PROG-0301a (BL-177) : Progrès en 6 onglets ; chaque onglet (et chaque sous-onglet de Corps) est contrôlé.
+  ['Progrès Récup', goTab('Progrès')],
+  ...(['Séances', 'Bilan', 'Force', 'Activité'] as const).map((tab) => [`Progrès ${tab}`, goProgressTab(tab)] as const),
+  ...(['Mesures', 'Santé', 'VISBODY', 'Photos'] as const).map((body) => [`Progrès Corps ${body}`, goProgressTab('Corps', body)] as const),
   ['Plus', goTab('Plus')],
   ['Plus › Appareils et synchro', goPlusSync],
   ['Profil et poids', goBody],

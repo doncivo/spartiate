@@ -40,6 +40,8 @@ test('cardio : séance saisie, refus dit en texte, historique et carte de Progr�
   expect((await edit.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(44);
 
   await nav(page, 'Progrès').click();
+  // PROG-0301a (BL-177) : la carte Cardio vit dans l'onglet Activité de Progrès.
+  await page.getByRole('tablist', { name: 'Progrès' }).getByRole('tab', { name: 'Activité' }).click();
   const card = page.getByRole('region', { name: 'Cardio' });
   await expect(card.getByText('1 séance · 45 min · 7,5 km')).toBeVisible();
 });
