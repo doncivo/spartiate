@@ -400,7 +400,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-686 | SHELL-0299 (D-649, BL-168) : les quatre renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (67 : 32 à trancher, 35 à confirmer seulement)
 

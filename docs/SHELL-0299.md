@@ -32,7 +32,7 @@ Tests unitaires mis à jour par remplacement exact (`name: 'Logs'`, « Logs expo
 
 ## Passe code-reviewer (relecture à froid)
 
-Voir la PR.
+Agent code-reviewer distinct, sur le diff `89d2a5da..HEAD` seul : **approuvé avec remarques, aucun bloquant** (11 fichiers, 184 tests ciblés verts chez lui). Corrigé : le compte des renvois de `fr.health.ts` est 5, pas 4 (D-686, BL-168, C-131, `decisions-a-prendre.md` régénéré). Remarques non bloquantes, laissées en l'état : la garde ne lit que les littéraux avec espace ou capitale (les imports et les clés n'en ont pas), ni `src/i18n/native/*.json` (aujourd'hui sans « Logs »), ni les `.tsx` (textes en dur déjà interdits) ; les commentaires et noms de `describe` disant « Logs » sont à nettoyer avec le retrait de l'exception santé ; le scope technique `logs` et le code `logs-cleared` restent affichés dans les entrées (noms techniques, à confirmer par Ali).
 
 ## Constats à faire par Ali
 
