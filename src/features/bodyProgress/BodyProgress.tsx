@@ -17,7 +17,7 @@ import { todayLocal } from '../../domain/clock';
 import type { LocalDate } from '../../domain/types';
 import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositories';
 import { formatDayMonthYear } from '../../i18n/format';
-import { formatCm, tBodyProgress, type BodyProgressTextKey } from '../../i18n/bodyProgressText';
+import { formatCm, tBodyProgress, type BodyProgressTextKey, type BodyProgressPlainKey } from '../../i18n/bodyProgressText';
 import { logFailure } from '../../platform/desktop/log';
 import { PhotoTooLargeError, pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
@@ -38,7 +38,7 @@ import './BodyProgress.css';
  * son catalogue de textes. Aucune couleur seule : l'état est dit en texte ; cibles de 44 pt ; saisie au clavier (formulaire, Entrée).
  */
 
-const ISSUE_TEXT: Record<Exclude<MeasurementIssue, 'range'>, BodyProgressTextKey> = {
+const ISSUE_TEXT: Record<Exclude<MeasurementIssue, 'range'>, BodyProgressPlainKey> = {
   empty: 'errorEmpty',
   format: 'errorFormat',
   date: 'errorDate',
@@ -198,7 +198,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   };
 
   /** D-121 : masquer une fiche sans fichier sur cet appareil (réglage local, jamais publié) ; la fiche reste sur les autres appareils. */
-  const setHidden = async (next: readonly string[], done: BodyProgressTextKey | null): Promise<void> => {
+  const setHidden = async (next: readonly string[], done: BodyProgressPlainKey | null): Promise<void> => {
     try {
       await container.data.repos.settings.set('bodyProgress.hiddenPhotos', next);
       setCompare((ids) => ids.filter((x) => !next.includes(x)));
@@ -350,7 +350,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           <dl className="ct-bodyprogress__health">
             {health.map((m) => (
               <div key={m.id} className="ct-bodyprogress__healthrow">
-                <dt>{tBodyProgress(`health_${m.kind}` as BodyProgressTextKey)}</dt>
+                <dt>{tBodyProgress(`health_${m.kind}` as BodyProgressPlainKey)}</dt>
                 <dd>
                   <span className="ct-bodyprogress__healthvalue">{`${formatCm(m.value)} ${tBodyProgress(HEALTH_UNIT[m.kind as HealthMetricKind])}`}</span>
                   <span className="ct-today__muted">{tBodyProgress('healthDate', { date: formatDayMonthYear(m.day) })}</span>
