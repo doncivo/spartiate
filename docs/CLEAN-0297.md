@@ -1,6 +1,6 @@
 # CLEAN-0297 — 22 traducteurs de plus typés, garde des alias de type (lot 0.29.7)
 
-Statut : **fait en partie** (C-085 : 2 restes nommés, `tDynamic` et `tProgression`), PR à venir, branche `CLEAN-0297` depuis `origin/main`
+Statut : **fait en partie** (C-085 : 2 restes nommés, `tDynamic` et `tProgression`), PR #228 (run tests.yml 45756237278 vert, fusionnée en f990145b), branche `CLEAN-0297` depuis `origin/main`
 `8c499215`. Module « coquille, iOS et qualité ». Budget annoncé : M (150 k). Ligne du registre : C-085. Chapitres PRD : 18 (§ 18.4, textes),
 23 (qualité et tests). Choix prudents : D-645, D-646, « Claude (choix prudent) ; révisable par Ali ». Aucune question.
 Aucun fichier de `src/sync/**`, `src/domain/sync/**`, `src-tauri/src/sync/**` ni `src/platform/sync/**` touché ; aucune migration ;

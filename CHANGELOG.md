@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.7
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.6.
+
+- **Textes** : vingt-deux autres groupes de textes de l'interface (entre autres Aujourd'hui, Entraînement et la séance, la génération de séance, Nutrition et les recettes, la récupération, le cardio, la force, la revue hebdomadaire, VISBODY, Plus, les journaux, la première ouverture et les messages de synchro) sont vérifiés à la compilation, comme ceux de la 0.29.6 : dans ces textes, une valeur manquante ou mal nommée est repérée avant la publication. Il ne reste que deux groupes à part, nommés dans le registre. L'affichage ne change pas.
+- **Maintenance** : le contrôle automatique des textes ne se laisse plus tromper par un nom de remplacement. Le démarrage ne charge rien de plus.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.7). En priorité, sur les deux appareils, parcours les cinq onglets et Plus › Appareils et synchro : aucun texte ne montre d'accolades ni de nom technique à la place d'un mot.
+
 ## 0.29.6
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.5.
