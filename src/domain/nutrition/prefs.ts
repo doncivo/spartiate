@@ -54,7 +54,7 @@ export function parseNutritionPrefs(raw: unknown): NutritionPrefs {
 }
 
 /**
- * NUTRI-0299 (BL-173, D-669, C-106) : objectif suivi par Stratégie et le check-in. La SORTE vient du profil (`profile.goal`, Réglages › Corps,
+ * NUTRI-0299 (BL-173, D-669, C-106) : objectif suivi par Stratégie et le check-in. La SORTE vient du profil (`profile.goal`, Plus › Profil et poids,
  * synchronisé) ; le RYTHME reste dans les préférences nutrition (réglage local), et n'est repris que s'il a été choisi pour la même sorte (jamais
  * celui d'une perte pour une prise, par exemple après un changement du profil sur l'autre appareil) ; sinon `DEFAULT_GOAL_RATE_KG`. Profil sans
  * objectif : l'ancien choix des préférences est gardé (rien de perdu ; maintien par défaut, Q-7). Avis de data-model consigné dans docs/NUTRI-0299.md.

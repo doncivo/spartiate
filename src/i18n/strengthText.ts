@@ -15,3 +15,6 @@ export const tStrength: CatalogTranslator<typeof strengthFr> = translate;
 
 /** Charge en kg arrondie au dixième, virgule décimale (« 81,4 », « 90 »). */
 export const formatStrengthKg = (kg: number): string => String(Math.round(kg * 10) / 10).replace('.', ',');
+
+/** STR-0300 : date courte « 12/11/2026 » (début de la décharge qui fige le score). */
+export const formatStrengthDate = (iso: string): string => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });

@@ -11,6 +11,8 @@ import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TrainingScreen } from '../TrainingScreen';
+import { prescribe } from '../../../domain/training/prescribe';
+import { input, session } from '../../../../tests/fixtures/training/progression';
 
 /**
  * I3-02 (critère 3) : pendant la semaine de deload du cycle, « Deload » est activé par défaut dans la proposition de chaque exercice (séries ÷ 2,
@@ -34,13 +36,15 @@ const openSession = () => {
     </AppContainerProvider>,
   );
 };
-async function seed(cycleStart: string): Promise<void> {
+async function seed(cycleStart: string, decisionKg: number | null = null): Promise<void> {
   const r = await db.data.repos.workouts();
   await r.start({ source: 'empty', id: u(1), name: 'Haut A' });
   const w = await r.addExercise(u(1), { exerciseId: BENCH_ID, exerciseName: BENCH, sets: 3, targetRepsMin: 8, targetRepsMax: 10 });
   for (const s of w.sets) await r.validateSet(s.id, { reps: 8, loadKg: 100 });
   await db.data.transaction(async (repos) => (await repos.workouts()).close(u(1)));
   db.clock.advance(3 * 86_400_000);
+  // SEANCE-0299 (BL-171) : décision d'Ali prise après la séance passée (valeurs inventées).
+  if (decisionKg !== null) await (await db.data.repos.progression()).recordDecision({ exerciseId: BENCH_ID, workoutId: u(1), prescription: prescribe(input({ history: [session(3, 100, [8, 8, 8])] })), accepted: false, chosenLoadKg: decisionKg, chosenReps: [8, 8, 8] });
   const spec = createMesocycleSpec({ routineId: u(50), startDate: cycleStart as LocalDate, weeks: 5 }, DEFAULT_GENERATION_CONFIG);
   if (spec === null) throw new Error('spec');
   await db.data.transaction(async (repos) => (await repos.mesocycles()).start(spec, { id: u(60) }));
@@ -79,6 +83,20 @@ describe('semaine de deload du cycle (I3-02)', () => {
     expect(await within(p).findByText('100 kg × 9 · 8 · 8')).toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(await db.driver.select('SELECT 1 FROM recommendation_decision')).toEqual([]);
+  });
+
+  it('SEANCE-0299 (BL-171, relecture à froid) : décision d’Ali en semaine de deload : réduite, et le bouton reste pour la rétablir', async () => {
+    await seed('2026-10-05', 90);
+    openSession();
+    const p = await proposal();
+    expect(await within(p).findByText('70 kg × 8')).toBeInTheDocument();
+    const toggle = within(p).getByRole('button', { name: 'Deload pour cette séance' });
+    fireEvent.click(toggle);
+    expect(await within(p).findByText('90 kg × 8 · 8 · 8')).toBeInTheDocument();
+    const again = within(p).getByRole('button', { name: 'Deload pour cette séance' });
+    expect(again).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(again);
+    expect(await within(p).findByText('70 kg × 8')).toBeInTheDocument();
   });
 
   it('semaine de travail : deload désactivé, aucune mention du cycle', async () => {

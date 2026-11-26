@@ -6,7 +6,7 @@ Le lot continue sans la réponse : le comportement actuel reste en place tant qu
 forme « Q-n : option ». Une question tranchée devient une D- dans docs/decisions.md et sort de ce fichier.
 
 
-Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Aucune question ouverte. La revue par thème des choix prudents (D-490, BL-149) est
+Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Q-42 tranchée le 26/11 : D-744 ; Q-41 tranchée le 26/11 : D-745 (PROG-0301b). Ouvertes : aucune. La revue par thème des choix prudents (D-490, BL-149) est
 en fin de fichier, générée par `node scripts/release/prudent-review.mjs --write` (sections « séance et moteur », « nutrition »,
 « récupération », « synchro et données », « écrans », « CI et outillage »).
 
@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-394 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+402 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (114 : 72 à trancher, 42 à confirmer seulement)
+### séance et moteur (120 : 78 à trancher, 42 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -57,11 +57,13 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 6 | D-289 | ERGO-02b (0.25.0) : écarts de charge « par haltère », aperçu illisible, premier cycle. | A garder · B réviser ; effet : moteur, données, chiffre, écran |
 | 6 | D-322 | FIX-ASSIST (0.28.0) : exercice assisté, l'assistance est une charge négative (audit Claude 0.27.0, C-001, C-002, C-011; complète D-170 (3), D-273, … | A garder · B réviser ; effet : moteur, chiffre, écran |
 | 6 | D-392 | PROGRES-d (0.28.1) : adhérence sur 4 semaines (I2). | A garder · B réviser (déjà marquée « à trancher ») ; effet : moteur |
+| 6 | D-743 | STR-0300 (BL-174, D-701 Force). | A garder · B réviser ; effet : moteur, synchro, chiffre |
 | 5 | D-73 | Décisions I3 par défaut, révisables par Ali (2026-11-08, mission de nuit sans réponse d'Ali). | A garder · B réviser ; effet : moteur, chiffre |
 | 5 | D-102 | I6-03 (0.14.0) : circuits dans la séance. | A garder · B réviser ; effet : moteur, chiffre |
 | 5 | D-184 | RESET-01 : séance en cours, ordre et rechargement. | A garder · B réviser ; effet : synchro, données |
 | 5 | D-542 | SEANCE-0292b (relecture 1, point B; précédent D-388). | A garder · B réviser ; effet : moteur, synchro |
 | 5 | D-599 | SHELL-0294b (§ 13.3 b, BL-108, D-541). | A garder · B réviser ; effet : données, écran |
+| 5 | D-681 | SEANCE-0299 (BL-171, D-657; précédent D-542). | A garder · B réviser ; effet : moteur, synchro |
 | 4 | D-269 | PROG-01 (0.24.0) : table du mésocycle. | A garder · B réviser ; effet : moteur, écran |
 | 4 | D-286 | FIX-0243 (0.25.0) : relecture des cartes après synchro et après clôture (complète D-260 ). | A garder · B réviser ; effet : synchro |
 | 4 | D-297 | ERGO-03 (0.26.0) : repère du cycle sur Aujourd'hui. | A garder · B réviser ; effet : moteur, écran |
@@ -76,6 +78,10 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 3 | D-457 | PROGRES-0291 (BL-125) : règles des recommandations du bilan. | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-518 | SEANCE-0292 (C-071). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-543 | SEANCE-0292b (relecture 1, point D; prolonge D-537 et D-496). | A garder · B réviser ; effet : moteur, chiffre |
+| 3 | D-682 | SEANCE-0299 (BL-171, D-657). | A garder · B réviser ; effet : moteur, chiffre |
+| 3 | D-683 | SEANCE-0299 (BL-176, D-659). | A garder · B réviser ; effet : moteur, chiffre |
+| 3 | D-684 | SEANCE-0299 (BL-171, D-657, relecture à froid). | A garder · B réviser ; effet : moteur, écran |
+| 3 | D-742 | STR-0300 (BL-174, D-675 point 5). | A garder · B réviser ; effet : moteur |
 | 2 | D-211 | I6-05 : constance, révisable par Ali. | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-273 | PROG-01 (0.24.0) : exercice assisté jamais plus lourd en décharge (constat 6 de Codex, PR #127 ). | A garder · B réviser ; effet : moteur |
 | 2 | D-284 | FIX-0243 (0.25.0) : exercice assisté en décharge (complète D-273 ). | A garder · B réviser ; effet : moteur |
@@ -198,7 +204,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (40 : 14 à trancher, 26 à confirmer seulement)
+### récupération (41 : 15 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -207,6 +213,7 @@ Gardées sans question (à confirmer seulement) :
 | 6 | D-345 | FIX-RECUP (0.28.0) : exclusion des valeurs aberrantes de la baseline contre la moyenne et le σ des autres nuits (C-049 ). | A garder · B réviser (déjà marquée « à trancher ») ; effet : chiffre |
 | 4 | D-96 | I6-01 (0.12.0) : journal de facteurs (§ 16.7). | A garder · B réviser ; effet : données, chiffre |
 | 3 | D-94 | I5-05 (0.11.3) : lecture du dossier sante et journal unique, décisions de l'agent. | A garder · B réviser ; effet : chiffre |
+| 3 | D-741 | STR-0300 (BL-174, D-675 point 4). | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-393 | PROGRES-c (0.28.1) : tendances de récupération sur 30 jours et zone cible affichée (§ 17.1, § 16.3). | A garder · B réviser ; effet : chiffre, écran |
 | 1 | D-132 | FIX-0172 : stades de sommeil de l'Apple Watch. | A garder · B réviser ; effet : écran |
 | 1 | D-213 | I6-05 : pas d'action « Pris » dans la notification, révisable par Ali. | A garder · B réviser ; effet : écran |
@@ -415,12 +422,13 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-692 | NUTRI-0299 (D-649) : les renvois des textes de Santé au journal technique donnent les deux chemins. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (68 : 32 à trancher, 36 à confirmer seulement)
+### CI et outillage (69 : 33 à trancher, 36 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
 | 11 | D-618 | SHELL-0294f (BL-149, D-490) : revue par thème des choix prudents, produite par script. | A garder · B réviser ; effet : moteur, synchro, schéma, données |
 | 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
+| 7 | D-740 | STR-0300 (BL-174, D-675, D-679). | A garder · B réviser ; effet : moteur, schéma, chiffre |
 | 6 | D-222 | I6-06 : GPS sur l'iPhone par le plugin OFFICIEL Tauri geolocation, au premier plan seulement (passe architect, décision de l'agent révisable par Ali). | A garder · B réviser ; effet : synchro, écran |
 | 6 | D-598 | SHELL-0294b (C-158, BL-129, § 19.3 a, § 19.4 a). | A garder · B réviser ; effet : synchro, données |
 | 5 | D-77 | Client Open Food Facts en Rust (I4-05, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro |
