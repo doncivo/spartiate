@@ -7,7 +7,7 @@ import { injuryAvoidance, type InjuriesValue } from '../../../domain/training/in
 import { tPlural } from '../../../i18n/plural';
 import { loadInjuries } from '../../settings/injuries/injuriesStore';
 import { formatExerciseLoad, formatNumber } from '../../../i18n/trainingText';
-import { tSession, type TrainingSessionTextKey } from '../../../i18n/trainingSessionText';
+import { tSession, type TrainingSessionPlainKey } from '../../../i18n/trainingSessionText';
 import { Button } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import { exerciseGroup, type TrainingData } from '../trainingState';
@@ -20,7 +20,7 @@ import { exerciseGroup, type TrainingData } from '../trainingState';
  * jour change dans la même transaction ; sinon la question « Mettre à jour la routine ? » est posée à la clôture (écart retrait + ajout).
  */
 
-const IMPL_KEYS: Readonly<Record<ReplacementImplement, TrainingSessionTextKey>> = { barbell: 'implBarbell', dumbbell: 'implDumbbell', machine: 'implMachine' };
+const IMPL_KEYS: Readonly<Record<ReplacementImplement, TrainingSessionPlainKey>> = { barbell: 'implBarbell', dumbbell: 'implDumbbell', machine: 'implMachine' };
 
 type Estimate = { readonly kind: 'reading' } | { readonly kind: 'history' } | { readonly kind: 'none' } | { readonly kind: 'estimate'; readonly load: ReplacementLoad };
 
@@ -164,7 +164,7 @@ export function ReplaceExercise({ data, access, workout, block, excluded, onRest
     }
   };
 
-  const list = (label: TrainingSessionTextKey, items: readonly Exercise[]) =>
+  const list = (label: TrainingSessionPlainKey, items: readonly Exercise[]) =>
     items.length === 0 ? null : (
       <>
         <h3 className="ct-session__block-title">{tSession(label)}</h3>
