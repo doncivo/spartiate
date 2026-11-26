@@ -219,16 +219,16 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.5) :
 
-- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › APP › Logs ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
-- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › APP › Logs). Date : ____ Version : ____
-- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Logs ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
+- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › APP › Journaux ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
+- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › APP › Journaux). Date : ____ Version : ____
+- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Journaux ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
 - [ ] **C-076 (unités)** — PC puis iPhone, Aujourd'hui, une séance et Progrès : les durées (« min », « h »), les heures en 24 h et les nombres à virgule s'affichent comme avant. Date : ____ Version : ____
 
 ## 0.29.6
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 
-- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Logs › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Journaux › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
 ## 0.29.7
 
@@ -245,7 +245,7 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écrans sur les deux appareils ; un élément sans mise en forme, une barre vide, un graphique ou un pictogramme absent est un défaut d'affichage à signaler (BL-002, BL-144).
 
 - [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Aujourd'hui, colonne de droite (barres de macros) ; Nutrition › Journal, Nutrition › Tableau de bord (graphiques) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
-- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Logs (« Journaux » après BL-168). Date : ____ Version : ____
+- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Journaux. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 

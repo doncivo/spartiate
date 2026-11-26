@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-379 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+381 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -245,7 +245,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
 
-### synchro et données (87 : 51 à trancher, 36 à confirmer seulement)
+### synchro et données (88 : 51 à trancher, 37 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -341,8 +341,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-419 | IMPORT-029a (0.29.0) : format du bloc collé (§ 17.4). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (49 : 23 à trancher, 26 à confirmer seulement)
+### écrans (50 : 23 à trancher, 27 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -400,6 +401,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-607 | SHELL-0294c (C-074, C-075, C-124). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (67 : 32 à trancher, 35 à confirmer seulement)
 
