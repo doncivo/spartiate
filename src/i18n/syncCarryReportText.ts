@@ -1,4 +1,4 @@
-import { catalogText, type PlainCatalogKey } from './catalogText';
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
 import { syncCarryReportFr } from './fr.syncCarryReport';
 
 /**
@@ -18,4 +18,9 @@ export function carryFailureCause(code: string): string {
   return tCarry('failedCause', { family: tCarry(family), code });
 }
 
-export const tCarry = catalogText(syncCarryReportFr);
+function translate(key: SyncCarryReportTextKey, params?: Readonly<Record<string, string | number>>): string {
+  const text: string = syncCarryReportFr[key];
+  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
+}
+/** CLEAN-0296 (C-085, D-644) : paramètres typés comme par `catalogText` ; corps gardé ici, l'écran ne précharge aucun bloc de plus. */
+export const tCarry: CatalogTranslator<typeof syncCarryReportFr> = translate;
