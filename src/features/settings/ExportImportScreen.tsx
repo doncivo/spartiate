@@ -6,14 +6,14 @@ import { planImport, type ImportMode } from '../../domain/exportImport/plan';
 import { nowIso } from '../../domain/clock';
 import { archiveResetVerdict } from '../../domain/dataReset';
 import { isStrictHlc } from '../../domain/sync/format';
-import { tExportImport, type ExportImportTextKey } from '../../i18n/exportImportText';
+import { tExportImport, type ExportImportPlainKey } from '../../i18n/exportImportText';
 import { FileExportError } from '../../platform/files';
 import { Button, ConfirmDialog, Icon, SegmentedControl, useLayout } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useNavigationStore } from '../app/navigation';
 import './BodyScreen.css';
 
-const REASON: Record<ArchiveErrorCode, ExportImportTextKey> = {
+const REASON: Record<ArchiveErrorCode, ExportImportPlainKey> = {
   'not-zip': 'reasonNotZip',
   corrupt: 'reasonCorrupt',
   'missing-file': 'reasonMissingFile',

@@ -1,3 +1,4 @@
+import type { CatalogTranslator } from './catalogText';
 import { syncRestoreFr } from './fr.syncRestore';
 
 /**
@@ -6,7 +7,9 @@ import { syncRestoreFr } from './fr.syncRestore';
  */
 export type SyncRestoreTextKey = keyof typeof syncRestoreFr;
 
-export function tRestore(key: SyncRestoreTextKey, params?: Readonly<Record<string, string>>): string {
+function translate(key: SyncRestoreTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = syncRestoreFr[key];
-  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => params[name] ?? match) : text;
+  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0296 (C-085, D-644) : paramètres typés comme par `catalogText` ; corps gardé ici, l'écran ne précharge aucun bloc de plus. */
+export const tRestore: CatalogTranslator<typeof syncRestoreFr> = translate;

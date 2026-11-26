@@ -3,14 +3,14 @@ import type { ParamNames } from './types';
 /** Arguments d'une clé d'un catalogue à part : aucun si le texte n'a pas de `{x}`, sinon exactement ses paramètres (comme `t()`). */
 export type CatalogArgs<C, K extends keyof C> = [ParamNames<C[K]>] extends [never] ? [] : [params: Readonly<Record<ParamNames<C[K]>, string | number>>];
 
+/** CLEAN-0296 (C-085, D-644) : type d'un traducteur de catalogue à part (celui que rend `catalogText`). */
+export type CatalogTranslator<C> = <K extends keyof C & string>(key: K, ...args: CatalogArgs<C, K>) => string;
+
+/** CLEAN-0296 (C-085) : clés d'un catalogue à part dont le texte n'a aucun `{x}` (tables de libellés passées sans paramètre). */
+export type PlainCatalogKey<C> = { [K in keyof C & string]: CatalogArgs<C, K> extends [] ? K : never }[keyof C & string];
+
 /**
- * SHELL-0295 (C-085, D-638) : traducteur d'un catalogue chargé avec son écran, hors de l'arbre `fr.ts` du départ. Les paramètres sont
- * typés depuis le texte français ; un paramètre absent reste visible sous la forme `{nom}`.
+ * CLEAN-0296 (C-085, D-644) : le corps vit dans `units.ts`, pour rester dans le bloc partagé `units` : importé par vingt traducteurs, il
+ * formerait sinon un bloc de plus, nommé par la table de préchargement du départ (+34 octets mesurés).
  */
-export function catalogText<C extends Readonly<Record<string, string>>>(catalog: C) {
-  return <K extends keyof C & string>(key: K, ...args: CatalogArgs<C, K>): string => {
-    const text = catalog[key] as string;
-    const params = args[0] as Readonly<Record<string, string | number>> | undefined;
-    return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
-  };
-}
+export { catalogText } from './units';

@@ -18,12 +18,12 @@ import {
 import type { Recipe } from '../../../domain/nutrition/recipeTypes';
 import type { LocalDate, LocalTime } from '../../../domain/types';
 import { formatDayShort, formatInt, orDash } from '../../../i18n/nutritionText';
-import { tQuick, type NutritionQuickTextKey } from '../../../i18n/nutritionQuickText';
+import { tQuick, type NutritionQuickPlainKey } from '../../../i18n/nutritionQuickText';
 import { Button } from '../../../ui';
 import { useAppContainer } from '../../app/AppContainerContext';
 import { MacroLine, NumberField, parseNumber, ProvenanceBadge } from '../shared';
 
-const MOMENT_KEY: Readonly<Record<MealMoment, NutritionQuickTextKey>> = {
+const MOMENT_KEY: Readonly<Record<MealMoment, NutritionQuickPlainKey>> = {
   morning: 'momentMorning',
   midday: 'momentMidday',
   afternoon: 'momentAfternoon',

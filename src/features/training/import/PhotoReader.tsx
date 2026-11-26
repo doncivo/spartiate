@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState, type ChangeEvent } from 'react';
 import { OcrError, openOcrService, type OcrFailure, type OcrService } from '../../../platform/ocr';
 import { tPlural } from '../../../i18n/plural';
-import { tImport, type ProgramImportTextKey } from '../../../i18n/programImportText';
+import { tImport, type ProgramImportPlainKey } from '../../../i18n/programImportText';
 
 /**
  * IMPORT-029b (§ 17.4, D-200) : lecture d'une photo ou d'une capture du programme par la façade OCR existante (Vision sur l'iPhone,
@@ -20,7 +20,7 @@ export interface PhotoReaderProps {
 /** Côté le plus grand de l'image transmise au moteur (Windows.Media.Ocr refuse les images trop grandes). */
 export const IMPORT_IMAGE_MAX_EDGE_PX = 2000;
 
-const FAILURE_KEYS: Readonly<Record<OcrFailure, ProgramImportTextKey>> = {
+const FAILURE_KEYS: Readonly<Record<OcrFailure, ProgramImportPlainKey>> = {
   'language-missing': 'ocr_language-missing',
   'unsupported-format': 'ocr_unsupported-format',
   'too-large': 'ocr_too-large',

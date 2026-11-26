@@ -1,10 +1,24 @@
-import { catalogText } from './catalogText';
+import type { CatalogArgs } from './catalogText';
 import { unitsFr } from './fr.units';
 
 /**
  * SHELL-0295 (C-076, D-639) : formatage commun des nombres, durées et séparateurs (français, heures en 24 h). Seul point où la locale
  * d'Intl est écrite pour src/features et src/ui (garde tests/unit/hardcodedUnits.test.ts) ; hors du départ.
  */
+
+/**
+ * SHELL-0295 (C-085, D-638) : traducteur d'un catalogue chargé avec son écran, hors de l'arbre `fr.ts` du départ. Les paramètres sont
+ * typés depuis le texte français ; un paramètre absent reste visible sous la forme `{nom}`. CLEAN-0296 (D-644) : écrit ici et réexporté
+ * par `catalogText.ts`, pour rester dans le bloc partagé `units` au lieu de former un bloc de plus que le départ devrait nommer.
+ */
+export function catalogText<C extends Readonly<Record<string, string>>>(catalog: C) {
+  return <K extends keyof C & string>(key: K, ...args: CatalogArgs<C, K>): string => {
+    const text = catalog[key] as string;
+    const params = args[0] as Readonly<Record<string, string | number>> | undefined;
+    return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
+  };
+}
+
 const tUnits = catalogText(unitsFr);
 
 export const INTL_LOCALE = 'fr-FR';

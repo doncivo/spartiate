@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { tAppleIntelligence, type AppleIntelligenceTextKey } from '../../i18n/appleIntelligenceText';
+import { tAppleIntelligence, type AppleIntelligencePlainKey } from '../../i18n/appleIntelligenceText';
 import { openAppleIntelligence, type AppleIntelligence, type AppleIntelligenceResult, type AppleIntelligenceUnavailableReason } from '../../platform/appleIntelligence';
 import { Button } from '../../ui';
 
@@ -8,7 +8,7 @@ interface Props {
   readonly appleIntelligence?: AppleIntelligence;
 }
 
-const REASON_KEYS: Readonly<Record<AppleIntelligenceUnavailableReason, AppleIntelligenceTextKey>> = {
+const REASON_KEYS: Readonly<Record<AppleIntelligenceUnavailableReason, AppleIntelligencePlainKey>> = {
   'sdk-absent': 'reasonSdkAbsent',
   'os-too-old': 'reasonOsTooOld',
   'device-not-eligible': 'reasonDeviceNotEligible',

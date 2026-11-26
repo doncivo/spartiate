@@ -43,6 +43,9 @@ jobs:
         run: npm run lint
       - name: Typecheck
         run: npm run typecheck
+      # CLEAN-0296 (§ 18.4 b, D-643) : icônes suivies identiques à la génération depuis content/brand/spartiate.svg (une icône retouchée à la main est refusée).
+      - name: Icônes générées (--check)
+        run: node scripts/release/generate-icons.mjs --check
 
   # Vitest : projet node en 5 tranches (2 workers : les simulations de synchro à trois appareils sont sensibles à la charge, 4 workers sur 4 cœurs les faisaient dépasser leur délai), projet dom en 3 tranches. Chaque tranche écrit un rapport blob (avec sa couverture) ;
   # le job vitest-couverture les fusionne et contrôle les seuils sur le résultat fusionné (CT_COVERAGE_SHARD retire les seuils des tranches).

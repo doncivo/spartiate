@@ -2,7 +2,7 @@ import type { EpochCarryCause } from '../../domain/sync/epochCarryReport';
 import { carryReportKind, shortRowId } from '../../domain/sync/epochCarryReportView';
 import type { DeviceId } from '../../domain/types';
 import { formatDayMonthYear, formatTime } from '../../i18n/format';
-import { tCarry, type SyncCarryReportTextKey } from '../../i18n/syncCarryReportText';
+import { tCarry, type SyncCarryReportPlainKey } from '../../i18n/syncCarryReportText';
 import type { SyncDeviceStatus } from '../../platform/sync/types';
 import { deviceName } from './syncText';
 
@@ -39,7 +39,7 @@ export function carryCauseText(cause: EpochCarryCause): string {
 /** Type d'élément en français (« Tâche », « Projet »…) d'après la clé de la correspondance de `src/domain`. */
 export function carryKindText(table: string): string {
   const kind = carryReportKind(table);
-  return tCarry(`kind${kind.charAt(0).toUpperCase()}${kind.slice(1)}` as SyncCarryReportTextKey);
+  return tCarry(`kind${kind.charAt(0).toUpperCase()}${kind.slice(1)}` as SyncCarryReportPlainKey);
 }
 
 /** Libellé d'une ligne : titre ou nom, sinon « (sans titre) » et identifiant abrégé. */
