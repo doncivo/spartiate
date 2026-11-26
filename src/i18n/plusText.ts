@@ -1,3 +1,5 @@
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
+
 /**
  * Textes de l'onglet « Plus » réorganisé (planches docs/maquettes/i0/iPhone-Plus et PC-Plus) : chargés avec l'écran Réglages, hors du
  * bundle de départ. Les libellés des lignes existantes restent dans leurs catalogues.
@@ -35,9 +37,13 @@ const fr = {
   resetRow: 'Repartir de zéro',
 } as const;
 export type PlusTextKey = keyof typeof fr;
+/** CLEAN-0297 (C-085) : clés sans paramètre `{x}` (tables de libellés passées sans paramètre). */
+export type PlusPlainKey = PlainCatalogKey<typeof fr>;
 
-export function tPlus(key: PlusTextKey, params: Readonly<Record<string, string | number>> = {}): string {
+function translate(key: PlusTextKey, params: Readonly<Record<string, string | number>> = {}): string {
   let text: string = fr[key];
   for (const [name, value] of Object.entries(params)) text = text.replace(`{${name}}`, String(value));
   return text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tPlus: CatalogTranslator<typeof fr> = translate;
