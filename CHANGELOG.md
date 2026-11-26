@@ -2,6 +2,18 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.9
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.8.
+
+- **Séance (Q-11)** : une charge que tu as décidée depuis ta dernière séance devient la référence de l'exercice ; une semaine de décharge, une reprise après une pause ou une journée rouge la réduisent, comme une charge tirée de l'historique (poids du corps et exercices chronométrés compris). Avant, elle était reprise telle quelle.
+- **Journal des séances (Q-13)** : une série corrigée affiche maintenant sa valeur d'avant, par exemple « corrigée : 80 → 82,5 kg ».
+- **Journaux (Q-34)** : l'écran, la ligne de Plus et le fichier exporté disent « Journaux » partout ; le mot « Logs » n'apparaît plus.
+- **Apple Santé (Q-18)** : les fichiers du raccourci « Spartiate — récupération » (HRV, FC repos, sommeil, pas) doivent finir par un saut de ligne ; sinon ils sont refusés avec un message qui dit quoi changer dans le raccourci. Les pesées (`poids.csv`) ne sont pas concernées. Le guide du raccourci est à jour.
+- **Stratégie (Q-23)** : Nutrition › Stratégie suit l'objectif de ton profil (perte, maintien, prise) ; le rythme se règle toujours dans Stratégie.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.9). En priorité, sur l'iPhone, modifie le raccourci « Spartiate — récupération » comme le dit le guide (étape 3 bis), sinon ses fichiers seront refusés.
+
 ## 0.29.8
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.7.
