@@ -9,7 +9,7 @@ import { finishResumeTx } from '../../../../src/sync/join';
 import { mergeSnapshot, type LoadedSnapshot } from '../../../../src/sync/snapshot';
 import { V18_CATALOGUE, V19_CATALOGUE, selectSimSchema } from '../../../sim/syncDevice';
 
-// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+// CLEAN-03 (D-201, D-656) : banc Spartiate déclaré ; aucun appareil simulé ici (seuls des catalogues du simulateur sont importés), marqueur d'inventaire sans effet sur les valeurs.
 selectSimSchema('i0');
 
 /**
