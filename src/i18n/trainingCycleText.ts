@@ -1,13 +1,11 @@
 import { frFirst } from './format';
+import { catalogText } from './catalogText';
 import { trainingCycleFr } from './fr.trainingCycle';
 
 /** Textes de la section Cycle (I3-02) ; importé seulement par le bloc à la demande `CycleView`. */
 export type TrainingCycleTextKey = keyof typeof trainingCycleFr;
 
-export function tCycle(key: TrainingCycleTextKey, params?: Readonly<Record<string, string | number>>): string {
-  const text: string = trainingCycleFr[key];
-  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
-}
+export const tCycle = catalogText(trainingCycleFr);
 
 /** « 9 novembre » : date locale `AAAA-MM-JJ` en français, sans année. */
 export function cycleDate(date: string): string {
