@@ -31,8 +31,8 @@ describe('catalogText : paramètres typés', () => {
     expect(tPlural(counts, 1, 'of', 'ofs', { total: 4 })).toBe('1 sur 4');
     // @ts-expect-error `{total}` manquant
     expect(tPlural(counts, 2, 'of', 'ofs')).toBe('2 sur {total}s');
-    // @ts-expect-error `n` vient du compteur : interdit dans `params` (relecture à froid de CLEAN-0296)
-    expect(tPlural(counts, 2, 'of', 'ofs', { total: 4, n: 5 })).toBe('2 sur 4s');
+    // `n` passé dans `params` prime sur le compteur : nombre déjà mis en forme (« 2,5 »), usage de weeklyReviewText.ts (test réécrit).
+    expect(tPlural(counts, 2, 'of', 'ofs', { total: 4, n: '2,5' })).toBe('2,5 sur 4s');
   });
 
   it('tRoutines lit le catalogue hérité sans passer par l’arbre `fr.ts` du départ', () => {
