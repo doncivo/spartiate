@@ -1,6 +1,6 @@
 # CLEAN-0296 — `--check` des icônes par la suite, traducteurs typés par `catalogText` (lot 0.29.6)
 
-Statut : **en revue (CI de la PR)**, branche `CLEAN-0296` depuis `origin/main` `7f1885f2`. Module « coquille, iOS et qualité ». Budget annoncé : M (150 k).
+Statut : **fait en partie** (C-085 : 24 restes nommés ; § 18.4 b et BL-044 faits), PR #226, run 45745432439 vert, branche `CLEAN-0296` depuis `origin/main` `7f1885f2`. Module « coquille, iOS et qualité ». Budget annoncé : M (150 k).
 Lignes du registre : § 18.4 b, C-085 ; BL-044 (lecture de la couverture par module, si lisible). Chapitres PRD : 18 (§ 18.4, textes et
 icône), 23 (qualité et tests). Choix prudents : D-643 et suivantes, « Claude (choix prudent) ; révisable par Ali ». Aucune question.
 Aucun fichier de `src/sync/**`, `src/domain/sync/**`, `src-tauri/src/sync/**` ni `src/platform/sync/**` touché ; aucune migration ;
@@ -53,7 +53,7 @@ sur les fichiers changés (voir ci-dessous) ; `tsc --noEmit` et `npm run lint` p
 
 ## Relecture à froid (code-reviewer, distinct) et suites
 
-Verdict initial : refusé (1 bloquant, 3 importants) ; seconde relecture : (a) à (d) acceptés, seul reste le run CI. Traités :
+Verdict initial : refusé (1 bloquant, 3 importants) ; seconde relecture : (a) à (d) acceptés, run 45745432439 vert, étape `--check` réussie sous Linux : plus d’objection. Traités :
 - bloquant (CI Linux non prouvée) : levé par le run de la PR (étape `--check` du job « Lint et typecheck ») ;
 - plafond 40 trop lâche : plafond égal à la liste figée (24), abaissé à chaque migration ;
 - plafond de 60 s, qui allongeait un test : retiré ; `--check` réel dans `tests.yml`, test sur arbres synthétiques ;
@@ -63,3 +63,78 @@ Verdict initial : refusé (1 bloquant, 3 importants) ; seconde relecture : (a) �
 Non retenus, avec la cause : interdire `n` dans les paramètres de `tPlural` casserait la revue hebdomadaire, qui passe un `n` déjà mis en
 forme (« 12,5 ») ; ce comportement est figé par un test (21064264). Test des clés `kind…` de `carryReportText.ts` : il demanderait
 d'importer `src/domain/sync` ; laissé, le type est plus étroit qu'avant. Mineur consigné : `syncRestoreText` accepte `string | number`.
+
+## Couverture par module (BL-044)
+
+Run 45745432439 (PR #226, tête 64906641), job « Couverture fusionnée » : artefact `couverture-html`, `coverage-summary.json` passé à
+`coverageByModule` de `scripts/release/coverage-by-module.mjs` avec la racine du runner (même calcul que l’étape « Couverture par module »,
+qui écrit ce tableau dans le résumé du job). Total : 959 fichiers, 94,6 % des lignes, 87,1 % des branches. Lecture seule, aucun seuil
+nouveau ; les plus bas : `src/platform/photoImage` (40,6 % des lignes), `src/platform/haptics` (63,4), `src/platform/files` (64,9),
+`src/domain/model` (66,7).
+
+| Module | Fichiers | Lignes % | Branches % |
+|---|---|---|---|
+| src | 1 | 80,4 | 67,1 |
+| src/db | 8 | 95,3 | 90,4 |
+| src/db/drivers | 1 | 100 | 81,5 |
+| src/db/migrations | 25 | 100 | 100 |
+| src/db/parse | 7 | 100 | 93 |
+| src/db/repositories | 80 | 94,6 | 85,7 |
+| src/db/seed | 3 | 90 | 33,3 |
+| src/domain | 62 | 93,8 | 86,6 |
+| src/domain/bodyProgress | 4 | 96,4 | 84 |
+| src/domain/cardio | 4 | 100 | 98 |
+| src/domain/exportImport | 5 | 98,7 | 91,6 |
+| src/domain/health | 2 | 100 | 93,5 |
+| src/domain/model | 14 | 66,7 | 63,9 |
+| src/domain/nutrition | 32 | 99,7 | 94,7 |
+| src/domain/onboarding | 5 | 100 | 99,2 |
+| src/domain/recovery | 16 | 98,7 | 91,6 |
+| src/domain/review | 2 | 100 | 96,7 |
+| src/domain/sync | 26 | 99,8 | 95,8 |
+| src/domain/tracking | 5 | 100 | 95,7 |
+| src/domain/training | 53 | 99,8 | 93,2 |
+| src/features/app | 39 | 93,5 | 87,6 |
+| src/features/bodyProgress | 4 | 96,4 | 78,5 |
+| src/features/cardio | 4 | 95,3 | 86,2 |
+| src/features/notifications | 8 | 88,8 | 79,7 |
+| src/features/nutrition | 41 | 91,5 | 82,1 |
+| src/features/onboarding | 9 | 88,9 | 79,8 |
+| src/features/palette | 2 | 97,3 | 77,3 |
+| src/features/progress | 6 | 91,7 | 70,2 |
+| src/features/recovery | 8 | 97,7 | 86,1 |
+| src/features/security | 9 | 96 | 90,3 |
+| src/features/settings | 50 | 93,8 | 83,7 |
+| src/features/shortcuts | 4 | 100 | 82,1 |
+| src/features/signing | 7 | 88,9 | 84,6 |
+| src/features/strength | 2 | 94,4 | 72,5 |
+| src/features/sync | 52 | 93,9 | 88,9 |
+| src/features/tracking | 7 | 97,3 | 77,4 |
+| src/features/training | 49 | 91,2 | 77,5 |
+| src/features/updater | 4 | 96,2 | 88,2 |
+| src/i18n | 131 | 98,6 | 84,2 |
+| src/platform | 10 | 78,3 | 72,6 |
+| src/platform/appleIntelligence | 5 | 93,8 | 87,7 |
+| src/platform/backup | 7 | 80,1 | 78 |
+| src/platform/barcode | 2 | 96,3 | 94,1 |
+| src/platform/biometric | 5 | 97,7 | 92,4 |
+| src/platform/desktop | 6 | 97,2 | 93,5 |
+| src/platform/files | 8 | 64,9 | 78 |
+| src/platform/geolocation | 4 | 93,8 | 87 |
+| src/platform/haptics | 4 | 63,4 | 48 |
+| src/platform/healthkit | 5 | 87,7 | 76,9 |
+| src/platform/liveActivity | 4 | 88,6 | 78,7 |
+| src/platform/logs | 6 | 97,9 | 97 |
+| src/platform/notifications | 13 | 87,4 | 80,4 |
+| src/platform/ocr | 4 | 82,5 | 81 |
+| src/platform/off | 4 | 97,1 | 95,9 |
+| src/platform/photoImage | 1 | 40,6 | 21,4 |
+| src/platform/privacyShield | 2 | 86,8 | 86,7 |
+| src/platform/shortcutFiles | 1 | 87,7 | 85,9 |
+| src/platform/signing | 5 | 83,6 | 80,7 |
+| src/platform/speech | 5 | 77,9 | 74,6 |
+| src/platform/sync | 6 | 96,5 | 88,3 |
+| src/platform/systemSettings | 3 | 92,9 | 85 |
+| src/platform/tauri | 2 | 97,8 | 83,9 |
+| src/sync | 32 | 96,4 | 88,7 |
+| src/ui | 24 | 95,7 | 84,2 |
