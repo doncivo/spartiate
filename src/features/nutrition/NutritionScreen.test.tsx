@@ -308,8 +308,9 @@ describe('I4-03 : Stratégie et cibles (critère 6, D-74)', () => {
     // ERGO-03 : une ligne par réglage, qui déplie son réglage.
     fireEvent.click(await within(r).findByRole('button', { name: 'Style du check-in : Collaboratif' }));
     expect(within(r).getByRole('radio', { name: 'Collaboratif' })).toBeChecked();
-    fireEvent.click(within(r).getByRole('button', { name: 'Objectif : Maintien' }));
-    expect(within(r).getByRole('radio', { name: 'Maintien' })).toBeChecked();
+    // NUTRI-0299 (BL-173, D-669) : objectif lu du profil (sans objectif : l'ancien choix, maintien par défaut), en lecture seule.
+    expect(within(r).getByText('Objectif du profil : non renseigné, « Maintien » gardé')).toBeInTheDocument();
+    expect(within(r).queryByRole('radio', { name: 'Maintien' })).toBeNull();
     fireEvent.click(within(r).getByRole('button', { name: 'Jour du check-in : lundi' }));
     expect(within(r).getByLabelText('Jour du check-in')).toHaveValue('1');
     fireEvent.click(within(r).getByRole('button', { name: 'Niveau d’activité : Non déclaré' }));

@@ -30,7 +30,7 @@ function snapshot(unlogged: readonly number[], loggedFrom = -59, weighFrom = -59
   const weighIns: WeighIn[] = [];
   for (let i = weighFrom; i <= -2; i += 3) weighIns.push({ date: d(i), kg: 80 });
   const tdee = estimateTdee({ endDate: d(-1), days, weighIns, profile: null, activity: null, previousSmoothed: null });
-  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, profile: null, target: null, targets: [] };
+  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal, profile: null, target: null, targets: [] };
 }
 
 afterEach(cleanup);

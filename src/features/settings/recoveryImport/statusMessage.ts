@@ -23,16 +23,20 @@ export function importStatusMessage(result: ImportRunResult): string {
     case 'done': {
       const imported = result.files.filter((f) => f.state === 'imported');
       const added = imported.reduce((sum, f) => sum + f.added, 0);
+      // BL-172 (D-664) : un fichier refusé faute de saut de ligne final est toujours dit, avec ce qu'il faut modifier dans le raccourci ;
+      // seul (rien d'importé, rien en échec ni illisible), il remplace « aucun fichier trouvé », qui serait faux.
+      const refused = result.files.some((f) => f.state === 'unterminated') ? tHealth('recDoneUnterminated') : null;
       const read =
         imported.length === 0
           ? result.files.some((f) => f.state === 'failed')
             ? tHealth('recDoneFailed')
             : result.files.some((f) => f.state === 'unreadable')
               ? tHealth(result.folderIssue === 'unsafe-name' ? 'recDoneUnreadableName' : 'recDoneUnreadable')
-              : tHealth('recDoneNone')
+              : refused ?? tHealth('recDoneNone')
           : tPlural(tHealth, imported.length, 'recDoneRead1', 'recDoneReadN', { files: imported.length, added });
-      if (result.recomputeFailed) return `${read} ${tHealth('recRecomputeFailed')}`;
-      return result.recomputedDays > 0 ? `${read} ${tPlural(tHealth, result.recomputedDays, 'recRecomputedOne', 'recRecomputed', { days: result.recomputedDays })}` : read;
+      const head = refused === null || read === refused ? read : `${read} ${refused}`;
+      if (result.recomputeFailed) return `${head} ${tHealth('recRecomputeFailed')}`;
+      return result.recomputedDays > 0 ? `${head} ${tPlural(tHealth, result.recomputedDays, 'recRecomputedOne', 'recRecomputed', { days: result.recomputedDays })}` : head;
     }
   }
 }

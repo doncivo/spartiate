@@ -29,7 +29,7 @@ function snapshot(lastWeighIn: number, withProfile: boolean): NutritionSnapshot 
     activity: withProfile ? 'moderate' : null,
     previousSmoothed: null,
   });
-  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, profile: null, target: null, targets: [] };
+  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal, profile: null, target: null, targets: [] };
 }
 
 afterEach(cleanup);
