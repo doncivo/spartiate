@@ -52,5 +52,5 @@ Préparation : docs/PROGRES-0301.md. Aucun écran, aucun texte, aucune table, au
   taille / hauteur en bandes NICE avec « non valable si IMC ≥ 35 » ; taille / hanches < 0,90 homme, < 0,85 femme, « populations
   européennes », sans sexe aucun repère ; épaules / taille sans repère ; poitrine / taille 1,30 à 1,35 chez l'homme, « esthétique, sans
   valeur santé ». Affichage : BL-179 (écran), aucun texte ici.
-- Rouge `d092fea3` (8 tests en échec, module absent) ; vert : commit suivant. qa-test : `src/domain/bodyProgress` 101 tests verts, lint,
+- Rouge `d092fea3` (8 tests en échec, module absent) ; vert `d6c60752`. qa-test : `src/domain/bodyProgress` 101 tests verts, lint,
   typage. code-reviewer : domaine pur, aucune dépendance nouvelle, bornes au centième comme la valeur affichée ; approuvée.
