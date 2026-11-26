@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-400 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+405 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -169,7 +169,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
 
-### nutrition (25 : 15 à trancher, 10 à confirmer seulement)
+### nutrition (26 : 16 à trancher, 10 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -188,6 +188,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-343 | FIX-SAISIE-NUTRI (0.28.0) : Quick Add borné sur les macros et cohérent avec l'énergie (C-034 ). | A garder · B réviser ; effet : chiffre |
 | 1 | D-550 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
 | 1 | D-563 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
+| 1 | D-733 | PROG-0301b (D-706, D-718) : évolution du poids sur la période. | A garder · B réviser ; effet : chiffre |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -355,7 +356,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 
-### écrans (55 : 27 à trancher, 28 à confirmer seulement)
+### écrans (59 : 28 à trancher, 31 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -377,6 +378,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-639 | SHELL-0295 (C-076) : unités, locale et séparateurs par src/i18n/units.ts. | A garder · B réviser ; effet : écran |
 | 2 | D-718 | DEC-0301 (D-706, D-707, D-708) : calculs de symétrie, de rythme par mois, de poids et de période. | A garder · B réviser ; effet : chiffre |
 | 2 | D-719 | DEC-0301 (D-701, D-702, D-709) : onglet retenu, plateformes de Corps › Mesures et saisie guidée. | A garder · B réviser ; effet : écran |
+| 2 | D-730 | PROG-0301b (D-711, D-716, D-718) : entrées et arrondis des calculs de Corps › Mesures. | A garder · B réviser ; effet : chiffre |
 | 1 | D-340 | FIX-PLANCHER (0.28.0) : cible du jour (dayTargetFor, D-270) au tableau de bord et au graphique (C-088 ). | A garder · B réviser ; effet : écran |
 | 1 | D-399 | COQUILLE-PC-b (0.28.1) : barre latérale PC rétractable, repli non persisté (§ 18.1). | A garder · B réviser ; effet : écran |
 | 1 | D-459 | COQUILLE-0291 (BL-119) : disposition PC décidée par le système, fenêtre minimale 800 × 360. | A garder · B réviser ; effet : chiffre |
@@ -419,6 +421,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-692 | NUTRI-0299 (D-649) : les renvois des textes de Santé au journal technique donnent les deux chemins. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-731 | PROG-0301b (D-706, D-718) : bornes des périodes de la courbe. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-732 | PROG-0301b (D-707, D-715, D-718) : valeur et évolution d'un ratio. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-734 | PROG-0301b (D-713) : lecture du rythme et dates après aujourd'hui. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (69 : 33 à trancher, 36 à confirmer seulement)
 
