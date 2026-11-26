@@ -242,7 +242,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-565 | DATA-0293 (C-058, D-478). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
 
 ### synchro et données (87 : 51 à trancher, 36 à confirmer seulement)
 
@@ -475,6 +475,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-625 | SHELL-0294f (BL-165) : corps des six anciennes publications réécrits par le workflow. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-629 | DATA-0295 (BL-035) : cycle statique goalRules → week → todayList rompu. | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-679 | DEC-0299 (D-675, relecture à froid) : le contrôle « git grep -i fitnessvolt vide » porte sur le code, le contenu, les tests et docs/licences.md. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-679 | DEC-0299 (D-675, relecture à froid) : le contrôle « git grep -i fitnessvolt vide » porte sur le code, le contenu, les tests et docs/licences.md. | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
 
 <!-- revue-choix-prudents:fin -->

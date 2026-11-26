@@ -2,6 +2,16 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.29.8
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.7.
+
+- **Tes décisions du 26/11** : tes réponses aux questions Q-11 à Q-40 sont consignées (D-647 à D-680) et rangées au registre ; plus aucune question n'est ouverte. Elles seront livrées dans les versions suivantes (0.29.9, puis 0.30.0 à 0.30.3) ; cette version ne change encore rien à l'écran.
+- **Fiche technique** : la description des droits de l'app sur l'iPhone dit maintenant ce que l'app porte réellement (une seule autorisation, Apple Santé) ; rien ne change dans l'app installée.
+- **Maintenance** : six fichiers de tests de la synchro passent sur le banc de tests actuel, sans changer l'app.
+
+Après la mise à jour : rien de nouveau à vérifier à l'écran ; la section « CSP stricte (D-650) » de `docs/constats-ali.md` liste les écrans à ouvrir à chaque version.
+
 ## 0.29.7
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.6.
