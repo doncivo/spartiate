@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.0
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.9.
+
+- **Strength Score maison (Q-29, Q-42)** : Progrès › Force calcule maintenant ton score avec la méthode maison et les seuils que tu as validés le 26/11 (D-744) ; plus aucune norme tierce, plus de Fer, Bronze, Argent ni Or. Un score de 0 à 100 par groupe musculaire et un score global, avec 5 niveaux (Débutant, Novice, Intermédiaire, Avancé, Élite). Chaque e1RM est ramené à 80 kg de poids de corps : à la barre par l'exposant 2/3 ; pour les tractions et les dips (poids de corps plus lest), par une simple proportion, comme tu l'as demandé. Sans pesée ou sans séance, le score reste « inconnu », jamais 0 ; pendant une semaine de décharge, il est figé. La carte détaille chaque mouvement (e1RM, force relative, score, niveau) et dit sa méthode.
+- **Tes décisions du 26/11** : Q-42 (seuils) et Q-41 (repères des ratios de Corps › Mesures) sont consignées (D-744, D-745) ; plus aucune question n'est ouverte. Les repères des ratios arriveront à l'écran avec Corps › Mesures.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.0).
+
 ## 0.29.9
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.8.

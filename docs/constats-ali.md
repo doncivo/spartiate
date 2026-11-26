@@ -263,6 +263,7 @@ Seuils validés (Q-42, D-744 : tractions et dips en simple proportion) ; après 
 
 - [ ] **BL-174 (carte Force)** — iPhone puis PC, Progrès › Force (ou la carte Strength Score de Progrès avant les onglets) : un score global avec son niveau et « N groupes sur 8 », les 8 groupes avec un score et « niveau · mouvement », ou « inconnu » et sa raison, jamais 0 ; plus aucun Fer, Bronze, Argent ni Or ; plus aucune mention de source ni de licence en bas de la carte. Date : ____ Version : ____
 - [ ] **BL-174 (détail et contexte)** — même carte : la ligne de contexte dit ton poids, ton sexe et « catégorie : tous poids, ramenés à 80 kg » ; « Détail par mouvement » liste chaque mouvement fait avec e1RM, force relative, score et niveau ; la méthode se lit en quatre phrases. Date : ____ Version : ____
+- [ ] **BL-174 (tractions et dips, D-744)** — même carte, section « Méthode » : la deuxième phrase dit « tractions et dips, en simple proportion : e1RM × 80 / poids de corps ». Date : ____ Version : ____
 - [ ] **BL-174 (décharge)** — pendant une semaine de décharge, après une séance de décharge d'un mouvement de référence : la carte dit « Figé pendant la décharge, depuis le … » et le score ne bouge pas ; après la première séance ordinaire, la phrase disparaît. Date : ____ Version : ____
 
 ## 0.30.1 (Progrès en onglets et Mensurations)
