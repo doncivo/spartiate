@@ -50,4 +50,4 @@ migration (la table `settings` suffit, D-713), aucune table, aucun fichier de sy
   avec le bloc (déjà à la demande), échecs et `no-zone` dits, ref `touched`, `REMINDER_TABLES`, D-761 complétée ; le test du point 1 y reçoit
   le `seed` oublié. Seconde relecture : « approuvé », aucun bloquant. Reste (non bloquant, ticket suivant) : un choix fait avant la fin de la
   lecture des réglages enregistre le rythme par défaut et peut écraser un 14 ou un 28 déjà stocké (désactiver les contrôles jusqu'à la lecture).
-  CI : voir la PR.
+  CI : run 45824514803 rouge (Vitest node 2/5 : liste blanche I-05 critère 6 des demandes d’autorisation, `measurementNotifications.ts` ajouté avec sa raison, D-763) ; run suivant : voir la PR #243.

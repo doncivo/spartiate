@@ -100,6 +100,7 @@ describe('prise de développement et démarrage', () => {
     // I4-05 : le scan d'un code-barres alimentaire demande l'autorisation de la caméra au geste « Scanner » seulement, jamais à l'ouverture de l'écran.
     // I5-02 : les notifications de coucher et du matin demandent l'autorisation au geste d'un interrupteur (Plus → Apple Santé) seulement, jamais à l'ouverture, jamais après un refus.
     // I6-05 : les rappels de compléments demandent l'autorisation au geste de l'interrupteur « Rappels sur cet iPhone » (Nutrition › Compléments) seulement, jamais à l'ouverture, jamais après un refus.
-    expect([...callers].sort()).toEqual(['src/features/notifications/recoveryNotifications.ts', 'src/features/notifications/supplementNotifications.ts', 'src/features/nutrition/scan/scanBarcode.ts', 'src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts', 'src/features/training/session/restTimer.ts']);
+    // CORPS-0301d (D-763) : le rappel des mesures demande l'autorisation au geste qui rallume son interrupteur (Progrès › Corps › Mesures) seulement, jamais au simple passage.
+    expect([...callers].sort()).toEqual(['src/features/notifications/measurementNotifications.ts', 'src/features/notifications/recoveryNotifications.ts', 'src/features/notifications/supplementNotifications.ts', 'src/features/nutrition/scan/scanBarcode.ts', 'src/features/settings/syntheticTimer.ts', 'src/features/signing/requestPermission.ts', 'src/features/training/session/restTimer.ts']);
   });
 });
