@@ -157,6 +157,10 @@ export interface SettingsValues {
   'healthBody.lastImport': unknown;
   /** FIX-0171 (D-121) : fiches de photos masquées sur cet appareil (« Masquer sur cet appareil »). Valeur BRUTE lue par `parseHiddenPhotoIds` ; locale, jamais synchronisée ni exportée. */
   'bodyProgress.hiddenPhotos': unknown;
+  /** CORPS-0301d (D-713, D-760) : rythme des mesures sur cet appareil (7, 14 ou 28 jours). Valeur BRUTE lue par `parseMeasurementRhythm` (7 par défaut) ; locale, jamais synchronisée. */
+  'bodyProgress.measurementRhythm': unknown;
+  /** CORPS-0301d (D-713, D-760) : rappel des mesures de cet iPhone. Valeur BRUTE lue par `parseMeasurementReminder` (actif sauf `false`) ; locale, jamais synchronisée. */
+  'bodyProgress.measurementReminder': unknown;
   /** SUIVIS-029 : objectifs de suivi (pas par jour, minutes de zone 2 par semaine, FC max saisie). Valeur BRUTE lue par `parseTrackingGoals` ; locale, jamais synchronisée. */
   'today.prefs': unknown;
 }
@@ -229,6 +233,8 @@ export const SETTINGS_DEFINITIONS: { readonly [K in SettingKey]: SettingDefiniti
   'recovery.sleepRulesVersion': { scope: 'local', defaultValue: null },
   'healthBody.lastImport': { scope: 'local', defaultValue: null },
   'bodyProgress.hiddenPhotos': { scope: 'local', defaultValue: null },
+  'bodyProgress.measurementRhythm': { scope: 'local', defaultValue: null },
+  'bodyProgress.measurementReminder': { scope: 'local', defaultValue: null },
 };
 
 /** Valeur par défaut d'un réglage. */

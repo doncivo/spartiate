@@ -154,6 +154,9 @@ export const RESET_SETTINGS: Readonly<Record<SettingKey, ResetFate>> = {
   'recovery.sleepRulesVersion': 'wiped',
   'healthBody.lastImport': 'wiped',
   'bodyProgress.hiddenPhotos': 'wiped',
+  // CORPS-0301d (D-760) : préférences de l'appareil (rythme et rappel des mesures), gardées comme celles des rappels de compléments.
+  'bodyProgress.measurementRhythm': 'kept',
+  'bodyProgress.measurementReminder': 'kept',
   // SUIVIS-029 : objectifs de suivi (pas, zone 2, FC max saisie) : effacés, comme les objectifs de nutrition.
   'today.prefs': 'wiped',
 };

@@ -38,6 +38,7 @@ import { summarizeZone, type ZonePoint, type ZoneSummary } from './bodyZone';
 import { GuidedEntry } from './GuidedEntry';
 import { RateLine, RatiosCard, SymmetryCard, WeightLine } from './MeasureInsights';
 import { VisbodySection } from './VisbodySection';
+import { MeasurementRhythmLazy } from '../settings/measurementRhythm/lazy';
 import './BodyProgress.css';
 
 /**
@@ -437,6 +438,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
             </div>
           </>
         )}
+        {/* CORPS-0301d (BL-180) : rythme des mesures et rappel, sous la saisie (zone par zone ou guidée). */}
+        <MeasurementRhythmLazy samples={measures} />
         {measureMessage && (
           <p className="ct-bodyprogress__message" role={measureMessage.alert ? 'alert' : 'status'}>
             {measureMessage.text}
