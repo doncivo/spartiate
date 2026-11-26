@@ -66,7 +66,13 @@ type Load =
       readonly local: ReadonlySet<string>;
     };
 
-export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto?: () => Promise<Uint8Array | null> }) {
+/**
+ * PROG-0301a (BL-177, D-701) : partie rendue seule, pour les sous-onglets de Progrès › Corps (Mesures, Santé, VISBODY, Photos). Sans partie : tout
+ * Corps, rendu inchangé. Découpage sans changement de comportement ; BL-179 (CORPS-0301c) part de ce découpage.
+ */
+export type BodyProgressPart = 'measures' | 'health' | 'visbody' | 'photos';
+
+export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pickPhoto?: () => Promise<Uint8Array | null>; readonly part?: BodyProgressPart }) {
   const container = useAppContainer();
   const pc = useLayout() === 'pc';
   const [load, setLoad] = useState<Load>({ status: 'loading' });
@@ -98,7 +104,10 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
   // FIX-0171 (constat 5, D-121) : les vues photo (liste, comparaison) ont leur propre demande de bouclier, indépendante du verrouillage : activée à
   // l'entrée, retirée à la sortie ; un échec du plugin est dit à l'écran (et au journal technique, sans aucune donnée).
   const [shieldFailed, setShieldFailed] = useState(false);
+  // PROG-0301a (D-721) : le bouclier suit les vues photo ; un sous-onglet sans photo (Mesures, Santé, VISBODY) ne le demande pas.
+  const showsPhotos = part === undefined || part === 'photos';
   useEffect(() => {
+    if (!showsPhotos) return undefined;
     const shield = shieldOwner(container.privacyShield, 'photos');
     let live = true;
     void shield.setEnabled(true).then((result) => {
@@ -111,9 +120,11 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
         if (!result.ok) logFailure('security', `photo-shield-release-failed:${result.code}`);
       });
     };
-  }, [container]);
+  }, [container, showsPhotos]);
 
   useEffect(() => {
+    // PROG-0301a : VISBODY lit ses propres bilans ; son sous-onglet ne lit ni les mesures ni les photos.
+    if (part === 'visbody') return undefined;
     let live = true;
     (async () => {
       const { repos } = container.data;
@@ -138,7 +149,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     return () => {
       live = false;
     };
-  }, [container, synced, attempt, reload]);
+  }, [container, synced, attempt, reload, part]);
 
   const saveMeasure = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
@@ -209,6 +220,14 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     refresh();
   };
 
+  if (part === 'visbody') {
+    return (
+      <div className="ct-bodyprogress">
+        <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>
+        <VisbodySection />
+      </div>
+    );
+  }
   if (load.status === 'loading') {
     return (
       <p role="status" className="ct-today__muted">
@@ -257,12 +276,9 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
     setKind(neighbourZone(kind, event.key === 'ArrowDown' ? 1 : -1));
   };
 
-  return (
-    <div className={pc ? 'ct-bodyprogress ct-bodyprogress--pc' : 'ct-bodyprogress'}>
-      <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>
-
-      {pc ? <ZoneList kind={kind} summaries={summaries} onSelect={setKind} /> : null}
-
+  const title = <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>;
+  const zoneList = pc ? <ZoneList kind={kind} summaries={summaries} onSelect={setKind} /> : null;
+  const main = (
       <section className="ct-bodyprogress__main ct-flat" aria-labelledby="ct-bodyprogress-measures">
         <h3 id="ct-bodyprogress-measures" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('measuresTitle')}
@@ -340,9 +356,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           </ul>
         )}
       </section>
-
-      <div className="ct-bodyprogress__side">
-      {health.length > 0 && (
+  );
+  const healthCard = health.length > 0 ? (
         <section className="ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-health">
           <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading ct-section-title">
             {tBodyProgress('healthTitle')}
@@ -360,11 +375,8 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           </dl>
           <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
         </section>
-      )}
-
-      {/* SUIVIS-029d : bilans VISBODY (saisie manuelle, courbes, écart au bilan précédent). */}
-      <VisbodySection />
-
+  ) : null;
+  const photosCard = (
       <section className="ct-today__card ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-photos">
         <h3 id="ct-bodyprogress-photos" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('photosTitle')}
@@ -433,7 +445,46 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg }: { readonly pickPhoto
           </section>
         )}
       </section>
+  );
+
+  if (part === undefined) {
+    return (
+      <div className={pc ? 'ct-bodyprogress ct-bodyprogress--pc' : 'ct-bodyprogress'}>
+        {title}
+        {zoneList}
+        {main}
+        <div className="ct-bodyprogress__side">
+          {healthCard}
+          {/* SUIVIS-029d : bilans VISBODY (saisie manuelle, courbes, écart au bilan précédent). */}
+          <VisbodySection />
+          {photosCard}
+        </div>
       </div>
+    );
+  }
+  // PROG-0301a : un sous-onglet ; la grille PC (zones, mesure, courbe) reste dans Mesures (P-30, D-719).
+  return (
+    <div className={pc && part === 'measures' ? 'ct-bodyprogress ct-bodyprogress--pc' : 'ct-bodyprogress'}>
+      {title}
+      {part === 'measures' ? (
+        <>
+          {zoneList}
+          {main}
+        </>
+      ) : part === 'health' ? (
+        (healthCard ?? (
+          // D-720 : sans import de Santé, le sous-onglet le dit (le bloc complet, lui, reste absent sans import, comme avant).
+          <section className="ct-bodyprogress__card ct-flat" aria-labelledby="ct-bodyprogress-health">
+            <h3 id="ct-bodyprogress-health" className="ct-bodyprogress__heading ct-section-title">
+              {tBodyProgress('healthTitle')}
+            </h3>
+            <p className="ct-today__muted">{tBodyProgress('healthEmpty')}</p>
+            <p className="ct-today__muted">{tBodyProgress('healthHint')}</p>
+          </section>
+        ))
+      ) : (
+        photosCard
+      )}
     </div>
   );
 }

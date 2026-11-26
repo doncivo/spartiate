@@ -1,3 +1,4 @@
+import type { BodyProgressPart } from '../bodyProgress/BodyProgress';
 import type { UpdateRestoreActionProps } from './UpdateRestoreAction';
 import { Component, createElement, lazy, Suspense, useState, type ComponentType, type ErrorInfo, type ReactElement, type ReactNode } from 'react';
 import { t } from '../../i18n';
@@ -134,7 +135,7 @@ export const RecoveryToday =lazyScreen<object>(() => import('../recovery/Recover
 /** I6-01 : Progrès › Récupération (écart de Recovery avec / sans facteur), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const RecoveryProgress = lazyScreen<object>(() => import('../recovery/RecoveryProgress').then((m) => ({ default: m.RecoveryProgress })), 'recoveryprogress', { onDemand: true });
 /** I6-02 : Progrès › Corps (mensurations, photos de progression), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
-export const BodyProgress = lazyScreen<object>(() => import('../bodyProgress/BodyProgress').then((m) => ({ default: m.BodyProgress })), 'bodyprogress', { onDemand: true });
+export const BodyProgress = lazyScreen<{ readonly part?: BodyProgressPart }>(() => import('../bodyProgress/BodyProgress').then((m) => ({ default: m.BodyProgress })), 'bodyprogress', { onDemand: true });
 /** I6-06 : Progrès › Cardio (quatre semaines), bloc à part chargé avec son catalogue de textes (jamais dans le départ). */
 export const CardioProgress = lazyScreen<object>(() => import('../cardio/CardioProgress').then((m) => ({ default: m.CardioProgress })), 'cardioprogress', { onDemand: true });
 /**

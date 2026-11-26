@@ -32,6 +32,22 @@ export type TrainingScreenId = 'routines' | 'library' | 'equipment' | 'history' 
 /** I4-03 : sections de Nutrition ; absent = Journal. I6-05 : `supplements` = Compléments. */
 export type NutritionScreenId = 'journal' | 'dashboard' | 'strategy' | 'checkin' | 'recipes' | 'supplements';
 
+/**
+ * PROG-0301a (BL-177, D-701) : onglets de Progrès, dans l'ordre d'Ali (Récup, Séances, Bilan, Force, Corps, Activité), et sous-onglets de Corps
+ * (Mesures, Santé, VISBODY, Photos). D-719 : retenus en mémoire seulement (jamais dans `settings`), un redémarrage rouvre Récup.
+ */
+export const PROGRESS_TAB_IDS = ['recovery', 'sessions', 'review', 'strength', 'body', 'activity'] as const;
+export type ProgressTabId = (typeof PROGRESS_TAB_IDS)[number];
+export const BODY_TAB_IDS = ['measures', 'health', 'visbody', 'photos'] as const;
+export type BodyTabId = (typeof BODY_TAB_IDS)[number];
+
+export interface ProgressView {
+  readonly tab: ProgressTabId;
+  readonly body: BodyTabId;
+}
+
+export const DEFAULT_PROGRESS_VIEW: ProgressView = { tab: 'recovery', body: 'measures' };
+
 /** Écrans internes de chaque section. Ajouter un écran = ajouter un membre ici. */
 export type Route =
   | { readonly tab: 'today' }
@@ -60,8 +76,14 @@ export interface NavigationState {
   readonly lastRoutes: { readonly [K in TabId]: Extract<Route, { tab: K }> };
   readonly detail: DetailTarget | null;
   readonly overlays: readonly Overlay[];
-  /** Ctrl+1…5 : va sur la section, à son dernier écran ; ferme la fiche détail. */
+  /** PROG-0301a : onglet et sous-onglet de Progrès, retenus tant que l'app est ouverte (hors de `route` : la palette et `navigate` les gardent). */
+  readonly progressView: ProgressView;
+  /**
+   * Ctrl+1…5, barre du bas, barre latérale : va sur la section, à son dernier écran ; ferme la fiche détail. PROG-0301a (D-701, D-719) : un nouvel
+   * appui sur Progrès déjà affiché ramène à Récup, et Corps à Mesures.
+   */
   goToTab(tab: TabId): void;
+  setProgressView(view: Partial<ProgressView>): void;
   navigate(route: Route): void;
   closeDetail(): void;
   openOverlay(overlay: Overlay): void;
@@ -70,19 +92,21 @@ export interface NavigationState {
   escape(): boolean;
 }
 
-type NavigationData = Pick<NavigationState, 'route' | 'lastRoutes' | 'detail' | 'overlays'>;
+type NavigationData = Pick<NavigationState, 'route' | 'lastRoutes' | 'detail' | 'overlays' | 'progressView'>;
 
 export const INITIAL_NAVIGATION: NavigationData = {
   route: DEFAULT_ROUTES.today,
   lastRoutes: DEFAULT_ROUTES,
   detail: null,
   overlays: [],
+  progressView: DEFAULT_PROGRESS_VIEW,
 };
 
 /** État d'interface pur, sans dépendance : store de module (réinitialiser avec INITIAL_NAVIGATION en test). */
 export const useNavigationStore = create<NavigationState>()((set, get) => ({
   ...INITIAL_NAVIGATION,
-  goToTab: (tab) => set((s) => ({ route: s.lastRoutes[tab], detail: null })),
+  goToTab: (tab) => set((s) => ({ route: s.lastRoutes[tab], detail: null, ...(tab === 'progress' && s.route.tab === 'progress' ? { progressView: DEFAULT_PROGRESS_VIEW } : {}) })),
+  setProgressView: (view) => set((s) => ({ progressView: { ...s.progressView, ...view } })),
   navigate: (route) => set((s) => ({ route, lastRoutes: { ...s.lastRoutes, [route.tab]: route }, detail: route.tab === s.route.tab ? s.detail : null })),
   closeDetail: () => set({ detail: null }),
   openOverlay: (overlay) => set((s) => ({ overlays: [...s.overlays, overlay] })),

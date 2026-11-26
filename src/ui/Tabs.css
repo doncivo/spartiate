@@ -1,0 +1,64 @@
+/* PROG-0301a (BL-177) : barre d'onglets, aspect du contrôle segmenté (SpaceSegmented) ; tokens seulement, aucune couleur en dur. */
+.ct-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+  align-self: stretch;
+}
+
+/* Une ligne qui défile horizontalement à 440 px (6 onglets) : aucun libellé coupé ni renvoyé à la ligne ; barre de défilement masquée. */
+.ct-tabs__list {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 4px;
+  padding: 4px;
+  min-height: calc(44px + 8px);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  background: var(--ct-color-surface-input);
+  border-radius: var(--ct-radius-md);
+}
+
+.ct-tabs__list::-webkit-scrollbar {
+  display: none;
+}
+
+.ct-tabs__tab {
+  flex: 1 0 auto;
+  min-height: 44px;
+  padding: 0 var(--ct-space-3);
+  white-space: nowrap;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--ct-radius-sm);
+  background: transparent;
+  color: var(--ct-color-text-secondary);
+  font-family: var(--ct-font-text);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-text-sm);
+  cursor: pointer;
+}
+
+/* Onglet choisi : fond, ombre, liseré d'accent et texte principal (jamais la couleur seule : la forme change aussi). */
+.ct-tabs__tab[aria-selected='true'] {
+  background: var(--ct-color-surface);
+  box-shadow: 0 1px 3px var(--ct-shadow-soft);
+  border-bottom-color: var(--ct-color-accent);
+  color: var(--ct-color-text);
+}
+
+.ct-tabs__tab:focus-visible,
+.ct-tabs__panel:focus-visible {
+  outline: 2px solid var(--ct-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ct-tabs__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}

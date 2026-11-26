@@ -27,9 +27,27 @@
   color: var(--ct-color-text-secondary);
 }
 
-/* FIX-0241 (D-268) : sur PC, Progrès (Récupération, Corps, Cardio) occupe toute la largeur utile ; les 560 px sont pour les textes « bientôt ». */
-.ct-app-shell[data-layout='pc'] .ct-section-notice:has(.ct-bodyprogress--pc) {
+/*
+ * FIX-0241 (D-268) : sur PC, Progrès occupe toute la largeur utile ; les 560 px sont pour les textes « bientôt ». PROG-0301a (P-30) : la règle
+ * suit la section Progrès elle-même, quel que soit l'onglet ouvert (avant les onglets, Corps était toujours affiché et l'élargissait).
+ */
+.ct-app-shell[data-layout='pc'] .ct-section-notice--progress {
   align-self: stretch;
   align-items: stretch;
   max-width: none;
+}
+
+/* PROG-0301a : la barre d'onglets et son panneau prennent la largeur de la section (iPhone comme PC). */
+.ct-section-notice--progress .ct-progress-tabs {
+  align-self: stretch;
+}
+
+/*
+ * PROG-0301a (P-30, D-719) : Corps › Mesures garde la grille PC de 1, 2 ou 3 colonnes ; Santé, VISBODY et Photos ont leur propre sous-onglet. Dès
+ * 1 280 px, la troisième colonne (où ils étaient) n'existe plus dans Mesures : zones et mesure gardent leurs largeurs, sans colonne vide.
+ */
+@media (min-width: 1280px) {
+  .ct-progress-tabs .ct-bodyprogress--pc:not(:has(.ct-bodyprogress__side)) {
+    grid-template-columns: minmax(17rem, 18rem) minmax(22rem, 1fr);
+  }
 }
