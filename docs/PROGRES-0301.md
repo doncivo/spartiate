@@ -168,7 +168,7 @@ de la liste échoue la garde (liste fermée, comme `tests/bundle/start-modules.j
 | P-27 | Photos : suppression avec confirmation, Masquer, Réafficher ({count}) | BodyProgress | Corps | Photos | les deux |
 | P-28 | Côte à côte (2 figures, image manquante, Fermer la comparaison) | BodyProgress | Corps | Photos | les deux |
 | P-29 | États de Corps (chargement, échec, Réessayer) | BodyProgress | Corps | chaque sous-onglet | les deux |
-| P-30 | Disposition PC en grille de 1, 2 ou 3 colonnes | BodyProgress.css | Corps | Mesures (D-719) | PC |
+| P-30 | Disposition PC en grille de 1, 2 ou 3 colonnes, colonne Progrès en pleine largeur | BodyProgress.css, SectionNotice.css | Corps | Mesures (D-719) | PC |
 | P-31 | Cardio (4 semaines, séances, durée, distance, états) | CardioProgress | Activité | 1er bloc | les deux |
 | P-32 | Objectifs (pas, zone 2, FC max, enregistrement, erreurs) | TrackingProgress | Activité | Suivis | les deux |
 | P-33 | Pas par semaine (4 semaines, raison PC « reste sur l'iPhone ») | TrackingProgress | Activité | Suivis | les deux |
@@ -237,4 +237,12 @@ Voir la section « Résultats ».
 
 ## Résultats
 
-(complété après les contrôles et la relecture)
+- Contrôles documentaires (docs-paths, agents, privacy, prudentReview, prd-split, identity) : verts. backlogCount : un seul échec
+  attendu, « docs/reprise.md cite le compte exact » (décompte passé de 11 à 16 lignes « à faire » ; reprise tenue par le ticket de
+  version). Ligne attendue : « Registre : 16 lignes « à faire » (séance et moteur 4, nutrition et récupération 5, données et synchro 3,
+  import et contenu 1, coquille, iOS et qualité 3), 100 « fait en partie », 0 « à trancher par Ali », 27 constats d'Ali. »
+- Relecture à froid (agent code-reviewer distinct, sur le diff) : « à corriger », aucun bloquant. Corrigé : D-713, BL-178 et BL-180
+  comptent la dernière séance sur les 11 zones saisies seulement (hors `health_*` et `note_*`, sinon une note du matin quotidienne
+  empêcherait le rappel) ; P-30 couvre aussi la colonne Progrès en pleine largeur ; BL-180 cite `LedgerKind` et `LEDGER_KINDS`.
+  Noté pour la question fermée de D-716 : en « prise », seul le tour de taille est inversé (hanches et cou discutables).
+- Premier commit : ae14bc12 ; PR #235.
