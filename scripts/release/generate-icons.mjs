@@ -6,7 +6,7 @@
 // `node scripts/release/generate-icons.mjs` : régénère ; `--check` : compare octet à octet sans écrire (échec si un écart).
 // CLEAN-0296 : `--check` est lancé par la suite Vitest node (scripts/release/generateIcons.test.ts), donc par la CI.
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,25 +49,37 @@ function generate(root) {
   return out;
 }
 
+/** Valeur de l'option `--nom <valeur>`, sinon null. */
+const option = (name) => {
+  const at = process.argv.indexOf(name);
+  return at > 0 && process.argv[at + 1] ? process.argv[at + 1] : null;
+};
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-  const out = generate(root);
-  // CLEAN-0296 : `--target <dossier>` compare (ou écrit) un autre dossier que src-tauri/icons ; sert au test d'une copie altérée.
-  const at = process.argv.indexOf('--target');
-  const target = resolve(root, at > 0 && process.argv[at + 1] ? process.argv[at + 1] : ICON_TARGET);
-  const diff = compareIcons(out, target);
-  if (process.argv.includes('--check')) {
-    const n = diff.different.length + diff.missing.length + diff.extra.length;
-    if (n) {
-      console.error(`Icônes à régénérer (node scripts/release/generate-icons.mjs) : ${JSON.stringify(diff)}`);
-      process.exit(1);
+  // CLEAN-0296 : `--from <dossier>` reprend une sortie déjà générée (test sur arbres synthétiques, sans `tauri icon`) ; `--target
+  // <dossier>` compare (ou écrit) un autre dossier que src-tauri/icons. Une sortie générée ici est retirée de .codex-tmp/ en fin de course.
+  const from = option('--from');
+  const out = from ? resolve(root, from) : generate(root);
+  const target = resolve(root, option('--target') ?? ICON_TARGET);
+  try {
+    const diff = compareIcons(out, target);
+    if (process.argv.includes('--check')) {
+      const n = diff.different.length + diff.missing.length + diff.extra.length;
+      if (n) {
+        console.error(`Icônes à régénérer (node scripts/release/generate-icons.mjs) : ${JSON.stringify(diff)}`);
+        process.exitCode = 1;
+      } else {
+        console.log(`${iconFiles(out).length} icônes identiques à la génération depuis ${ICON_SOURCE}`);
+      }
+    } else {
+      for (const f of iconFiles(out)) {
+        mkdirSync(dirname(join(target, f)), { recursive: true });
+        copyFileSync(join(out, f), join(target, f));
+      }
+      console.log(`${iconFiles(out).length} icônes écrites dans ${ICON_TARGET}${diff.extra.length ? ` ; en trop, à retirer : ${diff.extra.join(', ')}` : ''}`);
     }
-    console.log(`${iconFiles(out).length} icônes identiques à la génération depuis ${ICON_SOURCE}`);
-  } else {
-    for (const f of iconFiles(out)) {
-      mkdirSync(dirname(join(target, f)), { recursive: true });
-      copyFileSync(join(out, f), join(target, f));
-    }
-    console.log(`${iconFiles(out).length} icônes écrites dans ${ICON_TARGET}${diff.extra.length ? ` ; en trop, à retirer : ${diff.extra.join(', ')}` : ''}`);
+  } finally {
+    if (!from) rmSync(out, { recursive: true, force: true });
   }
 }
