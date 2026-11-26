@@ -23,8 +23,8 @@ BL-172 (D-664, D-680, C-056)
 5. Le guide (docs/guide-raccourcis-sante.md, B.1) décrit l'étape ; la garde healthShortcutsGuide la vérifie.
 
 BL-173 (D-669, C-106)
-1. Étant donné un objectif au profil (Réglages › Corps), quand Ali ouvre Stratégie, alors il est affiché en lecture seule (« Objectif du
-   profil : Perte »), sans second réglage « Objectif », avec un renvoi « Modifier dans Réglages › Corps ».
+1. Étant donné un objectif au profil (Plus › Profil et poids), quand Ali ouvre Stratégie, alors il est affiché en lecture seule (« Objectif du
+   profil : Perte »), sans second réglage « Objectif », avec un renvoi « Modifier dans Plus › Profil et poids ».
 2. Étant donné un objectif de perte ou de prise, alors la ligne « Rythme » se règle en Stratégie et s'enregistre dans `nutrition.prefs`, même
    forme JSON ; objectif « maintien », pas de rythme.
 3. Étant donné un profil sans objectif, alors l'ancien choix des préférences est gardé et dit (« non renseigné, « Prise » gardé »).

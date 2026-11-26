@@ -226,7 +226,7 @@ export function StrategyView({ snapshot, onChanged }: StrategyViewProps) {
         <h2 id="ct-nutrition-goal" className="ct-nutrition__eyebrow ct-section-title">
           {tNutrition('goalTitle')}
         </h2>
-        {/* NUTRI-0299 (BL-173, D-669) : l'objectif est celui du profil, en lecture seule ; il se change dans Réglages › Corps. */}
+        {/* NUTRI-0299 (BL-173, D-669) : l'objectif est celui du profil, en lecture seule ; il se change dans Plus › Profil et poids. */}
         <p className="ct-strategy__static">{goalLine}</p>
         <p className="ct-nutrition__muted">{tNutrition('goalProfileHint')}</p>
         <Button variant="secondary" onClick={() => navigate({ tab: 'more', screen: 'body' })}>

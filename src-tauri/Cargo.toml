@@ -1,6 +1,6 @@
 [package]
 name = "spartiate"
-version = "0.29.8"
+version = "0.29.9"
 description = "Spartiate : entraînement, nutrition et récupération (PC Windows et iPhone)"
 authors = ["Ali Cherif"]
 edition = "2021"
