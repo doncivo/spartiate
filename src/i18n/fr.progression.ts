@@ -81,6 +81,8 @@ export const progressionFr = {
   // Précisions ajoutées à la phrase (I2-04), information seulement.
   noteOutlierHeld: 'Ta dernière séance dépasse {ratio} % de tes charges habituelles : elle n’est pas reprise comme référence tant qu’une seconde séance complète à cette charge ne la confirme pas. Proposition calculée depuis ta séance d’avant ; corrige l’historique s’il s’agit d’une faute de frappe.',
   notePartialIgnored: 'Ta dernière séance (moins de la moitié des séries faites) n’est pas prise en compte.',
+  /** SEANCE-0299 (BL-171, D-657). */
+  noteDecisionReference: 'Référence : ta dernière décision, réduite comme une séance de ton historique.',
   noteAssistanceHeld: 'Exercice assisté : l’assistance est maintenue, la réduire alourdirait l’exercice.',
   noteBodyweightUnknown: 'Poids de corps inconnu : le 1RM et les écarts de charge sont calculés sur le lest seul. Enregistre une pesée pour compter le poids de ton corps.',
   notePositionValues: 'Répétitions ou durée réduites de {cut} % : {rank}ᵉ exercice de ce muscle dans la séance.',

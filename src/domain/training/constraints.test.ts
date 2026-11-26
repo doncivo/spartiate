@@ -326,14 +326,18 @@ describe('combinaisons, décisions et stabilité', () => {
     expect(p.sets).toHaveLength(2);
   });
 
-  it('l’entrée d’Ali l’emporte : une décision postérieure à la dernière séance est rendue telle quelle, sans contrainte', () => {
+  // Attente changée en SEANCE-0299 (BL-171, D-657, Q-11 option B) : la décision n'est plus rendue telle quelle ; elle devient la référence.
+  it('décision postérieure à la dernière séance : référence réduite par la pause, la décharge et la récupération basse ; fatigue et stagnation non', () => {
     const history = [session(40, 100, [10, 10, 10]), session(30, 100, [7, 7, 7])];
     const lastDecision = { decidedAt: daysAgo(1), accepted: false, loadKg: 105, reps: [8, 8, 8] };
     const p = prescribe(input({ history, lastDecision, recovery: SNAP(10), deload: true }));
-    expect(p.headline).toBe('decision');
-    expect(p.loadKg).toBe(105);
+    // 30 jours sans ce muscle : −2 % ; 105 × 0,98 × 0,8 × 0,95 = 78,2 → 77,5 kg (vers le bas), une série.
+    expect(p.headline).toBe('deload');
+    expect(p.loadKg).toBe(77.5);
+    expect(p.sets).toEqual([{ reps: 8, loadKg: 77.5 }]);
+    expect(p.reference).toMatchObject({ loadKg: 105, reps: [8, 8, 8] });
     expect(p.options).toEqual([]);
-    expect(p.reasons).toEqual(['decision-reference']);
+    expect(p.reasons).toEqual(REASON_ORDER.filter((r) => ['decision-reference', 'inactivity-discount', 'deload', 'recovery-low'].includes(r)));
   });
 
   it('décision refusée (antérieure à la séance faite) : la proposition ne dépend pas du refus', () => {

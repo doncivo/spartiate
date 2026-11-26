@@ -2,6 +2,27 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.0
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.9.
+
+- **Strength Score maison (Q-29, Q-42)** : Progrès › Force calcule maintenant ton score avec la méthode maison et les seuils que tu as validés le 26/11 (D-744) ; plus aucune norme tierce, plus de Fer, Bronze, Argent ni Or. Un score de 0 à 100 par groupe musculaire et un score global, avec 5 niveaux (Débutant, Novice, Intermédiaire, Avancé, Élite). Chaque e1RM est ramené à 80 kg de poids de corps : à la barre par l'exposant 2/3 ; pour les tractions et les dips (poids de corps plus lest), par une simple proportion, comme tu l'as demandé. Sans pesée ou sans séance, le score reste « inconnu », jamais 0 ; pendant une semaine de décharge, il est figé. La carte détaille chaque mouvement (e1RM, force relative, score, niveau) et dit sa méthode.
+- **Tes décisions du 26/11** : Q-42 (seuils) et Q-41 (repères des ratios de Corps › Mesures) sont consignées (D-744, D-745) ; plus aucune question n'est ouverte. Les repères des ratios arriveront à l'écran avec Corps › Mesures.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.0).
+
+## 0.29.9
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.8.
+
+- **Séance (Q-11)** : une charge que tu as décidée depuis ta dernière séance devient la référence de l'exercice ; une semaine de décharge, une reprise après une pause ou une journée rouge la réduisent, comme une charge tirée de l'historique (poids du corps et exercices chronométrés compris), avec la note « Référence : ta dernière décision, réduite comme une séance de ton historique. » ; le bouton de décharge reste disponible. Avant, elle était reprise telle quelle.
+- **Journal des séances (Q-13)** : une série corrigée affiche maintenant sa valeur d'avant, par exemple « corrigée : 80 → 82,5 kg ».
+- **Journaux (Q-34)** : l'écran, la ligne de Plus, le fichier exporté et les messages de Plus › Apple Santé disent « Journaux » ; le mot « Logs » n'apparaît plus.
+- **Apple Santé (Q-18)** : les fichiers du raccourci « Spartiate — récupération » (HRV, FC repos, sommeil, pas) doivent finir par un saut de ligne ; sinon ils sont refusés avec un message qui dit quoi changer dans le raccourci. Les pesées (`poids.csv`) ne sont pas concernées. Le guide du raccourci est à jour.
+- **Stratégie (Q-23)** : Nutrition › Stratégie et le check-in suivent l'objectif de ton profil (perte, maintien, prise), affiché en lecture seule ; il se change dans Plus › Profil et poids. Le rythme se règle toujours dans Stratégie ; un profil en prise sans rythme choisi suit 0,25 kg par semaine.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.9). En priorité, sur l'iPhone, modifie le raccourci « Spartiate — récupération » comme le dit le guide (étape 3 bis), sinon ses fichiers seront refusés.
+
 ## 0.29.8
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.7.

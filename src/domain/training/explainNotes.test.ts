@@ -71,8 +71,8 @@ describe('explanationNotes', () => {
   });
 
   // MOTEUR-0281a : version 4 ; SEANCE-0292b (D-542) : 5 (D-496 et D-539 changent les propositions).
-  it('version du moteur 5', () => {
-    expect(ENGINE_VERSION).toBe(5);
-    expect(prescribe(input()).engineVersion).toBe(5);
+  it('version du moteur 6 (SEANCE-0299, D-681)', () => {
+    expect(ENGINE_VERSION).toBe(6);
+    expect(prescribe(input()).engineVersion).toBe(6);
   });
 });

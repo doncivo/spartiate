@@ -124,16 +124,11 @@ Ajoutées en dépendances directes **sans nouvelle entrée dans `Cargo.lock`** (
 - Attribution affichée sous l'image : « Illustration : utkb (wger.de), CC BY-SA 4.0, creativecommons.org/licenses/by-sa/4.0 ; image réduite et passée en niveaux de gris ».
   Le pictogramme de la planche est retiré (la photo est prioritaire). Total du catalogue : 102 exercices sur 196. **H-9 reste UNVERIFIED** (D-36).
 
-# Licences — normes du Strength Score (STR-01, D-310)
+# Licences — Strength Score maison (STR-0300, D-675)
 
-- Fichier embarqué : `content/strength/standards.json` (centiles 10, 25, 50, 75, 90, 95, 99 du 1RM, par sexe et catégorie de poids, pour 11 mouvements), construit par `scripts/content/build-strength-standards.mjs` ; aucun nombre ajouté ni modifié (valeurs de la source au pas de 0,1 kg).
-- Source : FitnessVolt Strength Standards, population « gym » (Symmetric Strength self-reported gym dataset), <https://fitnessvolt.com/strength-standards/> ; API publique `https://fitnessvolt.com/wp-json/fvss/v1/standards/{lift}?sex={sex}&source=gym&format=table&unit=kg`.
-- Version des données : `data_version` 2026-06-09 (date affichée dans l’app, « version des données du 09/06/2026 ») ; population gym mise à jour le 2026-06-05 ; API 1.0.0 ; consultée le 16 novembre 2026.
-- Empreintes (CONTENT-0293, C-180) : `source.responsesSha256` de `content/strength/standards.json` porte le SHA-256 des octets de chacune des 22 réponses de l'API (11 mouvements × 2 sexes, clé `<mouvement>/<sexe>`), calculé par `build-strength-standards.mjs` ; le validateur les exige. Le 2026-11-25, une nouvelle interrogation de l'API a redonné exactement le même `standards.json`.
-- Droit de relicence (D-310) : la page de l'API déclare CC BY 4.0 pour des données issues d'un jeu tiers (Symmetric Strength, déclaré par ses utilisateurs) ; le droit de FitnessVolt de le publier sous cette licence n'est pas vérifiable depuis ici. Reste ouvert : Q-29 (docs/CONTENT-0293.md).
-- Licence : Creative Commons Attribution 4.0 (CC BY 4.0, <https://creativecommons.org/licenses/by/4.0/>), déclarée sur la page de l’API <https://fitnessvolt.com/strength-standards/api/> : « The data is free to use under CC BY 4.0. » (vérifié le 16/11/2026 ; le bloc Dataset de la page de méthode décrit un autre jeu, « FVCP », et n’est pas la preuve retenue) ; la réponse de l’API précise « Free with a visible attribution link ». Attribution demandée : « Strength standards data by FitnessVolt (https://fitnessvolt.com/strength-standards/) ».
-- Attribution dans l’app : Progrès › Strength Score affiche en clair « Normes : FitnessVolt Strength Standards (Symmetric Strength self-reported gym dataset, version des données du 09/06/2026), https://fitnessvolt.com/strength-standards/, licence CC BY 4.0. » (texte, pas de lien cliquable : l’app n’ouvre pas de lien externe depuis Progrès). La source demande « a visible attribution link » : l’adresse complète est écrite en clair, ce qui satisfait CC BY 4.0 § 3(a)(2) (attribution par un moyen raisonnable selon le support) ; choix révisable par Ali (D-310).
-- Données déclarées par des pratiquants, non jugées (méthode de la source) ; ce que mesurent les charges des tractions et dips est l’hypothèse H-37.
+- Aucune donnée tierce : le Strength Score est calculé par un moteur maison (`src/domain/training/strengthScore.ts`) à partir des séances de l'utilisateur, de son poids de corps et de seuils proposés par Claude à partir de nos formules (`src/domain/training/config.ts`, docs/STR-0300-seuils.md ; validés par Ali, Q-42, D-744).
+- Fichier embarqué : `content/strength/standards.json` (schéma 2) ne porte que les mouvements de référence, leurs groupes et la charge totale ; aucun chiffre, aucune source, aucune attribution à afficher.
+- Les normes tierces embarquées jusqu'à la 0.29.x et leur script de construction sont retirés (D-675, D-679, D-695) ; l'historique reste dans docs/STR-01.md, docs/decisions.md (D-310, D-503) et le CHANGELOG.
 
 # Licences — dépendances npm livrées (FIX-0272, A-003)
 

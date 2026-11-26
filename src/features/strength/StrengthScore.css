@@ -1,4 +1,4 @@
-/* Progrès › Strength Score (STR-01, proposition docs/maquettes/propositions/strength-score/) : jetons de tokens.css seulement, aucune couleur en dur, tailles en rem (Dynamic Type). */
+/* Progrès › Force, Strength Score maison (STR-01, STR-0300) : jetons de tokens.css seulement, aucune couleur en dur, tailles en rem (Dynamic Type). */
 .ct-strength {
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
   padding: 0;
 }
 
-/* Une ligne par groupe : nom, barre décorative, valeur ; détail (mouvement retenu ou raison du « — ») dessous. Hauteur ≥ 44 pt. */
+/* Une ligne par groupe : nom, barre décorative, valeur ; détail (niveau et mouvement retenu, ou raison de « inconnu ») dessous. Hauteur ≥ 44 pt. */
 .ct-strength__row {
   display: grid;
   grid-template-columns: minmax(6rem, 7rem) minmax(0, 1fr) minmax(3rem, auto);
@@ -115,4 +115,21 @@
     grid-column: 1 / -1;
     grid-row: 2;
   }
+}
+
+/* STR-0300 : intertitres « Détail par mouvement » et « Méthode » ; liste du détail, une ligne par mouvement chiffré. */
+.ct-strength__subhead {
+  margin: var(--ct-space-3) 0 0;
+  font-size: var(--ct-font-size-sm);
+  font-weight: var(--ct-font-weight-semibold);
+  color: var(--ct-color-text);
+}
+
+.ct-strength__lifts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
 }

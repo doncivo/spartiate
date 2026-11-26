@@ -166,7 +166,8 @@ export type ExplanationNoteKey =
   | 'notePosition'
   | 'notePositionValues'
   | 'noteBodyweightUnknown'
-  | 'noteAssistanceHeld';
+  | 'noteAssistanceHeld'
+  | 'noteDecisionReference';
 
 /**
  * I2-04 : précisions ajoutées à la phrase, dans cet ordre : dernière séance ignorée (moins de 50 % des séries faites), puis grille de charges
@@ -175,6 +176,8 @@ export type ExplanationNoteKey =
 export function explanationNotes(p: Prescription): { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] {
   if (p.headline === 'decision' || p.headline === 'unsupported') return [];
   const notes: { readonly key: ExplanationNoteKey; readonly params: Readonly<Record<string, number>> }[] = [];
+  // BL-171 (D-657) : décision d'Ali réduite par une contrainte : la référence est la décision, pas la dernière séance.
+  if (p.reasons.includes('decision-reference')) notes.push({ key: 'noteDecisionReference', params: {} });
   if (p.reasons.includes('partial-session-ignored')) notes.push({ key: 'notePartialIgnored', params: {} });
   // FIX-ABERR (C-005) : séance aberrante non confirmée, référence plafonnée à la séance d'avant.
   if (p.reasons.includes('outlier-excluded')) notes.push({ key: 'noteOutlierHeld', params: { ratio: percent(p.activeConfig.outlierRatio) } });

@@ -15,7 +15,7 @@ import { prescribe } from './prescribe';
 import { recoverySplit } from './recoverySplit';
 import { nextProgramDay, programDayFor, routineTrainingDays, weekdayFromDayName } from './programDay';
 import { replayWorkout } from './replay';
-import { strengthScore, type StrengthExercise, type StrengthStandards } from './strengthScore';
+import { strengthScore, type StrengthExercise } from './strengthScore';
 import { type WorkoutSet, type WorkoutWithSets } from './session';
 import { warmupForExercise } from './warmup';
 import type { ExerciseSession, ProgressionEquipment, RoutineDay, RoutineDaySpec } from './types';
@@ -247,42 +247,36 @@ describe('SEANCE-0292 C-021 : Recovery Split, seuil comparé à la valeur mesur�
   });
 });
 
-describe('SEANCE-0292 C-023 : Strength Score, à score égal la borne départage (« > 99 » l’emporte sur « 99 »)', () => {
-  const LIGHT = { upToKg: 80, sampleSize: 1000, kg: [50, 60, 80, 100, 120, 130, 150] };
-  const standards: StrengthStandards = {
-    percentiles: [10, 25, 50, 75, 90, 95, 99],
-    lifts: [
-      { key: 'bench', sourceLift: 'bench_press', groups: ['chest'], totalLoad: false, male: [LIGHT], female: [LIGHT] },
-      { key: 'incline-bench', sourceLift: 'incline_bench_press', groups: ['chest'], totalLoad: false, male: [{ ...LIGHT, kg: [40, 50, 60, 70, 80, 90, 100] }], female: [LIGHT] },
-    ],
-  };
+describe('SEANCE-0292 C-023 (STR-0300 : les bornes « < 10 » et « > 99 » disparaissent) : à score égal, le premier mouvement de référence', () => {
+  const T = { male: [40, 60, 80, 100, 120], female: [40, 60, 80, 100, 120] } as const;
+  const lifts = [
+    { key: 'bench', groups: ['chest'], totalLoad: false },
+    { key: 'incline-bench', groups: ['chest'], totalLoad: false },
+  ] as const;
   const ex = (id: string, key: string, history: readonly ExerciseSession[]): StrengthExercise => ({ id, nameFr: `Nom ${id}`, key, history });
-  const score = (exercises: StrengthExercise[]) => strengthScore({ sex: 'male', bodyweightKg: 75, standards, exercises }).groups.find((g) => g.group === 'chest');
+  const score = (exercises: StrengthExercise[]) =>
+    strengthScore({ sex: 'male', weighIns: [{ date: '2026-10-01' as LocalDate, kg: 80 }], lifts, thresholds: { bench: T, 'incline-bench': T }, exercises }).groups.find((g) => g.group === 'chest');
 
-  it('développé couché à 99 pile (1RM 150 kg) et incliné au-delà de la table (« > 99 ») : le groupe dit « > 99 »', () => {
-    const chest = score([ex('b', 'bench', [session(2, 100, [15])]), ex('i', 'incline-bench', [session(2, 100, [15])])]);
-    expect(chest).toMatchObject({ kind: 'value', score: 99, bound: 'above' });
-  });
-
-  it('à 10 : « 10 » l’emporte sur « < 10 »', () => {
-    // Incliné : 1RM 39 kg (30 × 9), sous sa table (« < 10 ») ; couché : 1RM 50 kg pile (37,5 × 10), son 10e centile.
-    const chest = score([ex('i', 'incline-bench', [session(2, 30, [9])]), ex('b', 'bench', [session(2, 37.5, [10])])]);
-    expect(chest).toMatchObject({ kind: 'value', score: 10, bound: null });
+  it('couché et incliné tous deux au-delà d’Élite (100) : le groupe dit 100 par le couché, premier des mouvements', () => {
+    const chest = score([ex('i', 'incline-bench', [session(2, 100, [15])]), ex('b', 'bench', [session(2, 100, [15])])]);
+    expect(chest).toMatchObject({ kind: 'value', score: 100, lift: { key: 'bench' } });
   });
 });
 
 describe('SEANCE-0292 C-024 (vérification) : tractions, la charge saisie est le lest ; le Strength Score ajoute le poids de corps une fois', () => {
-  const ROW = { upToKg: null, sampleSize: 1000, kg: [50, 60, 80, 100, 120, 130, 150] };
-  const standards: StrengthStandards = {
-    percentiles: [10, 25, 50, 75, 90, 95, 99],
-    lifts: [{ key: 'pull-up', sourceLift: 'pullup', groups: ['back'], totalLoad: true, male: [ROW], female: [ROW] }],
-  };
+  const T = { male: [40, 60, 80, 100, 120], female: [40, 60, 80, 100, 120] } as const;
   const lift = (lestKg: number) => {
-    const back = strengthScore({ sex: 'male', bodyweightKg: 80, standards, exercises: [{ id: 'pull-up', nameFr: 'Tractions', key: 'pull-up', history: [session(2, lestKg, [15])] }] }).groups.find((g) => g.group === 'back');
-    return back?.kind === 'value' ? back.lift.oneRmKg : null;
+    const back = strengthScore({
+      sex: 'male',
+      weighIns: [{ date: '2026-10-01' as LocalDate, kg: 80 }],
+      lifts: [{ key: 'pull-up', groups: ['back'], totalLoad: true }],
+      thresholds: { 'pull-up': T },
+      exercises: [{ id: 'pull-up', nameFr: 'Tractions', key: 'pull-up', history: [session(2, lestKg, [15])] }],
+    }).groups.find((g) => g.group === 'back');
+    return back?.kind === 'value' ? back.lift.e1rmKg : null;
   };
 
-  it('lest 0 × 15 à 80 kg : 1RM sur 80 kg (120) ; lest 10 × 15 : sur 90 kg (135), jamais 80 + 80', () => {
+  it('lest 0 × 15 à 80 kg : e1RM sur 80 kg (120) ; lest 10 × 15 : sur 90 kg (135), jamais 80 + 80', () => {
     expect(lift(0)).toBe(120);
     expect(lift(10)).toBe(135);
   });
@@ -333,22 +327,46 @@ describe('SEANCE-0292 C-025 : inactivité en jours civils ; instants comparés c
   });
 });
 
-describe('SEANCE-0292 C-026 (vérification) : une décision postérieure à la dernière séance est rendue sans contrainte (I2-02, question Q-11)', () => {
-  // Test rouge 2e4894f6 réécrit : la règle « l'entrée d'Ali l'emporte, jamais modulée » est voulue (I2-02, constraints.test.ts et redDay.test.ts
-  // la figent) ; la réduire en décharge, pause ou journée rouge change une règle de progression : question Q-11 à Ali (docs/SEANCE-0292.md).
+describe('SEANCE-0292 C-026, attente changée en SEANCE-0299 (BL-171, D-657, Q-11 option B) : une décision postérieure à la dernière séance devient la référence, réduite par la décharge, la pause et la journée rouge', () => {
+  // Attente changée (SEANCE-0299) : le test 6360c7ca figeait l'option A (décision jamais modulée) ; Ali a choisi l'option B le 26/11 (D-657).
   const hist = [session(3, 100, [8, 8, 8])];
   const decision = { decidedAt: daysAgo(1), accepted: false, loadKg: 90, reps: [8, 8, 8] };
+  const RED = { recovery: 20, sleepHours: null, restingHrDelta: null, redDay: true };
 
-  it('sans contrainte, en décharge, en journée rouge : la décision est reprise telle quelle (90 kg × 8, 8, 8)', () => {
-    const plain = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10) }));
-    const deload = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), deload: true }));
-    const red = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), recovery: { recovery: 20, sleepHours: null, restingHrDelta: null, redDay: true } }));
-    for (const p of [plain, deload, red]) {
-      expect(p.headline).toBe('decision');
-      expect(p.loadKg).toBe(90);
-      expect(p.sets.map((x) => x.reps)).toEqual([8, 8, 8]);
-      expect(p.reasons).toEqual(['decision-reference']);
-    }
+  it('sans contrainte : la décision est reprise telle quelle (90 kg × 8, 8, 8)', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10) }));
+    expect(p.headline).toBe('decision');
+    expect(p.loadKg).toBe(90);
+    expect(p.sets.map((x) => x.reps)).toEqual([8, 8, 8]);
+    expect(p.reasons).toEqual(['decision-reference']);
+  });
+
+  it('décharge : 90 × 0,8 = 72 → 70 kg (vers le bas), une série, RIR ≥ 4 ; la décision est la référence', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), deload: true }));
+    expect(p.headline).toBe('deload');
+    expect(p.loadKg).toBe(70);
+    expect(p.sets).toEqual([{ reps: 8, loadKg: 70 }]);
+    expect(p.deload).toBe(true);
+    expect(p.rirTarget).toBe(4);
+    expect(p.deltaKg).toBe(-20);
+    expect(p.reference).toMatchObject({ loadKg: 90, reps: [8, 8, 8] });
+    expect(p.reasons).toEqual(expect.arrayContaining(['decision-reference', 'deload']));
+  });
+
+  it('journée rouge acceptée : 90 × 0,95 = 85,5 → 85 kg, trois séries', () => {
+    const p = prescribe(input({ exercise: BENCH, history: hist, lastDecision: decision, target: target(8, 10), recovery: RED }));
+    expect(p.headline).toBe('recovery-low');
+    expect(p.loadKg).toBe(85);
+    expect(p.sets.map((x) => x.reps)).toEqual([8, 8, 8]);
+    expect(p.reasons).toEqual(expect.arrayContaining(['decision-reference', 'recovery-low', 'recovery-red-day']));
+  });
+
+  it('pause de 35 jours (−3 %) : 90 × 0,97 = 87,3 → 87,5 kg (cran le plus proche sous la décision)', () => {
+    const p = prescribe(input({ exercise: BENCH, history: [session(35, 100, [8, 8, 8])], lastDecision: decision, target: target(8, 10) }));
+    expect(p.headline).toBe('inactivity');
+    expect(p.inactivityCut).toBeCloseTo(0.03, 9);
+    expect(p.loadKg).toBe(87.5);
+    expect(p.reasons).toContain('inactivity-discount');
   });
 
   it('décision antérieure à la dernière séance : la séance est la référence, les contraintes s’appliquent (décharge : 80 kg, une série)', () => {

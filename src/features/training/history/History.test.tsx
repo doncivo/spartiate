@@ -179,7 +179,8 @@ describe('détail d’une séance close', () => {
     expect(await within(detail).findByText(/Correction enregistrée/)).toHaveTextContent('synchronisée avec ton autre appareil');
     const fresh = within(within(detail).getByRole('region', { name: BENCH })).getAllByRole('group', { name: /^Série/ })[1] as HTMLElement;
     expect(fresh).toHaveTextContent('62,5 kg × 9');
-    expect(within(fresh).getByText('corrigée')).toBeInTheDocument();
+    // Attente changée en SEANCE-0299 (BL-176, D-659, D-683) : la valeur d'avant la correction est affichée (corrected_from relu de la base).
+    expect(within(fresh).getByText('corrigée : 60 → 62,5 kg ; 8 → 9 répétitions')).toBeInTheDocument();
     const row = await one<{ load_kg: number; reps: number; corrected_at: string | null }>('SELECT load_kg, reps, corrected_at FROM workout_set WHERE id = ?', [PAST.sets[1]?.id]);
     expect(row).toMatchObject({ load_kg: 62.5, reps: 9 });
     expect(row.corrected_at).not.toBeNull();

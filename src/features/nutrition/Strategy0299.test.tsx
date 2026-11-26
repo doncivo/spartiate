@@ -11,7 +11,7 @@ import { INITIAL_NAVIGATION, useNavigationStore } from '../app/navigation';
 import { NutritionScreen } from './NutritionScreen';
 import { loadNutritionSnapshot, saveNutritionPrefs } from './useCases';
 
-/** NUTRI-0299 (BL-173, D-669, C-106) : Stratégie lit l'objectif du profil (Réglages › Corps), en lecture seule ; le rythme reste en Stratégie. */
+/** NUTRI-0299 (BL-173, D-669, C-106) : Stratégie lit l'objectif du profil (Plus › Profil et poids), en lecture seule ; le rythme reste en Stratégie. */
 const DEVICE = '60000000-0000-4000-8000-0000000000e9' as DeviceId;
 const PREFS: NutritionPrefs = { activity: null, style: 'collaborative', goal: { kind: 'maintain' }, checkInWeekday: 1 };
 let db: TestDb;
@@ -69,13 +69,13 @@ describe('BL-173 : objectif lu du profil', () => {
     expect(within(r).queryByRole('button', { name: /^Rythme/ })).toBeNull();
   });
 
-  it('profil sans objectif : l’ancien choix est gardé et dit, avec le renvoi vers Réglages › Corps', async () => {
+  it('profil sans objectif : l’ancien choix est gardé et dit, avec le renvoi vers Plus › Profil et poids', async () => {
     await saveNutritionPrefs(db.data, { ...PREFS, goal: { kind: 'gain', weeklyRateKg: 0.3 } });
     open();
     const r = await region();
     expect(await within(r).findByText('Objectif du profil : non renseigné, « Prise » gardé')).toBeInTheDocument();
     expect(within(r).getByRole('button', { name: 'Rythme : 0,30 kg / semaine' })).toBeInTheDocument();
-    fireEvent.click(within(r).getByRole('button', { name: 'Modifier dans Réglages › Corps' }));
+    fireEvent.click(within(r).getByRole('button', { name: 'Modifier dans Plus › Profil et poids' }));
     expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'body' });
   });
 
