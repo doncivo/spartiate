@@ -18,30 +18,57 @@ const BASELINE = 'tests/untyped-translators.json';
  */
 const PLAFOND = 2;
 
+/** Un texte de type est libre s'il contient `Record<string` ou un alias libre déjà connu (mot entier). */
+const loose = (typeText: string, aliases: ReadonlySet<string>): boolean =>
+  /\bRecord<string\b/.test(typeText) || [...aliases].some((alias) => new RegExp(`\\b${alias}\\b`).test(typeText));
+
 /**
- * Nom du traducteur exporté au début de `text` s'il prend ses paramètres en `Record<string, …>`, sinon null. Les paramètres sont lus de
- * la première parenthèse au premier `{` ou `=>` (contraintes génériques exclues, signatures sur plusieurs lignes comprises).
+ * CLEAN-0297 (C-085, D-646) : alias de type locaux aux paramètres libres (`type P = Readonly<Record<string, …>>`, `type Q = P | …`), lus
+ * jusqu'à stabilité pour suivre un alias d'alias. Un alias importé d'un autre fichier reste hors de portée (limite connue).
  */
-export function untypedTranslatorOn(text: string): string | null {
-  const m = /^export (?:function|const) (t[A-Z]\w*)\b[^(]*\(([^{]*?)(?:\{|=>)/.exec(text);
-  return m && /\bRecord<string\b/.test(m[2] ?? '') ? (m[1] ?? null) : null;
+export function looseAliases(fileText: string): Set<string> {
+  const defs = [...fileText.matchAll(/^(?:export )?type (\w+)(?:<[^=]*>)? =([^;]*);/gm)].map((m) => [m[1] ?? '', m[2] ?? ''] as const);
+  const aliases = new Set<string>();
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const [name, body] of defs) {
+      if (aliases.has(name) || !loose(body, aliases)) continue;
+      aliases.add(name);
+      grew = true;
+    }
+  }
+  return aliases;
+}
+
+/**
+ * Nom du traducteur exporté au début de `text` s'il prend ses paramètres en `Record<string, …>` (directement ou par un alias de
+ * `aliases`), sinon null. Les paramètres sont lus de la première parenthèse au premier `{` ou `=>`, sans dépasser la fin de la
+ * déclaration (premier `;`) : contraintes génériques exclues, signatures sur plusieurs lignes comprises.
+ */
+export function untypedTranslatorOn(text: string, aliases: ReadonlySet<string> = new Set()): string | null {
+  const m = /^export (?:function|const) (t[A-Z]\w*)\b[^(;]*\(([^{;]*?)(?:\{|=>)/.exec(text);
+  return m && loose(m[2] ?? '', aliases) ? (m[1] ?? null) : null;
 }
 
 /** Fichiers relevés : tout `src/i18n` et tout `*Text.ts` de `src/`, hors tests et `catalogText.ts`. */
 const relevé = (f: string): boolean => (/^src\/i18n\/.*\.ts$/.test(f) || /^src\/.*Text\.ts$/.test(f)) && !/\.test\.ts$/.test(f) && f !== 'src/i18n/catalogText.ts';
 
+/** Traducteurs aux paramètres libres d'un fichier (noms seuls). */
+export function untypedTranslatorsOf(fileText: string): string[] {
+  const aliases = looseAliases(fileText);
+  const lines = fileText.split('\n');
+  const out: string[] = [];
+  lines.forEach((line, i) => {
+    if (!line.startsWith('export ')) return;
+    const name = untypedTranslatorOn(lines.slice(i, i + 8).join('\n'), aliases);
+    if (name) out.push(name);
+  });
+  return out;
+}
+
 function untypedTranslators(): string[] {
   const files = execFileSync('git', ['ls-files', 'src'], { cwd: root, encoding: 'utf8' }).split('\n').filter(relevé);
-  const out: string[] = [];
-  for (const file of files) {
-    const lines = readFileSync(resolve(root, file), 'utf8').split('\n');
-    lines.forEach((line, i) => {
-      if (!line.startsWith('export ')) return;
-      const name = untypedTranslatorOn(lines.slice(i, i + 8).join('\n'));
-      if (name) out.push(`${file}:${name}`);
-    });
-  }
-  return out.sort();
+  return files.flatMap((file) => untypedTranslatorsOf(readFileSync(resolve(root, file), 'utf8')).map((name) => `${file}:${name}`)).sort();
 }
 
 const frozen = (): string[] => JSON.parse(readFileSync(resolve(root, BASELINE), 'utf8')) as string[];
