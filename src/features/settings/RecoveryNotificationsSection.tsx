@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { RecoveryNotificationPrefs } from '../../domain/recovery';
 import { DEFAULT_RECOVERY_NOTIFICATION_PREFS } from '../../domain/recovery';
-import { tRn, type RecoveryNotificationsTextKey } from '../../i18n/fr.recoveryNotifications';
+import { tRn, type RecoveryNotificationsPlainKey } from '../../i18n/fr.recoveryNotifications';
 import { logFailure } from '../../platform/desktop/log';
 import { Switch } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
@@ -10,7 +10,7 @@ import './RecoveryNotificationsSection.css';
 
 type Proposal = { readonly day: string; readonly time: string | null } | null;
 
-const MESSAGE: Readonly<Record<RecoveryNotificationResult['status'], RecoveryNotificationsTextKey | null>> = {
+const MESSAGE: Readonly<Record<RecoveryNotificationResult['status'], RecoveryNotificationsPlainKey | null>> = {
   unsupported: 'unavailable',
   off: null,
   permission: 'permissionDenied',
@@ -31,7 +31,7 @@ export function RecoveryNotificationsSection() {
   const pc = container.platform.os !== 'ios' || container.platform.runtime !== 'tauri';
   const [prefs, setPrefs] = useState<RecoveryNotificationPrefs>(DEFAULT_RECOVERY_NOTIFICATION_PREFS);
   const [proposal, setProposal] = useState<Proposal>(null);
-  const [message, setMessage] = useState<RecoveryNotificationsTextKey | null>(null);
+  const [message, setMessage] = useState<RecoveryNotificationsPlainKey | null>(null);
   const [busy, setBusy] = useState(false);
   const live = useRef(true);
 

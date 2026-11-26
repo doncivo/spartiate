@@ -1,5 +1,4 @@
 [
-  "src/i18n/fr.recoveryNotifications.ts:tRn",
   "src/i18n/fr.startupBlocked.ts:tStartupBlocked",
   "src/i18n/healthText.ts:tHealth",
   "src/i18n/index.ts:tDynamic",
