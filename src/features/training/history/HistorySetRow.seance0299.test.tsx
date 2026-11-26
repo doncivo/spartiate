@@ -59,6 +59,22 @@ describe('BL-176 : « corrigée : 80 → 82,5 kg » au journal', () => {
     expect(screen.getByText('corrigée : — → 82,5 kg')).toBeInTheDocument();
   });
 
+  // Relecture à froid (SEANCE-0299) : singulier, valeur absente d'un seul côté, deux haltères.
+  it('une seule répétition après correction : singulier (« 8 → 1 répétition »)', () => {
+    show({ loadKg: 80, reps: 1 });
+    expect(screen.getByText('corrigée : 8 → 1 répétition')).toBeInTheDocument();
+  });
+
+  it('charge vidée (exercice sans charge) : « 80 kg → — »', () => {
+    show({ loadKg: null });
+    expect(screen.getByText('corrigée : 80 kg → —')).toBeInTheDocument();
+  });
+
+  it('deux haltères, charge d’avant absente : « — → 2 × 28 kg »', () => {
+    show({ loadKg: 28, correctedFrom: { reps: 8, loadKg: null, durationSec: null, rir: null } }, 2);
+    expect(screen.getByText('corrigée : — → 2 × 28 kg')).toBeInTheDocument();
+  });
+
   it('aucune valeur d’avant connue, ou valeurs identiques (validation retirée) : « corrigée » seul', () => {
     show({ correctedFrom: null });
     expect(screen.getByText('corrigée')).toBeInTheDocument();
