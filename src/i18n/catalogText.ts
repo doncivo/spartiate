@@ -3,6 +3,9 @@ import type { ParamNames } from './types';
 /** Arguments d'une clé d'un catalogue à part : aucun si le texte n'a pas de `{x}`, sinon exactement ses paramètres (comme `t()`). */
 export type CatalogArgs<C, K extends keyof C> = [ParamNames<C[K]>] extends [never] ? [] : [params: Readonly<Record<ParamNames<C[K]>, string | number>>];
 
+/** CLEAN-0296 (C-085) : clés d'un catalogue à part dont le texte n'a aucun `{x}` (tables de libellés passées sans paramètre). */
+export type PlainCatalogKey<C> = { [K in keyof C & string]: CatalogArgs<C, K> extends [] ? K : never }[keyof C & string];
+
 /**
  * SHELL-0295 (C-085, D-638) : traducteur d'un catalogue chargé avec son écran, hors de l'arbre `fr.ts` du départ. Les paramètres sont
  * typés depuis le texte français ; un paramètre absent reste visible sous la forme `{nom}`.

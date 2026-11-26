@@ -16,12 +16,13 @@ export function isSingular(count: number): boolean {
  * Texte d'un compteur : choisit la clé au singulier ou au pluriel et injecte le nombre sous les noms `n` et `count`
  * (les autres paramètres du texte sont passés tels quels). Les textes au singulier portent eux aussi le nombre, pour que 0 s'écrive « 0 jour ».
  */
-export function tPlural<K extends string>(
-  translate: (key: K, params?: Readonly<Record<string, string | number>>) => string,
+export function tPlural<K extends string, P extends Readonly<Record<string, string | number>> = Record<never, never>>(
+  // CLEAN-0296 (C-085) : accepte aussi un traducteur typé par `catalogText` (paramètres `{x}` contrôlés par tsc).
+  translate: (key: K, params: { n: number; count: number } & P) => string,
   count: number,
   oneKey: K,
   otherKey: K,
-  params: Readonly<Record<string, string | number>> = {},
+  params?: P,
 ): string {
-  return translate(isSingular(count) ? oneKey : otherKey, { n: count, count, ...params });
+  return translate(isSingular(count) ? oneKey : otherKey, { n: count, count, ...params } as { n: number; count: number } & P);
 }
