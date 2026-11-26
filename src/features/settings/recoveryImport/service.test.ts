@@ -6,6 +6,7 @@ import { asEntityId, type DeviceId, type LocalDate } from '../../../domain/types
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import type { RecoverySampleRepository } from '../../../db/repositories/recoverySampleRepository';
 import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { sanitizeLogDetail } from '../../../platform/logs/sanitize';
 import { AUTO_IMPORT_INTERVAL_MS, createShortcutImportService, IMPORT_LOG_EVENTS, SLEEP_RULES_VERSION, type ImportLogEvent, type ShortcutImportDeps } from './service';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000011');
@@ -292,6 +293,17 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(result.recomputeFailed).toBe(true);
     expect(result.files.find((f) => f.type === 'hrv')?.state).toBe('imported');
     expect(logs.some((l) => l.event === 'recovery-import-recompute-failed')).toBe(true);
+  });
+
+  it('NUTRI-0299 (relecture BL-172) : chaque compte journalisé reste lisible après l’assainissement du journal technique (jamais « [masqué] »)', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', PAS.trimEnd());
+    await build(reader(async () => reads)).run('manual');
+    const done = logs.find((l) => l.event === 'recovery-import-done');
+    expect(done?.counts).toMatchObject({ unterminated_count: 1 });
+    for (const { counts } of logs) {
+      for (const [key, value] of Object.entries(counts)) expect(sanitizeLogDetail(`${key}=${value}`), key).toBe(`${key}=${value}`);
+    }
   });
 
   it('journaux : noms fixes et comptes seulement, aucune valeur corporelle ni date de mesure', async () => {
