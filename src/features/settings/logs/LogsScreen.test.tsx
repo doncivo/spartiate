@@ -58,7 +58,7 @@ describe('I-04 : écran Logs', () => {
 
   it('critère 1 : titre h1 focalisé, retour vers Réglages', async () => {
     renderScreen();
-    const title = screen.getByRole('heading', { level: 1, name: 'Logs' });
+    const title = screen.getByRole('heading', { level: 1, name: 'Journaux' });
     await waitFor(() => expect(title).toHaveFocus());
     fireEvent.click(screen.getByRole('button', { name: 'Retour aux réglages' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'home' });
@@ -89,15 +89,15 @@ describe('I-04 : écran Logs', () => {
     expect(await screen.findByText('Aucune entrée')).toBeInTheDocument();
   });
 
-  it('critère 7 : « Exporter » -> texte UTF-8 spartiate-logs-AAAAMMJJ-HHMM.txt (en-tête, lignes UTC), sélecteur iPhone en excursion', async () => {
+  it('critère 7 : « Exporter » -> texte UTF-8 spartiate-journaux-AAAAMMJJ-HHMM.txt (en-tête, lignes UTC), sélecteur iPhone en excursion', async () => {
     renderScreen();
     await waitFor(() => expect(rows()).toHaveLength(5));
     fireEvent.click(screen.getByRole('button', { name: 'Exporter' }));
-    expect(await screen.findByText('Logs exportés')).toBeInTheDocument();
+    expect(await screen.findByText('Journaux exportés')).toBeInTheDocument();
     expect(files.saved).toHaveLength(1);
     const saved = files.saved[0];
     expect(saved?.suggestedName).toBe(logExportName(new Date('2026-10-08T08:12:00.000Z')));
-    expect(saved?.suggestedName).toMatch(/^spartiate-logs-\d{8}-\d{4}\.txt$/);
+    expect(saved?.suggestedName).toMatch(/^spartiate-journaux-\d{8}-\d{4}\.txt$/);
     expect(saved?.mime).toBe('text/plain');
     const text = new TextDecoder('utf-8', { fatal: true }).decode(saved?.data);
     expect(text).toContain('Application : Spartiate 0.2.0');
@@ -124,7 +124,7 @@ describe('I-04 : écran Logs', () => {
     expect(alert).toHaveTextContent('Code : io');
     expect(warn).toHaveBeenCalled();
     fireEvent.click(within(alert).getByRole('button', { name: 'Réessayer' }));
-    expect(await screen.findByText('Logs exportés')).toBeInTheDocument();
+    expect(await screen.findByText('Journaux exportés')).toBeInTheDocument();
   });
 
   it('critère 8 : « Effacer » demande confirmation (Annuler par défaut) ; après confirmation, logs-cleared est la seule entrée', async () => {
