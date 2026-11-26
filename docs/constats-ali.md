@@ -238,7 +238,7 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
 ## Décisions du 26/11 (D-657 à D-678)
 
-- [ ] **D-664, BL-172 (raccourci Santé)** — après la version qui livre BL-172 : modifie le raccourci « Spartiate — récupération » pour qu'il écrive toujours un saut de ligne final (étape décrite dans docs/guide-raccourcis-sante.md), lance-le, puis sur l'iPhone, Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Tant que le raccourci n'est pas modifié, ces fichiers sont refusés ; `poids.csv` n'est pas concerné (D-680). Date : ____ Version : ____
+- [ ] **D-664, BL-172 (raccourci Santé)** — après la version qui livre BL-172 : modifie le raccourci « Spartiate — récupération » pour qu'il écrive toujours un saut de ligne final (étape 3 bis de la partie B.1 de docs/guide-raccourcis-sante.md : action Texte après Combiner le texte, terminée par un retour à la ligne, dans chacun des quatre blocs), lance-le, puis sur l'iPhone, Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Tant que le raccourci n'est pas modifié, ces fichiers sont refusés ; `poids.csv` n'est pas concerné (D-680). Date : ____ Version : ____
 
 ## CSP stricte (D-650)
 

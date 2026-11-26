@@ -6,6 +6,7 @@ import { asEntityId, type DeviceId, type LocalDate } from '../../../domain/types
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import type { RecoverySampleRepository } from '../../../db/repositories/recoverySampleRepository';
 import { ShortcutFolderError, type ShortcutFileRead, type ShortcutFilesReader } from '../../../platform/shortcutFiles';
+import { sanitizeLogDetail } from '../../../platform/logs/sanitize';
 import { AUTO_IMPORT_INTERVAL_MS, createShortcutImportService, IMPORT_LOG_EVENTS, SLEEP_RULES_VERSION, type ImportLogEvent, type ShortcutImportDeps } from './service';
 
 const DEVICE = asEntityId<DeviceId>('60000000-0000-4000-8000-000000000011');
@@ -104,7 +105,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
       return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
-    }).join('\n');
+    }).join('\n') + '\n';
     const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
     const service = build(reader(async () => reads()));
     const first = await service.run('manual');
@@ -120,7 +121,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
       return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
-    }).join('\n');
+    }).join('\n') + '\n';
     const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
     // Les jours sont déjà calculés avec l'ancienne règle (version absente).
     await build(reader(async () => reads())).run('manual');
@@ -141,7 +142,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
       return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
-    }).join('\n');
+    }).join('\n') + '\n';
     const reads = (): ShortcutFileRead[] => [ok('sommeil.csv', nights)];
     await build(reader(async () => reads())).run('manual');
     let stored: number | null = SLEEP_RULES_VERSION - 1;
@@ -157,7 +158,7 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
       const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
       const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
       return before + 'T23:00:00+01:00;' + day + 'T' + (k === 3 ? '01:30' : '07:00') + ':00+01:00;Endormi';
-    }).join('\n');
+    }).join('\n') + '\n';
     await build(reader(async () => [ok('sommeil.csv', nights)])).run('manual');
     const diag = logs.filter((l) => l.event === 'recovery-import-diag-sleep');
     expect(diag).toHaveLength(1);
@@ -209,6 +210,28 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(result.files.find((f) => f.type === 'hrv')?.state).toBe('unreadable');
     expect(result.files.find((f) => f.type === 'sommeil')?.state).toBe('imported');
     expect(logs.some((l) => l.event === 'recovery-import-file-unreadable')).toBe(true);
+  });
+
+  it('NUTRI-0299 (BL-172, D-664, D-680) : un fichier sans saut de ligne final est refusé en entier (rien d’écrit pour ce type), les autres sont importés', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', PAS.trimEnd());
+    reads[1] = ok('fc-repos.csv', FC.trimEnd());
+    const result = await build(reader(async () => reads)).run('manual');
+    const pas = result.files.find((f) => f.type === 'pas');
+    expect(pas).toMatchObject({ state: 'unterminated', read: 0, added: 0, rejectedTotal: 0, rejected: null });
+    expect(result.files.find((f) => f.type === 'fc-repos')?.state).toBe('unterminated');
+    expect(result.files.find((f) => f.type === 'hrv')?.state).toBe('imported');
+    const samples = await db.data.repos.recoverySamples();
+    expect((await samples.listImportStates()).map((s) => s.type).sort()).toEqual(['hrv', 'sommeil']);
+    expect(await samples.listWindow('pas', '2026-10-01T00:00:00.000Z', NOW)).toEqual([]);
+    expect(logs.filter((l) => l.event === 'recovery-import-file-unterminated').map((l) => l.counts)).toEqual([{ type_index: 1 }, { type_index: 3 }]);
+  });
+
+  it('NUTRI-0299 (BL-172) : un fichier vide (aucune donnée sur 30 jours) n’est jamais refusé pour son saut de ligne', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', '');
+    const result = await build(reader(async () => reads)).run('manual');
+    expect(result.files.find((f) => f.type === 'pas')?.state).toBe('imported');
   });
 
   it('une écriture qui échoue pour un fichier est isolée et journalisée par un nom fixe', async () => {
@@ -270,6 +293,18 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(result.recomputeFailed).toBe(true);
     expect(result.files.find((f) => f.type === 'hrv')?.state).toBe('imported');
     expect(logs.some((l) => l.event === 'recovery-import-recompute-failed')).toBe(true);
+  });
+
+  it('NUTRI-0299 (relecture BL-172) : les comptes de l’import et du refus restent lisibles après l’assainissement du journal technique (jamais « [masqué] »)', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', PAS.trimEnd());
+    await build(reader(async () => reads)).run('manual');
+    const done = logs.find((l) => l.event === 'recovery-import-done');
+    expect(done?.counts).toMatchObject({ unterminated_count: 1 });
+    // Événements de BL-172 ; la clé « state » de recovery-import-diag-file, masquée elle aussi, est antérieure (relevée dans docs/NUTRI-0299.md).
+    for (const { counts } of logs.filter((l) => l.event === 'recovery-import-done' || l.event === 'recovery-import-file-unterminated')) {
+      for (const [key, value] of Object.entries(counts)) expect(sanitizeLogDetail(`${key}=${value}`), key).toBe(`${key}=${value}`);
+    }
   });
 
   it('journaux : noms fixes et comptes seulement, aucune valeur corporelle ni date de mesure', async () => {
@@ -518,7 +553,7 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
 
   it('une lecture manuelle qui finit est journalisée « done » avec ses comptes', async () => {
     await build(reader(async () => ABSENT(), { kind: 'folder', automatic: true })).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-done')?.counts).toEqual({ files: 4, imported: 0, absent: 4, unreadable: 0, failed: 0 });
+    expect(logs.find((l) => l.event === 'recovery-import-done')?.counts).toEqual({ files: 4, imported: 0, absent: 4, unreadable: 0, unterminated_count: 0, failed: 0 });
   });
 
   it('le diagnostic du dossier est journalisé : dossier atteint, sante présent, un événement par fichier (état et taille), comptes seulement', async () => {
@@ -633,7 +668,7 @@ describe('FIX-0172 : recalcul de règle indépendant de l’import', () => {
     const day = new Date(Date.parse('2026-11-08T12:00:00Z') - k * 86_400_000).toISOString().slice(0, 10);
     const before = new Date(Date.parse(day + 'T12:00:00Z') - 86_400_000).toISOString().slice(0, 10);
     return before + 'T23:00:00+01:00;' + day + 'T07:00:00+01:00;Endormi';
-  }).join('\n');
+  }).join('\n') + '\n';
   const OLD_DAY = '2026-11-03';
 
   const service = (r: ShortcutFilesReader, overrides: Partial<ShortcutImportDeps> = {}) =>

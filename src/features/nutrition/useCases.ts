@@ -10,6 +10,7 @@ import {
   floorVerdict,
   upcomingTargets,
   estimateTdeeSmoothed,
+  effectiveGoal,
   parseNutritionPrefs,
   resolveCheckIn,
   toMealEntryInput,
@@ -20,6 +21,7 @@ import {
   type CheckInOutcome,
   type DayTotals,
   type MealEntryDraft,
+  type Goal,
   type NutritionPrefs,
   type Proposal,
   type Target,
@@ -56,6 +58,8 @@ export interface NutritionSnapshot {
   readonly trend: readonly TrendPoint[];
   readonly tdee: TdeeEstimate;
   readonly prefs: NutritionPrefs;
+  /** NUTRI-0299 (BL-173, D-669) : objectif suivi (sorte du profil, rythme des préférences), le même pour Stratégie et le check-in. */
+  readonly goal: Goal;
   readonly profile: Profile | null;
   /** PROG-01 (D-270) : dates locales des séances de musculation closes (type de jour) ; absent : aucune. */
   readonly strengthDays?: ReadonlySet<LocalDate>;
@@ -102,7 +106,7 @@ export async function loadNutritionSnapshot(access: DataAccess, today: LocalDate
   });
   // PROG-01 : les séances closes ne servent qu'avec une cible de repos (aucune lecture de plus sinon).
   const strength = decisions.some((d) => d.restPlan !== null && d.restPlan !== undefined) ? await strengthDays(access) : new Set<LocalDate>();
-  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, profile, target: effective, targets: decisions, strengthDays: strength, stepsDays: await readStepsDays(access, reference) };
+  return { today, reference, days, weighIns, trend: computeTrend(weighIns), tdee, prefs, goal: effectiveGoal(profile?.goal ?? null, prefs.goal), profile, target: effective, targets: decisions, strengthDays: strength, stepsDays: await readStepsDays(access, reference) };
 }
 
 /** REPAS-029b : pas importés de `reference − 28` à `reference` (un total par jour, `startAt` = midi UTC) ; `null` si la lecture échoue (dit, jamais 0). */

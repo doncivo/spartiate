@@ -141,6 +141,7 @@ function TypeRow({ label, state, outcome, run }: { readonly label: string; reado
       <p>{state === null ? tHealth('recNever') : lastImportText(state)}</p>
       {outcome?.state === 'absent' && <p>{absentText(state, run)}</p>}
       {outcome?.state === 'unreadable' && <p>{tHealth('recUnreadable')}</p>}
+      {outcome?.state === 'unterminated' && <p role="alert">{tHealth('recUnterminated')}</p>}
       {outcome?.state === 'failed' && (
         <p role="alert">{tHealth('recFailed')}</p>
       )}

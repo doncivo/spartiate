@@ -63,3 +63,17 @@ describe('I5-06 : illisible dit pourquoi', () => {
     expect(importStatusMessage({ ...base, files: four('unreadable'), folderIssue: 'cloud' })).toMatch(/encore dans iCloud/);
   });
 });
+
+describe('NUTRI-0299 (BL-172, D-664) : fichier refusé faute de saut de ligne final', () => {
+  it('seul ou avec des fichiers importés : la phrase nomme le raccourci « Spartiate — récupération » et ce qu’il faut y modifier', () => {
+    for (const files of [four('unterminated'), [file('imported', 3), file('unterminated'), file('absent'), file('absent')]]) {
+      const message = importStatusMessage({ ...base, files });
+      expect(message).toMatch(/saut de ligne final/);
+      expect(message).toMatch(/« Spartiate — récupération »/);
+      expect(message).toMatch(/« Texte »/);
+    }
+  });
+  it('sans fichier refusé : la phrase n’en parle pas', () => {
+    expect(importStatusMessage({ ...base, files: four('imported', 1) })).not.toMatch(/saut de ligne/);
+  });
+});

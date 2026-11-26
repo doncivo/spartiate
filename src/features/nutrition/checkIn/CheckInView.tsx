@@ -131,7 +131,7 @@ export interface CheckInViewProps {
 export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
   const { data } = useAppContainer();
   const navigate = useNavigationStore((s) => s.navigate);
-  const { prefs, targets } = snapshot;
+  const { prefs, targets, goal } = snapshot;
   const period = useMemo(() => checkInPeriod(snapshot.today, prefs.checkInWeekday), [snapshot.today, prefs.checkInWeekday]);
   const [customizing, setCustomizing] = useState(false);
   const [preview, setPreview] = useState<Target | null>(null);
@@ -158,12 +158,12 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         weighIns: snapshot.weighIns,
         tdee: tdee.value,
         weightKg: tdee.weightKg,
-        goal: prefs.goal,
+        goal,
         currentTarget: current,
         lowFloorConfirmed: confirmedInForce,
         restPlan,
       }),
-    [prefs, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current, restPlan, confirmedInForce],
+    [prefs, goal, period.weekEnd, snapshot.days, snapshot.weighIns, tdee, current, restPlan, confirmedInForce],
   );
   const proposal = result.proposal;
   const existing = targets.find((t) => t.weekStart === period.checkInDate);
@@ -292,7 +292,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
         )}
         <p className="ct-nutrition__muted">
           {tNutrition('checkInHeroSub', {
-            goal: heroGoalText(prefs.goal),
+            goal: heroGoalText(goal),
             coverage: tNutrition(result.coverage?.sufficient ? 'checkInCoverageEnough' : 'checkInCoverageNot'),
           })}
         </p>
@@ -332,7 +332,7 @@ export function CheckInView({ snapshot, onChanged }: CheckInViewProps) {
       <h3 className="ct-nutrition__subtitle ct-section-title">{tNutrition('why')}</h3>
       <ul className="ct-nutrition__list ct-nutrition__muted">
         <li>{tNutrition('whyTdee', { n: formatInt(proposal.trace.tdee) })}</li>
-        <li>{tNutrition('whyGoal', { goal: goalText(prefs.goal) })}</li>
+        <li>{tNutrition('whyGoal', { goal: goalText(goal) })}</li>
         <li>{tNutrition('whyDesired', { n: formatInt(proposal.trace.desiredKcal) })}</li>
         {proposal.clampedBy.map((clamp) => (
           <li key={clamp}>{tNutrition(CLAMP_KEY[clamp])}</li>

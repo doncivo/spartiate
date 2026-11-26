@@ -23,7 +23,7 @@ function snapshot(stepsDays: readonly StepsDay[] | null, weightMeasured?: number
   const weighIns: WeighIn[] = [{ date: d(-2), kg: 80 }];
   const tdee = estimateTdee({ endDate: d(-1), days, weighIns, profile: { sex: 'male', birthYear: 1990, heightCm: 180 }, activity: 'moderate', previousSmoothed: null });
   const shown = weightMeasured === undefined ? tdee : { ...tdee, weightMeasured };
-  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee: shown, prefs: DEFAULT_NUTRITION_PREFS, profile: null, target: null, targets: [], stepsDays };
+  return { today: TODAY, reference: d(-1), days, weighIns, trend: computeTrend(weighIns), tdee: shown, prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal, profile: null, target: null, targets: [], stepsDays };
 }
 const base = (steps: number): StepsDay[] => Array.from({ length: 28 }, (_, i) => ({ day: d(-2 - i), steps }));
 const norm = (t: string): string => t.replace(/\s+/g, ' ');

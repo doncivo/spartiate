@@ -73,6 +73,17 @@ export class Counter {
   }
 }
 
+/**
+ * NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » doit finir par un saut de ligne (LF ou CRLF, espaces
+ * finaux tolérés). Sans lui, une dernière ligne coupée en pleine valeur (fichier remplacé pendant sa lecture, C-056) serait lue comme juste :
+ * le fichier est refusé en entier. Un fichier vide ou blanc (aucune donnée sur 30 jours) n'est jamais refusé. Les fichiers de la partie
+ * « corps et nutrition » (`poids.csv` compris) ne passent pas par cette règle (D-680).
+ */
+export function lacksFinalNewline(text: string): boolean {
+  const body = (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text).replace(/[ \t]+$/, '');
+  return body.trim() !== '' && !body.endsWith('\n');
+}
+
 export function readRows(text: string): { readonly rows: readonly (readonly string[])[]; readonly truncated: boolean } {
   const lines = (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text).split(/\r?\n/).map((l) => l.trim()).filter((l) => l !== '');
   // L'en-tête est reconnu sur la première ligne du FICHIER, avant la troncature (FIX-RECUP, C-052).

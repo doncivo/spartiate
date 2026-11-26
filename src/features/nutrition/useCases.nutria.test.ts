@@ -15,7 +15,7 @@ function snapshot(skip: ReadonlySet<number>): NutritionSnapshot {
   const weighIns: WeighIn[] = [];
   for (let i = 59; i >= 0; i -= 2) weighIns.push({ date: addDays(E, -i), kg: 80 });
   const tdee = estimateTdee({ endDate: E, days, weighIns, profile: null, activity: null, previousSmoothed: null });
-  return { today: addDays(E, 1), reference: E, days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, profile: null, target: null, targets: [] };
+  return { today: addDays(E, 1), reference: E, days, weighIns, trend: computeTrend(weighIns), tdee, prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal, profile: null, target: null, targets: [] };
 }
 
 describe('NUTRI-a : lissage de la dépense mesurée', () => {

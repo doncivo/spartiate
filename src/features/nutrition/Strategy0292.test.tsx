@@ -43,12 +43,13 @@ describe('C-104', () => {
   it('préférence dont l’écriture échoue : l’écran revient à la valeur enregistrée et le dit', async () => {
     open();
     const r = await region();
-    fireEvent.click(await within(r).findByRole('button', { name: /^Objectif/ }));
-    const loss = await within(r).findByRole('radio', { name: 'Perte' });
+    // NUTRI-0299 (BL-173) : l'objectif n'est plus un réglage de Stratégie ; le style porte le même contrat.
+    fireEvent.click(await within(r).findByRole('button', { name: /^Style du check-in/ }));
+    const manual = await within(r).findByRole('radio', { name: 'Manuel' });
     vi.spyOn(db.data.repos.settings, 'set').mockRejectedValue(new Error('boom'));
-    fireEvent.click(loss);
+    fireEvent.click(manual);
     await waitFor(() => expect(within(r).getByRole('alert')).toBeInTheDocument());
-    expect(within(r).getByRole('radio', { name: 'Maintien' })).toHaveAttribute('aria-checked', 'true');
-    expect(within(r).getByRole('radio', { name: 'Perte' })).toHaveAttribute('aria-checked', 'false');
+    expect(within(r).getByRole('radio', { name: 'Collaboratif' })).toHaveAttribute('aria-checked', 'true');
+    expect(within(r).getByRole('radio', { name: 'Manuel' })).toHaveAttribute('aria-checked', 'false');
   });
 });
