@@ -3,11 +3,13 @@ import type { LocalDate } from '../../domain/types';
 import type { AppContainer } from '../app/container';
 import { createRecoveryNotificationService, type RecoveryNotificationService } from './recoveryNotifications';
 import { createInjuryNotificationService, type InjuryNotificationService } from './injuryNotifications';
+import { createMeasurementNotificationService, type MeasurementNotificationService } from './measurementNotifications';
 import { createSerialQueue, createSupplementNotificationService, type SupplementNotificationService } from './supplementNotifications';
 
 export * from './recoveryNotifications';
 export * from './supplementNotifications';
 export * from './injuryNotifications';
+export * from './measurementNotifications';
 
 const services = new WeakMap<AppContainer, RecoveryNotificationService>();
 const supplementServices = new WeakMap<AppContainer, SupplementNotificationService>();
@@ -80,5 +82,23 @@ export function injuryNotificationsFor(container: AppContainer): InjuryNotificat
     serial: queueFor(container),
   });
   injuryServices.set(container, service);
+  return service;
+}
+
+const measurementServices = new WeakMap<AppContainer, MeasurementNotificationService>();
+
+/** CORPS-0301d (BL-180, D-714) : rappel des mesures du conteneur ; même file que les autres services. Journal : codes seulement, jamais une valeur. */
+export function measurementNotificationsFor(container: AppContainer): MeasurementNotificationService {
+  const existing = measurementServices.get(container);
+  if (existing !== undefined) return existing;
+  const service = createMeasurementNotificationService({
+    scheduler: container.notifications,
+    clock: container.notificationClock,
+    settings: container.data.repos.settings,
+    samples: async () => (await (await container.data.repos.measurements()).list()).map((m) => ({ kind: m.kind, date: m.day })),
+    log: (code) => logFailure('notifications', code),
+    serial: queueFor(container),
+  });
+  measurementServices.set(container, service);
   return service;
 }

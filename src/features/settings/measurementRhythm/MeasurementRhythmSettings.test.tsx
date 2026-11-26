@@ -31,6 +31,8 @@ const mount = (samples: readonly { kind: string; day: LocalDate }[], notificatio
     </AppContainerProvider>,
   );
 const waist = (day: string) => ({ kind: 'waist', day: day as LocalDate });
+/** Le service relit la table `measurement` (déclencheurs d'ouverture et de synchro) : la mesure passée à l'écran y est aussi écrite. */
+const seed = async (day: string) => (await db.data.repos.measurements()).save(day as LocalDate, 'waist', 80);
 
 beforeEach(async () => {
   db = await openBaseDb(DEVICE, NOW);
@@ -45,6 +47,7 @@ afterEach(async () => {
 describe('rythme des mesures', () => {
   it('iPhone : chaque semaine par défaut, phrases, rappel actif posé à 09:00 le jour prévu', async () => {
     const scheduler = createFakeNotificationScheduler();
+    await seed('2026-11-09');
     mount([waist('2026-11-09')], scheduler);
     expect(await screen.findByRole('region', { name: 'Rythme des mesures' })).toBeInTheDocument();
     expect(screen.getByText('Dernière séance de mesures il y a 3 jours')).toBeInTheDocument();
@@ -57,6 +60,7 @@ describe('rythme des mesures', () => {
 
   it('iPhone : le rythme se règle (clé locale) et déplace la prochaine séance et le rappel', async () => {
     const scheduler = createFakeNotificationScheduler();
+    await seed('2026-11-09');
     mount([waist('2026-11-09')], scheduler);
     fireEvent.click(await screen.findByRole('radio', { name: 'Toutes les 2 semaines' }));
     expect(await screen.findByText('Prochaine conseillée dans 11 jours')).toBeInTheDocument();
@@ -66,6 +70,7 @@ describe('rythme des mesures', () => {
 
   it('iPhone : l’interrupteur coupe le rappel (retiré) et le réglage est gardé', async () => {
     const scheduler = createFakeNotificationScheduler();
+    await seed('2026-11-09');
     mount([waist('2026-11-09')], scheduler);
     const toggle = await screen.findByRole('switch', { name: 'Rappel le matin du jour prévu' });
     await waitFor(async () => expect(await scheduler.pending()).toHaveLength(1));
