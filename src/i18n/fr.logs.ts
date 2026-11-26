@@ -1,10 +1,10 @@
-/** Écran Logs et journal technique (I-04, ADR 0014 §4). */
+/** Écran Journaux et journal technique (I-04, ADR 0014 §4). */
 export const logsFr = {
-  rowLabel: 'Logs',
-  rowOpenLabel: 'Ouvrir l’écran des logs',
+  rowLabel: 'Journaux',
+  rowOpenLabel: 'Ouvrir l’écran des journaux',
   /** ERGO-01b P5 (D-238) : outils de test déplacés de Plus › À propos, montés à la demande. */
   toolsOpen: 'Outils de test',
-  title: 'Logs',
+  title: 'Journaux',
   back: 'Retour aux réglages',
   filtersLabel: 'Filtrer les entrées',
   filterAll: 'Tout',
@@ -23,10 +23,10 @@ export const logsFr = {
   /** FIX-CONFID-IOS (C-152) : ligne de Plus › À propos et diagnostic (iPhone). */
   backupExclusionFailed: 'Les données de Spartiate n’ont pas pu être exclues de la sauvegarde iCloud de l’iPhone : elles peuvent y être copiées.',
   export: 'Exporter',
-  exportDone: 'Logs exportés',
+  exportDone: 'Journaux exportés',
   exportError: 'L’export n’a pas abouti.',
   clear: 'Effacer',
-  clearTitle: 'Effacer les logs ?',
+  clearTitle: 'Effacer les journaux ?',
   clearMessage: 'Toutes les entrées du journal seront supprimées de cet appareil.',
   clearConfirm: 'Effacer',
   clearError: 'Le journal n’a pas pu être effacé.',

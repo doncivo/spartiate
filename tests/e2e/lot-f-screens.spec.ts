@@ -28,8 +28,8 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await openToday(page);
     await tab(page, 'Plus').click();
     await openPlusEntry(page, /^À propos et diagnostic/);
-    await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
-    await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
+    await page.getByRole('button', { name: 'Ouvrir l’écran des journaux' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Journaux' })).toBeVisible();
     await noHorizontalScroll(page);
     await nextFilesMode(page, 'fail');
     await page.getByRole('button', { name: 'Exporter' }).click();
@@ -37,7 +37,7 @@ test.describe('Lot F — écrans sans défilement horizontal, échecs avec une a
     await expect(alert).toContainText('Code : write-failed');
     await noHorizontalScroll(page);
     await alert.getByRole('button', { name: 'Réessayer' }).click();
-    await expect(page.getByText('Logs exportés')).toBeVisible();
+    await expect(page.getByText('Journaux exportés')).toBeVisible();
   });
 
   test('Sauvegardes (P-04-iOS) : feuille, voile de la restauration et annonce du redémarrage', async ({ page }) => {
