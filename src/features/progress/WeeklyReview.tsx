@@ -4,7 +4,7 @@ import { addDays } from '../../domain/localDate';
 import { recommendationsOf } from '../../domain/review/weeklyRecommendations';
 import { weeklyReview } from '../../domain/review/weeklyReview';
 import type { FirstWeekday } from '../../domain/week';
-import { recommendationLine, reviewFileName, reviewLine, reviewMarkdown, reviewWeekLabel, tWeeklyReview } from '../../i18n/weeklyReviewText';
+import { recommendationLine, reviewFileName, reviewLine, reviewMarkdown, reviewWeekLabel, tWeeklyReview, type WeeklyReviewPlainKey } from '../../i18n/weeklyReviewText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
@@ -21,7 +21,7 @@ import './WeeklyReview.css';
 type Load = { readonly status: 'loading' } | { readonly status: 'failed' } | ({ readonly status: 'ready' } & ReviewLoaded);
 type ExportStatus = ReviewShareOutcome | 'failed' | null;
 
-const EXPORT_TEXT: Readonly<Record<Exclude<ExportStatus, null>, Parameters<typeof tWeeklyReview>[0]>> = {
+const EXPORT_TEXT: Readonly<Record<Exclude<ExportStatus, null>, WeeklyReviewPlainKey>> = {
   shared: 'exportShared',
   cancelled: 'exportCancelled',
   downloaded: 'exportDownloaded',

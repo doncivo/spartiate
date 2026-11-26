@@ -1,5 +1,4 @@
 [
   "src/i18n/index.ts:tDynamic",
-  "src/i18n/progressionText.ts:tProgression",
-  "src/i18n/weeklyReviewText.ts:tWeeklyReview"
+  "src/i18n/progressionText.ts:tProgression"
 ]
