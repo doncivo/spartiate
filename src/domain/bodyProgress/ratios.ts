@@ -5,7 +5,7 @@ import { daysBetween, inPeriod, kindSeries, periodStart, roundTo, zoneSeries, ty
 
 /**
  * PROG-0301b (BL-178) : ratios sur les dernières mesures (D-707), hauteur du profil puis de Santé (D-715), évolution sur la période (D-718,
- * D-732). AUCUN repère ici : les repères attendent la décision d'Ali (BL-181, D-717) ; le résultat ne porte que la valeur et l'évolution.
+ * D-732). AUCUN repère ici : le résultat ne porte que la valeur et l'évolution ; les repères (Q-41, D-745) sont dans `ratioReferences.ts`.
  */
 
 export const BODY_RATIOS = ['waist_height', 'shoulders_waist', 'waist_hips', 'chest_waist'] as const;

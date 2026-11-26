@@ -45,3 +45,12 @@ Préparation : docs/PROGRES-0301.md. Aucun écran, aucun texte, aucune table, au
   sur l'ancien code), vert au commit suivant, 93 tests verts. Laissées à BL-179 : brancher l'écran sur `zoneTrend` et retirer
   `summarizeZone` (règle en double, src/features/bodyProgress/bodyZone.ts) ; filtrer les mesures datées après la fin pour la valeur
   actuelle des ratios, de la symétrie et de la tendance (aujourd'hui seule la séance de mesures les écarte, D-734).
+
+## Q-41 tranchée (Ali, 26/11, D-745)
+
+- Réponse A pour les quatre ratios. `ratioReference(kind, valeur, sexe)` dans `src/domain/bodyProgress/ratioReferences.ts` (pur) :
+  taille / hauteur en bandes NICE avec « non valable si IMC ≥ 35 » ; taille / hanches < 0,90 homme, < 0,85 femme, « populations
+  européennes », sans sexe aucun repère ; épaules / taille sans repère ; poitrine / taille 1,30 à 1,35 chez l'homme, « esthétique, sans
+  valeur santé ». Affichage : BL-179 (écran), aucun texte ici.
+- Rouge `d092fea3` (8 tests en échec, module absent) ; vert : commit suivant. qa-test : `src/domain/bodyProgress` 101 tests verts, lint,
+  typage. code-reviewer : domaine pur, aucune dépendance nouvelle, bornes au centième comme la valeur affichée ; approuvée.
