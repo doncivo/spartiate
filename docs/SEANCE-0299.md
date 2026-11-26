@@ -32,11 +32,24 @@ Hors périmètre : historique complet des corrections (option C de Q-13, refusé
 
 ## Passe agent du module
 
-(à compléter)
+- `src/domain/training/prescribe.ts` : `prescribe`, branche de la décision : contraintes évaluées sans estimations (ni fatigue ni
+  stagnation), réduction par `reducedTarget` sur la décision, charge décidée ajoutée à la grille, même arrondi que la référence d'historique
+  (D-682) ; `prescribeUnloaded` : pause, récupération basse et décharge évaluées avant la référence (`deloaded`, `reducedReasons` partagés
+  avec la branche de l'historique, comportement de celle-ci inchangé).
+- `explain.ts` : note `noteDecisionReference` ; `fr.progression.ts` : son texte (hors départ).
+- `config.ts` : `ENGINE_VERSION` 6 (D-681).
+- `src/features/training/history/HistorySetRow.tsx` : `correctionText` (D-683) ; `fr.training.ts` : 8 clés (hors départ, déjà à la demande).
+- Aucune migration, aucun fichier de synchro, aucune table publiée changée ; `tests/bundle/start-modules.json` inchangé.
 
 ## Passe qa-test
 
-(à compléter)
+| Ligne | Rouge | Vert | Remarque |
+|---|---|---|---|
+| BL-171 | `437e8bc7` | `2b1ee3d3` | attentes de l'option A changées : constraints.test.ts, redDay.test.ts, seance0292.test.ts (C-026) ; seance0299.test.ts ; épinglages 6 |
+| BL-176 | `c1ed6f9f` | `15b6bea5` | HistorySetRow.seance0299.test.tsx (7 cas, 5 rouges : les 2 « corrigée » seul passaient déjà) ; History.test.tsx : attente changée (bout en bout par la base) |
+
+Local : `src/domain/training` et `moteur0281a.test.ts` : 938 / 939 ; l'échec restant, `programImport.qa.test.ts` (délai de 5 s dépassé
+sur ce PC, 9,4 s seul), n'importe ni le moteur ni sa configuration : lenteur locale, laissée à la CI. Typage et lint verts.
 
 ## Relecture à froid (code-reviewer)
 
