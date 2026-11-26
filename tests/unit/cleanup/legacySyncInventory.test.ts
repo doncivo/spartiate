@@ -9,6 +9,7 @@ const root = resolve(__dirname, '..', '..', '..');
 interface Row {
   readonly path: string;
   readonly entities: readonly string[];
+  readonly test: boolean;
 }
 
 function inventory(): Row[] {
