@@ -66,7 +66,7 @@ describe('C-088 : tableau de bord un jour de repos', () => {
     const days = aggregateDays(addDays(REST_DAY, -59), REST_DAY, entries, {});
     const tdee = estimateTdee({ endDate: addDays(REST_DAY, -1), days, weighIns: [], profile: null, activity: null, previousSmoothed: null });
     const record = { id: 'r', weekStart: '2026-11-09' as LocalDate, target: T(2500, 300), source: 'manual', accepted: true, engineVersion: null, createdAt: '2026-11-09T08:00:00.000Z', hlc: '001794484800000-0000-0f8fad5b-d9cb-469f-a165-70867728950e', restPlan: { rest: T(2300, 250), trainingDays: [1, 2, 4, 5, 6] } } as never;
-    return { today: REST_DAY, reference: addDays(REST_DAY, -1), days, weighIns: [], trend: computeTrend([]), tdee, prefs: DEFAULT_NUTRITION_PREFS, profile: null, target: record, targets: [record] } as NutritionSnapshot;
+    return { today: REST_DAY, reference: addDays(REST_DAY, -1), days, weighIns: [], trend: computeTrend([]), tdee, prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal, profile: null, target: record, targets: [record] } as NutritionSnapshot;
   };
   it('le modèle expose la cible du type de jour', () => {
     expect(TODAY).toBeTruthy();

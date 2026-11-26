@@ -18,7 +18,7 @@ describe('énoncés de confidentialité de l’écran Apple Santé', () => {
 
 describe('NUTRI-0299 (D-649) : aucun « Logs » visible dans les textes de Santé', () => {
   it('les renvois au journal technique donnent le chemin des deux appareils (Plus › Journaux, Plus › APP › Journaux)', () => {
-    const texts = Object.values(healthFr).filter((v): v is string => typeof v === 'string');
+    const texts: readonly string[] = Object.values(healthFr);
     expect(texts.filter((t) => /\bLogs\b/.test(t))).toEqual([]);
     for (const key of ['recFailed', 'recDoneFailed', 'technicalShare', 'bodyFailedLast', 'bodyFailed'] as const) {
       expect(healthFr[key], key).toContain('Plus › Journaux sur le PC, Plus › APP › Journaux sur l’iPhone');
