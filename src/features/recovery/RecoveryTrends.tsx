@@ -3,7 +3,7 @@ import { todayLocal } from '../../domain/clock';
 import { addDays } from '../../domain/localDate';
 import { recoveryTrends, TREND_DAYS, TREND_METRICS, type RecoveryTrends, type TrendMetric, type TrendSeries } from '../../domain/recovery/trends';
 import { tPlural } from '../../i18n/plural';
-import { tRecoveryFactors, type RecoveryFactorsTextKey } from '../../i18n/recoveryFactorsText';
+import { tRecoveryFactors, type RecoveryFactorsPlainKey } from '../../i18n/recoveryFactorsText';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
 import { formatMinutes } from '../../i18n/units';
@@ -19,7 +19,7 @@ export function formatDuration(minutes: number): string {
   return formatMinutes(minutes);
 }
 
-const NAME: Readonly<Record<TrendMetric, RecoveryFactorsTextKey>> = { recovery: 'trend_recovery', hrv: 'trend_hrv', restingHr: 'trend_restingHr', sleep: 'trend_sleep' };
+const NAME: Readonly<Record<TrendMetric, RecoveryFactorsPlainKey>> = { recovery: 'trend_recovery', hrv: 'trend_hrv', restingHr: 'trend_restingHr', sleep: 'trend_sleep' };
 
 function formatValue(metric: TrendMetric, v: number | null): string {
   if (v === null) return tRecoveryFactors('trendMissing');
