@@ -25,6 +25,9 @@ describe('resolveHeight : profil, puis Santé (D-715)', () => {
     expect(resolveHeight(Number.NaN, [S('waist', '2026-10-01', 180)])).toBeNull();
     expect(resolveHeight(null, [S('health_height_cm', '2026-10-01', 300)])).toBeNull();
   });
+  it('hauteur du profil hors bornes : la hauteur de Santé la remplace', () => {
+    expect(resolveHeight(90, [S('health_height_cm', '2026-10-01', 181)])).toEqual({ cm: 181, source: 'health', healthDiffers: false });
+  });
 });
 
 describe('ratios sur les dernières mesures (D-707, D-715)', () => {
@@ -87,6 +90,9 @@ describe('évolution d’un ratio sur la période (D-718, D-732)', () => {
   it('une seule paire dans la période (la paire actuelle) : évolution inconnue, jamais 0', () => {
     const samples = [S('waist', '2026-11-20', 85), S('hips', '2026-11-20', 100)];
     expect(bodyRatio('waist_hips', samples, null, '3m', end).evolution).toEqual({ status: 'unknown' });
+  });
+  it('taille / hauteur avec une seule taille dans la période : évolution inconnue', () => {
+    expect(bodyRatios([S('waist', '2026-06-01', 90), S('waist', '2026-11-20', 85)], 180, '3m', end).waist_height.evolution).toEqual({ status: 'unknown' });
   });
   it('les mesures d’avant la période ne servent pas de départ', () => {
     const samples = [S('waist', '2026-06-01', 95), S('hips', '2026-06-01', 105), S('waist', '2026-11-01', 86), S('hips', '2026-11-02', 100), S('waist', '2026-11-20', 85), S('hips', '2026-11-20', 100)];

@@ -34,7 +34,7 @@ describe('rythme (D-713, D-734)', () => {
     expect(parseMeasurementRhythm(14)).toBe(14);
     expect(parseMeasurementRhythm('28')).toBe(28);
     expect(parseMeasurementRhythm('7')).toBe(7);
-    for (const bad of [null, undefined, '', '10', 0, -7, 7.5, '14 ', 'abc', {}]) expect(parseMeasurementRhythm(bad)).toBe(7);
+    for (const bad of [null, undefined, '', '10', 0, -7, 7.5, '14 ', '07', '028', 'abc', {}]) expect(parseMeasurementRhythm(bad)).toBe(7);
   });
 });
 

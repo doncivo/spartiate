@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { LocalDate } from '../types';
 import { MEASUREMENT_KINDS } from './measurements';
-import { addMonths, BODY_PERIODS, DEFAULT_BODY_PERIOD, periodStart, zoneSeries, type BodySample } from './period';
+import { addMonths, BODY_PERIODS, DEFAULT_BODY_PERIOD, periodStart, roundTo, zoneSeries, type BodySample } from './period';
 import { monthlyRate, TREND_STABLE_CM, zoneTrend, zoneTrends } from './zoneTrend';
 
 /** PROG-0301b (BL-178, D-705, D-716, D-718, D-730, D-731) : tendance par zone, rythme par mois, périodes. Valeurs inventées. */
@@ -120,6 +120,16 @@ describe('monthlyRate : rythme par mois (D-718)', () => {
     const pts = [S('waist', '2026-06-01', 100), S('waist', '2026-11-01', 90), S('waist', '2026-11-25', 89)];
     expect(monthlyRate(pts, 'waist', '4w', end)).toMatchObject({ status: 'known', from: '2026-11-01', to: '2026-11-25', count: 2 });
     expect(monthlyRate(pts, 'waist', 'all', end)).toMatchObject({ status: 'known', from: '2026-06-01', count: 3 });
+  });
+  it('le premier jour de la période est inclus, la veille non (D-731)', () => {
+    const pts = [S('waist', '2026-10-28', 95), S('waist', '2026-10-29', 90), S('waist', '2026-11-26', 89)];
+    expect(monthlyRate(pts, 'waist', '4w', end)).toMatchObject({ status: 'known', from: '2026-10-29', to: '2026-11-26', count: 2 });
+  });
+  it('arrondi symétrique : ±0,25 donne ±0,3, sans « −0 » (D-730)', () => {
+    expect(roundTo(0.25, 1)).toBe(0.3);
+    expect(roundTo(-0.25, 1)).toBe(-0.3);
+    expect(roundTo(-0.125, 2)).toBe(-0.13);
+    expect(Object.is(roundTo(-0.04, 1), 0)).toBe(true);
   });
   it('moins de 2 mesures ou moins de 14 jours : inconnu, jamais 0', () => {
     expect(monthlyRate([S('waist', '2026-11-01', 90)], 'waist', '3m', end)).toEqual({ status: 'unknown' });
