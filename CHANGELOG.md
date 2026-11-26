@@ -10,7 +10,7 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 - **Icône** : les icônes de l'app sont contrôlées à chaque vérification automatique ; une icône qui ne correspond plus au dessin d'origine est refusée.
 - **Maintenance** : la couverture des tests est relevée module par module. Le démarrage ne charge rien de plus.
 
-Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.6). En priorité, sur les deux appareils, ouvre Progrès, Plus › Export et import et le bouton « Tester le minuteur (60 s) » des journaux (PC : Plus › Journaux ; iPhone : Plus › APP › Logs) : aucun texte ne montre d'accolades ni de nom technique à la place d'un mot.
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.6). En priorité, sur les deux appareils, ouvre Progrès, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Logs › Outils de test) : aucun texte ne montre d'accolades ni de nom technique à la place d'un mot.
 
 ## 0.29.5
 
