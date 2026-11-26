@@ -58,6 +58,7 @@ export function trendWords(trend: ZoneTrend | undefined): string {
 }
 
 type Trends = Readonly<Record<MeasurementKind, ZoneTrend>>;
+const GOAL_TEXT = { loss: 'trendGoal_loss', gain: 'trendGoal_gain', maintain: 'trendGoal_maintain' } as const satisfies Record<BodyGoal, BodyProgressTextKey>;
 const toneOf = (trends: Trends | undefined, k: MeasurementKind): TrendTone => trends?.[k].tone ?? 'neutral';
 
 /** Légende des couleurs (sous la silhouette sur iPhone, sous le titre de la liste sur PC) : chaque couleur dite en mots (§ 18.6). */
@@ -77,7 +78,7 @@ export function TrendLegend({ goal }: { readonly goal: BodyGoal | null }) {
           </li>
         ))}
       </ul>
-      <p className="ct-today__muted">{goal === null ? tBodyProgress('trendGoalNone') : tBodyProgress(`trendGoal_${goal}`)}</p>
+      <p className="ct-today__muted">{goal === null ? tBodyProgress('trendGoalNone') : tBodyProgress(GOAL_TEXT[goal])}</p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import type { WeightEvolution } from '../../domain/bodyProgress/weightEvolution'
 import type { MonthlyRate } from '../../domain/bodyProgress/zoneTrend';
 import { formatDayMonthYear } from '../../i18n/format';
 import { formatCm, tBodyProgress, type BodyProgressPlainKey } from '../../i18n/bodyProgressText';
+import { tPlural } from '../../i18n/plural';
 import { signed } from './BodyZones';
 
 /**
@@ -29,7 +30,7 @@ export function WeightLine({ evolution }: { readonly evolution: WeightEvolution 
       : evolution.status === 'learning'
         ? evolution.weighIns === 0
           ? tBodyProgress('weightNone')
-          : tBodyProgress('weightLearning', { count: evolution.weighIns, needed: evolution.needed })
+          : tPlural(tBodyProgress, evolution.weighIns, 'weightLearningOne', 'weightLearning', { needed: evolution.needed })
         : tBodyProgress('weightUnknown');
   return <p className="ct-today__text">{text}</p>;
 }

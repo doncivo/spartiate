@@ -151,6 +151,7 @@ export const bodyProgressFr = {
   rateKnown: 'Rythme : {rate} cm par mois',
   rateUnknown: 'Rythme par mois : inconnu (au moins 2 mesures sur 14 jours dans la période).',
   weightKnown: 'Poids (tendance des pesées) : {delta} kg du {from} au {to}',
+  weightLearningOne: 'Poids : tendance en apprentissage ({count} pesée sur {needed}).',
   weightLearning: 'Poids : tendance en apprentissage ({count} pesées sur {needed}).',
   weightNone: 'Poids : aucune pesée enregistrée.',
   weightUnknown: 'Poids : aucune pesée à comparer sur la période.',
