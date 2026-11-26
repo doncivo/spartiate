@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-374 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+376 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -197,7 +197,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (36 : 13 à trancher, 23 à confirmer seulement)
+### récupération (37 : 13 à trancher, 24 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -242,8 +242,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-565 | DATA-0293 (C-058, D-478). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (87 : 52 à trancher, 35 à confirmer seulement)
+### synchro et données (87 : 51 à trancher, 36 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -266,7 +267,6 @@ Gardées sans question (à confirmer seulement) :
 | 7 | D-75 | Catalogue alimentaire et journal persistant (I4-02, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro, schéma |
 | 7 | D-100 | I6-02 (0.13.0) : mensurations et migration 0012 (schéma 12). | A garder · B réviser ; effet : schéma, données, écran |
 | 7 | D-275 | PROG-01 (0.24.0) : limite connue de la synchro entre schémas, consignée (relecture sync-icloud du 14/11 ). | A garder · B réviser ; effet : synchro, schéma |
-| 7 | D-567 | DATA-0293 (C-072, Q-13 option B appliquée, recommandation sans risque : colonne additive, publiée, sans effet sur les lectures d'avant). | A garder · B réviser ; effet : synchro, schéma, écran |
 | 7 | D-613 | SHELL-0294d (Quitter, effacement, réglages). | A garder · B réviser ; effet : synchro, données, écran |
 | 6 | D-187 | RESET-01 : règle de ligne et export. | A garder · B réviser ; effet : schéma, données |
 | 6 | D-442 | TECH-01 CLEAN-03 (0.29.0) : migration des tests de synchro hérités par lots, schéma choisi fichier par fichier. | A garder · B réviser ; effet : synchro, schéma |
@@ -309,6 +309,7 @@ Gardées sans question (à confirmer seulement) :
 | 9 | D-104 | I6-03 (0.14.0) : rejeu de séance et export complet. | à confirmer seulement : citée par D-150 d'Ali (déjà validée ?) |
 | 8 | D-153 | I6-03b : migration 0014 (schéma 14). | à confirmer seulement : citée par D-150 d'Ali (déjà validée ?) |
 | 7 | D-317 | PROG-04 (0.27.0) : rattachement automatique par le nom du jour. | à confirmer seulement : citée par D-318 d'Ali (déjà validée ?) |
+| 7 | D-567 | DATA-0293 (C-072, Q-13 option B appliquée, recommandation sans risque : colonne additive, publiée, sans effet sur les lectures d'avant). | à confirmer seulement : citée par D-659 d'Ali (déjà validée ?) |
 | 3 | D-215 | I6-05 : sauvegardes de l'ancien projet au schéma 17, révisable par Ali. | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-226 | I6-06 : sauvegardes de l'ancien projet sans déclencheur, au schéma 18 (complète D-215 d'I6-05, ligne non réécrite), révisable par Ali. | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-353 | FIX-COQUILLE (0.28.0) : dernière frontière d'erreur de la coquille, sans relance pendant une migration ni sur pilote empoisonné (C-114, C-115; D-326 … | à confirmer seulement (aucun effet visible repéré) |
@@ -399,7 +400,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (64 : 30 à trancher, 34 à confirmer seulement)
+### CI et outillage (65 : 30 à trancher, 35 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -472,5 +473,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-625 | SHELL-0294f (BL-165) : corps des six anciennes publications réécrits par le workflow. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-629 | DATA-0295 (BL-035) : cycle statique goalRules → week → todayList rompu. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-679 | DEC-0299 (D-675, relecture à froid) : le contrôle « git grep -i fitnessvolt vide » porte sur le code, le contenu, les tests et docs/licences.md. | à confirmer seulement (aucun effet visible repéré) |
 
 <!-- revue-choix-prudents:fin -->
