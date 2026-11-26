@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-379 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+387 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -197,7 +197,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (38 : 14 à trancher, 24 à confirmer seulement)
+### récupération (39 : 14 à trancher, 25 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -244,8 +244,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
+| 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (87 : 51 à trancher, 36 à confirmer seulement)
+### synchro et données (89 : 52 à trancher, 37 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -269,6 +270,7 @@ Gardées sans question (à confirmer seulement) :
 | 7 | D-100 | I6-02 (0.13.0) : mensurations et migration 0012 (schéma 12). | A garder · B réviser ; effet : schéma, données, écran |
 | 7 | D-275 | PROG-01 (0.24.0) : limite connue de la synchro entre schémas, consignée (relecture sync-icloud du 14/11 ). | A garder · B réviser ; effet : synchro, schéma |
 | 7 | D-613 | SHELL-0294d (Quitter, effacement, réglages). | A garder · B réviser ; effet : synchro, données, écran |
+| 7 | D-713 | DEC-0301 (D-710) : le rythme des mesures est un réglage local de la table settings, sans migration. | A garder · B réviser ; effet : synchro, schéma |
 | 6 | D-187 | RESET-01 : règle de ligne et export. | A garder · B réviser ; effet : schéma, données |
 | 6 | D-442 | TECH-01 CLEAN-03 (0.29.0) : migration des tests de synchro hérités par lots, schéma choisi fichier par fichier. | A garder · B réviser ; effet : synchro, schéma |
 | 6 | D-462 | TECH-0291 (BL-133) : 29 fichiers de tests de synchro de plus sur le schéma Spartiate (lots D à G), le reste inventorié. | A garder · B réviser ; effet : synchro, schéma |
@@ -341,8 +343,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-419 | IMPORT-029a (0.29.0) : format du bloc collé (§ 17.4). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-554 | NUTRI-0292. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 
-### écrans (49 : 23 à trancher, 26 à confirmer seulement)
+### écrans (53 : 27 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -352,6 +355,7 @@ Gardées sans question (à confirmer seulement) :
 | 5 | D-390 | PROGRES-a (0.28.1) : volume affiché sans plage cible (§ 17.1 « vs plage »). | A garder · B réviser (déjà marquée « à trancher ») ; effet : écran |
 | 4 | D-101 | I6-02 (0.13.0) : écran Corps et sélecteur d'image. | A garder · B réviser ; effet : synchro |
 | 4 | D-279 | FIX-0242 (0.25.0) : échec de l'action « Pris » durable et visible. | A garder · B réviser ; effet : données, écran |
+| 4 | D-716 | DEC-0301 (D-705) : tendance d'une zone, seuil « stable » de 0,5 cm, au moins 2 mesures sur 14 jours, sens par objectif. | A garder · B réviser ; effet : données, chiffre |
 | 3 | D-341 | FIX-SAISIE-NUTRI (0.28.0) : correction des grammes d'une entrée sans perte de précision (C-032 ). | A garder · B réviser ; effet : données, écran |
 | 3 | D-508 | SEANCE-0292 (C-007). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-612 | SHELL-0294d (journal, diagnostic, marqueur). | A garder · B réviser ; effet : moteur |
@@ -361,6 +365,8 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-601 | SHELL-0294b (C-156, C-146). | A garder · B réviser ; effet : écran |
 | 2 | D-608 | SHELL-0294c (C-126, § 18.3 a). | A garder · B réviser ; effet : écran |
 | 2 | D-639 | SHELL-0295 (C-076) : unités, locale et séparateurs par src/i18n/units.ts. | A garder · B réviser ; effet : écran |
+| 2 | D-718 | DEC-0301 (D-706, D-707, D-708) : calculs de symétrie, de rythme par mois, de poids et de période. | A garder · B réviser ; effet : chiffre |
+| 2 | D-719 | DEC-0301 (D-701, D-702, D-709) : onglet retenu, plateformes de Corps › Mesures et saisie guidée. | A garder · B réviser ; effet : écran |
 | 1 | D-340 | FIX-PLANCHER (0.28.0) : cible du jour (dayTargetFor, D-270) au tableau de bord et au graphique (C-088 ). | A garder · B réviser ; effet : écran |
 | 1 | D-399 | COQUILLE-PC-b (0.28.1) : barre latérale PC rétractable, repli non persisté (§ 18.1). | A garder · B réviser ; effet : écran |
 | 1 | D-459 | COQUILLE-0291 (BL-119) : disposition PC décidée par le système, fenêtre minimale 800 × 360. | A garder · B réviser ; effet : chiffre |
@@ -369,6 +375,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-533 | DATA-0292 (BL-138). | A garder · B réviser ; effet : écran |
 | 1 | D-559 | NUTRI-0292. | A garder · B réviser ; effet : écran |
 | 1 | D-606 | SHELL-0294c (C-120, C-121, C-122). | A garder · B réviser ; effet : écran |
+| 1 | D-714 | DEC-0301 (D-710) : le rappel des mesures est une famille de notification iPhone neuve, « measurement », sur le modèle du rappel des blessures. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -401,7 +408,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (67 : 32 à trancher, 35 à confirmer seulement)
+### CI et outillage (68 : 32 à trancher, 36 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -448,6 +455,7 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-564 | REL-0.29.2 (complément d'audit, D-489). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-604 | SHELL-0294b (bundle de départ, règle « le départ ne grossit jamais »). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-646 | CLEAN-0297 (C-085) : la garde des traducteurs voit un alias de type local. | à confirmer seulement (aucun effet visible repéré) |
+| 1 | D-717 | DEC-0301 (D-707, D-678, D-696) : point d'arrêt, les repères des ratios sont validés par Ali avant toute publication. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 | 0 | D-302 | MEDIA-02 : réduction des images web par un script Node sans dépendance (révisable par Ali). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-358 | CI-PUB (0.28.0) : actions des workflows de publication figées par SHA, identiques à tests.yml, test statique (C-166 ). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-359 | CI-PUB (0.28.0) : job « garde » : aucun build ni signature sur tag sans « suite verte » verte sur le SHA (C-172 ). | à confirmer seulement (aucun effet visible repéré) |
