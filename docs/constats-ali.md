@@ -234,7 +234,7 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
-- [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement (génère une séance, puis ouvre-la), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+- [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement › Proposer une séance (« Séance proposée », puis « Commencer cette séance »), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 
