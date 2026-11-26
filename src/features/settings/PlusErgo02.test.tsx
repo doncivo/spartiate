@@ -83,7 +83,7 @@ describe('ERGO-02 — Plus et Appareils et synchro (aperçu 13/11)', () => {
       renderIn(<SettingsScreen />);
       await screen.findByRole('heading', { level: 1, name: 'Plus' });
       expect(screen.getByText(/^Version/)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Ouvrir l’écran des journaux' })).toBeInTheDocument();
     });
   });
 

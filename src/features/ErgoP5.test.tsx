@@ -51,7 +51,7 @@ describe('ERGO-01b P5 : doublon retiré, accès gardé', () => {
 
   it('« Tester le minuteur (60 s) » est dans Logs, plus dans Plus › À propos', async () => {
     mount(<SettingsScreen />, { tab: 'more', screen: 'home' });
-    expect(await screen.findByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Ouvrir l’écran des journaux' })).toBeInTheDocument();
     expect(screen.queryByText('Tester le minuteur (60 s)')).toBeNull();
     cleanup();
     mount(<LogsScreen journal={createLogJournal(createMemoryLogTransport([]), { document: null, window: null })} version={() => Promise.resolve('0.22.1')} />);
