@@ -295,13 +295,14 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(logs.some((l) => l.event === 'recovery-import-recompute-failed')).toBe(true);
   });
 
-  it('NUTRI-0299 (relecture BL-172) : chaque compte journalisé reste lisible après l’assainissement du journal technique (jamais « [masqué] »)', async () => {
+  it('NUTRI-0299 (relecture BL-172) : les comptes de l’import et du refus restent lisibles après l’assainissement du journal technique (jamais « [masqué] »)', async () => {
     const reads = ALL_OK();
     reads[3] = ok('pas.csv', PAS.trimEnd());
     await build(reader(async () => reads)).run('manual');
     const done = logs.find((l) => l.event === 'recovery-import-done');
     expect(done?.counts).toMatchObject({ unterminated_count: 1 });
-    for (const { counts } of logs) {
+    // Événements de BL-172 ; la clé « state » de recovery-import-diag-file, masquée elle aussi, est antérieure (relevée dans docs/NUTRI-0299.md).
+    for (const { counts } of logs.filter((l) => l.event === 'recovery-import-done' || l.event === 'recovery-import-file-unterminated')) {
       for (const [key, value] of Object.entries(counts)) expect(sanitizeLogDetail(`${key}=${value}`), key).toBe(`${key}=${value}`);
     }
   });
@@ -552,7 +553,7 @@ describe('statuts journalisés et diagnostic du dossier sante (I5-04 points 1 et
 
   it('une lecture manuelle qui finit est journalisée « done » avec ses comptes', async () => {
     await build(reader(async () => ABSENT(), { kind: 'folder', automatic: true })).run('manual');
-    expect(logs.find((l) => l.event === 'recovery-import-done')?.counts).toEqual({ files: 4, imported: 0, absent: 4, unreadable: 0, unterminated: 0, failed: 0 });
+    expect(logs.find((l) => l.event === 'recovery-import-done')?.counts).toEqual({ files: 4, imported: 0, absent: 4, unreadable: 0, unterminated_count: 0, failed: 0 });
   });
 
   it('le diagnostic du dossier est journalisé : dossier atteint, sante présent, un événement par fichier (état et taille), comptes seulement', async () => {

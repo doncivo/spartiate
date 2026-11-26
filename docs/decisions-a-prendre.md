@@ -33,11 +33,11 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 10 | D-116 | CLEAN-01 (0.17.0) : le banc legacy et ce que les gardes citent sont CONSERVÉS. | A garder · B réviser ; effet : moteur, synchro, schéma, écran |
 | 10 | D-172 | FIX-0181 : migration 0015 (schéma 15). | A garder · B réviser ; effet : synchro, schéma, données, écran |
 | 10 | D-644 | CLEAN-0296 (C-085) : traducteurs à part typés comme catalogText, garde à liste figée. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
+| 10 | D-691 | NUTRI-0299 (BL-173, D-669) : objectif suivi par Stratégie et le check-in = sorte du profil, rythme des préférences nutrition. | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
 | 9 | D-81 | I4-07 « journée complète » : table day_completeness publiée (mission de nuit du 2026-11-09; tranche D-74 point 2 et D-76 point 2). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-85 | REV-01 (0.9.3) : séances ouvertes dans l'archive d'export (constat 1 de la relecture Codex du 9 novembre). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
-| 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 
 ### séance et moteur (114 : 72 à trancher, 42 à confirmer seulement)
 
@@ -168,7 +168,7 @@ Gardées sans question (à confirmer seulement) :
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
 | 14 | D-76 | Écrans de Nutrition sans IA ni réseau (I4-03, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : moteur, synchro, schéma, données, chiffre, écran |
-| 9 | D-691 | NUTRI-0299 (BL-173, D-669) : objectif suivi par Stratégie et le check-in = sorte du profil, rythme des préférences nutrition. | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
+| 10 | D-691 | NUTRI-0299 (BL-173, D-669) : objectif suivi par Stratégie et le check-in = sorte du profil, rythme des préférences nutrition. | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
 | 8 | D-78 | I4-05 : Open Food Facts et scan, choix prudents de l'agent (mission de nuit du 2026-11-09), révisables par Ali. | A garder · B réviser ; effet : schéma, chiffre, écran |
 | 8 | D-80 | I4-07 recettes : deux tables publiées, aucun changement de meal_entry ni de food (mission de nuit du 2026-11-09). | A garder · B réviser ; effet : synchro, schéma, chiffre |
 | 7 | D-124 | FIX-0171 (constat 6) : onboarding, brouillon inachevé et assistant terminé séparés. | A garder · B réviser ; effet : schéma, données |

@@ -64,4 +64,12 @@ BL-173 (D-669, C-106)
 
 ## Relecture à froid (code-reviewer)
 
-À compléter.
+Agent code-reviewer distinct, sur le diff 89d2a5da..c03f68d8 : **approuvé avec réserves**, aucun bloquant (344 tests ciblés verts).
+- Important, corrigé : la clé `unterminated` du journal « recovery-import-done » était masquée par l'assainissement (`ALLOWED_LOG_KEYS`) ;
+  renommée `unterminated_count` (suffixe admis). Rouge `e433f927`, vert : commit suivant. La garde couvre les événements de BL-172 ; la clé
+  `state` de `recovery-import-diag-file`, masquée elle aussi, est antérieure : reste hors périmètre, à reprendre (relevée ici).
+- Non bloquant, consigné dans D-691 : un profil « prise » avec des préférences au maintien (accueil, rythme nul) suit désormais 0,25 kg par
+  semaine, visible et modifiable en Stratégie (à confirmer par Ali).
+- Non bloquant, non traité : le check-in n'est vérifié qu'au niveau du snapshot (`snapshot.goal`), pas par un rendu ; le champ `rate` de
+  Stratégie s'initialise au montage, comme `prefs` avant ; le test du guide est entré avec le commit vert (documentation seule) ; un fichier
+  réduit à un en-tête sans saut de ligne est refusé (le raccourci n'écrit pas d'en-tête).

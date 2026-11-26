@@ -446,7 +446,7 @@ export function createShortcutImportService(deps: ShortcutImportDeps): ShortcutI
       if (rules !== null) ({ recomputedDays, recomputeFailed } = rules);
     }
     const count = (state: FileOutcome['state']): number => files.filter((f) => f.state === state).length;
-    deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), unterminated: count('unterminated'), failed: count('failed') });
+    deps.log('recovery-import-done', { files: files.length, imported: count('imported'), absent: count('absent'), unreadable: count('unreadable'), unterminated_count: count('unterminated'), failed: count('failed') });
     const issue = source.probe?.()?.santeListError ?? '';
     return { status: 'done', files, recomputedDays, recomputeFailed, at, ...(issue === '' ? {} : { folderIssue: issue }) };
   }
