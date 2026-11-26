@@ -228,7 +228,7 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.5) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 
-- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance (minuteur compris), Progrès, Récupération, Nutrition (saisie rapide) et Plus › Export et import : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » dans les journaux (PC : Plus › Journaux ; iPhone : Plus › APP › Logs) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 

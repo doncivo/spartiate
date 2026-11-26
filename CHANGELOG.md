@@ -6,11 +6,11 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.5.
 
-- **Textes** : vingt groupes de textes de l'interface (entre autres séance et minuteur, circuits, cycle et progrès, récupération, blessures, compléments, corps, saisie rapide de nutrition, import de programme, export et import, restauration de la synchro, Aujourd'hui sur le PC) sont vérifiés à la compilation : un texte ne peut plus s'afficher avec une valeur manquante ou mal nommée. L'affichage ne change pas.
+- **Textes** : vingt groupes de textes de l'interface (entre autres circuits, séance de récupération, médias d'exercice, minuteur de test des journaux, cycle et progrès, récupération, blessures, compléments, corps, saisie rapide de nutrition, import de programme, export et import, restauration de la synchro, Aujourd'hui sur le PC) sont vérifiés à la compilation : dans ces textes, une valeur manquante ou mal nommée est repérée avant la publication. L'affichage ne change pas.
 - **Icône** : les icônes de l'app sont contrôlées à chaque vérification automatique ; une icône qui ne correspond plus au dessin d'origine est refusée.
 - **Maintenance** : la couverture des tests est relevée module par module. Le démarrage ne charge rien de plus.
 
-Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.6). En priorité, sur les deux appareils, ouvre une séance, Progrès et Plus › Export et import : aucun texte ne montre d'accolades ni de nom technique à la place d'un mot.
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.29.6). En priorité, sur les deux appareils, ouvre Progrès, Plus › Export et import et le bouton « Tester le minuteur (60 s) » des journaux (PC : Plus › Journaux ; iPhone : Plus › APP › Logs) : aucun texte ne montre d'accolades ni de nom technique à la place d'un mot.
 
 ## 0.29.5
 
