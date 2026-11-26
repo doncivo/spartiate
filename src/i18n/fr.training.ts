@@ -459,6 +459,14 @@ export const trainingFr = {
   historyNotFound: 'Cette séance n’existe plus (supprimée, peut-être depuis ton autre appareil).',
   historyNotDone: 'Non validée',
   historyCorrected: 'corrigée',
+  /** SEANCE-0299 (BL-176, D-659) : valeur d'avant la dernière correction (« corrigée : 80 → 82,5 kg »). */
+  historyCorrectedFrom: 'corrigée : {changes}',
+  historyCorrectedJoin: ' ; ',
+  historyCorrectedLoad: '{from} → {to} kg',
+  historyCorrectedLoadPair: '2 × {from} → 2 × {to} kg',
+  historyCorrectedReps: '{from} → {to} répétitions',
+  historyCorrectedDuration: '{from} → {to} s',
+  historyCorrectedRir: 'RIR {from} → {to}',
   historyCorrect: 'Corriger',
   historyCorrectSave: 'Enregistrer la correction',
   /** SEANCE-0292 (C-072). */

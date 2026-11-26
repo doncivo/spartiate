@@ -41,6 +41,27 @@ export function valueText(set: WorkoutSet, held: Held = null): string {
   return loadKg === null ? tPlural(tTraining, reps, 'sessionDoneRepsOne', 'sessionDoneReps', { reps }) : tTraining('sessionDoneLoad', { load: formatExerciseLoad(loadKg, held), reps });
 }
 
+/**
+ * SEANCE-0299 (BL-176, D-659, Q-13 B) : étiquette d'une série corrigée, avec les valeurs d'avant la dernière correction
+ * (`correctedFrom`) qui diffèrent : « corrigée : 80 → 82,5 kg ; 8 → 10 répétitions ». Aucune valeur connue ou différente : « corrigée ».
+ */
+export function correctionText(set: WorkoutSet, held: Held = null): string {
+  const from = set.correctedFrom ?? null;
+  if (from === null) return tTraining('historyCorrected');
+  const value = (n: number | null): string => (n === null ? NONE : formatNumber(n));
+  const changes: string[] = [];
+  const pair = (a: number | null, b: number | null): { from: string; to: string } | null => (a === b ? null : { from: value(a), to: value(b) });
+  const load = pair(from.loadKg, set.loadKg);
+  if (load !== null) changes.push(tTraining(held === 2 ? 'historyCorrectedLoadPair' : 'historyCorrectedLoad', load));
+  const reps = pair(from.reps, set.reps);
+  if (reps !== null) changes.push(tTraining('historyCorrectedReps', reps));
+  const duration = pair(from.durationSec, set.durationSec);
+  if (duration !== null) changes.push(tTraining('historyCorrectedDuration', duration));
+  const rir = pair(from.rir, set.rir);
+  if (rir !== null) changes.push(tTraining('historyCorrectedRir', rir));
+  return changes.length === 0 ? tTraining('historyCorrected') : tTraining('historyCorrectedFrom', { changes: changes.join(tTraining('historyCorrectedJoin')) });
+}
+
 export interface HistorySetRowProps {
   readonly set: WorkoutSet;
   /** Rang parmi les séries hors échauffement de l'exercice. */
@@ -136,7 +157,7 @@ export function HistorySetRow({ set, number, timedExercise, held = null, loadFie
           {set.setKind === 'warmup' ? tTraining('sessionWarmupMark') : number}
         </span>
         <span className="ct-session__set-target">{tTraining(KIND_TEXT[set.setKind])}</span>
-        {corrected ? <span className="ct-session__state ct-history__corrected">{tTraining('historyCorrected')}</span> : null}
+        {corrected ? <span className="ct-session__state ct-history__corrected">{correctionText(set, held)}</span> : null}
         <span className={set.done ? 'ct-session__state ct-session__state--done' : 'ct-session__state'}>
           {set.done ? <Icon icon={Check} size="sm" /> : null}
           {tTraining(set.done ? 'sessionDone' : 'historyNotDone')}
