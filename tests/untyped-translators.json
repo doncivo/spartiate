@@ -1,5 +1,4 @@
 [
-  "src/i18n/healthText.ts:tHealth",
   "src/i18n/index.ts:tDynamic",
   "src/i18n/logsText.ts:tLogs",
   "src/i18n/nutritionText.ts:tNutrition",

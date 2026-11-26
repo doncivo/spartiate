@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MAX_LINES, SHORTCUT_REJECT_REASONS, type ShortcutRejectReason } from '../../domain/recovery';
 import { utcToLocal } from '../../domain/timeZone';
 import type { RecoveryImportState, RecoverySampleType } from '../../db/repositories/recoverySampleRepository';
-import { tHealth, type HealthTextKey } from '../../i18n/healthText';
+import { tHealth, type HealthPlainKey } from '../../i18n/healthText';
 import type { ShortcutFilesReader } from '../../platform/shortcutFiles';
 import { detectTimeZone } from '../../platform/timeZone';
 import { Button } from '../../ui';
@@ -11,14 +11,14 @@ import { importLog, shortcutImportFor, type FileOutcome, type ImportRunResult } 
 import { importStatusMessage } from './recoveryImport/statusMessage';
 import { formatLocaleNumber } from '../../i18n/units';
 
-const TYPES: readonly { readonly type: RecoverySampleType; readonly label: HealthTextKey }[] = [
+const TYPES: readonly { readonly type: RecoverySampleType; readonly label: HealthPlainKey }[] = [
   { type: 'hrv', label: 'recTypeHrv' },
   { type: 'fc-repos', label: 'recTypeRestingHr' },
   { type: 'sommeil', label: 'recTypeSleep' },
   { type: 'pas', label: 'recTypeSteps' },
 ];
 
-const reasonLabel = (reason: ShortcutRejectReason): string => tHealth(`recReason_${reason}` as HealthTextKey);
+const reasonLabel = (reason: ShortcutRejectReason): string => tHealth(`recReason_${reason}` as HealthPlainKey);
 
 function lastImportText(state: RecoveryImportState): string {
   const local = utcToLocal(state.importedAt, detectTimeZone() ?? 'Europe/Paris');
