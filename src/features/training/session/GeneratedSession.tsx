@@ -42,14 +42,14 @@ import { SEP } from '../../../i18n/units';
 const RecoverySplitView = lazy(() => import('./RecoverySession').then((m) => ({ default: m.RecoverySplitView })));
 
 const BUDGETS = [null, 20, 30, 35, 45, 60, 75, 90] as const;
-const ISSUE_KEY: Readonly<Record<GenerationIssueCode, TrainingGenerationTextKey>> = {
+const ISSUE_KEY = {
   'imported-unavailable': 'importedUnavailable',
   'day-out-of-range': 'issueDay',
   'split-days': 'issueSplitDays',
   'custom-day-groups': 'issueCustomDayGroups',
   'home-profile-required': 'issueHomeProfile',
   'budget-invalid': 'issueBudget',
-};
+} as const satisfies Readonly<Record<GenerationIssueCode, TrainingGenerationTextKey>>;
 const MODE_HINT = { guide: 'modeHintGuide', libre: 'modeHintLibre', maison: 'modeHintMaison' } as const;
 /** Le style n'a pas de colonne dans la séance (I3-01) : il est dit comme une consigne d'exécution, jamais présenté comme appliqué. */
 const STYLE_HINT = { straight: 'styleHintStraight', pyramid: 'styleHintPyramid', reverse: 'styleHintReverse' } as const satisfies Record<SetStyle, TrainingGenerationTextKey>;
