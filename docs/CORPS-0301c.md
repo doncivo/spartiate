@@ -57,4 +57,4 @@ docs/PROGRES-0301.md. Domaine pur utilisé tel quel (PROG-0301b) : `zoneTrend`, 
 - Constats d'Ali : à faire (docs/constats-ali.md, section 0.30.1, lignes BL-179 et D-703). Hors périmètre, en parallèle : BL-180
   (CORPS-0301d).
 - CI, essai 1 (run 45828839184) : rouge, deux gardes de catalogue non lancées en local (src/i18n/plural.test.ts : « {count} pesées » sans variante au singulier ; src/i18n/unusedKeys.test.ts : clés trendGoal_* appelées par un nom construit). Corrigé : weightLearningOne avec tPlural, table GOAL_TEXT ; src/i18n et src/ui verts en local (68 fichiers, 779 tests).
-- CI, essai 2 : CI_LINE
+- CI, essai 2 (run 45831813969, commit ead74e5a) : vert, « suite verte » réussie. PR non fusionnée (consigne).
