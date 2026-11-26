@@ -171,7 +171,8 @@ describe('ERGO-03 critère 5 : groupes et une ligne par réglage', () => {
     const r = await region();
     const style = await within(r).findByRole('button', { name: 'Style du check-in : Collaboratif' });
     expect(within(r).getByRole('button', { name: 'Jour du check-in : lundi' })).toBeInTheDocument();
-    expect(within(r).getByRole('button', { name: 'Objectif : Maintien' })).toBeInTheDocument();
+    // NUTRI-0299 (BL-173, D-669) : l'objectif est lu du profil, en lecture seule (plus une ligne qui se déplie).
+    expect(within(r).getByText('Objectif du profil : non renseigné, « Maintien » gardé')).toBeInTheDocument();
     expect(within(r).getByRole('button', { name: 'Niveau d’activité : Non déclaré' })).toBeInTheDocument();
     expect(style).toHaveAttribute('aria-expanded', 'false');
     expect(within(r).queryByRole('radio', { name: 'Manuel' })).not.toBeInTheDocument();
@@ -194,12 +195,12 @@ describe('ERGO-03 critère 7 : lignes ≥ 44 pt et très grand texte sans coupur
 });
 
 describe('ERGO-03 qa-test : cas limites', () => {
-  it('objectif de perte : la ligne porte la vitesse (« Perte · 0,25 kg / semaine »)', async () => {
+  it('NUTRI-0299 (BL-173) : objectif de perte au profil : la ligne « Rythme » porte la vitesse (« 0,25 kg / semaine »)', async () => {
+    await (await db.data.repos.profile()).save({ goal: 'loss' }, 2026);
     open();
     const r = await region();
-    fireEvent.click(await within(r).findByRole('button', { name: 'Objectif : Maintien' }));
-    fireEvent.click(within(r).getByRole('radio', { name: 'Perte' }));
-    expect(await within(r).findByRole('button', { name: 'Objectif : Perte · 0,25 kg / semaine' })).toBeInTheDocument();
+    expect(await within(r).findByText('Objectif du profil : Perte')).toBeInTheDocument();
+    expect(await within(r).findByRole('button', { name: 'Rythme : 0,25 kg / semaine' })).toBeInTheDocument();
   });
 
   it('une seule ligne ouverte à la fois', async () => {
