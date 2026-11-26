@@ -4,7 +4,7 @@
 // @tauri-apps/cli ; rendu SVG intégré, aucun outil de plus). Sortie dans .codex-tmp/, puis copie des icônes PC et iPhone vers
 // src-tauri/icons (le dossier android/ produit par le CLI est ignoré : aucune cible Android).
 // `node scripts/release/generate-icons.mjs` : régénère ; `--check` : compare octet à octet sans écrire (échec si un écart).
-// CLEAN-0296 : `--check` est lancé par la suite Vitest node (scripts/release/generateIcons.test.ts), donc par la CI.
+// CLEAN-0296 : `--check` est lancé par la CI (étape « Icônes générées (--check) » du job « Lint et typecheck » de tests.yml).
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';

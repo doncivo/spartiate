@@ -53,7 +53,7 @@ sur les fichiers changés (voir ci-dessous) ; `tsc --noEmit` et `npm run lint` p
 
 ## Relecture à froid (code-reviewer, distinct) et suites
 
-Verdict initial : refusé (1 bloquant, 3 importants). Traités :
+Verdict initial : refusé (1 bloquant, 3 importants) ; seconde relecture : (a) à (d) acceptés, seul reste le run CI. Traités :
 - bloquant (CI Linux non prouvée) : levé par le run de la PR (étape `--check` du job « Lint et typecheck ») ;
 - plafond 40 trop lâche : plafond égal à la liste figée (24), abaissé à chaque migration ;
 - plafond de 60 s, qui allongeait un test : retiré ; `--check` réel dans `tests.yml`, test sur arbres synthétiques ;
