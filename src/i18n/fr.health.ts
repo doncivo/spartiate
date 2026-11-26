@@ -53,6 +53,10 @@ export const healthFr = {
   recAbsentAuto: 'Non trouvé à la lecture du dossier de {time}. Le dernier import reste valable.',
   recAbsentPick: 'Absent des fichiers choisis à {time}.',
   recUnreadable: 'Fichier illisible : rien n’a été lu pour ce type.',
+  recUnterminated:
+    'Fichier refusé : il ne finit pas par un saut de ligne, sa dernière ligne a peut-être été coupée. Rien n’a été lu pour ce type. Dans le raccourci « Spartiate — récupération », ajoute après « Combiner le texte » une action « Texte » qui contient le texte combiné suivi d’un retour à la ligne, puis enregistre ce texte (guide, partie B.1).',
+  recDoneUnterminated:
+    'Un fichier au moins est refusé faute de saut de ligne final : dans le raccourci « Spartiate — récupération », ajoute après « Combiner le texte » une action « Texte » (texte combiné, puis un retour à la ligne) et enregistre ce texte.',
   recFailed: 'Import impossible pour ce type. Réessaie ; le détail est dans le journal technique (Plus › Logs).',
   recRejectedBy: 'Lignes refusées (cette session) :',
   recRejectedReason: '{label} : {count}',

@@ -87,7 +87,8 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     const row = await s.findByText(/Fichier refusé : il ne finit pas par un saut de ligne/);
     expect(row).toHaveTextContent(/« Spartiate — récupération »/);
     expect(row).toHaveTextContent(/« Combiner le texte »/);
-    expect(s.getByText('Jamais importé.', { exact: false })).toBeInTheDocument();
+    expect(s.getAllByText('Jamais importé.')).toHaveLength(4);
+    expect(s.getByRole('status')).toHaveTextContent(/saut de ligne final/);
     expect(screen.queryByText(/48/)).toBeNull();
   });
 
