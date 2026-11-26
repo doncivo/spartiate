@@ -241,10 +241,10 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.9) :
 
 - [ ] **BL-172 (raccourci récupération)** — voir la section « Décisions du 26/11 » ci-dessous : modifie le raccourci, puis Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Date : ____ Version : ____
-- [ ] **BL-171 (décision et décharge)** — iPhone ou PC, sur un exercice dont tu as décidé la charge depuis la dernière séance : pendant une semaine de décharge, la charge proposée est réduite (et non reprise telle quelle), avec la note de décision. Date : ____ Version : ____
+- [ ] **BL-171 (décision et décharge)** — iPhone ou PC, sur un exercice dont tu as décidé la charge depuis la dernière séance : pendant une semaine de décharge, la charge proposée est réduite (et non reprise telle quelle), avec la note « Référence : ta dernière décision, réduite comme une séance de ton historique. », et le bouton de décharge reste disponible. Date : ____ Version : ____
 - [ ] **BL-176 (série corrigée)** — corrige la charge d'une série d'une séance terminée, puis Entraînement › Journal › la séance : la série affiche « corrigée : ancienne → nouvelle valeur ». Date : ____ Version : ____
 - [ ] **BL-168 (Journaux)** — iPhone, Plus › APP › Journaux ; PC, Plus › Journaux : l'écran s'intitule « Journaux », l'export s'appelle `spartiate-journaux-…`, et aucun « Logs » n'apparaît, y compris dans Plus › Apple Santé. Date : ____ Version : ____
-- [ ] **BL-173 (Stratégie)** — Nutrition › Stratégie : la ligne « Objectif du profil : … » montre l'objectif de ton profil ; « Modifier dans Réglages › Corps » ouvre le bon écran ; le rythme se règle toujours ici. Date : ____ Version : ____
+- [ ] **BL-173 (Stratégie)** — Nutrition › Stratégie : la ligne « Objectif du profil : … » montre l'objectif de ton profil ; « Modifier dans Plus › Profil et poids » ouvre l'écran « Profil et poids » ; le rythme se règle toujours ici. Date : ____ Version : ____
 
 ## Décisions du 26/11 (D-657 à D-678)
 
