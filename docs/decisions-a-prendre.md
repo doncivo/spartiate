@@ -97,6 +97,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 3 | D-682 | SEANCE-0299 (BL-171, D-657). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-683 | SEANCE-0299 (BL-176, D-659). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-684 | SEANCE-0299 (BL-171, D-657, relecture à froid). | A garder · B réviser ; effet : moteur, écran |
+| 3 | D-742 | STR-0300 (BL-174, D-675 point 5). | A garder · B réviser ; effet : moteur |
 | 2 | D-211 | I6-05 : constance, révisable par Ali. | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-273 | PROG-01 (0.24.0) : exercice assisté jamais plus lourd en décharge (constat 6 de Codex, PR #127 ). | A garder · B réviser ; effet : moteur |
 | 2 | D-284 | FIX-0243 (0.25.0) : exercice assisté en décharge (complète D-273 ). | A garder · B réviser ; effet : moteur |
@@ -129,7 +130,6 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 2 | D-582 | DATA-0293. | A garder · B réviser ; effet : moteur |
 | 2 | D-588 | CONTENT-0293 (BL-113). | A garder · B réviser ; effet : moteur |
 | 2 | D-620 | SHELL-0294f (BL-150) : durée du mésocycle mise en cohérence. | A garder · B réviser ; effet : moteur |
-| 2 | D-742 | STR-0300 (BL-174, D-675 point 5). | A garder · B réviser ; effet : moteur |
 | 1 | D-271 | PROG-01 (0.24.0) : cible des jours de repos. | A garder · B réviser ; effet : chiffre |
 | 1 | D-351 | FIX-PROGRAMME (0.28.0) : « Revoir mes réglages » part de la durée réelle du cycle et ne l'écrase plus (C-117, C-064; complète D-315 ). | A garder · B réviser ; effet : écran |
 | 1 | D-455 | PROGRES-0291 (BL-114) : plage de séries jugée sur la dernière semaine complète. | A garder · B réviser ; effet : écran |
@@ -220,7 +220,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (40 : 14 à trancher, 26 à confirmer seulement)
+### récupération (41 : 15 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -229,6 +229,7 @@ Gardées sans question (à confirmer seulement) :
 | 6 | D-345 | FIX-RECUP (0.28.0) : exclusion des valeurs aberrantes de la baseline contre la moyenne et le σ des autres nuits (C-049 ). | A garder · B réviser (déjà marquée « à trancher ») ; effet : chiffre |
 | 4 | D-96 | I6-01 (0.12.0) : journal de facteurs (§ 16.7). | A garder · B réviser ; effet : données, chiffre |
 | 3 | D-94 | I5-05 (0.11.3) : lecture du dossier sante et journal unique, décisions de l'agent. | A garder · B réviser ; effet : chiffre |
+| 3 | D-741 | STR-0300 (BL-174, D-675 point 4). | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-393 | PROGRES-c (0.28.1) : tendances de récupération sur 30 jours et zone cible affichée (§ 17.1, § 16.3). | A garder · B réviser ; effet : chiffre, écran |
 | 1 | D-132 | FIX-0172 : stades de sommeil de l'Apple Watch. | A garder · B réviser ; effet : écran |
 | 1 | D-213 | I6-05 : pas d'action « Pris » dans la notification, révisable par Ali. | A garder · B réviser ; effet : écran |
@@ -370,7 +371,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 
-### écrans (56 : 28 à trancher, 28 à confirmer seulement)
+### écrans (55 : 27 à trancher, 28 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -392,7 +393,6 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-639 | SHELL-0295 (C-076) : unités, locale et séparateurs par src/i18n/units.ts. | A garder · B réviser ; effet : écran |
 | 2 | D-718 | DEC-0301 (D-706, D-707, D-708) : calculs de symétrie, de rythme par mois, de poids et de période. | A garder · B réviser ; effet : chiffre |
 | 2 | D-719 | DEC-0301 (D-701, D-702, D-709) : onglet retenu, plateformes de Corps › Mesures et saisie guidée. | A garder · B réviser ; effet : écran |
-| 2 | D-741 | STR-0300 (BL-174, D-675 point 4). | A garder · B réviser ; effet : chiffre, écran |
 | 1 | D-340 | FIX-PLANCHER (0.28.0) : cible du jour (dayTargetFor, D-270) au tableau de bord et au graphique (C-088 ). | A garder · B réviser ; effet : écran |
 | 1 | D-399 | COQUILLE-PC-b (0.28.1) : barre latérale PC rétractable, repli non persisté (§ 18.1). | A garder · B réviser ; effet : écran |
 | 1 | D-459 | COQUILLE-0291 (BL-119) : disposition PC décidée par le système, fenêtre minimale 800 × 360. | A garder · B réviser ; effet : chiffre |
