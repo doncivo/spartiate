@@ -396,7 +396,7 @@ export type StrengthGroup = (typeof STRENGTH_GROUPS)[number];
 /** 5 niveaux, du plus bas au plus haut ; leurs seuils valent 20, 40, 60, 80 et 100 points (`STRENGTH_LEVEL_SCORES`). */
 export const STRENGTH_LEVELS = ['beginner', 'novice', 'intermediate', 'advanced', 'elite'] as const;
 export type StrengthLevel = (typeof STRENGTH_LEVELS)[number];
-export const STRENGTH_LEVEL_SCORES: readonly number[] = Object.freeze([20, 40, 60, 80, 100]);
+export const STRENGTH_LEVEL_SCORES = Object.freeze([20, 40, 60, 80, 100] as const);
 
 /** Poids de corps de normalisation et exposant : force relative = e1RM × (80 / poids de corps)^(2/3) (D-675). */
 export const STRENGTH_NORMALIZED_BODYWEIGHT_KG = 80;

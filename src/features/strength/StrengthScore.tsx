@@ -118,7 +118,7 @@ function Ready({ data }: { readonly data: Loaded }) {
           <p className="ct-strength__context">{tStrength('context', { kg: formatStrengthKg(bodyweightKg), sex: tStrength(sex === 'male' ? 'sexMale' : 'sexFemale') })}</p>
           {result.frozenSince !== null ? (
             <p className="ct-strength__context" role="status">
-              {tStrength('frozen', { date: formatStrengthDate(result.frozenSince) })}
+              {tStrength(result.bodyweightFrozen ? 'frozen' : 'frozenNoWeight', { date: formatStrengthDate(result.frozenSince) })}
             </p>
           ) : null}
         </div>

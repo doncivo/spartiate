@@ -82,6 +82,8 @@ export interface StrengthResult {
   readonly bodyweightKg: number | null;
   /** Début de la décharge en cours qui fige le score ; null : pas figé. */
   readonly frozenSince: IsoDateTime | null;
+  /** Vrai : le poids de corps retenu est celui d'avant la décharge ; faux : pas de décharge, ou aucune pesée d'avant (poids courant). */
+  readonly bodyweightFrozen: boolean;
   readonly lifts: readonly LiftScore[];
   readonly groups: readonly GroupScore[];
   readonly global: { readonly score: number; readonly level: StrengthLevel; readonly counted: number } | null;
@@ -102,9 +104,11 @@ export function levelOfScore(score: number): StrengthLevel {
 export function scoreFromThresholds(relativeKg: number, thresholds: readonly number[]): { readonly score: number; readonly level: StrengthLevel } {
   const first = thresholds[0];
   const last = thresholds[thresholds.length - 1];
-  if (first === undefined || last === undefined || thresholds.length !== STRENGTH_LEVELS.length) throw new Error('seuils : 5 valeurs attendues');
-  const firstScore = STRENGTH_LEVEL_SCORES[0] as number;
-  if (relativeKg >= last) return { score: STRENGTH_LEVEL_SCORES[STRENGTH_LEVEL_SCORES.length - 1] as number, level: 'elite' };
+  const increasing = thresholds.every((v, i) => Number.isFinite(v) && v > 0 && (i === 0 || v > (thresholds[i - 1] as number)));
+  if (first === undefined || last === undefined || thresholds.length !== STRENGTH_LEVELS.length || !increasing) throw new Error('seuils : 5 valeurs finies, positives, strictement croissantes attendues');
+  if (!Number.isFinite(relativeKg)) throw new Error('force relative non finie');
+  const firstScore = STRENGTH_LEVEL_SCORES[0];
+  if (relativeKg >= last) return { score: STRENGTH_LEVEL_SCORES[4], level: 'elite' };
   if (relativeKg < first) return { score: Math.max(1, Math.floor((firstScore * relativeKg) / first)), level: 'beginner' };
   let i = 0;
   while (i < thresholds.length - 2 && (thresholds[i + 1] as number) <= relativeKg) i++;
@@ -129,11 +133,12 @@ export function deloadFreeze(exercises: readonly StrengthExercise[]): IsoDateTim
 
 const validWeighIns = (weighIns: readonly WeighIn[]): WeighIn[] => weighIns.filter((w) => Number.isFinite(w.kg) && w.kg > 0);
 
-function bodyweightOf(weighIns: readonly WeighIn[], frozenSince: IsoDateTime | null): number | null {
+function bodyweightOf(weighIns: readonly WeighIn[], frozenSince: IsoDateTime | null): { readonly kg: number | null; readonly frozen: boolean } {
   const valid = validWeighIns(weighIns);
-  const before = frozenSince === null ? valid : valid.filter((w) => w.date < frozenSince.slice(0, 10));
-  const kg = currentBodyweightKg(before.length > 0 ? before : valid);
-  return kg !== null && Number.isFinite(kg) && kg > 0 ? kg : null;
+  const before = frozenSince === null ? [] : valid.filter((w) => w.date < frozenSince.slice(0, 10));
+  const frozen = before.length > 0;
+  const kg = currentBodyweightKg(frozen ? before : valid);
+  return { kg: kg !== null && Number.isFinite(kg) && kg > 0 ? kg : null, frozen };
 }
 
 function e1rmOf(exercise: StrengthExercise, lift: ReferenceLift, bodyweightKg: number): number | null {
@@ -147,10 +152,14 @@ export function strengthScore(input: StrengthInput): StrengthResult {
   const liftsByKey = new Map(lifts.map((l) => [l.key, l]));
   const known = input.exercises.filter((e) => liftsByKey.has(e.key));
   const frozenSince = deloadFreeze(known);
-  const bodyweightKg = bodyweightOf(input.weighIns, frozenSince);
-  const referencesOf = (group: StrengthGroup): string[] => known.filter((e) => liftsByKey.get(e.key)?.groups.includes(group) === true).map((e) => e.nameFr);
+  const body = bodyweightOf(input.weighIns, frozenSince);
+  const bodyweightKg = body.kg;
+  // Relecture M2 : un mouvement sans seuil pour le sexe n'est pas une référence du groupe (jamais « Aucune séance de » à tort).
+  const scorable = (e: StrengthExercise): boolean => sex !== null && thresholds[e.key]?.[sex] !== undefined;
+  const referencesOf = (group: StrengthGroup): string[] =>
+    known.filter((e) => liftsByKey.get(e.key)?.groups.includes(group) === true && (sex === null || scorable(e))).map((e) => e.nameFr);
   const unknown = (group: StrengthGroup, reason: UnknownReason): GroupScore => ({ group, kind: 'unknown', reason, references: reason === 'noReference' ? [] : referencesOf(group) });
-  const base = { version: STRENGTH_SCORE_VERSION, bodyweightKg, frozenSince };
+  const base = { version: STRENGTH_SCORE_VERSION, bodyweightKg, frozenSince, bodyweightFrozen: body.frozen };
 
   if (sex === null || bodyweightKg === null) {
     const reason: UnknownReason = sex === null ? 'noSex' : 'noBodyweight';

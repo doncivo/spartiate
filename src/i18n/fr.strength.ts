@@ -12,6 +12,7 @@ export const strengthFr = {
   sexMale: 'homme',
   sexFemale: 'femme',
   frozen: 'Figé pendant la décharge, depuis le {date}.',
+  frozenNoWeight: 'Décharge en cours depuis le {date} : ses séances n’entrent pas dans le score ; aucune pesée d’avant, le poids courant sert.',
   noSex: 'Sexe non renseigné dans le profil : les normes dépendent du sexe.',
   noBodyweight: 'Aucune pesée : sans poids de corps, pas de score.',
   noSexHint: 'Renseigne-le dans Plus › Profil.',
