@@ -41,7 +41,7 @@ export const strengthFr = {
   levelElite: 'Élite',
   methodTitle: 'Méthode',
   methodE1rm: 'Pour chaque mouvement de référence, l’e1RM (charge maximale estimée sur une répétition) vient de tes dernières séances, par la formule d’Epley ; tractions et dips comptent ton poids de corps plus le lest.',
-  methodRelative: 'Pour comparer à poids égal, il est ramené à 80 kg de poids de corps : e1RM × (80 / ton poids)^(2/3).',
+  methodRelative: 'Pour comparer à poids égal, il est ramené à 80 kg de poids de corps : e1RM × (80 / poids de corps)^(2/3).',
   methodScore: 'Le score de 0 à 100 place cette force entre deux seuils de ton sexe : Débutant 20 · Novice 40 · Intermédiaire 60 · Avancé 80 · Élite 100. Chaque groupe garde son meilleur mouvement ; le global est la moyenne des groupes connus.',
   methodUnknown: 'Sans pesée ou sans séance, le score reste inconnu, jamais 0. Pendant une semaine de décharge, il est figé.',
   version: 'Méthode maison, version {v}.',

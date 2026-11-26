@@ -122,7 +122,7 @@ describe('Progrès › Force : Strength Score maison', () => {
     await weigh(80);
     mount();
     expect(await screen.findByText(/formule d’Epley/)).toBeInTheDocument();
-    expect(screen.getByText(/e1RM × \(80 \/ ton poids\)\^\(2\/3\)/)).toBeInTheDocument();
+    expect(screen.getByText(/e1RM × \(80 \/ poids de corps\)\^\(2\/3\)/)).toBeInTheDocument();
     expect(screen.getByText(/Débutant 20 · Novice 40 · Intermédiaire 60 · Avancé 80 · Élite 100/)).toBeInTheDocument();
     expect(screen.getByText(/figé/)).toBeInTheDocument();
     expect(screen.getByText('Méthode maison, version 1.')).toBeInTheDocument();

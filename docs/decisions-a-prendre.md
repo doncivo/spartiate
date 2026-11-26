@@ -6,7 +6,7 @@ Le lot continue sans la réponse : le comportement actuel reste en place tant qu
 forme « Q-n : option ». Une question tranchée devient une D- dans docs/decisions.md et sort de ce fichier.
 
 
-Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Ouvertes : Q-41 (ci-dessous) ; Q-42 (seuils du Strength Score) arrive avec STR-0300. La revue par thème des choix prudents (D-490, BL-149) est
+Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Ouvertes : Q-41, Q-42 (ci-dessous). La revue par thème des choix prudents (D-490, BL-149) est
 en fin de fichier, générée par `node scripts/release/prudent-review.mjs --write` (sections « séance et moteur », « nutrition »,
 « récupération », « synchro et données », « écrans », « CI et outillage »).
 
@@ -18,11 +18,19 @@ Sources et limites : relevé du 26/11 (NICE NG246, OMS 2011, Crossley et al. 201
 - Épaules / taille — A (recommandé) : pas de repère, valeur et évolution seules (aucune source fiable) ; B : 1,618 étiqueté « non scientifique » ; C : ratio masqué.
 - Poitrine / taille — A (recommandé) : environ 1,30–1,35 (homme), étiqueté « esthétique, sans valeur santé » (Crossley et al. 2012) ; B : pas de repère ; C : ratio masqué.
 
+## Q-42 — Seuils du Strength Score maison (BL-174, D-675, D-678)
+
+Tableau complet, méthode, mouvement de référence par groupe et limites : docs/STR-0300-seuils.md (seuils dans `src/domain/training/config.ts`, marqués « proposition non validée (Q-42) »). Force relative = e1RM ramené à 80 kg ; seuil = 80 kg × multiple « Intermédiaire » du mouvement × coefficient du sexe (femme : 0,60 haut du corps, 0,75 bas du corps, 0,82 charge totale) × échelle des niveaux (barre 0,50 · 0,75 · 1 · 1,30 · 1,65 ; tractions et dips 0,80 · 0,90 · 1 · 1,20 · 1,40). Exemple, développé couché homme : 40 · 60 · 80 · 104 · 132 kg. Aucune de tes données, aucune norme tierce. Rien n'est publié avant ta réponse (D-678) ; la PR STR-0300 reste ouverte.
+- A (recommandé) : valider le tableau tel quel.
+- B : valider avec un coefficient global à préciser (par exemple 0,9 ou 1,1 sur tous les seuils), un seul paramètre de la méthode.
+- C : refaire selon une autre méthode (à décrire : autres multiples, autre échelle, autres coefficients).
+Conséquences : A ou B, la PR est fusionnée et publiée avec `STRENGTH_SCORE_VERSION` 1 (B : seuils recalculés par la méthode, même version puisque rien n'a été publié) ; C, nouvelle proposition avant toute publication.
+
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-396 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+400 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -47,7 +55,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (118 : 76 à trancher, 42 à confirmer seulement)
+### séance et moteur (120 : 78 à trancher, 42 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -65,6 +73,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 6 | D-289 | ERGO-02b (0.25.0) : écarts de charge « par haltère », aperçu illisible, premier cycle. | A garder · B réviser ; effet : moteur, données, chiffre, écran |
 | 6 | D-322 | FIX-ASSIST (0.28.0) : exercice assisté, l'assistance est une charge négative (audit Claude 0.27.0, C-001, C-002, C-011; complète D-170 (3), D-273, … | A garder · B réviser ; effet : moteur, chiffre, écran |
 | 6 | D-392 | PROGRES-d (0.28.1) : adhérence sur 4 semaines (I2). | A garder · B réviser (déjà marquée « à trancher ») ; effet : moteur |
+| 6 | D-743 | STR-0300 (BL-174, D-701 Force). | A garder · B réviser ; effet : moteur, synchro, chiffre |
 | 5 | D-73 | Décisions I3 par défaut, révisables par Ali (2026-11-08, mission de nuit sans réponse d'Ali). | A garder · B réviser ; effet : moteur, chiffre |
 | 5 | D-102 | I6-03 (0.14.0) : circuits dans la séance. | A garder · B réviser ; effet : moteur, chiffre |
 | 5 | D-184 | RESET-01 : séance en cours, ordre et rechargement. | A garder · B réviser ; effet : synchro, données |
@@ -120,6 +129,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 2 | D-582 | DATA-0293. | A garder · B réviser ; effet : moteur |
 | 2 | D-588 | CONTENT-0293 (BL-113). | A garder · B réviser ; effet : moteur |
 | 2 | D-620 | SHELL-0294f (BL-150) : durée du mésocycle mise en cohérence. | A garder · B réviser ; effet : moteur |
+| 2 | D-742 | STR-0300 (BL-174, D-675 point 5). | A garder · B réviser ; effet : moteur |
 | 1 | D-271 | PROG-01 (0.24.0) : cible des jours de repos. | A garder · B réviser ; effet : chiffre |
 | 1 | D-351 | FIX-PROGRAMME (0.28.0) : « Revoir mes réglages » part de la durée réelle du cycle et ne l'écrase plus (C-117, C-064; complète D-315 ). | A garder · B réviser ; effet : écran |
 | 1 | D-455 | PROGRES-0291 (BL-114) : plage de séries jugée sur la dernière semaine complète. | A garder · B réviser ; effet : écran |
@@ -360,7 +370,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 
-### écrans (55 : 27 à trancher, 28 à confirmer seulement)
+### écrans (56 : 28 à trancher, 28 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -382,6 +392,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-639 | SHELL-0295 (C-076) : unités, locale et séparateurs par src/i18n/units.ts. | A garder · B réviser ; effet : écran |
 | 2 | D-718 | DEC-0301 (D-706, D-707, D-708) : calculs de symétrie, de rythme par mois, de poids et de période. | A garder · B réviser ; effet : chiffre |
 | 2 | D-719 | DEC-0301 (D-701, D-702, D-709) : onglet retenu, plateformes de Corps › Mesures et saisie guidée. | A garder · B réviser ; effet : écran |
+| 2 | D-741 | STR-0300 (BL-174, D-675 point 4). | A garder · B réviser ; effet : chiffre, écran |
 | 1 | D-340 | FIX-PLANCHER (0.28.0) : cible du jour (dayTargetFor, D-270) au tableau de bord et au graphique (C-088 ). | A garder · B réviser ; effet : écran |
 | 1 | D-399 | COQUILLE-PC-b (0.28.1) : barre latérale PC rétractable, repli non persisté (§ 18.1). | A garder · B réviser ; effet : écran |
 | 1 | D-459 | COQUILLE-0291 (BL-119) : disposition PC décidée par le système, fenêtre minimale 800 × 360. | A garder · B réviser ; effet : chiffre |
@@ -425,12 +436,13 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-692 | NUTRI-0299 (D-649) : les renvois des textes de Santé au journal technique donnent les deux chemins. | à confirmer seulement (aucun effet visible repéré) |
 
-### CI et outillage (68 : 32 à trancher, 36 à confirmer seulement)
+### CI et outillage (69 : 33 à trancher, 36 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
 | 11 | D-618 | SHELL-0294f (BL-149, D-490) : revue par thème des choix prudents, produite par script. | A garder · B réviser ; effet : moteur, synchro, schéma, données |
 | 9 | D-635 | DATA-0295 (§ 23.1 c, H-18) : tests de parité Wasm / plugin natif. | A garder · B réviser ; effet : moteur, synchro, schéma |
+| 7 | D-740 | STR-0300 (BL-174, D-675, D-679). | A garder · B réviser ; effet : moteur, schéma, chiffre |
 | 6 | D-222 | I6-06 : GPS sur l'iPhone par le plugin OFFICIEL Tauri geolocation, au premier plan seulement (passe architect, décision de l'agent révisable par Ali). | A garder · B réviser ; effet : synchro, écran |
 | 6 | D-598 | SHELL-0294b (C-158, BL-129, § 19.3 a, § 19.4 a). | A garder · B réviser ; effet : synchro, données |
 | 5 | D-77 | Client Open Food Facts en Rust (I4-05, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro |
