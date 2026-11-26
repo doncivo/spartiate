@@ -304,6 +304,14 @@
       "old": "| H-15 | Recharts tient les volumes (3 ans de séries Spartiate) en < 300 ms | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques (I2) |",
       "new": "| H-15 | Les graphiques de Progrès (SVG de l’app) tiennent trois ans de séries Spartiate en < 300 ms (reformulée, Recharts retiré, D-614, D-624) | UNVERIFIED | `test:perf` avec fixture synthétique 3 ans sur le chemin réel des graphiques |",
       "why": "BL-148 : H-15 reformulée, Recharts retiré en SHELL-0294e (D-614), comme la matrice."
+    },
+    {
+      "id": "dec0298-prd-19-entitlements",
+      "decision": "D-648",
+      "section": "19",
+      "old": "```xml\n<key>com.apple.developer.healthkit</key><true/>\n<key>com.apple.developer.healthkit.access</key><array/>\n<key>keychain-access-groups</key><array><string>$(AppIdentifierPrefix)fr.spartiate.app</string></array>\n```",
+      "new": "```xml\n<key>com.apple.developer.healthkit</key><true/>\n```\n\nUne seule clé (décision d'Ali du 26/11/2026, D-648, Q-33) : ni `com.apple.developer.healthkit.access` ni `keychain-access-groups`, car la signature ad hoc de la CI ne développe pas `$(AppIdentifierPrefix)` et changer le groupe du Trousseau d'une app installée peut rendre illisible la clé de synchro qu'il garde (D-598).",
+      "why": "Q-33 : Ali garde une seule clé (HealthKit) ; le § 19.4 dit ce que l'app porte, la clé de synchro du Trousseau n'est pas touchée."
     }
   ]
 }

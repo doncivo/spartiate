@@ -236,6 +236,13 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
 - [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement › Proposer une séance (« Séance proposée », puis « Commencer cette séance »), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
+## CSP stricte (D-650)
+
+Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écrans sur les deux appareils ; un élément sans mise en forme, une barre vide, un graphique ou un pictogramme absent est un défaut d'affichage à signaler (BL-002, BL-144).
+
+- [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Aujourd'hui, colonne de droite (barres de macros) ; Nutrition › Journal, Nutrition › Tableau de bord (graphiques) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
+- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Logs (« Journaux » après BL-168). Date : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
@@ -297,8 +304,8 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | C-119 | 0.29.4 |
 | § 18.3 a | 0.29.4 |
 | C-074 | 0.29.4 |
-| BL-002 | 0.29.4 |
-| BL-144 | 0.29.4 |
+| BL-002 | 0.29.4 ; CSP stricte (D-650) |
+| BL-144 | 0.29.4 ; CSP stricte (D-650) |
 | C-139 | 0.29.4 |
 | H-43 | 0.29.5 |
 | C-155 | 0.29.5 |
