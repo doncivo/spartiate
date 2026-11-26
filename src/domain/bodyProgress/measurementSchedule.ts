@@ -15,7 +15,7 @@ export const DEFAULT_MEASUREMENT_RHYTHM_DAYS: MeasurementRhythmDays = 7;
 
 /** Rythme lu (nombre, ou texte décimal exact du réglage) ; toute autre valeur : 7 jours (D-734). */
 export function parseMeasurementRhythm(value: unknown): MeasurementRhythmDays {
-  const n = typeof value === 'number' ? value : typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : Number.NaN;
+  const n = typeof value === 'number' ? value : typeof value === 'string' && /^(7|14|28)$/.test(value) ? Number(value) : Number.NaN;
   return (MEASUREMENT_RHYTHMS_DAYS as readonly number[]).includes(n) ? (n as MeasurementRhythmDays) : DEFAULT_MEASUREMENT_RHYTHM_DAYS;
 }
 

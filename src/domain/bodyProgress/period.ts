@@ -65,9 +65,9 @@ export function kindSeries(samples: readonly BodySample[], kind: string): Measur
 /** Série d'une zone saisie seulement (jamais un genre importé ou une note, même s'il portait le même nom). */
 export const zoneSeries = (samples: readonly BodySample[], kind: MeasurementKind): MeasurementPoint[] => (isMeasurementKind(kind) ? kindSeries(samples, kind) : []);
 
-/** Arrondi au pas donné (0,1 ou 0,01), sans « −0 ». */
+/** Arrondi au pas donné (0,1 ou 0,01), symétrique (−0,45 et +0,45 donnent −0,5 et +0,5), sans « −0 ». */
 export const roundTo = (n: number, digits: number): number => {
   const f = 10 ** digits;
-  const r = Math.round(n * f) / f;
+  const r = (Math.sign(n) * Math.round(Math.abs(n) * f)) / f;
   return r === 0 ? 0 : r;
 };

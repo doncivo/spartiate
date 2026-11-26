@@ -12,7 +12,8 @@ Préparation : docs/PROGRES-0301.md. Aucun écran, aucun texte, aucune table, au
   1. Given une zone avec une mesure 28 jours avant la dernière et un écart de −1 cm, When l'objectif est « perte », Then tendance « baisse »
      favorable ; « prise » : favorable pour le tour de taille, défavorable ailleurs ; « maintien » : défavorable ; sans objectif : neutre.
   2. Given un écart absolu sous 0,5 cm, Then « stable », neutre ; Given moins de 2 mesures ou une référence à moins de 14 jours, Then
-     « pas assez de mesures », neutre (D-716) ; la référence suit l'écran actuel (28 à 42 jours, sinon la plus ancienne retenue).
+     « pas assez de mesures », neutre (D-716) ; la référence suit l'écran actuel (une mesure 28 à 42 jours avant ; sinon la plus récente des mesures
+     de plus de 28 jours ; sinon la plus ancienne).
   3. Given des mesures `health_*`, `note_*` ou `visbody_*` dans la liste, Then elles n'entrent ni dans la tendance, ni dans les ratios, ni
      dans la symétrie, ni dans la dernière séance de mesures (D-713, D-715).
   4. Given une hauteur de profil, Then elle sert aux ratios ; sans elle, la dernière hauteur de Santé ; une différence de plus de 2 cm est
@@ -33,5 +34,14 @@ Préparation : docs/PROGRES-0301.md. Aucun écran, aucun texte, aucune table, au
   (`symmetry`, `symmetryAll`), `weightEvolution.ts` (sur `computeTrend` et `isTrendLearning` de la nutrition), `measurementSchedule.ts`
   (`lastMeasurementSession`, `measurementSchedule`, `parseMeasurementRhythm`). Choix non tranchés : D-730 à D-734. Aucun import React ni
   Tauri ; aucune table, aucun écran, aucun texte.
-- **qa-test** — à compléter.
-- **code-reviewer** — à compléter.
+- **qa-test** — Rouge : `299e9efc` (5 fichiers de tests, modules absents). Vert : `226b34aa`. Suite du module
+  (`CI=1 npx vitest run --coverage.enabled=false src/domain/bodyProgress`) : 9 fichiers, 89 tests verts ; `npm run typecheck` et
+  `npm run lint` verts ; contrôles documentaires (docs-paths, agents, backlogCount, privacy, prudentReview) : 47 tests verts. Valeurs
+  attendues calculées à la main (pentes, ratios, évolutions, symétrie, périodes, échéances) ; toutes les valeurs sont inventées.
+- **code-reviewer** — Relecture à froid par un agent distinct, sur le diff : « approuvé », aucun bloquant (valeurs recalculées, balayage
+  de la borne de 2 % sans faux signalement, couches et absence de repère vérifiées). Remarques reprises : arrondi symétrique (`roundTo`),
+  regex stricte du rythme (`/^(7|14|28)$/`), référence de la tendance précisée (critère 2 et D-730), tests ajoutés (hauteur du profil hors
+  bornes remplacée par Santé, taille / hauteur avec une seule taille, premier jour de période inclus) ; rouge `8b524a71` (2 tests rouges
+  sur l'ancien code), vert au commit suivant, 93 tests verts. Laissées à BL-179 : brancher l'écran sur `zoneTrend` et retirer
+  `summarizeZone` (règle en double, src/features/bodyProgress/bodyZone.ts) ; filtrer les mesures datées après la fin pour la valeur
+  actuelle des ratios, de la symétrie et de la tendance (aujourd'hui seule la séance de mesures les écarte, D-734).
