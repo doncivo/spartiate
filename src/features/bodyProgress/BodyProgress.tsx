@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   HEALTH_METRIC_KINDS,
   MEASUREMENT_BOUNDS_CM,
@@ -13,6 +13,13 @@ import {
   type MeasurementKind,
   type PhotoActions,
 } from '../../domain/bodyProgress';
+import type { BodyGoal, Sex } from '../../domain/bodyProfile';
+import { BODY_PERIODS, DEFAULT_BODY_PERIOD, inPeriod, periodStart, type BodyPeriod, type BodySample } from '../../domain/bodyProgress/period';
+import { bodyRatios } from '../../domain/bodyProgress/ratios';
+import { symmetryAll } from '../../domain/bodyProgress/symmetry';
+import { weightEvolution } from '../../domain/bodyProgress/weightEvolution';
+import { monthlyRate, zoneTrends } from '../../domain/bodyProgress/zoneTrend';
+import type { WeighIn } from '../../domain/nutrition/types';
 import { todayLocal } from '../../domain/clock';
 import type { LocalDate } from '../../domain/types';
 import type { MeasurementRecord, ProgressPhotoRecord } from '../../db/repositories';
@@ -21,13 +28,15 @@ import { formatCm, tBodyProgress, type BodyProgressTextKey, type BodyProgressPla
 import { logFailure } from '../../platform/desktop/log';
 import { PhotoTooLargeError, pickPhotoJpeg } from '../../platform/photoImage/picker';
 import { shieldOwner } from '../../platform/privacyShield';
-import { Button, ConfirmDialog } from '../../ui';
+import { Button, ConfirmDialog, SegmentedControl } from '../../ui';
 import { MissingValue } from '../../ui/MissingValue';
 import { useLayout } from '../../ui/useLayout';
 import { useAppContainer } from '../app/AppContainerContext';
 import { useSyncedData } from '../sync/remoteChanges';
-import { KIND_TEXT, Silhouette, ZoneChips, ZoneCurve, ZoneList, neighbourZone, signed } from './BodyZones';
-import { summarizeZone, type ZoneSummary } from './bodyZone';
+import { KIND_TEXT, Silhouette, TrendLegend, ZoneChips, ZoneCurve, ZoneList, neighbourZone, signed, trendWords } from './BodyZones';
+import { summarizeZone, type ZonePoint, type ZoneSummary } from './bodyZone';
+import { GuidedEntry } from './GuidedEntry';
+import { RateLine, RatiosCard, SymmetryCard, WeightLine } from './MeasureInsights';
 import { VisbodySection } from './VisbodySection';
 import { MeasurementRhythmLazy } from '../settings/measurementRhythm/lazy';
 import './BodyProgress.css';
@@ -49,6 +58,22 @@ const ISSUE_TEXT: Record<Exclude<MeasurementIssue, 'range'>, BodyProgressPlainKe
 /** Genres importés de Santé : texte du nom et de l'unité (dans le nom du genre : `_pct`, `_kg`, `_cm`, `_g`). */
 const HEALTH_UNIT = { health_body_fat_pct: 'healthUnit_pct', health_lean_mass_kg: 'healthUnit_kg', health_waist_cm: 'healthUnit_cm', health_height_cm: 'healthUnit_cm', health_fiber_g: 'healthUnit_g' } as const satisfies Record<HealthMetricKind, BodyProgressTextKey>;
 
+const PERIOD_TEXT = { '4w': 'period_4w', '3m': 'period_3m', '6m': 'period_6m', all: 'period_all' } as const satisfies Record<BodyPeriod, BodyProgressPlainKey>;
+
+/** CORPS-0301c : ce que lit Mesures en plus des mensurations (profil en lecture seule, D-669 ; pesées ; séries de Santé). */
+interface MeasuresExtra {
+  readonly goal: BodyGoal | null;
+  readonly sex: Sex | null;
+  readonly heightCm: number | null;
+  readonly weighIns: readonly WeighIn[];
+  /** Tour de taille et hauteur importés de Santé, toutes dates (superposition et hauteur des ratios seulement, D-715). */
+  readonly healthWaist: readonly MeasurementRecord[];
+  readonly healthHeight: readonly MeasurementRecord[];
+}
+/** Pesées lues pour la période « Tout » : plus de 27 ans à une pesée par jour (la période n'est jamais coupée en silence). */
+const WEIGHT_READ_LIMIT = 10_000;
+const NO_EXTRA: MeasuresExtra = { goal: null, sex: null, heightCm: null, weighIns: [], healthWaist: [], healthHeight: [] };
+
 /** Au plus deux photos côte à côte. */
 const COMPARE_MAX = 2;
 
@@ -65,6 +90,7 @@ type Load =
       /** Fiches masquées sur cet appareil (réglage local). */
       readonly hidden: readonly string[];
       readonly local: ReadonlySet<string>;
+      readonly extra: MeasuresExtra;
     };
 
 /**
@@ -78,7 +104,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
   const pc = useLayout() === 'pc';
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
-  const synced = useSyncedData(['measurement', 'progress_photo']);
+  const synced = useSyncedData(['measurement', 'progress_photo', 'profile', 'body_weight']);
   const today = todayLocal(container.clock);
 
   const [kind, setKindRaw] = useState<MeasurementKind>('waist');
@@ -99,6 +125,17 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
   // C-094 : suppression d'une mesure confirmée (elle se propage par synchro sur les deux appareils).
   const [measureToDelete, setMeasureToDelete] = useState<MeasurementRecord | null>(null);
   const [compare, setCompare] = useState<readonly string[]>([]);
+  // CORPS-0301c (D-706, D-718) : période de la courbe, 3 mois par défaut ; saisie guidée (D-709) à la place du formulaire zone par zone.
+  const [period, setPeriod] = useState<BodyPeriod>(DEFAULT_BODY_PERIOD);
+  const [guided, setGuided] = useState(false);
+  // Relecture : à la fermeture de la saisie guidée, le focus revient sur son bouton d'ouverture.
+  const guidedStart = useRef<HTMLDivElement>(null);
+  const guidedClosed = useRef(false);
+  useEffect(() => {
+    if (guided || !guidedClosed.current) return;
+    guidedClosed.current = false;
+    guidedStart.current?.querySelector('button')?.focus();
+  }, [guided]);
   const [reload, setReload] = useState(0);
   const refresh = useCallback(() => setReload((n) => n + 1), []);
 
@@ -131,14 +168,34 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
       const { repos } = container.data;
       const photoRepo = await repos.progressPhotos();
       const measureRepo = await repos.measurements();
+      // CORPS-0301c : profil (objectif, sexe, hauteur ; lecture seule) et pesées, pour Mesures seulement ; lancés tout de suite, en
+      // parallèle des lectures existantes (le dépôt du profil est un module chargé à la demande).
+      const extraRead: Promise<Omit<MeasuresExtra, 'healthWaist' | 'healthHeight'> | null> =
+        part === undefined || part === 'measures'
+          ? (async () => {
+              const [profiles, bodyWeights] = await Promise.all([repos.profile(), repos.bodyWeights()]);
+              const [profile, weights] = await Promise.all([profiles.get(), bodyWeights.listRecent(WEIGHT_READ_LIMIT)]);
+              const weighIns = [...weights]
+                .sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : (a.measuredAt ?? '') < (b.measuredAt ?? '') ? -1 : (a.measuredAt ?? '') > (b.measuredAt ?? '') ? 1 : 0))
+                .map((w) => ({ date: w.date, kg: w.kg }));
+              return { goal: profile?.goal ?? null, sex: profile?.sex ?? null, heightCm: profile?.heightCm ?? null, weighIns };
+            })()
+          : Promise.resolve(null);
+      // Un échec est lu plus bas (await) : jamais une promesse rejetée sans gestionnaire entre-temps.
+      extraRead.catch(() => undefined);
       const measures = await measureRepo.list();
       // Dernière valeur de chaque genre importé de Santé (I6-04), en lecture seule.
-      const health = (await Promise.all(HEALTH_METRIC_KINDS.filter((k) => k !== 'health_fiber_g').map((k) => measureRepo.list(k)))).flatMap((rows) => rows.slice(-1));
+      // CORPS-0301c : les séries complètes du tour de taille et de la hauteur de Santé servent aussi à Mesures (pointillé, hauteur des ratios).
+      const healthRows = await Promise.all(HEALTH_METRIC_KINDS.filter((k) => k !== 'health_fiber_g').map((k) => measureRepo.list(k)));
+      const health = healthRows.flatMap((rows) => rows.slice(-1));
+      const seriesOf = (k: HealthMetricKind): readonly MeasurementRecord[] => healthRows.find((rows) => rows[0]?.kind === k) ?? [];
       const photos = await photoRepo.list();
       // D-121 : une suppression reçue n'efface jamais le fichier local ; la fiche reste affichée « supprimée ailleurs » jusqu'à la suppression ici.
       const deletedElsewhere = await photoRepo.listDeletedWithFile();
       const hidden = parseHiddenPhotoIds(await repos.settings.get('bodyProgress.hiddenPhotos'));
-      return { status: 'ready', measures, health, photos, deletedElsewhere, hidden, local: await photoRepo.localFileIds() } as const;
+      const read = await extraRead;
+      const extra: MeasuresExtra = read === null ? NO_EXTRA : { ...read, healthWaist: seriesOf('health_waist_cm'), healthHeight: seriesOf('health_height_cm') };
+      return { status: 'ready', measures, health, photos, deletedElsewhere, hidden, local: await photoRepo.localFileIds(), extra } as const;
     })().then(
       (result) => {
         if (live) setLoad(result);
@@ -168,6 +225,12 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
     } catch {
       setMeasureMessage({ alert: true, text: tBodyProgress('saveFailed') });
     }
+  };
+
+  /** Saisie guidée (D-709) : même dépôt que la saisie zone par zone ; une erreur remonte à l'étape, qui la dit. */
+  const saveGuided = async (day: LocalDate, zone: MeasurementKind, value: number): Promise<void> => {
+    await (await container.data.repos.measurements()).save(day, zone, value);
+    refresh();
   };
 
   const removeMeasure = async (record: MeasurementRecord): Promise<void> => {
@@ -254,7 +317,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
     );
   }
 
-  const { measures, health, local, hidden } = load;
+  const { measures, health, local, hidden, extra } = load;
   const hiddenHere = load.photos.filter((p) => hidden.includes(p.id) && !local.has(p.id)).length;
   const elsewhere = new Set(load.deletedElsewhere.map((p) => p.id));
   const photos = [...load.photos.filter((p) => local.has(p.id) || !hidden.includes(p.id)), ...load.deletedElsewhere].sort((a, b) =>
@@ -265,6 +328,16 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
   const summaries = Object.fromEntries(MEASUREMENT_KINDS.map((k) => [k, summarizeZone(pointsOf(k))])) as Record<MeasurementKind, ZoneSummary>;
   const summary = summaries[kind];
   const zoneName = tBodyProgress(KIND_TEXT[kind]);
+  // CORPS-0301c : calculs du domaine pur (PROG-0301b) sur les mesures saisies ; la hauteur de Santé n'entre que dans les ratios (D-715).
+  const samples: BodySample[] = [...measures, ...extra.healthHeight].map((m) => ({ kind: m.kind, date: m.day, value: m.value }));
+  const trends = zoneTrends(samples, extra.goal);
+  const start = periodStart(period, today);
+  const toPoint = (m: MeasurementRecord): ZonePoint => ({ date: m.day, value: m.value });
+  const periodPoints = pointsOf(kind).filter((p) => inPeriod(p.date, start, today));
+  const overlay = kind === 'waist' ? extra.healthWaist.map(toPoint).filter((p) => inPeriod(p.date, start, today)) : [];
+  const showCurve = periodPoints.length >= 2;
+  const ratios = bodyRatios(samples, extra.heightCm, period, today);
+  const symmetries = symmetryAll(samples);
   const compared = compare.map((id) => photos.find((p) => p.id === id)).filter((p): p is ProgressPhotoRecord => p !== undefined);
   const changeText = (): string => {
     if (summary.delta === null || summary.reference === null) return tBodyProgress('changeNone');
@@ -278,20 +351,29 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
   };
 
   const title = <h2 className="ct-today__eyebrow ct-bodyprogress__title ct-section-title">{tBodyProgress('title')}</h2>;
-  const zoneList = pc ? <ZoneList kind={kind} summaries={summaries} onSelect={setKind} /> : null;
+  const zoneList = pc ? <ZoneList kind={kind} summaries={summaries} onSelect={setKind} trends={trends} goal={extra.goal} /> : null;
+  const insights = (
+    <>
+      <RatiosCard ratios={ratios} sex={extra.sex} />
+      <SymmetryCard values={symmetries} />
+    </>
+  );
   const main = (
       <section className="ct-bodyprogress__main ct-flat" aria-labelledby="ct-bodyprogress-measures">
         <h3 id="ct-bodyprogress-measures" className="ct-bodyprogress__heading ct-section-title">
           {tBodyProgress('measuresTitle')}
         </h3>
         <div className="ct-bodyprogress__hero">
-          {pc ? null : <Silhouette kind={kind} onSelect={setKind} />}
+          {pc ? null : <Silhouette kind={kind} onSelect={setKind} trends={trends} />}
           <div className="ct-bodyprogress__herotext">
             <p className="ct-bodyprogress__zonename">{zoneName}</p>
             {summary.last === null ? (
-              <p className="ct-today__text">
-                <MissingValue reason={tBodyProgress('heroMissing')} />
-              </p>
+              <>
+                <p className="ct-today__text">
+                  <MissingValue reason={tBodyProgress('heroMissing')} />
+                </p>
+                <p className="ct-today__muted">{tBodyProgress('trendLine', { trend: trendWords(trends[kind]) })}</p>
+              </>
             ) : (
               <>
                 <p className="ct-hero">
@@ -300,28 +382,63 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
                 </p>
                 <p className="ct-today__text">{changeText()}</p>
                 <p className="ct-today__muted">{tBodyProgress('heroLastOn', { date: formatDayMonthYear(summary.last.date) })}</p>
-                <ZoneCurve points={pointsOf(kind)} zoneName={zoneName} large={pc} />
+                <p className="ct-today__muted">{tBodyProgress('trendLine', { trend: trendWords(trends[kind]) })}</p>
+                {showCurve ? <ZoneCurve points={periodPoints} overlay={overlay} zoneName={zoneName} large={pc} /> : <p className="ct-today__muted">{tBodyProgress('curveEmptyPeriod')}</p>}
+                {showCurve && overlay.length > 0 ? <p className="ct-today__muted">{tBodyProgress('curveHealthLegend')}</p> : null}
               </>
             )}
           </div>
         </div>
-        {pc ? null : <ZoneChips kind={kind} onSelect={setKind} />}
-        <form className="ct-bodyprogress__entry" onSubmit={(event) => void saveMeasure(event)} noValidate>
-          <label className="ct-bodyprogress__date">
-            <span className="ct-bodyprogress__label">{tBodyProgress('dateLabel')}</span>
-            <input className="ct-bodyprogress__input" type="date" max={today} value={date} onChange={(e) => setDate(e.target.value as LocalDate)} />
-          </label>
-          <label className="ct-bodyprogress__value">
-            <input className="ct-bodyprogress__input" inputMode="decimal" autoComplete="off" placeholder={summary.last === null ? undefined : formatCm(summary.last.value)} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={onKeyZone} aria-label={tBodyProgress('valueLabel')} />
-            <span className="ct-bodyprogress__unit" aria-hidden="true">
-              {tBodyProgress('unitCm')}
-            </span>
-          </label>
-          <Button type="submit" className="ct-bodyprogress__save">
-            {tBodyProgress('save')}
-          </Button>
-        </form>
-        {pc ? <p className="ct-today__muted">{tBodyProgress('entryKeys')}</p> : null}
+        {pc ? null : <TrendLegend goal={extra.goal} />}
+        {pc ? null : <ZoneChips kind={kind} onSelect={setKind} trends={trends} />}
+        <div className="ct-bodyprogress__period">
+          <SegmentedControl label={tBodyProgress('periodLabel')} value={period} onChange={setPeriod} options={BODY_PERIODS.map((value) => ({ value, label: tBodyProgress(PERIOD_TEXT[value]) }))} />
+          <RateLine rate={monthlyRate(samples, kind, period, today)} />
+          <WeightLine evolution={weightEvolution(extra.weighIns, period, today)} />
+        </div>
+        {guided ? (
+          <GuidedEntry
+            today={today}
+            pointsOf={pointsOf}
+            save={saveGuided}
+            onClose={() => {
+              guidedClosed.current = true;
+              setGuided(false);
+            }}
+          />
+        ) : (
+          <>
+            <form className="ct-bodyprogress__entry" onSubmit={(event) => void saveMeasure(event)} noValidate>
+              <label className="ct-bodyprogress__date">
+                <span className="ct-bodyprogress__label">{tBodyProgress('dateLabel')}</span>
+                <input className="ct-bodyprogress__input" type="date" max={today} value={date} onChange={(e) => setDate(e.target.value as LocalDate)} />
+              </label>
+              <label className="ct-bodyprogress__value">
+                <input className="ct-bodyprogress__input" inputMode="decimal" autoComplete="off" placeholder={summary.last === null ? undefined : formatCm(summary.last.value)} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={onKeyZone} aria-label={tBodyProgress('valueLabel')} />
+                <span className="ct-bodyprogress__unit" aria-hidden="true">
+                  {tBodyProgress('unitCm')}
+                </span>
+              </label>
+              <Button type="submit" className="ct-bodyprogress__save">
+                {tBodyProgress('save')}
+              </Button>
+            </form>
+            {pc ? <p className="ct-today__muted">{tBodyProgress('entryKeys')}</p> : null}
+            <div ref={guidedStart}>
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => {
+                  setMeasureMessage(null);
+                  setGuided(true);
+                }}
+              >
+                {tBodyProgress('guidedStart')}
+              </Button>
+            </div>
+          </>
+        )}
+        {/* CORPS-0301d (BL-180) : rythme des mesures et rappel, sous la saisie (zone par zone ou guidée). */}
         <MeasurementRhythmLazy samples={measures} />
         {measureMessage && (
           <p className="ct-bodyprogress__message" role={measureMessage.alert ? 'alert' : 'status'}>
@@ -456,6 +573,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
         {zoneList}
         {main}
         <div className="ct-bodyprogress__side">
+          {insights}
           {healthCard}
           {/* SUIVIS-029d : bilans VISBODY (saisie manuelle, courbes, écart au bilan précédent). */}
           <VisbodySection />
@@ -472,6 +590,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
         <>
           {zoneList}
           {main}
+          <div className="ct-bodyprogress__side">{insights}</div>
         </>
       ) : part === 'health' ? (
         (healthCard ?? (

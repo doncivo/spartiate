@@ -79,7 +79,129 @@
 }
 
 .ct-bodyprogress__dot--on {
-  fill: var(--ct-color-bronze);
+  stroke: var(--ct-color-bronze);
+  stroke-width: 2;
+}
+
+/* CORPS-0301c (D-705, D-716) : tendance par zone ; la couleur double toujours un mot (légende, nom accessible, ligne de la liste). */
+.ct-bodyprogress__dot--favorable {
+  fill: var(--ct-color-ok);
+}
+
+.ct-bodyprogress__dot--unfavorable {
+  fill: var(--ct-color-warn);
+}
+
+.ct-bodyprogress__dot--neutral {
+  fill: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__mark {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-right: var(--ct-space-1);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.ct-bodyprogress__mark--favorable {
+  background: var(--ct-color-ok);
+}
+
+.ct-bodyprogress__mark--unfavorable {
+  background: var(--ct-color-warn);
+}
+
+.ct-bodyprogress__mark--neutral {
+  background: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+}
+
+.ct-bodyprogress__legendlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-1) var(--ct-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__legenditem {
+  display: flex;
+  align-items: center;
+}
+
+.ct-bodyprogress__zonelabel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ct-bodyprogress__zonetrend {
+  display: flex;
+  align-items: center;
+  font-size: var(--ct-font-size-xs);
+  font-weight: var(--ct-font-weight-regular);
+  color: var(--ct-color-text-secondary);
+}
+
+/* Période de la courbe, rythme et poids (D-706) ; ratios et symétrie (D-707, D-708) ; saisie guidée (D-709). */
+.ct-bodyprogress__period,
+.ct-bodyprogress__guided {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-2);
+  min-width: 0;
+}
+
+.ct-bodyprogress__full {
+  flex: 1 1 100%;
+  margin: 0;
+}
+
+.ct-bodyprogress__insights {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ct-bodyprogress__insight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-2) 0;
+  border-bottom: var(--ct-line);
+  min-width: 0;
+}
+
+.ct-bodyprogress__insightname {
+  font-size: var(--ct-font-size-xs);
+  color: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__insightvalue {
+  font-family: var(--ct-font-title);
+  font-weight: var(--ct-font-weight-semibold);
+  font-size: var(--ct-font-size-item);
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-color-text);
+}
+
+.ct-bodyprogress__flag {
+  display: flex;
+  align-items: center;
+  color: var(--ct-color-text);
 }
 
 .ct-bodyprogress__hit {
@@ -104,6 +226,15 @@
 
 .ct-bodyprogress__curvelast {
   fill: var(--ct-color-bronze);
+}
+
+/* D-706 : tour de taille importé de Santé, en pointillé (la légende le dit en mots). */
+.ct-bodyprogress__curveoverlay {
+  stroke: var(--ct-color-text-secondary);
+}
+
+.ct-bodyprogress__curveoverlaydot {
+  fill: var(--ct-color-text-secondary);
 }
 
 /* Pastilles de zone (iPhone) : cibles de 44 px, la zone choisie en trait épais et en gras (jamais la couleur seule). */
@@ -197,11 +328,14 @@
 
 .ct-bodyprogress__value .ct-bodyprogress__input {
   flex: 1 1 auto;
+  min-width: 0; /* CORPS-0301c (D-703) : le champ rétrécit, jamais l'unité */
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .ct-bodyprogress__unit {
+  flex: 0 0 auto;
+  white-space: nowrap; /* CORPS-0301c (D-703) : « cm » ne se coupe plus en « c » / « m » */
   color: var(--ct-color-text-secondary);
 }
 

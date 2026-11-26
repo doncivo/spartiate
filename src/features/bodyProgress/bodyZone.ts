@@ -90,3 +90,34 @@ export const SILHOUETTE_DOTS: Readonly<Record<MeasurementKind, { readonly x: num
   calf_left: { x: 48, y: 196 },
   calf_right: { x: 72, y: 196 },
 };
+
+export interface PeriodCurveGeometry extends CurveGeometry {
+  /** Tracé du tour de taille importé de Santé (pointillé), sur la même échelle ; `null` sans valeur de Santé dans la période. */
+  readonly overlay: string | null;
+  readonly overlayDots: readonly CurveDot[];
+}
+
+/**
+ * CORPS-0301c (D-706, D-718) : courbe de TOUTES les mesures de la période (sans plafond de 12 points), avec en option une seconde série
+ * superposée (tour de taille de Santé) sur la même échelle de dates et de valeurs ; `null` sous deux mesures de la zone.
+ */
+export function periodCurveGeometry(points: readonly ZonePoint[], overlay: readonly ZonePoint[], width: number, height: number, pad = 4): PeriodCurveGeometry | null {
+  const sorted = [...points].sort(byDate);
+  const extra = [...overlay].sort(byDate);
+  if (sorted.length < 2) return null;
+  const every = [...sorted, ...extra];
+  const values = every.map((p) => p.value);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const days = every.map((p) => dayNumber(p.date));
+  const t0 = Math.min(...days);
+  const span = Math.max(...days) - t0;
+  const place = (p: ZonePoint, i: number, n: number): { x: number; y: number } => ({
+    x: span === 0 ? (n === 1 ? width / 2 : (width * i) / (n - 1)) : ((dayNumber(p.date) - t0) / span) * width,
+    y: max === min ? height / 2 : pad + ((max - p.value) / (max - min)) * (height - 2 * pad),
+  });
+  const dots = sorted.map((p, i): CurveDot => ({ ...place(p, i, sorted.length), last: i === sorted.length - 1 }));
+  const overlayDots = extra.map((p, i): CurveDot => ({ ...place(p, i, extra.length), last: false }));
+  const pathOf = (list: readonly CurveDot[]): string => list.map((d, i) => `${i === 0 ? 'M' : 'L'}${d.x.toFixed(1)} ${d.y.toFixed(1)}`).join(' ');
+  return { path: pathOf(dots), dots, min, max, overlay: overlayDots.length === 0 ? null : pathOf(overlayDots), overlayDots };
+}
