@@ -9,6 +9,7 @@
 
 /* Une ligne qui défile horizontalement à 440 px (6 onglets) : aucun libellé coupé ni renvoyé à la ligne ; barre de défilement masquée. */
 .ct-tabs__list {
+  position: relative; /* repère des offsetLeft des onglets (défilement de la seule liste) */
   display: flex;
   flex-wrap: nowrap;
   flex-shrink: 0;

@@ -1,6 +1,6 @@
 # PROG-0301a — Progrès en 6 onglets, sous-onglets de Corps, test « rien ne disparaît » (lot 0.30.1)
 
-Statut : en cours, branche `PROG-0301a` depuis `origin/main` `5191d828`. Registre « coquille, iOS et qualité » : BL-177.
+Statut : **fait** (CI de la PR ; fusion après la publication de la 0.30.0), branche `PROG-0301a` depuis `origin/main` `5191d828`. Registre « coquille, iOS et qualité » : BL-177.
 Décisions d'origine : D-700, D-701 (Ali, 26/11), D-712, D-719 (choix prudents). Chapitres PRD : 17.1, 18 (§ 18.4, § 18.6), 23.1.
 Inventaire et table P-01 à P-38 : `docs/PROGRES-0301.md`. Plage de décisions : D-720 à D-729.
 Aucune migration, aucune table, aucun fichier de `src/sync/**`, `src/domain/**`, `src/features/training`, `src/features/nutrition`
@@ -65,3 +65,15 @@ rendu complet ; **la PR BL-179 (CORPS-0301c) modifiera `BodyProgress` ensuite et
   ErgoToday, coquille, palette, TrackingFailure, `src/ui`, `src/i18n`) : 85 fichiers, 891 tests verts ; `npm run test:bundle` : 196 verts
   (plafond, mesure normalisée et `start-modules.json` inchangés) ; `npm run typecheck` et eslint propres. Valeurs inventées seulement.
 - e2e et captures : CI de la PR.
+
+## Passe code-reviewer (relecture à froid)
+
+Agent code-reviewer distinct, sur le diff 5191d828..083c41bd : **approuvé**, aucun bloquant (100 tests ciblés relancés verts). Remarques
+non bloquantes traitées : repères « ailleurs » de P-07, P-29, P-36 retirés (le test « lecture impossible » les prouve) ; aiguille de P-37
+renforcée ; module simulé du test P-37 sans trace parasite ; barre d'onglets qui ne fait défiler que sa liste (plus de ).
+Noté pour BL-179 : chaque sous-onglet de Corps remonte son bloc et relit ses données ().
+
+## Constats à faire par Ali
+
+Section « 0.30.1 (Progrès en onglets et Mensurations) » de  (BL-177, iPhone et PC). Libellé nouveau : Corps › Santé sans
+import, « Aucune valeur importée de Santé pour l’instant. » (D-720).

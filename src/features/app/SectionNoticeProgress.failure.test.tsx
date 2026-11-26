@@ -12,9 +12,11 @@ import { SectionNotice } from './SectionNotice';
  * PROG-0301a, P-37 (D-719 point 3) : un onglet dont le bloc ne se charge pas affiche « Impossible d'afficher cet écran. » et « Réessayer »,
  * comme les blocs avant les onglets ; les autres onglets restent utilisables. Le bloc du Bilan est rendu illisible ici.
  */
-vi.mock('../progress/WeeklyReview', () => {
-  throw new Error('bloc illisible (test)');
-});
+vi.mock('../progress/WeeklyReview', () => ({
+  get WeeklyReview(): never {
+    throw new Error('bloc illisible (test)');
+  },
+}));
 
 const DEVICE = '60000000-0000-4000-8000-0000000003a2' as DeviceId;
 

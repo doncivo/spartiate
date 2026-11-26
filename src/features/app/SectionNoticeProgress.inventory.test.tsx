@@ -15,7 +15,8 @@ import { SectionNotice } from './SectionNotice';
  * Liste figée et fermée : une entrée par ligne P-nn de la table de `docs/PROGRES-0301.md` (mêmes ID, même onglet, même sous-onglet de Corps).
  * Chaque entrée porte des repères vérifiables à l'écran (rôle et nom, ou texte du catalogue) ; le test monte Progrès, ouvre chaque onglet et
  * chaque sous-onglet de Corps et retrouve chaque repère dans le `tabpanel` voulu, sur le gabarit iPhone et sur le gabarit PC. Les éléments d'une
- * seule plateforme (P-13, P-14 iPhone ; P-15, P-30 PC) sont absents de l'autre, comme avant les onglets. Valeurs inventées uniquement.
+ * seule plateforme (P-13, P-14 iPhone ; P-15, P-30 PC) sont absents de l'autre, comme avant les onglets. Les états d'échec de P-07, P-29 et
+ * P-36 sont prouvés par le test « lecture impossible » ci-dessous (dépôts qui échouent). Valeurs inventées uniquement.
  */
 
 type TabLabel = 'Récup' | 'Séances' | 'Bilan' | 'Force' | 'Corps' | 'Activité';
@@ -46,7 +47,7 @@ const INVENTORY: readonly Entry[] = [
   { id: 'P-04', tab: 'Séances', platform: 'both', checks: [{ role: 'region', name: 'Adhérence' }, { text: /^Aucun programme suivi : l’adhérence/ }] },
   { id: 'P-05', tab: 'Séances', platform: 'both', checks: [{ role: 'heading', name: 'Prescriptions respectées' }] },
   { id: 'P-06', tab: 'Séances', platform: 'both', checks: [{ role: 'region', name: 'Volume par muscle' }, { text: /^Plage cible de séries difficiles/ }] },
-  { id: 'P-07', tab: 'Séances', platform: 'both', checks: [{ role: 'region', name: 'Volume par muscle' }, { elsewhere: 'src/features/app/SectionNoticeProgress.inventory.test.tsx', needle: 'Les indicateurs d’entraînement n’ont pas pu être lus.' }] },
+  { id: 'P-07', tab: 'Séances', platform: 'both', checks: [{ role: 'region', name: 'Volume par muscle' }] },
   { id: 'P-08', tab: 'Bilan', platform: 'both', checks: [{ role: 'region', name: 'Bilan de la semaine' }, { role: 'heading', name: /^Semaine du / }] },
   { id: 'P-09', tab: 'Bilan', platform: 'both', checks: [{ role: 'heading', name: 'Recommandations' }] },
   { id: 'P-10', tab: 'Bilan', platform: 'both', checks: [{ role: 'heading', name: 'Semaines précédentes' }, { role: 'button', name: /^Semaine du /, count: 6 }] },
@@ -68,15 +69,15 @@ const INVENTORY: readonly Entry[] = [
   { id: 'P-26', tab: 'Corps', body: 'Photos', platform: 'both', checks: [{ role: 'checkbox', name: /^Comparer la photo du /, count: 2 }] },
   { id: 'P-27', tab: 'Corps', body: 'Photos', platform: 'both', checks: [{ role: 'button', name: /^Supprimer la photo du /, count: 2 }] },
   { id: 'P-28', tab: 'Corps', body: 'Photos', platform: 'both', checks: [{ compare: true }] },
-  { id: 'P-29', tab: 'Corps', body: 'Mesures', platform: 'both', checks: [{ role: 'region', name: 'Mensurations' }, { elsewhere: 'src/features/app/SectionNoticeProgress.inventory.test.tsx', needle: 'Lecture impossible. Réessaie.' }] },
+  { id: 'P-29', tab: 'Corps', body: 'Mesures', platform: 'both', checks: [{ role: 'region', name: 'Mensurations' }] },
   { id: 'P-30', tab: 'Corps', body: 'Mesures', platform: 'pc', checks: [{ selector: '.ct-bodyprogress--pc' }] },
   { id: 'P-31', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Cardio' }, { text: 'Aucune séance de cardio sur les quatre dernières semaines.' }] },
   { id: 'P-32', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Objectifs' }, { label: 'Pas par jour' }, { role: 'button', name: 'Enregistrer les objectifs' }] },
   { id: 'P-33', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Pas par semaine' }] },
   { id: 'P-34', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Cardio en zone 2' }, { text: 'Repère d’entraînement, pas un avis médical.' }] },
   { id: 'P-35', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Notes du matin (30 jours)' }, { text: 'Fatigue : aucune note sur 30 jours' }] },
-  { id: 'P-36', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Suivis' }, { elsewhere: 'src/features/app/SectionNoticeProgress.inventory.test.tsx', needle: 'Lecture impossible des suivis.' }] },
-  { id: 'P-37', tab: 'chaque onglet', platform: 'both', checks: [{ elsewhere: 'src/features/app/SectionNoticeProgress.failure.test.tsx', needle: 'P-37' }] },
+  { id: 'P-36', tab: 'Activité', platform: 'both', checks: [{ role: 'region', name: 'Suivis' }] },
+  { id: 'P-37', tab: 'chaque onglet', platform: 'both', checks: [{ elsewhere: 'src/features/app/SectionNoticeProgress.failure.test.tsx', needle: 'Impossible d’afficher cet écran.' }] },
   { id: 'P-38', tab: 'Progrès', platform: 'pc', checks: [{ elsewhere: 'src/features/app/navigation.progress.test.ts', needle: 'P-38' }] },
 ];
 

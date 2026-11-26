@@ -31,8 +31,13 @@ export function Tabs<V extends string>({ label, idBase, items, value, onChange, 
   const panelId = `${idBase}-panel`;
   const current = items.some((item) => item.id === value) ? value : items[0]?.id;
 
+  // Onglet choisi gardé visible dans la barre qui défile : seul le défilement horizontal de la liste bouge, jamais celui de la page.
   useEffect(() => {
-    list.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+    const el = list.current;
+    const tab = el?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!el || !tab) return;
+    if (tab.offsetLeft < el.scrollLeft) el.scrollLeft = tab.offsetLeft;
+    else if (tab.offsetLeft + tab.offsetWidth > el.scrollLeft + el.clientWidth) el.scrollLeft = tab.offsetLeft + tab.offsetWidth - el.clientWidth;
   }, [current]);
 
   function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number): void {
