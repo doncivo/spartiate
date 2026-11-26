@@ -1,23 +1,14 @@
-import type { FirstWeekday } from '../../domain/week';
-import { getFirstWeekday } from '../../i18n/formatPrefs';
 import { tSections, type SectionsTextKey } from '../../i18n/sectionsText';
 import './SectionNotice.css';
-import { BodyProgress, CardioProgress, lazyScreen, RecoveryProgress } from './lazyScreens';
+import { lazyScreen } from './lazyScreens';
 import { TodayScreen } from './TodayScreen';
 
 /**
- * STR-01 : Progrès › Strength Score, bloc à part chargé avec son catalogue de textes et ses normes. Déclaré ici (bloc à la demande de Progrès)
- * plutôt que dans lazyScreens.tsx : rien n'entre dans le départ.
+ * PROG-0301a (BL-177, D-701) : Progrès en 6 onglets (Récup, Séances, Bilan, Force, Corps, Activité), hôte à part chargé à la demande avec ses
+ * textes et sa barre d'onglets ; chaque onglet charge ses blocs à son ouverture. Rien n'entre dans le départ, ni dans le bloc de cette section
+ * (qui porte aussi Aujourd'hui).
  */
-const StrengthScore = lazyScreen<object>(() => import('../strength/StrengthScore').then((m) => ({ default: m.StrengthScore })), undefined, { onDemand: true });
-/** PROGRES (§ 17.1) : Progrès › Entraînement (volume, constance, adhérence), bloc à part chargé avec son catalogue de textes ; rien dans le départ. */
-const TrainingProgress = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/TrainingProgress').then((m) => ({ default: m.TrainingProgress })), undefined, { onDemand: true });
-
-/** BILAN-029 (§ 17.3) : Progrès › Bilan de la semaine, bloc à part chargé avec son catalogue de textes et sa règle ; rien dans le départ. */
-const WeeklyReview = lazyScreen<{ readonly firstWeekday?: FirstWeekday }>(() => import('../progress/WeeklyReview').then((m) => ({ default: m.WeeklyReview })), undefined, { onDemand: true });
-
-/** SUIVIS-029 : Progrès › Suivis (objectifs, pas par semaine, zone 2, notes sur 10), bloc à part chargé avec son catalogue de textes ; rien dans le départ. */
-const TrackingProgress = lazyScreen<object>(() => import('../tracking/TrackingProgress').then((m) => ({ default: m.TrackingProgress })), undefined, { onDemand: true });
+const SectionNoticeProgress = lazyScreen<object>(() => import('./SectionNoticeProgress').then((m) => ({ default: m.SectionNoticeProgress })), undefined, { onDemand: true });
 
 export type NoticeTab = 'today' | 'training' | 'nutrition' | 'progress';
 
@@ -34,7 +25,7 @@ const TITLE: Record<Exclude<NoticeTab, 'today'>, SectionsTextKey> = {
 export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
   if (tab === 'today') return <TodayScreen />;
   return (
-    <section className="ct-section-notice" aria-labelledby="ct-section-notice-title">
+    <section className={tab === 'progress' ? 'ct-section-notice ct-section-notice--progress' : 'ct-section-notice'} aria-labelledby="ct-section-notice-title">
       <h1 id="ct-section-notice-title" className="ct-section-notice__title">
         {tSections(TITLE[tab])}
       </h1>
@@ -45,15 +36,7 @@ export function SectionNotice({ tab }: { readonly tab: NoticeTab }) {
           <p className="ct-section-notice__hint">{tSections('unavailableHint')}</p>
         </>
       )}
-      {tab === 'progress' ? <RecoveryProgress /> : null}
-      {tab === 'progress' ? <TrainingProgress firstWeekday={getFirstWeekday()} /> : null}
-      {tab === 'progress' ? <WeeklyReview firstWeekday={getFirstWeekday()} /> : null}
-      {tab === 'progress' ? <StrengthScore /> : null}
-      {tab === 'progress' ? <BodyProgress /> : null}
-      {/* I6-06 : séances cardio des quatre dernières semaines. */}
-      {tab === 'progress' ? <CardioProgress /> : null}
-      {/* SUIVIS-029 : pas, zone 2 et notes sur 10. */}
-      {tab === 'progress' ? <TrackingProgress /> : null}
+      {tab === 'progress' ? <SectionNoticeProgress /> : null}
     </section>
   );
 }

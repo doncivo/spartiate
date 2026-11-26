@@ -66,6 +66,8 @@ for (const size of SIZES) {
     }
 
     await page.getByRole('navigation').getByRole('button', { name: 'Progrès', exact: true }).click();
+    // PROG-0301a (BL-177) : Corps est un onglet de Progrès (Mesures par défaut).
+    await page.getByRole('tablist', { name: 'Progrès' }).getByRole('tab', { name: 'Corps' }).click();
     const body = page.locator('.ct-bodyprogress').first();
     await expect(body).toBeVisible();
     if (size.width < 1024) expect(await body.evaluate((el) => getComputedStyle(el).display)).toBe('flex');

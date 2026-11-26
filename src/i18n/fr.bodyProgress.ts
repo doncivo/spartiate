@@ -25,6 +25,8 @@ export const bodyProgressFr = {
   measureLine: '{value} cm',
   /** I6-04 (D-113) : dernières valeurs importées de Santé (balance Renpho), en lecture seule. */
   healthTitle: 'Importé de Santé (Renpho)',
+  /** PROG-0301a (D-720) : sous-onglet Santé de Corps sans aucune valeur importée. */
+  healthEmpty: 'Aucune valeur importée de Santé pour l’instant.',
   healthHint: 'Valeurs lues dans Santé par Raccourcis (Plus › Apple Santé). Elles ne remplacent jamais tes mensurations saisies.',
   health_health_body_fat_pct: 'Masse grasse',
   health_health_lean_mass_kg: 'Masse maigre',

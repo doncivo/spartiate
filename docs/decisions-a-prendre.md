@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-405 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+407 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -256,7 +256,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-690 | NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » sans saut de ligne final est refusé en entier, sans rien … | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (90 : 52 à trancher, 38 à confirmer seulement)
+### synchro et données (91 : 52 à trancher, 39 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -355,8 +355,9 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-572 | DATA-0293 (BL-094, BL-031, BL-030). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
+| 0 | D-720 | PROG-0301a (D-701, D-719) : le sous-onglet Corps › Santé dit qu'aucune valeur n'est importée. | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (59 : 28 à trancher, 31 à confirmer seulement)
+### écrans (60 : 29 à trancher, 31 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -388,6 +389,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-559 | NUTRI-0292. | A garder · B réviser ; effet : écran |
 | 1 | D-606 | SHELL-0294c (C-120, C-121, C-122). | A garder · B réviser ; effet : écran |
 | 1 | D-714 | DEC-0301 (D-710) : le rappel des mesures est une famille de notification iPhone neuve, « measurement », sur le modèle du rappel des blessures. | A garder · B réviser ; effet : écran |
+| 1 | D-721 | PROG-0301a (D-121, D-701) : le bouclier des photos suit le sous-onglet Photos. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 

@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId } from '../../domain/types';
@@ -10,6 +10,15 @@ import { INITIAL_NAVIGATION, useNavigationStore } from './navigation';
 import { SectionNotice } from './SectionNotice';
 
 const DEVICE = '60000000-0000-4000-8000-0000000000c9' as DeviceId;
+
+/** PROG-0301a (BL-177) : Progrès en onglets ; ouvre l'onglet (et le sous-onglet de Corps) où vit le bloc. */
+async function openProgressTab(tab: string, body?: string): Promise<HTMLElement> {
+  fireEvent.click(within(await screen.findByRole('tablist', { name: 'Progrès' })).getByRole('tab', { name: tab }));
+  const panel = await screen.findByRole('tabpanel', { name: tab });
+  if (!body) return panel;
+  fireEvent.click(within(await within(panel).findByRole('tablist', { name: 'Corps' })).getByRole('tab', { name: body }));
+  return within(panel).findByRole('tabpanel', { name: body });
+}
 
 describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-009 critères 1 et 4)', () => {
   let db: TestDb;
@@ -45,33 +54,51 @@ describe('sections I0 : états explicites, sans faux zéro ni bouton mort (SPA-0
 
   it('progress : la section Récupération (journal de facteurs, I6-01) est chargée à la demande sous l’explication', async () => {
     // I6-02 : deux blocs à la demande sous Progrès (Récupération, Corps) ; leur import à froid est fait avant l'attente (aucun délai allongé).
-    await Promise.all([RecoveryProgress.preload(), BodyProgress.preload()]);
+    await Promise.all([RecoveryProgress.preload(), BodyProgress.preload(), import('./SectionNoticeProgress')]);
     open('progress');
-    expect(await screen.findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
+    // PROG-0301a : Récup est le premier onglet, ouvert par défaut.
+    expect(await within(await screen.findByRole('tabpanel', { name: 'Récup' })).findByRole('region', { name: 'Récupération : ce qui change ta Recovery' })).toBeInTheDocument();
     expect(screen.getByText(/Aucun jour renseigné/)).toBeInTheDocument();
   });
 
   it('progress : I6-06, la carte Cardio (quatre semaines) est chargée à la demande, sans faux zéro', async () => {
-    await CardioProgress.preload();
+    await Promise.all([CardioProgress.preload(), import('./SectionNoticeProgress')]);
     open('progress');
-    expect(await screen.findByRole('region', { name: 'Cardio' })).toBeInTheDocument();
-    expect(await screen.findByText('Aucune séance de cardio sur les quatre dernières semaines.')).toBeInTheDocument();
+    const panel = await openProgressTab('Activité');
+    expect(await within(panel).findByRole('region', { name: 'Cardio' })).toBeInTheDocument();
+    expect(await within(panel).findByText('Aucune séance de cardio sur les quatre dernières semaines.')).toBeInTheDocument();
   });
 
   it('progress : STR-01, la carte Strength Score est chargée à la demande ; sans profil, elle le dit et ne chiffre rien', async () => {
     // Import à froid fait avant l'attente (comme I6-02) : le bloc, ses normes et le catalogue ; aucun délai allongé.
-    await Promise.all([import('../strength/StrengthScore'), import('../../../content/strength/standards.json'), import('../../../content/exercises/exercises.json')]);
+    await Promise.all([import('../strength/StrengthScore'), import('../../../content/strength/standards.json'), import('../../../content/exercises/exercises.json'), import('./SectionNoticeProgress')]);
     open('progress');
+    await openProgressTab('Force');
     expect(await screen.findByRole('region', { name: 'Strength Score' })).toBeInTheDocument();
     expect(await screen.findByText('Sexe non renseigné dans le profil : les normes dépendent du sexe.')).toBeInTheDocument();
     expect(screen.queryByText(/global ·/)).toBeNull();
   });
 
   it('progress : la section Corps (mensurations, photos de progression, I6-02) est chargée à la demande', async () => {
-    await BodyProgress.preload();
+    await Promise.all([BodyProgress.preload(), import('./SectionNoticeProgress')]);
     open('progress');
-    expect(await screen.findByRole('region', { name: 'Mensurations' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Photos de progression' })).toBeInTheDocument();
+    expect(await within(await openProgressTab('Corps', 'Mesures')).findByRole('region', { name: 'Mensurations' })).toBeInTheDocument();
+    expect(await within(await openProgressTab('Corps', 'Photos')).findByRole('region', { name: 'Photos de progression' })).toBeInTheDocument();
+  });
+
+  it('PROG-0301a (D-719) : onglet et sous-onglet retenus quand Progrès est remonté ; un seul panneau rendu à la fois', async () => {
+    await Promise.all([BodyProgress.preload(), import('./SectionNoticeProgress')]);
+    open('progress');
+    await openProgressTab('Corps', 'VISBODY');
+    expect(screen.queryByRole('region', { name: 'Tendances sur 30 jours' })).toBeNull();
+    cleanup();
+    open('progress');
+    expect((await screen.findByRole('tab', { name: 'Corps' })).getAttribute('aria-selected')).toBe('true');
+    expect(await within(await screen.findByRole('tabpanel', { name: 'VISBODY' })).findByRole('region', { name: 'Bilans VISBODY' })).toBeInTheDocument();
+    act(() => useNavigationStore.getState().goToTab('progress'));
+    act(() => useNavigationStore.getState().goToTab('progress'));
+    expect(await screen.findByRole('tabpanel', { name: 'Récup' })).toBeInTheDocument();
+    expect(useNavigationStore.getState().progressView).toEqual({ tab: 'recovery', body: 'measures' });
   });
 
   it('Aujourd’hui : rend l’écran I0 (iPhone) ; sans profil, le bouton principal ouvre Profil et poids', async () => {
