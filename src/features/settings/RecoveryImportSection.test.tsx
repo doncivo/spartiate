@@ -80,6 +80,18 @@ describe('Apple Santé : section « Raccourcis » (I5-01 point 1.7)', () => {
     expect(screen.queryByText(/48/)).toBeNull();
   });
 
+  it('NUTRI-0299 (BL-172, D-664) : un fichier sans saut de ligne final est refusé, la ligne du type dit quoi modifier dans le raccourci', async () => {
+    renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV.trimEnd() })), pickerReader(() => null));
+    const s = await section();
+    fireEvent.click(await s.findByRole('button', { name: 'Importer maintenant' }));
+    const row = await s.findByText(/Fichier refusé : il ne finit pas par un saut de ligne/);
+    expect(row).toHaveTextContent(/« Spartiate — récupération »/);
+    expect(row).toHaveTextContent(/« Combiner le texte »/);
+    expect(s.getAllByText('Jamais importé.')).toHaveLength(4);
+    expect(s.getByRole('status')).toHaveTextContent(/saut de ligne final/);
+    expect(screen.queryByText(/48/)).toBeNull();
+  });
+
   it('I5-05 point 4 : après un import par le sélecteur, une lecture automatique sans fichier ne contredit pas les comptes : « non trouvé à la lecture automatique de HH:MM »', async () => {
     renderScreen(folderReader(() => reads({ name: 'hrv.csv', state: 'absent' })), pickerReader(() => reads({ name: 'hrv.csv', state: 'ok', text: HRV })));
     const s = await section();

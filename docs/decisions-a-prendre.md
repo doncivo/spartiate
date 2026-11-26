@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-389 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+392 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -33,11 +33,11 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 10 | D-116 | CLEAN-01 (0.17.0) : le banc legacy et ce que les gardes citent sont CONSERVÉS. | A garder · B réviser ; effet : moteur, synchro, schéma, écran |
 | 10 | D-172 | FIX-0181 : migration 0015 (schéma 15). | A garder · B réviser ; effet : synchro, schéma, données, écran |
 | 10 | D-644 | CLEAN-0296 (C-085) : traducteurs à part typés comme catalogText, garde à liste figée. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
+| 10 | D-691 | NUTRI-0299 (BL-173, D-669) : objectif suivi par Stratégie et le check-in = sorte du profil, rythme des préférences nutrition. | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
 | 9 | D-81 | I4-07 « journée complète » : table day_completeness publiée (mission de nuit du 2026-11-09; tranche D-74 point 2 et D-76 point 2). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-85 | REV-01 (0.9.3) : séances ouvertes dans l'archive d'export (constat 1 de la relecture Codex du 9 novembre). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
-| 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 
 ### séance et moteur (114 : 72 à trancher, 42 à confirmer seulement)
 
@@ -163,11 +163,12 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
 
-### nutrition (24 : 14 à trancher, 10 à confirmer seulement)
+### nutrition (25 : 15 à trancher, 10 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
 | 14 | D-76 | Écrans de Nutrition sans IA ni réseau (I4-03, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : moteur, synchro, schéma, données, chiffre, écran |
+| 10 | D-691 | NUTRI-0299 (BL-173, D-669) : objectif suivi par Stratégie et le check-in = sorte du profil, rythme des préférences nutrition. | A garder · B réviser ; effet : synchro, schéma, données, chiffre |
 | 8 | D-78 | I4-05 : Open Food Facts et scan, choix prudents de l'agent (mission de nuit du 2026-11-09), révisables par Ali. | A garder · B réviser ; effet : schéma, chiffre, écran |
 | 8 | D-80 | I4-07 recettes : deux tables publiées, aucun changement de meal_entry ni de food (mission de nuit du 2026-11-09). | A garder · B réviser ; effet : synchro, schéma, chiffre |
 | 7 | D-124 | FIX-0171 (constat 6) : onboarding, brouillon inachevé et assistant terminé séparés. | A garder · B réviser ; effet : schéma, données |
@@ -197,7 +198,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (39 : 14 à trancher, 25 à confirmer seulement)
+### récupération (40 : 14 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -244,6 +245,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
+| 0 | D-690 | NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » sans saut de ligne final est refusé en entier, sans rien … | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
 ### synchro et données (90 : 52 à trancher, 38 à confirmer seulement)
@@ -346,7 +348,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 
-### écrans (54 : 27 à trancher, 27 à confirmer seulement)
+### écrans (55 : 27 à trancher, 28 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -409,6 +411,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-614 | SHELL-0294e (BL-116). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-626 | SHELL-0294f (§ 18.4 b, C-194) : icônes de l'app générées par script depuis content/brand/spartiate.svg. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-686 | SHELL-0299 (D-649, BL-168) : les cinq renvois « Plus › Logs » de src/i18n/fr.health.ts restent jusqu'à la PR du module santé. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-692 | NUTRI-0299 (D-649) : les renvois des textes de Santé au journal technique donnent les deux chemins. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (68 : 32 à trancher, 36 à confirmer seulement)
 

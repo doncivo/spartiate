@@ -28,6 +28,13 @@ describe('guide des raccourcis Santé (DOC-H21)', () => {
     expect(guide).toMatch(/Blocs 6 à 10 — nutrition \(facultatifs, déconseillés\)/);
     for (const f of ['energie', 'proteines', 'glucides', 'lipides', 'fibres']) expect(guide).toContain('| `' + f + '.csv` (facultatif) |');
   });
+  it('NUTRI-0299 (BL-172, D-664, D-680) : le raccourci récupération ajoute un saut de ligne final par une action Texte, enregistrée à la place du texte combiné', () => {
+    const b1 = guide.slice(guide.indexOf('### B.1 Créer le raccourci'), guide.indexOf('### B.2 Premier essai'));
+    expect(b1).toMatch(/3 bis\. \*\*Saut de ligne final.{0,200}action \*\*Texte\*\*.{0,200}\*\*Retour\*\*/s);
+    expect(b1).toContain('Fichier : le *Texte* de l’étape 3 bis');
+    expect(b1).not.toContain('Fichier : *Texte combiné*');
+    expect(guide).toContain('`poids.csv` et la partie C restent acceptés sans');
+  });
   it('écrit les exemples avec la décimale au point (H-21)', () => {
     expect(guide).toContain('+01:00;81.4;kg');
     expect(guide).toContain('+01:00;20.5;%');

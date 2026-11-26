@@ -27,7 +27,7 @@ function snapshot(daysLogged: number, weighEvery = 2): NutritionSnapshot {
     weighIns,
     trend: computeTrend(weighIns),
     tdee,
-    prefs: DEFAULT_NUTRITION_PREFS,
+    prefs: DEFAULT_NUTRITION_PREFS, goal: DEFAULT_NUTRITION_PREFS.goal,
     profile: null,
     target: null,
     targets: [],
