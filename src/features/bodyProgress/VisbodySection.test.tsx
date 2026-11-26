@@ -2,13 +2,13 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { LocalDate } from '../../domain/types';
 import { openBaseDb, type TestDb } from '../../db/repositories/sql/testSetup';
-import { tVisbody } from '../../i18n/visbodyText';
+import { tVisbody, type VisbodyPlainKey } from '../../i18n/visbodyText';
 import { DEVICE, mountWith, NOW } from '../tracking/testKit';
 import { VisbodySection } from './VisbodySection';
 
 /** SUIVIS-029d : Progrès › Corps, bilans VISBODY (saisie manuelle, courbes, écart au bilan précédent) ; le poids n'entre pas dans les pesées. */
 let db: TestDb;
-const field = (kind: string): HTMLElement => screen.getByLabelText(tVisbody(`field_${kind}` as Parameters<typeof tVisbody>[0]));
+const field = (kind: string): HTMLElement => screen.getByLabelText(tVisbody(`field_${kind}` as VisbodyPlainKey));
 
 beforeEach(async () => {
   db = await openBaseDb(DEVICE, NOW);
