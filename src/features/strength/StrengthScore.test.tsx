@@ -129,4 +129,15 @@ describe('Progrès › Force : Strength Score maison', () => {
     expect(screen.queryByText(/Normes :/)).toBeNull();
     expect(screen.queryByText(/licence/i)).toBeNull();
   });
+
+  it('relecture : décharge sans pesée d’avant, l’écran ne dit pas le poids figé', async () => {
+    await profile('male');
+    await weigh(80, '2026-11-14');
+    await closedBench('70000000-0000-4000-8000-000000000001', '2026-11-10T18:00:00.000Z', 75, 6);
+    await closedBench('70000000-0000-4000-8000-000000000002', '2026-11-12T18:00:00.000Z', 60, 6);
+    await deloadDecision('70000000-0000-4000-8000-000000000002', '2026-11-12T18:00:00.000Z', 60);
+    mount();
+    expect(await screen.findByText('Décharge en cours depuis le 12/11/2026 : ses séances n’entrent pas dans le score ; aucune pesée d’avant, le poids courant sert.')).toBeInTheDocument();
+    expect(screen.queryByText(/^Figé pendant la décharge/)).toBeNull();
+  });
 });

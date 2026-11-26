@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { daysAgo, session } from '../../../tests/fixtures/training/progression';
 import type { WeighIn } from '../nutrition/types';
+import { currentBodyweightKg } from './bodyweight';
 import type { LocalDate } from '../types';
 import {
   STRENGTH_GROUP_REFERENCE,
@@ -158,8 +159,15 @@ describe('strengthScore', () => {
 
   it('mouvement sans seuil pour ce sexe : ignoré (aucun score inventé) ; son groupe reste inconnu', () => {
     const r = strengthScore(input({ exercises: [ex('q', 'sans-seuil', [session(2, 100, [5])])] }));
-    expect(group(r, 'quads')).toMatchObject({ kind: 'unknown', reason: 'noSession' });
+    expect(group(r, 'quads')).toEqual({ group: 'quads', kind: 'unknown', reason: 'noSession', references: [] });
     expect(r.lifts).toEqual([]);
+  });
+
+  it('relecture : seuils non strictement croissants, non finis, ou force relative non finie : erreur, jamais un score faux', () => {
+    expect(() => scoreFromThresholds(90, [40, 60, 60, 100, 120])).toThrow();
+    expect(() => scoreFromThresholds(90, [40, 60, Number.NaN, 100, 120])).toThrow();
+    expect(() => scoreFromThresholds(90, [0, 60, 80, 100, 120])).toThrow();
+    expect(() => scoreFromThresholds(Number.NaN, M)).toThrow();
   });
 
   it('séance partielle ou séries non faites : pas d’e1RM, groupe inconnu', () => {
@@ -180,6 +188,7 @@ describe('figé pendant une semaine de décharge (D-742)', () => {
     const r = strengthScore(input({ weighIns, exercises }));
     expect(r.frozenSince).toBe(daysAgo(3));
     expect(r.bodyweightKg).toBe(80);
+    expect(r.bodyweightFrozen).toBe(true);
     expect(group(r, 'chest')).toMatchObject({ kind: 'value', score: 70, lift: { e1rmKg: 90 } });
   });
 
@@ -193,13 +202,22 @@ describe('figé pendant une semaine de décharge (D-742)', () => {
     expect(deloadFreeze(exercises)).toBeNull();
     const r = strengthScore(input({ weighIns, exercises }));
     expect(r.frozenSince).toBeNull();
+    expect(r.bodyweightKg).toBe(currentBodyweightKg(weighIns));
     expect(r.bodyweightKg).not.toBe(80);
+    expect(r.bodyweightFrozen).toBe(false);
+  });
+
+  it('relecture : pesée du jour même du début de la décharge exclue (pesées d’avant ce jour seulement)', () => {
+    const r = strengthScore(input({ weighIns: [kg('2026-10-26', 80), kg('2026-11-04', 64)], exercises: [ex('b', 'bench', [normal, deload])] }));
+    expect(r.bodyweightKg).toBe(80);
+    expect(r.bodyweightFrozen).toBe(true);
   });
 
   it('aucune pesée d’avant la décharge : le poids de corps courant sert (jamais « inconnu » par la seule décharge)', () => {
     const r = strengthScore(input({ weighIns: [kg('2026-11-05', 64)], exercises: [ex('b', 'bench', [normal, deload])] }));
     expect(r.frozenSince).toBe(daysAgo(3));
     expect(r.bodyweightKg).toBe(64);
+    expect(r.bodyweightFrozen).toBe(false);
   });
 
   it('aucune séance : rien à figer', () => {
