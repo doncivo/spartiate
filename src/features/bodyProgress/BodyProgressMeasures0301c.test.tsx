@@ -363,6 +363,24 @@ describe('saisie guidée des 11 zones (D-709, D-719)', () => {
     expect(screen.getByRole('button', { name: 'Saisie guidée des 11 zones' })).toBeInTheDocument();
   });
 
+  it('relecture : focus sur le titre au résumé, puis sur « Saisie guidée des 11 zones » à la fermeture ; « Arrêter » inactif pendant un enregistrement', async () => {
+    mount();
+    fireEvent.click(await screen.findByRole('button', { name: 'Saisie guidée des 11 zones' }));
+    const panel = await screen.findByRole('region', { name: 'Saisie guidée' });
+    fireEvent.click(within(panel).getByRole('button', { name: 'Commencer' }));
+    await within(panel).findByText('Zone 1 sur 11 : Cou');
+    expect(within(panel).getByLabelText('Cou, mesure (cm)')).toHaveFocus();
+    fireEvent.change(within(panel).getByLabelText('Cou, mesure (cm)'), { target: { value: '39' } });
+    next();
+    expect(within(panel).getByRole('button', { name: 'Arrêter la saisie guidée' })).toBeDisabled();
+    await within(panel).findByText('Zone 2 sur 11 : Épaules');
+    for (let i = 2; i <= 11; i += 1) skip();
+    await within(panel).findByText(/^Séance du .* terminée$/);
+    expect(within(panel).getByRole('heading', { name: 'Saisie guidée' })).toHaveFocus();
+    fireEvent.click(within(panel).getByRole('button', { name: 'Terminer' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saisie guidée des 11 zones' })).toHaveFocus());
+  });
+
   it('mesure déjà saisie à cette date : rappelée, préremplie, puis remplacée (une seule ligne)', async () => {
     await save([[D(11, 10), 'neck', 37]]);
     mount();
