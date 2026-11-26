@@ -5,7 +5,7 @@ import { RECOVERY_CONFIG, recoveryZoneTier, unusualValues, type RecoveryExplanat
 import type { LocalDate } from '../../domain/types';
 import type { FactorEntry, RecoveryDayRecord, RecoveryFactorRecord } from '../../db/repositories';
 import { formatDetailDate } from '../../i18n/format';
-import { tRecovery, type RecoveryTextKey } from '../../i18n/recoveryText';
+import { tRecovery, type RecoveryTextKey, type RecoveryPlainKey } from '../../i18n/recoveryText';
 import { Button } from '../../ui';
 import { useAppContainer } from '../app/AppContainerContext';
 import type { AppContainer } from '../app/container';
@@ -192,7 +192,7 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
                     <span aria-hidden="true" className="ct-recovery__mark">
                       {TONE_MARK[tone]}
                     </span>
-                    {tRecovery(`${c.key}_${tone}` as RecoveryTextKey)}
+                    {tRecovery(`${c.key}_${tone}` as RecoveryPlainKey)}
                     <span className="ct-recovery__sr"> ({tRecovery(TONE_TEXT[tone])})</span>
                   </li>
                 );
@@ -236,8 +236,8 @@ function Cards({ load, today, nowMs }: { readonly load: Ready; readonly today: s
 }
 
 /** C-070 : la portée affichée suit la configuration (D-220 : le cardio saisi compte), jamais un texte figé. */
-const EXERTION_SCOPE_KEY: RecoveryTextKey = RECOVERY_CONFIG.exertion.cardioCounted ? 'exertionScope' : 'exertionScopeStrengthOnly';
-const ZONE_TEXT: Readonly<Record<RecoveryZoneTier, RecoveryTextKey>> = { high: 'zoneHigh', mid: 'zoneMid', low: 'zoneLow' };
+const EXERTION_SCOPE_KEY: RecoveryPlainKey = RECOVERY_CONFIG.exertion.cardioCounted ? 'exertionScope' : 'exertionScopeStrengthOnly';
+const ZONE_TEXT: Readonly<Record<RecoveryZoneTier, RecoveryPlainKey>> = { high: 'zoneHigh', mid: 'zoneMid', low: 'zoneLow' };
 
 export function RecoveryToday() {
   const container = useAppContainer();
