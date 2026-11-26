@@ -57,7 +57,7 @@ describe('BL-173 : objectif lu du profil', () => {
     fireEvent.click(await within(r).findByRole('button', { name: 'Rythme : 0,25 kg / semaine' }));
     fireEvent.change(within(r).getByLabelText('Vitesse visée (kg / semaine)'), { target: { value: '0,5' } });
     await waitFor(async () => expect(await storedPrefs()).toEqual({ ...PREFS, goal: { kind: 'loss', weeklyRateKg: 0.5 } }));
-    expect(await within(r).findByRole('button', { name: 'Rythme : 0,5 kg / semaine' })).toBeInTheDocument();
+    expect(await within(r).findByRole('button', { name: 'Rythme : 0,50 kg / semaine' })).toBeInTheDocument();
   });
 
   it('profil « maintien » : pas de rythme, même si un rythme de perte reste dans les préférences', async () => {
@@ -74,7 +74,7 @@ describe('BL-173 : objectif lu du profil', () => {
     open();
     const r = await region();
     expect(await within(r).findByText('Objectif du profil : non renseigné, « Prise » gardé')).toBeInTheDocument();
-    expect(within(r).getByRole('button', { name: 'Rythme : 0,3 kg / semaine' })).toBeInTheDocument();
+    expect(within(r).getByRole('button', { name: 'Rythme : 0,30 kg / semaine' })).toBeInTheDocument();
     fireEvent.click(within(r).getByRole('button', { name: 'Modifier dans Réglages › Corps' }));
     expect(useNavigationStore.getState().route).toMatchObject({ tab: 'more', screen: 'body' });
   });
