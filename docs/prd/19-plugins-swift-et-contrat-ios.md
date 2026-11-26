@@ -40,8 +40,8 @@ Structure réelle d'un plugin local CircleTasks, à suivre pour tout nouveau plu
 
 ```xml
 <key>com.apple.developer.healthkit</key><true/>
-<key>com.apple.developer.healthkit.access</key><array/>
-<key>keychain-access-groups</key><array><string>$(AppIdentifierPrefix)fr.spartiate.app</string></array>
 ```
+
+Une seule clé (décision d'Ali du 26/11/2026, D-648, Q-33) : ni `com.apple.developer.healthkit.access` ni `keychain-access-groups`, car la signature ad hoc de la CI ne développe pas `$(AppIdentifierPrefix)` et changer le groupe du Trousseau d'une app installée peut rendre illisible la clé de synchro qu'il garde (D-598).
 
 Pas d'App Groups, pas d'iCloud container, pas de push (interdits en équipe personnelle, § 6). La CI exécute `codesign -s - --entitlements Spartiate.entitlements --force Spartiate.app` après `--no-sign`, puis vérifie `codesign -d --entitlements :- Spartiate.app` (SPA-003). Si SideStore n'applique pas l'entitlement HealthKit → fallback saisie manuelle (§ 16.1 niveau A/B) et `H-3` passe `BLOCKED`.
