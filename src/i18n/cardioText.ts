@@ -1,13 +1,18 @@
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
 import { tPlural } from './plural';
 import { cardioFr } from './fr.cardio';
 
 /** Textes d'Entraînement › Cardio, à part du catalogue principal ; importé seulement par des modules chargés à la demande (I6-06). */
 export type CardioTextKey = keyof typeof cardioFr;
+/** CLEAN-0297 (C-085) : clés sans paramètre `{x}` (tables de libellés passées sans paramètre). */
+export type CardioPlainKey = PlainCatalogKey<typeof cardioFr>;
 
-export function tCardio(key: CardioTextKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: CardioTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = cardioFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tCardio: CatalogTranslator<typeof cardioFr> = translate;
 
 /** ERGO-02 : nombre de km seul (chiffre héros), virgule décimale, au plus deux décimales (« 5,24 »). */
 export function kmValue(meters: number): string {

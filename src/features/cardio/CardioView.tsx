@@ -16,7 +16,7 @@ import {
 import { localToUtcMs, nowTimeIn, todayIn, utcToLocal } from '../../domain/timeZone';
 import { isLocalDate, isLocalTime } from '../../domain/types';
 import type { CardioSessionRecord } from '../../db/repositories';
-import { formatKm, formatDuration, formatPace, tCardio, type CardioTextKey } from '../../i18n/cardioText';
+import { formatKm, formatDuration, formatPace, tCardio, type CardioTextKey, type CardioPlainKey } from '../../i18n/cardioText';
 import { formatDayMonthYear, formatTime } from '../../i18n/format';
 import { geolocationExpected, resolveGeolocation } from '../../platform/geolocation';
 import { detectTimeZone } from '../../platform/timeZone';
@@ -44,7 +44,7 @@ export const KIND_TEXT = {
   other: 'kind_other',
 } as const satisfies Record<CardioKind, CardioTextKey>;
 
-const ISSUE_TEXT: Record<Exclude<CardioIssue, 'kind' | 'source'>, CardioTextKey> = {
+const ISSUE_TEXT: Record<Exclude<CardioIssue, 'kind' | 'source'>, CardioPlainKey> = {
   start: 'errorStart',
   future: 'errorFuture',
   duration: 'errorDurationRange',
