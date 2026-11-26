@@ -15,7 +15,7 @@ describe('C-158 : entitlements contre § 19.4', () => {
 
   it('les clés du bloc XML du § 19.4 égalent celles de la source durable : HealthKit seule (D-648)', () => {
     const section = chapter.split('### 19.4')[1] ?? '';
-    const xml = /```xml\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
+    const xml = /```xml\r?\n([\s\S]*?)```/.exec(section)?.[1] ?? '';
     const keys = [...xml.matchAll(/<key>([^<]+)<\/key>/g)].map((m) => m[1]).sort();
     expect(keys).toEqual(['com.apple.developer.healthkit']);
     expect(Object.keys(entitlements).sort()).toEqual(keys);
