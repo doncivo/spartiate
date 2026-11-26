@@ -1,4 +1,4 @@
-import { tTrainingMedia, type TrainingMediaTextKey } from '../../../i18n/trainingMediaText';
+import { tTrainingMedia, type TrainingMediaPlainKey } from '../../../i18n/trainingMediaText';
 
 /**
  * Médias d'exercice embarqués (I6-07, D-235) : les images de content/exercises/media sont des fichiers du paquet, émis par Vite avec un nom
@@ -15,7 +15,7 @@ export function mediaUrl(file: string): string | null {
 }
 
 /** Attribution par source vérifiée (D-231) ; `null` pour une source inconnue (le validateur de contenu la refuse). */
-const ATTRIBUTION: Readonly<Record<string, TrainingMediaTextKey>> = { everkinetic: 'attributionEverkinetic', 'everkinetic-web': 'attributionEverkineticWeb' };
+const ATTRIBUTION: Readonly<Record<string, TrainingMediaPlainKey>> = { everkinetic: 'attributionEverkinetic', 'everkinetic-web': 'attributionEverkineticWeb' };
 
 export function mediaAttribution(sourceId: string, author: string | null = null): string | null {
   // BL-010 : source à auteur par image (wger) : l'auteur de l'image est nommé ; sans auteur, aucune attribution (le validateur de contenu le refuse).
