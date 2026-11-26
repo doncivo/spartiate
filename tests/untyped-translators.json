@@ -1,5 +1,4 @@
 [
-  "src/i18n/appUpdateRestoreText.ts:tUpdateRestore",
   "src/i18n/bodyProgressText.ts:tBodyProgress",
   "src/i18n/cardioText.ts:tCardio",
   "src/i18n/fr.recoveryNotifications.ts:tRn",
