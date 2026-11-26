@@ -1,6 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../../src/domain/clock';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * DATA-0293 (BL-040) : un champ gardé pour un schéma plus récent (`sync_unknown`) abandonné au plafond n'était signalé qu'au journal technique ;

@@ -7,7 +7,10 @@ import { applyOps } from '../../../../src/sync/apply';
 import type { SyncDeps } from '../../../../src/sync/deps';
 import { finishResumeTx } from '../../../../src/sync/join';
 import { mergeSnapshot, type LoadedSnapshot } from '../../../../src/sync/snapshot';
-import { V18_CATALOGUE, V19_CATALOGUE } from '../../../sim/syncDevice';
+import { V18_CATALOGUE, V19_CATALOGUE, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * FIX-A009 (audit 0.26.0, A-009 et complément PROG-04) : preuves de Codex reprises telles quelles (`docs/audit-0.26.0/preuves/
