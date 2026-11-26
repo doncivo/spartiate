@@ -33,3 +33,35 @@ de mesure (BL-180) ; `src/domain/bodyProgress` ; CHANGELOG, version.
 
 Exception annoncée (brief) : découpage de `BodyProgress` strictement nécessaire aux sous-onglets, sans changement de comportement du
 rendu complet ; **la PR BL-179 (CORPS-0301c) modifiera `BodyProgress` ensuite et doit partir de ce découpage.**
+
+## Passe agent du module (app-shell, ui-design-system, accessibility-i18n)
+
+- `src/ui/Tabs.tsx` et `Tabs.css` : barre d'onglets (tablist nommée, tabs avec `aria-selected`, `aria-controls` sur l'onglet choisi, un seul
+  tabpanel `aria-labelledby`, arrêt de tabulation unique, ← → en boucle, Début, Fin, activation au focus) ; aspect du contrôle segmenté,
+  44 pt, tokens seulement, défilement horizontal à 440 px ; importé directement (`../../ui/Tabs`), jamais par le barrel.
+- `src/features/app/navigation.ts` : `PROGRESS_TAB_IDS`, `BODY_TAB_IDS`, `progressView` (mémoire seulement) et `setProgressView` ;
+  `goToTab('progress')` alors que Progrès est affiché remet Récup et Mesures (barre du bas, barre latérale et Ctrl+4 passent tous par
+  `goToTab`) ; `navigate` (palette) garde la vue. `route` inchangée.
+- `src/features/app/SectionNoticeProgress.tsx` : hôte des 6 onglets, bloc à la demande ; les quatre blocs déclarés dans SectionNotice
+  (Strength Score, Entraînement, Bilan, Suivis) y sont déplacés tels quels ; Activité = Cardio puis Suivis (Notes du matin en dernier, D-712).
+  `SectionNotice.tsx` ne garde que le h1 et l'hôte à la demande (le bloc de cette section porte aussi Aujourd'hui).
+- `SectionNotice.css` : pleine largeur PC portée par la section Progrès quel que soit l'onglet (P-30) ; dans Corps › Mesures, dès 1 280 px,
+  deux colonnes au lieu d'une troisième vide.
+- Textes : `src/i18n/fr.progressTabs.ts` (+ `progressTabsText.ts`, traducteur typé `catalogText`), chargé avec l'hôte.
+- **Découpage de BodyProgress (exception du brief ; BL-179 part de là)** : prop facultative `part` (`measures`, `health`, `visbody`,
+  `photos`) ; sans `part`, DOM et effets inchangés (tests BodyProgress* verts sans retouche). Avec `part` : Mesures = liste PC, mensurations,
+  saisie, relevés (grille PC gardée) ; Santé = carte importée, ou sans import le titre, `healthEmpty` et la note (D-720, une clé ajoutée à
+  `fr.bodyProgress.ts`) ; VISBODY = `VisbodySection` seule, sans lecture des mesures ni des photos ; Photos = carte photos, seul sous-onglet
+  qui demande le bouclier (D-721). L'hôte remonte le bloc à chaque sous-onglet (`key`).
+- Tests suivis : `SectionNotice.test.tsx` (blocs ouverts par leur onglet), e2e `I6-06-cardio` (Activité), `BL-119-zoom-pc` (Corps),
+  captures `capture.spec.ts` (PC-Corps-1280 ouvre Corps ; contrôle de géométrie sur chaque onglet et chaque sous-onglet).
+
+## Passe qa-test : rouge puis vert
+
+- Rouge `00bcb78f` : `src/ui/Tabs.test.tsx`, `navigation.progress.test.ts` (5 rouges, P-38 compris), `SectionNoticeProgress.inventory.test.tsx`
+  (liste figée P-01 à P-38, fermée sur la table de `docs/PROGRES-0301.md` ; iPhone et PC ; absences par plateforme ; états d'échec P-07,
+  P-29, P-36), `SectionNoticeProgress.failure.test.tsx` (P-37), `SectionNotice.test.tsx`, garde du bundle : 5 fichiers rouges.
+- Vert `083c41bd` : ces 5 fichiers verts (25 tests) ; voisins (`src/features/bodyProgress`, navigation, raccourcis, écrans paresseux,
+  ErgoToday, coquille, palette, TrackingFailure, `src/ui`, `src/i18n`) : 85 fichiers, 891 tests verts ; `npm run test:bundle` : 196 verts
+  (plafond, mesure normalisée et `start-modules.json` inchangés) ; `npm run typecheck` et eslint propres. Valeurs inventées seulement.
+- e2e et captures : CI de la PR.
