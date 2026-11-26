@@ -26,6 +26,20 @@ migration (la table `settings` suffit, D-713), aucune table, aucun fichier de sy
      vide : `unsupported`).
   6. Given la famille « measurement », Then le registre local la relit (`parseNotificationLedger` valide) et la validation commune l'accepte.
   7. Given le bundle de départ, Then inchangé : composant, catalogue, service et texte de notification hors du départ (assertions).
-- **notifications / settings-personalization** — à remplir.
-- **qa-test** — à remplir.
+- **notifications / settings-personalization** — Plan pur `planMeasurementNotifications` et `parseMeasurementReminder`
+  (`src/domain/measurementNotificationPlan.ts`, sur `measurementSchedule` de PROG-0301b) ; famille « measurement » dans `LedgerKind`,
+  `LEDGER_KINDS`, `NotificationKind` et `NOTIFICATION_KINDS` ; service `createMeasurementNotificationService` (`readPrefs`, `replan`,
+  `savePrefs`), `measurementNotificationsFor` (même file que compléments et gênes), déclencheurs d'ouverture, de retour et de synchro
+  (`supplementWake.ts`, table `measurement` ajoutée) ; clés `bodyProgress.measurementRhythm` et `bodyProgress.measurementReminder`
+  (`settings.ts`, gardées à la remise à zéro, `dataReset.ts`) ; composant `MeasurementRhythmSettings` et son hôte à la demande
+  `lazy.ts` (src/features/settings/measurementRhythm), catalogues `fr.measurementRhythm.ts` (traducteur typé `measurementRhythmText.ts`,
+  compteurs par `tPlural`) et `fr.measurementNotifications.ts`. Montage : un import et une ligne dans `BodyProgress.tsx` (sous la
+  saisie), qui passe les mesures déjà lues : une saisie locale rafraîchit les phrases et replanifie. Aucune migration : `settings` suffit.
+  Choix : D-760 à D-764 ; D-762 : l'appui ouvre l'app, pas Corps › Mesures (aucune famille n'a de lien profond).
+- **qa-test** — Rouge : `d4f1d923` (4 fichiers de tests neufs en échec, modules absents, plus 5 assertions « hors du départ » dans
+  `tests/bundle/startBundle.test.ts`). Vert : `107e37a0` ; le test d'écran y écrit aussi la mesure dans la base (le service relit la
+  table `measurement`, la fixture rouge ne le faisait pas). Suites du module (domaine bodyProgress et plan, src/features/notifications,
+  measurementRhythm, bodyProgress, SectionNoticeProgress, notificationLedger, dataReset, model, platform/notifications, src/i18n, tests/unit/arch,
+  eslintGuards, hardcodedUnits) : 82 fichiers, 869 tests verts ; `npm run test:bundle` : 201 tests verts (plafond inchangé) ;
+  scripts/release : 291 tests verts ; `tsc --noEmit` et eslint sans erreur. Valeurs inventées seulement.
 - **code-reviewer** — à remplir.

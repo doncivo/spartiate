@@ -16,7 +16,7 @@ const DEVICE = '60000000-0000-4000-8000-0000000000f1' as DeviceId;
 const NOW = '2026-11-12T09:00:00.000Z'; // 10:00 à Paris
 let db: TestDb;
 
-const mount = (samples: readonly { kind: string; day: LocalDate }[], notifications?: NotificationScheduler) =>
+const mount = (samples: readonly { kind: string; day: LocalDate }[], notifications?: NotificationScheduler, zone: string | null = 'Europe/Paris') =>
   render(
     <AppContainerProvider
       container={createAppContainer({
@@ -24,7 +24,7 @@ const mount = (samples: readonly { kind: string; day: LocalDate }[], notificatio
         hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
         data: db.data,
         platform: { runtime: 'web', os: notifications ? 'ios' : 'other' },
-        ...(notifications ? { notifications, notificationClock: { nowMs: () => Date.parse(NOW), zone: () => 'Europe/Paris' } } : {}),
+        ...(notifications ? { notifications, notificationClock: { nowMs: () => Date.parse(NOW), zone: () => zone } } : {}),
       })}
     >
       <MeasurementRhythmSettings samples={samples} />
@@ -78,6 +78,21 @@ describe('rythme des mesures', () => {
     await waitFor(() => expect(toggle).toHaveAttribute('aria-checked', 'false'));
     await waitFor(async () => expect(await scheduler.pending()).toEqual([]));
     expect(await db.data.repos.settings.get('bodyProgress.measurementReminder')).toBe(false);
+  });
+
+  it('iPhone : l’interrupteur est rendu dès l’affichage, sans attendre le passage de planification (relecture CORPS-0301d, point 1)', async () => {
+    const scheduler = createFakeNotificationScheduler();
+    mount([waist('2026-11-09')], scheduler);
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toBeInTheDocument();
+    await waitFor(async () => expect(await scheduler.pending()).toHaveLength(1));
+  });
+
+  it('iPhone : fuseau illisible, rappel non posé : l’écran le dit (relecture CORPS-0301d, point 3)', async () => {
+    const scheduler = createFakeNotificationScheduler();
+    await seed('2026-11-09');
+    mount([waist('2026-11-09')], scheduler, null);
+    expect(await screen.findByText('Le rappel n’a pas pu être programmé.')).toBeInTheDocument();
+    expect(await scheduler.pending()).toEqual([]);
   });
 
   it('PC : rythme et phrases visibles, pas d’interrupteur, « émis sur l’iPhone »', async () => {
