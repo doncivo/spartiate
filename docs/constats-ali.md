@@ -224,6 +224,12 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.5) :
 - [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Logs ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
 - [ ] **C-076 (unités)** — PC puis iPhone, Aujourd'hui, une séance et Progrès : les durées (« min », « h »), les heures en 24 h et les nombres à virgule s'affichent comme avant. Date : ____ Version : ____
 
+## 0.29.6
+
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
+
+- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Logs › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
@@ -294,6 +300,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | H-42 | 0.29.5 |
 | C-154 | 0.29.5 |
 | C-076 | 0.29.5 |
+| C-085 | 0.29.6 |
 
 ## Doutes à trancher
 
