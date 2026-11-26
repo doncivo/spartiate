@@ -1,3 +1,4 @@
+import { catalogText, type PlainCatalogKey } from './catalogText';
 import { syncCarryReportFr } from './fr.syncCarryReport';
 
 /**
@@ -5,6 +6,8 @@ import { syncCarryReportFr } from './fr.syncCarryReport';
  * modules chargés à la demande. L’anglais est servi quand la langue courante est `en`.
  */
 export type SyncCarryReportTextKey = keyof typeof syncCarryReportFr;
+/** CLEAN-0296 (C-085) : clés sans paramètre `{x}`. */
+export type SyncCarryReportPlainKey = PlainCatalogKey<typeof syncCarryReportFr>;
 
 /**
  * Cause d'un échec d'enregistrement du compte rendu, lisible par famille (stockage plein, base refusée, autre), le code entre parenthèses
@@ -15,7 +18,4 @@ export function carryFailureCause(code: string): string {
   return tCarry('failedCause', { family: tCarry(family), code });
 }
 
-export function tCarry(key: SyncCarryReportTextKey, params?: Readonly<Record<string, string | number>>): string {
-  const text: string = syncCarryReportFr[key];
-  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
-}
+export const tCarry = catalogText(syncCarryReportFr);
