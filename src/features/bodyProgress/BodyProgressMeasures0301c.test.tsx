@@ -149,7 +149,9 @@ describe('PC : la liste des zones porte la tendance (D-719)', () => {
     const waist = await screen.findByRole('radio', { name: 'Tour de taille' });
     await waitFor(() => expect(waist).toHaveAccessibleDescription(/en baisse, vers l’objectif/));
     expect(screen.getByRole('radio', { name: 'Hanches' })).toHaveAccessibleDescription(/en hausse, à l’inverse/);
-    expect(screen.getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription(/pas assez de mesures/);
+    // Zone sans mesure : « aucune mesure » dit déjà pourquoi elle est grise (description de FIX-0241 inchangée).
+    expect(screen.getByRole('radio', { name: 'Cou' })).toHaveAccessibleDescription('aucune mesure pas d’écart sur 4 semaines');
+    expect(screen.getByRole('radio', { name: 'Cou' }).getAttribute('data-tone')).toBe('neutral');
     expect(waist.getAttribute('data-tone')).toBe('favorable');
     expect(screen.queryByRole('img', { name: /Silhouette/ })).toBeNull();
     expect(screen.getByRole('list', { name: 'Légende des couleurs' })).toBeInTheDocument();

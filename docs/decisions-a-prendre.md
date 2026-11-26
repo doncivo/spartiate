@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-407 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+412 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (120 : 78 à trancher, 42 à confirmer seulement)
+### séance et moteur (121 : 79 à trancher, 42 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -121,6 +121,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 1 | D-557 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
 | 1 | D-576 | DATA-0293 (BL-040). | A garder · B réviser ; effet : chiffre |
 | 1 | D-602 | SHELL-0294b (C-157). | A garder · B réviser ; effet : écran |
+| 1 | D-750 | CORPS-0301c (BL-179, D-709, D-719 point 4) : déroulé de la saisie guidée. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -357,7 +358,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 | 0 | D-720 | PROG-0301a (D-701, D-719) : le sous-onglet Corps › Santé dit qu'aucune valeur n'est importée. | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (60 : 29 à trancher, 31 à confirmer seulement)
+### écrans (64 : 29 à trancher, 35 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -402,6 +403,8 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-592 | SHELL-0294a (C-135, § 18.1 b, D-480). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-596 | SHELL-0294a (bundle de départ, règle « le départ ne grossit jamais »). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-605 | SHELL-0294c (C-119, § 18.2 c, C-131 en partie). | à confirmer seulement (aucun effet visible repéré) |
+| 1 | D-751 | CORPS-0301c (BL-179, D-704, D-705, D-706, D-719) : disposition de Corps › Mesures. | à confirmer seulement (aucun effet visible repéré) |
+| 1 | D-753 | CORPS-0301c (BL-179, D-706, D-707, D-745) : textes des repères, du poids et du pointillé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-330 | FIX-CONFID-IOS (0.28.0) : suppression sûre des photos et texte exact (C-089 ). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-344 | FIX-SAISIE-NUTRI (0.28.0) : saisie des nombres en français, jour courant relu, formulaire protégé (C-095 à C-098 ). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-371 | A11Y (0.28.0) : bordure des contrôles contrastée; interrupteur éteint clair porté à 3:1 (C-112; consigne d'Ali du 21/11). | à confirmer seulement (aucun effet visible repéré) |
@@ -426,6 +429,8 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-731 | PROG-0301b (D-706, D-718) : bornes des périodes de la courbe. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-732 | PROG-0301b (D-707, D-715, D-718) : valeur et évolution d'un ratio. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-734 | PROG-0301b (D-713) : lecture du rythme et dates après aujourd'hui. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-752 | CORPS-0301c (BL-179, D-704, D-705, D-716) : silhouette, pastilles et couleurs. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-754 | CORPS-0301c (BL-179, D-709) : conseils de placement du mètre de la saisie guidée. | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (69 : 33 à trancher, 36 à confirmer seulement)
 

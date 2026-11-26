@@ -137,6 +137,8 @@ async function warmBlocks(): Promise<void> {
     import('../../../content/strength/standards.json'),
     import('../../../content/exercises/exercises.json'),
     import('../bodyProgress/BodyProgress'),
+    // CORPS-0301c : Mesures lit le profil et les pesées (dépôt chargé à la demande) ; module chauffé comme les blocs.
+    import('../../db/repositories/sql/bodyRepositories'),
     import('../cardio/CardioProgress'),
     import('../tracking/TrackingProgress'),
   ]);
