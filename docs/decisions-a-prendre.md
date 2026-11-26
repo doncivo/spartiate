@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (122 : 78 à trancher, 44 à confirmer seulement)
+### séance et moteur (122 : 79 à trancher, 43 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -114,6 +114,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 2 | D-582 | DATA-0293. | A garder · B réviser ; effet : moteur |
 | 2 | D-588 | CONTENT-0293 (BL-113). | A garder · B réviser ; effet : moteur |
 | 2 | D-620 | SHELL-0294f (BL-150) : durée du mésocycle mise en cohérence. | A garder · B réviser ; effet : moteur |
+| 2 | D-761 | CORPS-0301d (D-714) : moments de replanification du rappel des mesures. | A garder · B réviser ; effet : écran |
 | 1 | D-271 | PROG-01 (0.24.0) : cible des jours de repos. | A garder · B réviser ; effet : chiffre |
 | 1 | D-351 | FIX-PROGRAMME (0.28.0) : « Revoir mes réglages » part de la durée réelle du cycle et ne l'écrase plus (C-117, C-064; complète D-315 ). | A garder · B réviser ; effet : écran |
 | 1 | D-455 | PROGRES-0291 (BL-114) : plage de séries jugée sur la dernière semaine complète. | A garder · B réviser ; effet : écran |
@@ -168,7 +169,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-621 | SHELL-0294f (BL-150) : § 19.2 sans platform.kind. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-761 | CORPS-0301d (D-714) : moments de replanification du rappel des mesures. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-764 | CORPS-0301d (D-713, D-714) : réglage sur le PC et emplacement. | à confirmer seulement (aucun effet visible repéré) |
 
 ### nutrition (26 : 16 à trancher, 10 à confirmer seulement)

@@ -42,4 +42,12 @@ migration (la table `settings` suffit, D-713), aucune table, aucun fichier de sy
   measurementRhythm, bodyProgress, SectionNoticeProgress, notificationLedger, dataReset, model, platform/notifications, src/i18n, tests/unit/arch,
   eslintGuards, hardcodedUnits) : 82 fichiers, 869 tests verts ; `npm run test:bundle` : 201 tests verts (plafond inchangé) ;
   scripts/release : 291 tests verts ; `tsc --noEmit` et eslint sans erreur. Valeurs inventées seulement.
-- **code-reviewer** — à remplir.
+- **code-reviewer** — Relecture à froid par un agent distinct, sur le diff. Premier verdict : « à corriger » (1 bloquant : interrupteur
+  rendu seulement après le premier passage, test dépendant de l'ordre à cause de l'import à froid ; 2 importants : échec de chargement avalé,
+  fuseau illisible non dit ; non bloquants : lecture des réglages qui écrase un choix, nom `SUPPLEMENT_TABLES` trompeur, échéance dépassée
+  à consigner, `role="status"`, test du composant changé dans le commit vert (fixture `seed`, assertions inchangées)). Rouge `bf7edc82`
+  (2 tests : interrupteur rendu en synchrone, fuseau illisible dit), vert `c530cd6f` : interrupteur décidé par la plateforme, service importé
+  avec le bloc (déjà à la demande), échecs et `no-zone` dits, ref `touched`, `REMINDER_TABLES`, D-761 complétée ; le test du point 1 y reçoit
+  le `seed` oublié. Seconde relecture : « approuvé », aucun bloquant. Reste (non bloquant, ticket suivant) : un choix fait avant la fin de la
+  lecture des réglages enregistre le rythme par défaut et peut écraser un 14 ou un 28 déjà stocké (désactiver les contrôles jusqu'à la lecture).
+  CI : voir la PR.
