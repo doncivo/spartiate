@@ -211,6 +211,28 @@ describe('service d’import des fichiers Raccourcis (I5-01 points 1.3, 1.6)', (
     expect(logs.some((l) => l.event === 'recovery-import-file-unreadable')).toBe(true);
   });
 
+  it('NUTRI-0299 (BL-172, D-664, D-680) : un fichier sans saut de ligne final est refusé en entier (rien d’écrit pour ce type), les autres sont importés', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', PAS.trimEnd());
+    reads[1] = ok('fc-repos.csv', FC.trimEnd());
+    const result = await build(reader(async () => reads)).run('manual');
+    const pas = result.files.find((f) => f.type === 'pas');
+    expect(pas).toMatchObject({ state: 'unterminated', read: 0, added: 0, rejectedTotal: 0, rejected: null });
+    expect(result.files.find((f) => f.type === 'fc-repos')?.state).toBe('unterminated');
+    expect(result.files.find((f) => f.type === 'hrv')?.state).toBe('imported');
+    const samples = await db.data.repos.recoverySamples();
+    expect((await samples.listImportStates()).map((s) => s.type).sort()).toEqual(['hrv', 'sommeil']);
+    expect(await samples.listWindow('pas', '2026-10-01T00:00:00.000Z', NOW)).toEqual([]);
+    expect(logs.filter((l) => l.event === 'recovery-import-file-unterminated').map((l) => l.counts)).toEqual([{ type_index: 1 }, { type_index: 3 }]);
+  });
+
+  it('NUTRI-0299 (BL-172) : un fichier vide (aucune donnée sur 30 jours) n’est jamais refusé pour son saut de ligne', async () => {
+    const reads = ALL_OK();
+    reads[3] = ok('pas.csv', '');
+    const result = await build(reader(async () => reads)).run('manual');
+    expect(result.files.find((f) => f.type === 'pas')?.state).toBe('imported');
+  });
+
   it('une écriture qui échoue pour un fichier est isolée et journalisée par un nom fixe', async () => {
     const samples = await db.data.repos.recoverySamples();
     const failing: RecoverySampleRepository = {
