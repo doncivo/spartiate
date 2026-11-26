@@ -219,16 +219,16 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.4) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.5) :
 
-- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › APP › Logs ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
-- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › APP › Logs). Date : ____ Version : ____
-- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Logs ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
+- [ ] **H-43, C-155 (synchro de l'iPhone)** — iPhone, Plus › Appareils et synchro, lance une synchro : elle se termine sans erreur ; Plus › APP › Journaux ne montre aucune erreur `io` répétée sur l'écriture de l'état. Date : ____ Version : ____
+- [ ] **C-153 (accès au dossier)** — iPhone, après plusieurs synchros dans la journée, la synchro marche toujours (aucune erreur d'accès au dossier dans Plus › APP › Journaux). Date : ____ Version : ____
+- [ ] **H-42, C-154 (copie de conflit)** — iPhone, après une semaine d'usage, Plus › APP › Journaux ne signale plus de copie de conflit « state 2.spx » nouvelle (une copie ancienne peut rester signalée une fois). Date : ____ Version : ____
 - [ ] **C-076 (unités)** — PC puis iPhone, Aujourd'hui, une séance et Progrès : les durées (« min », « h »), les heures en 24 h et les nombres à virgule s'affichent comme avant. Date : ____ Version : ____
 
 ## 0.29.6
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 
-- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Logs › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+- [ ] **C-085 (textes typés)** — PC puis iPhone, ouvre une séance en circuit, Progrès (dont la carte « Récupération : ce qui change ta Recovery »), Nutrition › Journal › Repas rapides, Plus › Export et import et « Tester le minuteur (60 s) » (PC : Plus › Journaux › Outils de test ; iPhone : Plus › APP › Journaux › Outils de test) : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
 ## 0.29.7
 
@@ -245,7 +245,28 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écrans sur les deux appareils ; un élément sans mise en forme, une barre vide, un graphique ou un pictogramme absent est un défaut d'affichage à signaler (BL-002, BL-144).
 
 - [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Aujourd'hui, colonne de droite (barres de macros) ; Nutrition › Journal, Nutrition › Tableau de bord (graphiques) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
-- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Logs (« Journaux » après BL-168). Date : ____ Version : ____
+- [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Journaux. Date : ____ Version : ____
+
+## 0.30.1 (Progrès en onglets et Mensurations)
+
+Après la mise à jour des deux appareils le même jour (version qui livre BL-177 à BL-180 ; D-700 à D-719, docs/PROGRES-0301.md). Libellés nouveaux, à l'écran après cette version : les onglets « Récup », « Séances », « Bilan », « Force », « Corps », « Activité » et, dans Corps, les sous-onglets « Mesures », « Santé », « VISBODY », « Photos » ; les autres libellés nouveaux sont marqués « (nouveau libellé) ».
+
+### iPhone
+
+- [ ] **BL-177 (onglets)** — Progrès : les 6 onglets s'affichent dans l'ordre Récup, Séances, Bilan, Force, Corps, Activité ; chaque bloc d'avant se retrouve (Récup : Tendances sur 30 jours, ce qui change ta Recovery ; Séances : Constance, Adhérence, Volume par muscle ; Bilan : Bilan de la semaine ; Force : Strength Score ; Corps › Santé : Importé de Santé ; Corps › VISBODY : Bilans VISBODY ; Corps › Photos : Photos de progression ; Activité : Cardio, Objectifs, Pas par semaine, Cardio en zone 2, Notes du matin). Date : ____ Version : ____
+- [ ] **BL-177 (onglet retenu)** — Progrès › Corps › Photos, puis Aujourd'hui, puis Progrès → Corps › Photos est rouvert ; touche encore Progrès → Récup s'affiche. Date : ____ Version : ____
+- [ ] **D-703, BL-179 (« cm »)** — Progrès › Corps › Mesures, champ « Mesure (cm) » : « cm » tient sur une ligne à côté du champ, jamais coupé en « c » / « m ». Date : ____ Version : ____
+- [ ] **BL-179 (silhouette)** — Progrès › Corps › Mesures : touche un point de la silhouette → la pastille de la même zone est choisie, et l'inverse ; les points sont verts, orange ou gris, et la légende sous la silhouette (nouveau libellé) dit ce que veut dire chaque couleur. Date : ____ Version : ____
+- [ ] **BL-179 (courbe, ratios, symétrie)** — Progrès › Corps › Mesures, zone Tour de taille : choisis 4 sem., 3 mois, 6 mois puis Tout → la courbe change ; s'il existe un tour de taille importé de Santé, il est en pointillé ; sous la courbe, le rythme par mois et l'évolution du poids (nouveaux libellés) ; les 4 ratios et la symétrie bras, cuisses, mollets (nouveaux libellés) s'affichent, « inconnu » quand une mesure manque, jamais 0. Date : ____ Version : ____
+- [ ] **BL-179 (saisie guidée)** — Progrès › Corps › Mesures, saisie guidée (nouveau libellé) : les 11 zones défilent avec Passer et Suivant, un conseil de placement et la dernière valeur ; à la fin, les relevés montrent toutes les valeurs à la même date ; la saisie zone par zone fonctionne toujours. Aucune valeur réelle notée ici. Date : ____ Version : ____
+- [ ] **BL-180 (rythme et rappel)** — Progrès › Corps › Mesures : « dernière séance de mesures il y a N jours » et « prochaine conseillée dans N jours » s'affichent ; le rythme se règle ; le matin du jour prévu, une notification de rappel arrive vers 09:00, sans zone ni valeur sur l'écran verrouillé ; l'interrupteur du rappel dans Corps la coupe. Date : ____ Version : ____
+
+### PC
+
+- [ ] **BL-177 (onglets au clavier)** — Ctrl+4 : les 6 onglets s'affichent dans le même ordre ; Tab jusqu'aux onglets, puis flèches gauche et droite, Début et Fin changent d'onglet ; chaque bloc d'avant se retrouve, comme sur l'iPhone ; sous-onglets de Corps au clavier aussi. Date : ____ Version : ____
+- [ ] **BL-177 (onglet retenu)** — Progrès › Activité, puis Nutrition, puis Progrès → Activité est rouvert ; Ctrl+4 encore → Récup s'affiche. Date : ____ Version : ____
+- [ ] **BL-179 (liste des zones)** — Progrès › Corps › Mesures : la liste « Zones · dernière · 4 sem. » est toujours là, ↑ ↓ changent de zone, chaque ligne porte une marque de tendance avec un mot ; courbe avec période, ratios, symétrie et saisie guidée comme sur l'iPhone ; la grille de 1, 2 ou 3 colonnes suit la largeur. Date : ____ Version : ____
+- [ ] **BL-180 (rythme sur PC)** — Progrès › Corps › Mesures : le rythme se règle et les deux phrases « dernière séance… » et « prochaine conseillée… » s'affichent ; le PC dit que le rappel est émis sur l'iPhone (nouveau libellé) et n'envoie aucune notification. Date : ____ Version : ____
 
 ## Table de contrôle (ID → section)
 
@@ -319,6 +340,10 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | C-154 | 0.29.5 |
 | C-076 | 0.29.5 |
 | C-085 | 0.29.6 ; 0.29.7 |
+| BL-177 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |
+| BL-179 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |
+| BL-180 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |
+| D-703 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone (« cm ») |
 
 ## Doutes à trancher
 

@@ -72,7 +72,7 @@ describe('I-04 / FILES-IOS-01 QA : états d’échec de l’écran Logs', () => 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('Code : unavailable');
     fireEvent.click(within(alert).getByRole('button', { name: 'Réessayer' }));
-    expect(await screen.findByText('Logs exportés')).toBeInTheDocument();
+    expect(await screen.findByText('Journaux exportés')).toBeInTheDocument();
     expect(files.saved).toHaveLength(1);
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -87,7 +87,7 @@ describe('I-04 / FILES-IOS-01 QA : états d’échec de l’écran Logs', () => 
     fireEvent.click(within(alert).getByRole('button', { name: 'Réessayer' }));
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
     expect(files.saved).toHaveLength(0);
-    expect(screen.queryByText('Logs exportés')).toBeNull();
+    expect(screen.queryByText('Journaux exportés')).toBeNull();
   });
 
   it('I-04 critère 8 : « Effacer » refusé (lien, disque) -> message avec code, les entrées restent affichées, un second essai réussit', async () => {

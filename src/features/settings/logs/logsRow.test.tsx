@@ -63,12 +63,12 @@ describe('I-04 : entonnoir logFailure et ligne « Logs » de Réglages', () => {
     renderAbout('ios');
     // I-06 : la version vient du conteneur (lue au démarrage, platform/appVersion.ts) ; sans lecture, la constante de build (tauri.conf.json).
     expect(await screen.findByText(`Version ${__CT_APP_VERSION__}`)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’écran des logs' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’écran des journaux' }));
     expect(useNavigationStore.getState().route).toEqual({ tab: 'more', screen: 'logs' });
     cleanup();
     renderAbout('windows');
     expect(await screen.findByText('Version 0.2.0')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ouvrir l’écran des logs' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ouvrir l’écran des journaux' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Rechercher une mise à jour' })).toBeInTheDocument();
   });
 

@@ -40,8 +40,8 @@ async function openLogs(page: Page): Promise<void> {
   await openToday(page);
   await page.getByRole('navigation').getByRole('button', { name: 'Plus', exact: true }).click();
   await openPlusEntry(page, /^À propos et diagnostic/);
-  await page.getByRole('button', { name: 'Ouvrir l’écran des logs' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Logs' })).toBeVisible();
+  await page.getByRole('button', { name: 'Ouvrir l’écran des journaux' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Journaux' })).toBeVisible();
 }
 
 test.describe('I-04 — écran Logs', () => {
@@ -70,9 +70,9 @@ test.describe('I-04 — écran Logs', () => {
     await expect(page.getByRole('alert')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Exporter' }).click();
-    await expect(page.getByText('Logs exportés')).toBeVisible();
+    await expect(page.getByText('Journaux exportés')).toBeVisible();
     const file = await onlySaved(page);
-    expect(file.name).toMatch(/^spartiate-logs-\d{8}-\d{4}\.txt$/);
+    expect(file.name).toMatch(/^spartiate-journaux-\d{8}-\d{4}\.txt$/);
     expect(file.mime).toBe('text/plain');
     const text = textOf(file);
     expect(text).toContain('Ce fichier ne contient ni titres ni notes.');
