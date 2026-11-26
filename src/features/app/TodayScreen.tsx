@@ -8,7 +8,7 @@ import { formatDetailDate, formatStamp } from '../../i18n/format';
 import { getFirstWeekday } from '../../i18n/formatPrefs';
 import type { FirstWeekday } from '../../domain/week';
 import { formatKg } from '../../i18n/bodyText';
-import { formatTodayEyebrow, tToday, type TodayTextKey } from '../../i18n/todayText';
+import { formatTodayEyebrow, tToday, type TodayPlainKey } from '../../i18n/todayText';
 import { Button, Icon, useLayout } from '../../ui';
 import { useSyncedData } from '../sync/remoteChanges';
 import { statusLine } from '../sync/syncText';
@@ -117,9 +117,9 @@ function WeightCard({ weights, nowMs, showActions }: { readonly weights: readonl
 
 interface Step {
   readonly done: boolean;
-  readonly title: TodayTextKey;
-  readonly hint: TodayTextKey;
-  readonly action: TodayTextKey;
+  readonly title: TodayPlainKey;
+  readonly hint: TodayPlainKey;
+  readonly action: TodayPlainKey;
   readonly route: Route;
 }
 
