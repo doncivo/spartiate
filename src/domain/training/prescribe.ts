@@ -10,12 +10,12 @@ import type { HistorySet, MuscleWeight, PrescribeInput, PrescribedSet, Prescript
  * argument), aucune I/O, aucun hasard. Ordre normatif :
  *
  * 1. valider l'historique (estimate1rm.ts) ; 2. cible (`target`, `equipment`) ; 3. référence : décision d'Ali postérieure à la dernière
- * séance (rendue telle quelle : son entrée l'emporte), sinon dernière séance valide, sinon « à saisir » (aucune table de standards,
+ * séance (son entrée l'emporte ; BL-171, D-657 : décharge, inactivité et Recovery basse la réduisent comme une séance), sinon dernière séance valide, sinon « à saisir » (aucune table de standards,
  * D-72 point 1) ; 4. double progression : haut de plage partout → un cran, sinon +1 rep sur une seule série (8-7-6 → 8-8-6 → 8-8-7 →
  * 8-8-8) ; 5. difficulté : Dur / RIR ≤ 1 bloque la hausse de charge, Facile / RIR ≥ 4 confirme le cran, Facile avec confiance < 60 %
  * recalibre de +5 % (30 jours glissants) à la place du cran, seulement si la charge arrondie monte (I4-08 : sinon échelle de répétitions) ; 6. contraintes (I2-02, constraints.ts) : fatigue, inactivité, deload ou
  * Recovery bas suspendent la progression (maintien de la référence) et réduisent dans cet ordre (facteurs multipliés, un seul arrondi) ;
- * fatigue et stagnation ajoutent des choix facultatifs, jamais appliqués ; une décision d'Ali, « à saisir » et une métrique hors moteur
+ * fatigue et stagnation ajoutent des choix facultatifs, jamais appliqués ; « à saisir » et une métrique hors moteur
  * ne sont pas modulées ; 7. arrondi
  * au matériel puis plafond +10 % du 1RM implicite (`max(1RM courant, 1RM de la dernière séance)`) ; 8. raisons dans l'ordre
  * `REASON_ORDER` et raison principale unique (`headline`) ; 9. rien n'est imposé : l'appelant présente, Ali accepte ou modifie.
@@ -137,6 +137,64 @@ export function prescribe(input: PrescribeInput): Prescription {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
+    // BL-171 (D-657, Ali le 26/11, Q-11 option B ; C-026) : la décision devient la référence ; la décharge, l'inactivité et la récupération
+    // basse (journée rouge comprise) la réduisent comme une référence d'historique. Fatigue et stagnation (lues dans l'historique) et décote
+    // de position ne s'appliquent pas ; aucun choix facultatif.
+    const decidedLoad = decision.loadKg;
+    if (decidedLoad !== null && decidedLoad > 0) {
+      const workedAt = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
+      const muscleAt = input.muscleLastWorkedAt ?? null;
+      const evaluated = activeConstraints({
+        estimates: [],
+        lastWorkedAt: muscleAt !== null && (workedAt === null || compareInstants(muscleAt, workedAt) > 0) ? muscleAt : workedAt,
+        now: input.now,
+        ...(input.utcOffsetMinutes !== undefined ? { utcOffsetMinutes: input.utcOffsetMinutes } : {}),
+        deload: input.deload === true,
+        recovery: input.recovery,
+        config,
+        ...(input.deload === true && input.deloadSets !== undefined ? { deloadSets: input.deloadSets } : {}),
+        ...(input.deload === true && input.deloadLoad !== undefined ? { deloadLoad: input.deloadLoad } : {}),
+      });
+      // FIX-0243 (D-273) : assisté en décharge, ni l'inactivité ni la Recovery ne touchent l'assistance.
+      const c = evaluated.deload && assisted ? { ...evaluated, inactivityCut: 0, lowRecovery: false, redDay: false } : evaluated;
+      if (reduces(c)) {
+        addConstraintReasons(c, reasons);
+        if (c.lowRecovery && input.recovery?.redDay === true) reasons.add('recovery-red-day');
+        const decisionRef: PrescriptionReference = { loadKg: decidedLoad, reps: decided, e1rmKg: current ?? 0 };
+        const reduced = reducedTarget(c, decisionRef, input.exercise.kind, config, assisted);
+        if (assisted && !c.deload && (c.inactivityCut > 0 || c.lowRecovery)) reasons.add('assistance-held');
+        if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
+        // La charge décidée s'ajoute à la grille (entrée d'Ali, comme la référence d'historique, D-471) ; même arrondi que la référence.
+        const gridLoads = loadGrid(input.exercise.equipment, input.equipment)?.loads ?? null;
+        const loads = gridLoads === null ? null : [...new Set([...gridLoads, decidedLoad])].sort((a, b) => a - b);
+        const discountOnly = c.inactivityCut > 0 && !c.deload && !c.lowRecovery;
+        const snapped =
+          reduced.targetKg >= decidedLoad - EPS
+            ? { loadKg: decidedLoad, reps: reduced.reps, extraRep: false }
+            : discountOnly && loads !== null
+              ? snapDiscount(decidedLoad, reduced.targetKg, reduced.reps, loads, config)
+              : c.redDay || c.deload
+                ? snapDownAtLeastMin(reduced.targetKg, reduced.reps, loads, decidedLoad, config)
+                : snapToEquipment(reduced.targetKg, reduced.reps, loads, config);
+        if (snapped.extraRep) reasons.add('snap-extra-rep');
+        const loadKg = roundKg(Math.min(snapped.loadKg, decidedLoad));
+        return finish({
+          status: 'prescribed',
+          headline: reducedHeadline(c),
+          sets: snapped.reps.map((reps) => ({ reps, loadKg })),
+          loadKg,
+          deltaKg: roundKg(loadKg - decidedLoad),
+          reference: decisionRef,
+          ladderSetIndex: null,
+          estimated1rmKg: current,
+          confidence,
+          recalibration: null,
+          deload: c.deload,
+          rirTarget: c.deload ? Math.max(target.rir ?? 0, config.deloadRirAtLeast) : target.rir,
+          inactivityCut: c.inactivityCut,
+        });
+      }
+    }
     return finish({
       status: decision.loadKg === null ? 'to-enter' : 'prescribed',
       headline: 'decision',
@@ -562,12 +620,48 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const confidence = confidenceOf(valid, input.now, config);
   const latestEnd = input.history.reduce<string | null>((max, s) => (max === null || compareInstants(s.endedAt, max) > 0 ? s.endedAt : max), null);
 
+  // Contraintes de l'étape 4, évaluées ici parce qu'elles réduisent aussi une décision d'Ali (BL-171).
+  const muscle = input.muscleLastWorkedAt ?? null;
+  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
+  const lastWorked = muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked;
+  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now, input.utcOffsetMinutes), config) > 0;
+  const low = isLowRecovery(input.recovery, config);
+  const grid = ballastLoads(input.equipment);
+  /** Décharge (moitié des séries, lest × 0,8 vers le bas au lest disponible) des valeurs `values` au lest `lest`. */
+  const deloaded = (lest: number, values: readonly number[]): { readonly loadKg: number; readonly values: readonly number[] } => {
+    const sets = input.deloadSets ?? deloadSetCount(target.sets);
+    const wanted = lest * (input.deloadLoad ?? config.deloadLoad);
+    const lighter = lest > 0 ? Math.max(0, ...[...grid, lest].filter((kg) => kg <= wanted + EPS)) : 0;
+    const loadKg = lighter > 0 || grid.length > 0 ? roundKg(lighter) : roundKg(Math.floor(wanted / config.unknownGridRoundingKg + EPS) * config.unknownGridRoundingKg);
+    return { loadKg, values: values.slice(0, Math.max(1, sets)) };
+  };
+  const reducedReasons = (): void => {
+    if (paused) reasons.add('inactivity-discount');
+    if (input.deload === true) reasons.add('deload');
+    if (low) reasons.add('recovery-low');
+    if (low && input.recovery?.redDay === true) reasons.add('recovery-red-day');
+  };
+
   // 2. Référence : la décision d'Ali postérieure à la dernière séance l'emporte.
   const decision = input.lastDecision;
   if (decision !== null && (latestEnd === null || compareInstants(decision.decidedAt, latestEnd) > 0)) {
     reasons.add('decision-reference');
     if (decision.revert === true) reasons.add('revert-previous');
     const decided = decision.reps.length > 0 ? decision.reps : Array.from({ length: target.sets }, () => target.repMin);
+    // BL-171 (D-657, Q-11 option B) : la décision devient la référence, réduite par la décharge, la pause et la récupération basse comme
+    // une séance de l'historique (fatigue, stagnation et position non).
+    const decidedLest = decision.loadKg;
+    if (decidedLest !== null && (input.deload === true || paused || low)) {
+      reducedReasons();
+      const reference = { loadKg: decidedLest, reps: decided, e1rmKg: 0 };
+      const at = (headline: PrescriptionHeadline, loadKg: number, values: readonly number[], deload: boolean): Prescription =>
+        finish({ ...empty, status: 'prescribed', headline, sets: values.map((reps) => ({ reps, loadKg })), loadKg, deltaKg: roundKg(loadKg - decidedLest), reference, confidence, ...(deload ? { deload: true, rirTarget: Math.max(target.rir ?? 0, config.deloadRirAtLeast) } : {}) });
+      if (input.deload === true) {
+        const d = deloaded(decidedLest, decided);
+        return at('deload', d.loadKg, d.values, true);
+      }
+      return at(paused ? 'inactivity' : 'recovery-low', decidedLest, decided, false);
+    }
     return finish({ ...empty, status: decision.loadKg === null ? 'to-enter' : 'prescribed', headline: 'decision', sets: decided.map((reps) => ({ reps, loadKg: decision.loadKg })), loadKg: decision.loadKg, confidence });
   }
   const last = valid[0];
@@ -590,7 +684,6 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   const minRir = rirs.length > 0 ? Math.min(...rirs) : null;
   const hard = last.difficulty === 'hard' || (minRir !== null && minRir <= config.hardRirAtMost);
   const easy = last.difficulty === 'easy' || (minRir !== null && minRir >= config.easyRirAtLeast);
-  const grid = ballastLoads(input.equipment);
 
   // BL-112 (D-539) : fatigue et stagnation comme pour un exercice chargé (constraints.ts), sur les valeurs (répétitions ou secondes) au même
   // lest. Fatigue : valeurs maintenues, choix « −2 répétitions » (aucun pour un chronométré) ; stagnation : deux choix (variante, autre plage),
@@ -627,21 +720,10 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
   };
 
   // 4. Contraintes (avant la progression, qu'elles suspendent) : deload, puis pause, puis récupération basse.
-  const muscle = input.muscleLastWorkedAt ?? null;
-  const worked = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
-  const lastWorked = muscle !== null && (worked === null || compareInstants(muscle, worked) > 0) ? muscle : worked;
-  const paused = lastWorked !== null && inactivityCut(daysBetween(lastWorked, input.now, input.utcOffsetMinutes), config) > 0;
-  const low = isLowRecovery(input.recovery, config);
-  if (paused) reasons.add('inactivity-discount');
-  if (low) reasons.add('recovery-low');
-  if (low && input.recovery?.redDay === true) reasons.add('recovery-red-day');
+  reducedReasons();
   if (input.deload === true) {
-    reasons.add('deload');
-    const sets = input.deloadSets ?? deloadSetCount(target.sets);
-    const wanted = lest * (input.deloadLoad ?? config.deloadLoad);
-    const lighter = lest > 0 ? Math.max(0, ...[...grid, lest].filter((kg) => kg <= wanted + EPS)) : 0;
-    const loadKg = lighter > 0 || grid.length > 0 ? roundKg(lighter) : roundKg(Math.floor(wanted / config.unknownGridRoundingKg + EPS) * config.unknownGridRoundingKg);
-    return result('deload', loadKg, refValues.slice(0, Math.max(1, sets)), null, { deload: true, rirTarget: Math.max(target.rir ?? 0, config.deloadRirAtLeast) });
+    const d = deloaded(lest, refValues);
+    return result('deload', d.loadKg, d.values, null, { deload: true, rirTarget: Math.max(target.rir ?? 0, config.deloadRirAtLeast) });
   }
   if (paused) return result('inactivity', lest, refValues, null);
   if (low) return result('recovery-low', lest, refValues, null);

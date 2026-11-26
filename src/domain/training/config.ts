@@ -7,7 +7,8 @@ import type { PrescriptionHeadline, ProposalOptionKind, ReasonCode } from './typ
  */
 
 // SEANCE-0292b (D-542) : 4 → 5, D-496 (charge hors grille ramenée sur la grille) et D-539 (sans charge : fatigue, stagnation, décote).
-export const ENGINE_VERSION = 5;
+// SEANCE-0299 (D-681) : 5 → 6, D-657 (décision d'Ali réduite par la décharge, la pause et la récupération basse).
+export const ENGINE_VERSION = 6;
 
 export interface ProgressionConfig {
   /** Au-delà, une série pèse `lowQualityWeight` dans l'estimation (§ 11.3). */
