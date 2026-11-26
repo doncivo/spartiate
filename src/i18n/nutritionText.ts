@@ -1,13 +1,18 @@
+import type { CatalogTranslator, PlainCatalogKey } from './catalogText';
 import { formatDayMonth as formatDayMonthFr, frFirst } from './format';
 import { nutritionFr } from './fr.nutrition';
 
 /** Textes de l'onglet Nutrition (I4-03) ; importé seulement par les blocs à la demande de Nutrition et de la carte d'Aujourd'hui. */
 export type NutritionTextKey = keyof typeof nutritionFr;
+/** CLEAN-0297 (C-085) : clés sans paramètre `{x}` (tables de libellés passées sans paramètre). */
+export type NutritionPlainKey = PlainCatalogKey<typeof nutritionFr>;
 
-export function tNutrition(key: NutritionTextKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: NutritionTextKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = nutritionFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tNutrition: CatalogTranslator<typeof nutritionFr> = translate;
 
 const NUMBER = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
 const TENTH = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });

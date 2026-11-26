@@ -1,9 +1,9 @@
 import type { EntrySource } from '../../domain/nutrition';
-import { formatInt, orDash, tNutrition, type NutritionTextKey } from '../../i18n/nutritionText';
+import { formatInt, orDash, tNutrition, type NutritionPlainKey } from '../../i18n/nutritionText';
 
 /** Éléments communs aux écrans de Nutrition (I4-03) : provenance, champs numériques et heure. */
 
-const PROVENANCE_KEY: Readonly<Record<EntrySource, NutritionTextKey>> = {
+const PROVENANCE_KEY: Readonly<Record<EntrySource, NutritionPlainKey>> = {
   custom: 'provCustom',
   ciqual: 'provCiqual',
   off: 'provOff',

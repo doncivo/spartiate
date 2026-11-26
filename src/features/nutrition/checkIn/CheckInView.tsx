@@ -18,7 +18,7 @@ import {
   type Target,
 } from '../../../domain/nutrition';
 import { addDays } from '../../../domain/localDate';
-import { formatDayLong, formatDayMonth, formatInt, formatKgDelta, formatSigned, formatTenth, tNutrition, type NutritionTextKey } from '../../../i18n/nutritionText';
+import { formatDayLong, formatDayMonth, formatInt, formatKgDelta, formatSigned, formatTenth, tNutrition, type NutritionPlainKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
@@ -28,15 +28,15 @@ import { recordCheckInDecision, tdeeAt, type NutritionSnapshot } from '../useCas
 import { weekSummary } from './weekSummary';
 import './CheckIn.css';
 
-const REASON_KEY: Readonly<Record<CheckInReason, NutritionTextKey | null>> = {
+const REASON_KEY: Readonly<Record<CheckInReason, NutritionPlainKey | null>> = {
   'manual-style': null,
   'no-weight': 'reasonNoWeight',
   'no-tdee': 'reasonNoTdee',
   'insufficient-coverage': 'reasonCoverage',
   'no-goal-rate': 'reasonNoGoalRate',
 };
-const CLAMP_KEY: Readonly<Record<Clamp, NutritionTextKey>> = { 'max-weekly-delta': 'whyClampDelta', 'max-loss-rate': 'whyClampLoss', floor: 'whyClampFloor' };
-const WARNING_KEY: Readonly<Record<CheckInWarning, NutritionTextKey>> = {
+const CLAMP_KEY: Readonly<Record<Clamp, NutritionPlainKey>> = { 'max-weekly-delta': 'whyClampDelta', 'max-loss-rate': 'whyClampLoss', floor: 'whyClampFloor' };
+const WARNING_KEY: Readonly<Record<CheckInWarning, NutritionPlainKey>> = {
   'below-floor': 'warnBelowFloor',
   'protein-out-of-range': 'warnProtein',
   'fat-below-min': 'warnFat',

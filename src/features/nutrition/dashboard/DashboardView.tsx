@@ -2,7 +2,7 @@ import { tPlural } from '../../../i18n/plural';
 import { useMemo } from 'react';
 import { remainingForDay, type TdeeConfidence } from '../../../domain/nutrition';
 import { adjustForSteps, type StepsAdjustmentReason } from '../../../domain/nutrition/stepsAdjustment';
-import { formatDayShort, formatInt, formatKgDelta, formatSigned, formatTenth, orDash, tNutrition, weekdayNames, type NutritionTextKey } from '../../../i18n/nutritionText';
+import { formatDayShort, formatInt, formatKgDelta, formatSigned, formatTenth, orDash, tNutrition, weekdayNames, type NutritionPlainKey } from '../../../i18n/nutritionText';
 import { Button } from '../../../ui';
 import { useNavigationStore } from '../../app/navigation';
 import { KcalHero } from '../shared';
@@ -10,14 +10,14 @@ import type { NutritionSnapshot } from '../useCases';
 import { BarsChart, TrendChart } from './Charts';
 import { dashboardModel } from './model';
 
-const CONFIDENCE_KEY: Readonly<Record<TdeeConfidence, NutritionTextKey>> = {
+const CONFIDENCE_KEY: Readonly<Record<TdeeConfidence, NutritionPlainKey>> = {
   none: 'confidenceNone',
   low: 'confidenceLow',
   medium: 'confidenceMedium',
   high: 'confidenceHigh',
 };
 
-const STEPS_REASON_KEY: Readonly<Record<StepsAdjustmentReason, NutritionTextKey>> = {
+const STEPS_REASON_KEY: Readonly<Record<StepsAdjustmentReason, NutritionPlainKey>> = {
   'no-steps': 'stepsAdjNoSteps',
   unreadable: 'stepsAdjUnreadable',
   'day-unknown': 'stepsAdjDayUnknown',
