@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-381 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+382 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-510 | SEANCE-0292 (§ 11). | A garder · B réviser ; effet : moteur, synchro, schéma, chiffre |
 
-### séance et moteur (117 : 75 à trancher, 42 à confirmer seulement)
+### séance et moteur (118 : 76 à trancher, 42 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -79,6 +79,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 3 | D-543 | SEANCE-0292b (relecture 1, point D; prolonge D-537 et D-496). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-682 | SEANCE-0299 (BL-171, D-657). | A garder · B réviser ; effet : moteur, chiffre |
 | 3 | D-683 | SEANCE-0299 (BL-176, D-659). | A garder · B réviser ; effet : moteur, chiffre |
+| 3 | D-684 | SEANCE-0299 (BL-171, D-657, relecture à froid). | A garder · B réviser ; effet : moteur, écran |
 | 2 | D-211 | I6-05 : constance, révisable par Ali. | A garder · B réviser ; effet : chiffre, écran |
 | 2 | D-273 | PROG-01 (0.24.0) : exercice assisté jamais plus lourd en décharge (constat 6 de Codex, PR #127 ). | A garder · B réviser ; effet : moteur |
 | 2 | D-284 | FIX-0243 (0.25.0) : exercice assisté en décharge (complète D-273 ). | A garder · B réviser ; effet : moteur |

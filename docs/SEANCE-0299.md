@@ -53,4 +53,19 @@ sur ce PC, 9,4 s seul), n'importe ni le moteur ni sa configuration : lenteur loc
 
 ## Relecture à froid (code-reviewer)
 
-(à compléter)
+Agent code-reviewer distinct, diff `89d2a5da..2b1ee3d3..cf234688` donné sans conclusions : approuvé avec réserves (aucun bloquant,
+3 importants, 6 mineurs). Corrigés : rouge `eb40fa57`, vert `1e9e70fb`.
+
+| Point | Suite |
+|---|---|
+| I1 décision à 0 kg d'un lesté non réduite | corrigé (`>= 0`), D-682 (2) révisé |
+| I2 bouton de deload absent sur une décision (impossible de le rétablir) | corrigé (ExerciseProgression.tsx), test d'interface ExerciseProgressionCycle.test.tsx, D-684 (4) |
+| I3 notes de la dernière séance (partielle, aberrante) contredisant la note de décision | corrigé (raisons retirées), D-684 (1) |
+| m4 retour réduit : phrase de la contrainte | voulu, testé, D-684 (2) |
+| m5 1RM de l'historique dans la référence d'une décision | corrigé (0), D-684 (3) |
+| m6 charge décidée hors grille gardée | voulu (entrée d'Ali), D-682 (1), commentaire corrigé (D-471 → D-682) |
+| m7 cas limites non testés | ajoutés (assisté, reps vides, plan de cycle, fatigue seule, isolation) ; passaient déjà |
+| m8 singulier, valeur absente d'un côté | corrigé, D-683 révisée |
+| m9 attente de History.test.tsx changée dans le vert `15b6bea5`, pas dans le rouge | écart de méthode consigné : branche non réécrite (pas de réécriture d'historique) ; l'attente nouvelle est couverte en rouge par HistorySetRow.seance0299.test.tsx (`c1ed6f9f`) |
+
+Pas de relecture sync-icloud : aucun fichier de synchro ni table publiée touché (`corrected_from` seulement lu).
