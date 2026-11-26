@@ -52,9 +52,15 @@ export function correctionText(set: WorkoutSet, held: Held = null): string {
   const changes: string[] = [];
   const pair = (a: number | null, b: number | null): { from: string; to: string } | null => (a === b ? null : { from: value(a), to: value(b) });
   const load = pair(from.loadKg, set.loadKg);
-  if (load !== null) changes.push(tTraining(held === 2 ? 'historyCorrectedLoadPair' : 'historyCorrectedLoad', load));
+  const loadSide = (kg: number | null): string => (kg === null ? NONE : formatExerciseLoad(kg, held));
+  if (load !== null)
+    changes.push(
+      from.loadKg !== null && set.loadKg !== null
+        ? tTraining(held === 2 ? 'historyCorrectedLoadPair' : 'historyCorrectedLoad', load)
+        : tTraining('historyCorrectedValues', { from: loadSide(from.loadKg), to: loadSide(set.loadKg) }),
+    );
   const reps = pair(from.reps, set.reps);
-  if (reps !== null) changes.push(tTraining('historyCorrectedReps', reps));
+  if (reps !== null) changes.push(tTraining(set.reps === 1 ? 'historyCorrectedRepsOne' : 'historyCorrectedReps', reps));
   const duration = pair(from.durationSec, set.durationSec);
   if (duration !== null) changes.push(tTraining('historyCorrectedDuration', duration));
   const rir = pair(from.rir, set.rir);

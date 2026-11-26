@@ -141,7 +141,7 @@ export function prescribe(input: PrescribeInput): Prescription {
     // basse (journée rouge comprise) la réduisent comme une référence d'historique. Fatigue et stagnation (lues dans l'historique) et décote
     // de position ne s'appliquent pas ; aucun choix facultatif.
     const decidedLoad = decision.loadKg;
-    if (decidedLoad !== null && decidedLoad > 0) {
+    if (decidedLoad !== null && decidedLoad >= 0) {
       const workedAt = input.history.reduce<string | null>((max, s) => (s.sets.some((x) => x.done) && (max === null || compareInstants(s.endedAt, max) > 0) ? s.endedAt : max), null);
       const muscleAt = input.muscleLastWorkedAt ?? null;
       const evaluated = activeConstraints({
@@ -158,13 +158,17 @@ export function prescribe(input: PrescribeInput): Prescription {
       // FIX-0243 (D-273) : assisté en décharge, ni l'inactivité ni la Recovery ne touchent l'assistance.
       const c = evaluated.deload && assisted ? { ...evaluated, inactivityCut: 0, lowRecovery: false, redDay: false } : evaluated;
       if (reduces(c)) {
+        // Relecture à froid : la référence est la décision ; les raisons tirées de la dernière séance (partielle, aberrante) ne s'appliquent pas.
+        reasons.delete('partial-session-ignored');
+        reasons.delete('outlier-excluded');
         addConstraintReasons(c, reasons);
         if (c.lowRecovery && input.recovery?.redDay === true) reasons.add('recovery-red-day');
-        const decisionRef: PrescriptionReference = { loadKg: decidedLoad, reps: decided, e1rmKg: current ?? 0 };
+        // Aucun 1RM tiré d'une décision (relecture à froid) : 0, comme une référence sans charge.
+        const decisionRef: PrescriptionReference = { loadKg: decidedLoad, reps: decided, e1rmKg: 0 };
         const reduced = reducedTarget(c, decisionRef, input.exercise.kind, config, assisted);
         if (assisted && !c.deload && (c.inactivityCut > 0 || c.lowRecovery)) reasons.add('assistance-held');
         if (reduced.recoverySetRemoved) reasons.add('recovery-set-removed');
-        // La charge décidée s'ajoute à la grille (entrée d'Ali, comme la référence d'historique, D-471) ; même arrondi que la référence.
+        // D-682 : la charge décidée s'ajoute à la grille (entrée d'Ali ; D-496 ne la ramène pas sur la grille) ; même arrondi que la référence.
         const gridLoads = loadGrid(input.exercise.equipment, input.equipment)?.loads ?? null;
         const loads = gridLoads === null ? null : [...new Set([...gridLoads, decidedLoad])].sort((a, b) => a - b);
         const discountOnly = c.inactivityCut > 0 && !c.deload && !c.lowRecovery;
@@ -652,6 +656,7 @@ export function prescribeUnloaded(input: PrescribeInput): Prescription {
     // une séance de l'historique (fatigue, stagnation et position non).
     const decidedLest = decision.loadKg;
     if (decidedLest !== null && (input.deload === true || paused || low)) {
+      reasons.delete('partial-session-ignored');
       reducedReasons();
       const reference = { loadKg: decidedLest, reps: decided, e1rmKg: 0 };
       const at = (headline: PrescriptionHeadline, loadKg: number, values: readonly number[], deload: boolean): Prescription =>

@@ -464,7 +464,10 @@ export const trainingFr = {
   historyCorrectedJoin: ' ; ',
   historyCorrectedLoad: '{from} → {to} kg',
   historyCorrectedLoadPair: '2 × {from} → 2 × {to} kg',
+  /** Une des deux charges absente : chaque côté porte son unité (« 80 kg → — », « — → 2 × 28 kg »). */
+  historyCorrectedValues: '{from} → {to}',
   historyCorrectedReps: '{from} → {to} répétitions',
+  historyCorrectedRepsOne: '{from} → {to} répétition',
   historyCorrectedDuration: '{from} → {to} s',
   historyCorrectedRir: 'RIR {from} → {to}',
   historyCorrect: 'Corriger',
