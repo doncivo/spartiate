@@ -4,6 +4,7 @@
 // @tauri-apps/cli ; rendu SVG intégré, aucun outil de plus). Sortie dans .codex-tmp/, puis copie des icônes PC et iPhone vers
 // src-tauri/icons (le dossier android/ produit par le CLI est ignoré : aucune cible Android).
 // `node scripts/release/generate-icons.mjs` : régénère ; `--check` : compare octet à octet sans écrire (échec si un écart).
+// CLEAN-0296 : `--check` est lancé par la suite Vitest node (scripts/release/generateIcons.test.ts), donc par la CI.
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -51,7 +52,9 @@ function generate(root) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
   const out = generate(root);
-  const target = resolve(root, ICON_TARGET);
+  // CLEAN-0296 : `--target <dossier>` compare (ou écrit) un autre dossier que src-tauri/icons ; sert au test d'une copie altérée.
+  const at = process.argv.indexOf('--target');
+  const target = resolve(root, at > 0 && process.argv[at + 1] ? process.argv[at + 1] : ICON_TARGET);
   const diff = compareIcons(out, target);
   if (process.argv.includes('--check')) {
     const n = diff.different.length + diff.missing.length + diff.extra.length;
