@@ -2,6 +2,17 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.1
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.30.0.
+
+- **Progrès en 6 onglets (D-700, D-701)** : Récup, Séances, Bilan, Force, Corps, Activité, sur l'iPhone et sur le PC ; Corps a 4 sous-onglets (Mesures, Santé, VISBODY, Photos). Rien de ce qu'affichait Progrès n'a disparu : chaque bloc d'avant est rangé dans un onglet. L'onglet choisi est retenu quand tu changes de section ; toucher Progrès (ou Ctrl+4) quand il est déjà affiché revient à Récup. Au clavier : flèches, Début et Fin.
+- **Corps › Mesures (D-702 à D-709)** : « cm » ne se coupe plus ; la silhouette et les pastilles choisissent la même zone ; chaque zone est colorée selon l'objectif de ton profil (vert dans le bon sens, orange à l'inverse, gris si stable ou pas assez de mesures), toujours avec un mot et une légende ; courbe avec période (4 sem., 3 mois, 6 mois, Tout), tour de taille de Santé en pointillé, rythme par mois et évolution du poids sous la courbe ; symétrie gauche / droite ; saisie guidée des 11 zones (la saisie zone par zone reste là).
+- **Ratios (Q-41, D-745)** : taille / hauteur avec les bandes NICE (« non valable si IMC ≥ 35 ») ; taille / hanches avec < 0,90 homme et < 0,85 femme (« populations européennes ») ; épaules / taille sans repère, la valeur et son évolution ; poitrine / taille avec environ 1,30 à 1,35 chez l'homme (« esthétique, sans valeur santé »). Une mesure manquante donne « inconnu », jamais 0.
+- **Rythme des mesures (D-710, D-713, D-714)** : réglage de 7, 14 ou 28 jours (7 par défaut) dans Corps › Mesures, avec « dernière séance de mesures il y a N jours » et « prochaine conseillée dans N jours » ; sur l'iPhone, un rappel à 09:00 le jour prévu, sans zone ni valeur sur l'écran verrouillé, désactivable au même endroit. L'autorisation des notifications n'est demandée que quand tu allumes ce rappel. Le PC n'envoie aucune notification.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.1).
+
 ## 0.30.0
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.29.9.
