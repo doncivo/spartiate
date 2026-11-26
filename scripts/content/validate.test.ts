@@ -6,6 +6,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
+import { STRENGTH_GROUP_REFERENCE, STRENGTH_LIFT_THRESHOLDS } from '../../src/domain/training/config';
 import { encodePngGray } from './png-reduce.mjs';
 import { ALLOWED_MEDIA_LICENSES, MEDIA_MAX_BYTES, PICTOGRAM_MAX_BYTES, MEDIA_SOURCES, MEDIA_TOTAL_MAX_BYTES, PERIODIZATION, isExerciseCompatible, validateContent, validateContentDir } from './validate-content.mjs';
 
@@ -620,15 +621,14 @@ describe('CLI validate-content.mjs', () => {
   });
 });
 
-// STR-01 (D-310, D-311) : normes du Strength Score (content/strength/standards.json) et clés `strengthStandardKey` du catalogue.
+// STR-0300 (BL-174, D-675, D-740) : mouvements de référence du Strength Score maison (content/strength/standards.json, schéma 2 : groupes,
+// mouvements, charge totale ; aucun chiffre tiers, seuils dans src/domain/training/config.ts) et clés `strengthStandardKey` du catalogue.
 function strength(): Json {
-  const cls = (upToKg: number | null) => ({ upToKg, sampleSize: 100, kg: [10, 20, 30, 40, 50, 60, 70] });
   return {
-    schemaVersion: 1,
-    source: { name: 'Source', dataset: 'Jeu', population: 'gym', url: 'https://exemple.invalid/', api: 'https://exemple.invalid/api', license: 'CC BY 4.0', attribution: 'Données : Source', dataVersion: '2026-01-01', consultedOn: '2026-11-16', unit: 'kg', responsesSha256: { 'bench_press/male': 'a'.repeat(64), 'bench_press/female': 'b'.repeat(64) } },
-    percentiles: [10, 25, 50, 75, 90, 95, 99],
+    schemaVersion: 2,
+    description: 'Mouvements de référence',
     groups: [{ id: 'chest', muscles: ['chest'] }, { id: 'back', muscles: [] }, { id: 'shoulders', muscles: [] }, { id: 'biceps', muscles: [] }, { id: 'triceps', muscles: ['triceps'] }, { id: 'quads', muscles: [] }, { id: 'hamstrings', muscles: [] }, { id: 'glutes', muscles: [] }],
-    lifts: [{ key: 'bench', sourceLift: 'bench_press', groups: ['chest'], totalLoad: false, male: [cls(80), cls(null)], female: [cls(null)] }],
+    lifts: [{ key: 'bench', groups: ['chest'], totalLoad: false }],
   };
 }
 const keyed = (): Json => {
@@ -638,72 +638,77 @@ const keyed = (): Json => {
   return b;
 };
 
-describe('validateContent : normes du Strength Score (STR-01)', () => {
+describe('validateContent : mouvements de référence du Strength Score (STR-0300)', () => {
   it('accepte une clé connue dont les groupes suivent les muscles principaux', () => {
     expect(run(keyed())).toEqual([]);
   });
-  it('refuse une clé inconnue des normes, ou une clé sans fichier de normes', () => {
+  it('refuse une clé inconnue des mouvements de référence, ou une clé sans fichier', () => {
     const b = keyed();
     b['exercises'].exercises[0].strengthStandardKey = 'squat-imaginaire';
-    expect(run(b).join('\n')).toMatch(/strengthStandardKey inconnue des normes : squat-imaginaire/);
+    expect(run(b).join('\n')).toMatch(/strengthStandardKey inconnue des mouvements de référence : squat-imaginaire/);
     const c = keyed();
     delete c['strength'];
-    expect(run(c).join('\n')).toMatch(/strengthStandardKey inconnue des normes : bench/);
+    expect(run(c).join('\n')).toMatch(/strengthStandardKey inconnue des mouvements de référence : bench/);
   });
   it('refuse des groupes incohérents avec les muscles principaux de l’exercice', () => {
     const b = keyed();
     b['strength'].lifts[0].groups = ['chest', 'triceps'];
     expect(run(b).join('\n')).toMatch(/groupes \[chest, triceps\] différents de ceux des muscles principaux \[chest\]/);
   });
-  it('refuse une norme sans exercice, des centiles non croissants, une catégorie ouverte absente, un groupe hors liste', () => {
+  it('refuse un mouvement sans exercice, une clé dupliquée, un groupe hors liste, une charge totale non booléenne', () => {
     const orphan = keyed();
     orphan['strength'].lifts.push({ ...clone(orphan['strength'].lifts[0]), key: 'orpheline' });
-    expect(run(orphan).join('\n')).toMatch(/norme sans exercice : orpheline/);
-    const decreasing = keyed();
-    decreasing['strength'].lifts[0].male[0].kg = [10, 20, 15, 40, 50, 60, 70];
-    expect(run(decreasing).join('\n')).toMatch(/bench male\[0\] : 7 charges croissantes attendues/);
-    const closed = keyed();
-    closed['strength'].lifts[0].female = [{ upToKg: 60, sampleSize: 1, kg: [10, 20, 30, 40, 50, 60, 70] }];
-    expect(run(closed).join('\n')).toMatch(/bench female : catégories croissantes, la dernière ouverte/);
+    expect(run(orphan).join('\n')).toMatch(/mouvement de référence sans exercice : orpheline/);
+    const dup = keyed();
+    dup['strength'].lifts.push(clone(dup['strength'].lifts[0]));
+    expect(run(dup).join('\n')).toMatch(/clé dupliquée : bench/);
     const group = keyed();
     group['strength'].lifts[0].groups = ['mollets'];
     expect(run(group).join('\n')).toMatch(/groupe hors liste : mollets/);
+    const total = keyed();
+    total['strength'].lifts[0].totalLoad = 'oui';
+    expect(run(total).join('\n')).toMatch(/totalLoad : booléen attendu/);
   });
-  it('CONTENT-0293 (C-180) : une empreinte SHA-256 par réponse de la source (mouvement et sexe) est exigée, bien formée', () => {
-    const missing = keyed();
-    delete missing['strength'].source.responsesSha256['bench_press/female'];
-    expect(run(missing).join('\n')).toMatch(/source\.responsesSha256 : empreinte manquante pour bench_press\/female/);
-    const bad = keyed();
-    bad['strength'].source.responsesSha256['bench_press/male'] = 'xyz';
-    expect(run(bad).join('\n')).toMatch(/source\.responsesSha256 : empreinte illisible pour bench_press\/male/);
-    const none = keyed();
-    delete none['strength'].source.responsesSha256;
-    expect(run(none).join('\n')).toMatch(/source\.responsesSha256 manquante/);
+  it('refuse l’ancien schéma ou des groupes dans le désordre', () => {
+    const old = keyed();
+    old['strength'].schemaVersion = 1;
+    expect(run(old).join('\n')).toMatch(/standards.json : forme attendue \{ schemaVersion: 2, groups, lifts \}/);
+    const order = keyed();
+    order['strength'].groups.reverse();
+    expect(run(order).join('\n')).toMatch(/groupes attendus dans l'ordre/);
   });
-  it('refuse une source sans URL, licence ou attribution', () => {
+  it('refuse tout chiffre ou toute source tierce dans le fichier (champs source, percentiles, male, female)', () => {
     const b = keyed();
-    b['strength'].source.attribution = '';
-    expect(run(b).join('\n')).toMatch(/standards.json : source\.attribution manquante/);
+    b['strength'].source = { name: 'Tiers' };
+    b['strength'].percentiles = [10, 50];
+    b['strength'].lifts[0].male = [{ upToKg: null, kg: [1] }];
+    const text = run(b).join('\n');
+    expect(text).toMatch(/standards.json : champ interdit : source/);
+    expect(text).toMatch(/standards.json : champ interdit : percentiles/);
+    expect(text).toMatch(/standards.json lifts\[0\] : champ interdit : male/);
   });
 });
 
-describe('contenu réel : normes et clés du Strength Score (STR-01)', () => {
+describe('contenu réel : mouvements de référence et clés du Strength Score (STR-0300)', () => {
   const standards = JSON.parse(readFileSync(join(CONTENT, 'strength', 'standards.json'), 'utf8')) as Json;
   const exercises = (JSON.parse(readFileSync(join(CONTENT, 'exercises', 'exercises.json'), 'utf8')) as Json)['exercises'] as Json[];
-  it('12 exercices portent une clé, tous à la barre ou au poids du corps (aucun haltère : la source n’en publie pas)', () => {
+  it('12 exercices portent une clé, tous à la barre ou au poids du corps', () => {
     const withKey = exercises.filter((x) => x['strengthStandardKey'] !== null).map((x) => `${String(x['id'])}=${String(x['strengthStandardKey'])}`);
     expect(withKey.sort()).toEqual(
       ['bench-press-barbell=bench', 'chin-up=chin-up', 'deadlift-barbell=deadlift', 'dips=dip', 'front-squat-barbell=front-squat', 'incline-press-barbell=incline-bench', 'overhead-press-barbell=overhead-press', 'pull-up-weighted=pull-up', 'pull-up=pull-up', 'row-barbell=barbell-row', 'squat-barbell=back-squat', 'sumo-deadlift=sumo-deadlift'].sort(),
     );
   });
-  it('8 groupes, 11 mouvements ; recopie exacte de la source (homme ≤ 83 kg, développé couché : 66,7 / 79,3 / 92,6 / 106,7 / 119,5 / 128,3 / 147,3 kg)', () => {
+  it('schéma 2, 8 groupes, 11 mouvements, ni source ni chiffre tiers ; chaque mouvement a ses seuils dans config.ts, et chaque groupe sa référence', () => {
+    expect(standards['schemaVersion']).toBe(2);
+    expect(Object.keys(standards).sort()).toEqual(['description', 'groups', 'lifts', 'schemaVersion']);
     expect((standards['groups'] as Json[]).map((g) => g['id'])).toEqual(['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes']);
-    expect(standards['lifts']).toHaveLength(11);
-    const bench = (standards['lifts'] as Json[]).find((l) => l['key'] === 'bench') as Json;
-    expect((bench['male'] as Json[]).find((c) => c['upToKg'] === 83)).toEqual({ upToKg: 83, sampleSize: 121681, kg: [66.7, 79.3, 92.6, 106.7, 119.5, 128.3, 147.3] });
-    expect(standards['source']).toMatchObject({ name: 'FitnessVolt Strength Standards', url: 'https://fitnessvolt.com/strength-standards/', consultedOn: '2026-11-16' });
+    const lifts = standards['lifts'] as Json[];
+    expect(lifts).toHaveLength(11);
+    for (const l of lifts) expect(Object.keys(l).sort()).toEqual(['groups', 'key', 'totalLoad']);
+    expect(lifts.map((l) => l['key']).sort()).toEqual(Object.keys(STRENGTH_LIFT_THRESHOLDS).sort());
+    for (const [g, key] of Object.entries(STRENGTH_GROUP_REFERENCE)) expect((lifts.find((l) => l['key'] === key)?.['groups'] as string[] | undefined) ?? [], `${g} → ${key}`).toContain(g);
   });
-  it('le contenu réel passe le validateur avec les normes', () => {
+  it('le contenu réel passe le validateur', () => {
     expect(real.errors).toEqual([]);
   });
 });
@@ -769,5 +774,17 @@ describe('validateContent : pictogrammes SVG', () => {
   it('le contenu réel : un pictogramme par exercice sans photo, tous valides', () => {
     const real = validateContentDir(CONTENT);
     expect(real.errors).toEqual([]);
+  });
+});
+
+// STR-0300 (D-679, D-695) : aucune mention de l'ancienne source des normes dans src, content, scripts, tests et docs/licences.md (mot
+// reconstitué ici pour que ce fichier lui-même reste propre).
+describe('STR-0300 : ancienne source des normes retirée', () => {
+  it('git grep insensible à la casse : rien dans src, content, scripts, tests, docs/licences.md', () => {
+    const word = ['fitness', 'volt'].join('');
+    const r = spawnSync('git', ['grep', '-i', '-l', word, '--', 'src', 'content', 'scripts', 'tests', 'docs/licences.md'], { cwd: ROOT, encoding: 'utf8' });
+    expect(r.error).toBeUndefined();
+    expect(r.stdout.trim()).toBe('');
+    expect(r.status).toBe(1);
   });
 });

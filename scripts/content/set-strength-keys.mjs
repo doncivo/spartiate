@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* global process, console */
-// STR-01 (D-311) : renseigne `strengthStandardKey` des exercices embarqués qui sont un mouvement de référence des normes
-// (content/strength/standards.json) ; tous les autres restent à null. Mécanique par script (D-51), idempotent.
-// Les exercices aux haltères n'ont pas de clé : la source ne publie aucune norme d'haltères (D-311).
+// STR-01 (D-311), STR-0300 (D-740) : renseigne `strengthStandardKey` des exercices embarqués qui sont un mouvement de référence du
+// Strength Score maison (content/strength/standards.json) ; tous les autres restent à null. Mécanique par script (D-51), idempotent.
+// Les exercices aux haltères n'ont pas de clé : mouvements de référence à la barre et au poids du corps seulement (D-311, D-740).
 // Usage : node scripts/content/set-strength-keys.mjs [fichier exercises.json]
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

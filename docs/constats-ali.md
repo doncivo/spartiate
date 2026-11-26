@@ -257,6 +257,14 @@ Ali garde la CSP stricte (Q-35, 26/11). À chaque mise à jour, ouvre ces écran
 - [ ] **PC** — Aujourd'hui ; Entraînement › Bibliothèque (pictogrammes d'exercices) ; une séance (barre de repos) ; Aujourd'hui, colonne de droite (barres de macros) ; Nutrition › Journal, Nutrition › Tableau de bord (graphiques) et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro (QR code d'appairage) ; Plus › Licences ; Plus › Journaux ; Ctrl+K (palette). Date : ____ Version : ____
 - [ ] **iPhone** — Aujourd'hui ; Entraînement › Bibliothèque ; une séance (barre de repos, puis la Live Activity) ; Nutrition › Journal et Nutrition › Recettes ; Progrès (graphiques) et Progrès › Corps ; Plus › Appareils et synchro ; Plus › APP › Licences ; Plus › APP › Journaux. Date : ____ Version : ____
 
+## 0.30.0 (Strength Score maison)
+
+Seuils validés (Q-42, D-744 : tractions et dips en simple proportion) ; après la mise à jour des deux appareils le même jour (version qui livre BL-174 ; D-740 à D-743, docs/STR-0300.md). Libellés nouveaux : « inconnu », « Détail par mouvement », « Méthode », « Méthode maison, version 1. », les niveaux Débutant, Novice, Intermédiaire, Avancé, Élite. Aucune valeur réelle notée ici.
+
+- [ ] **BL-174 (carte Force)** — iPhone puis PC, Progrès › Force (ou la carte Strength Score de Progrès avant les onglets) : un score global avec son niveau et « N groupes sur 8 », les 8 groupes avec un score et « niveau · mouvement », ou « inconnu » et sa raison, jamais 0 ; plus aucun Fer, Bronze, Argent ni Or ; plus aucune mention de source ni de licence en bas de la carte. Date : ____ Version : ____
+- [ ] **BL-174 (détail et contexte)** — même carte : la ligne de contexte dit ton poids, ton sexe et « catégorie : tous poids, ramenés à 80 kg » ; « Détail par mouvement » liste chaque mouvement fait avec e1RM, force relative, score et niveau ; la méthode se lit en quatre phrases. Date : ____ Version : ____
+- [ ] **BL-174 (décharge)** — pendant une semaine de décharge, après une séance de décharge d'un mouvement de référence : la carte dit « Figé pendant la décharge, depuis le … » et le score ne bouge pas ; après la première séance ordinaire, la phrase disparaît. Date : ____ Version : ____
+
 ## 0.30.1 (Progrès en onglets et Mensurations)
 
 Après la mise à jour des deux appareils le même jour (version qui livre BL-177 à BL-180 ; D-700 à D-719, docs/PROGRES-0301.md). Libellés nouveaux, à l'écran après cette version : les onglets « Récup », « Séances », « Bilan », « Force », « Corps », « Activité » et, dans Corps, les sous-onglets « Mesures », « Santé », « VISBODY », « Photos » ; les autres libellés nouveaux sont marqués « (nouveau libellé) ».
@@ -350,6 +358,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | C-154 | 0.29.5 |
 | C-076 | 0.29.5 |
 | C-085 | 0.29.6 ; 0.29.7 |
+| BL-174 | 0.30.0 (Strength Score maison) |
 | BL-177 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |
 | BL-179 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |
 | BL-180 | 0.30.1 (Progrès en onglets et Mensurations) › iPhone ; PC |

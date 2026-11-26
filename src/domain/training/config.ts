@@ -381,3 +381,107 @@ export const DEFAULT_PROGRESS_CONFIG: ProgressConfig = Object.freeze({
   defaultWeeklyTarget: 1,
   volumeRange: Object.freeze({ min: 10, max: 20 }),
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Strength Score maison (STR-0300, BL-174 ; D-675, D-678, D-741). Hors du moteur de prescription : `ENGINE_VERSION` inchangé. Toute
+// modification de formule ou de seuil relève `STRENGTH_SCORE_VERSION` (jointe au résultat, citée à l'écran).
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+export const STRENGTH_SCORE_VERSION = 1;
+
+/** Groupes du Strength Score, dans l'ordre de l'écran. */
+export const STRENGTH_GROUPS = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes'] as const;
+export type StrengthGroup = (typeof STRENGTH_GROUPS)[number];
+
+/** 5 niveaux, du plus bas au plus haut ; leurs seuils valent 20, 40, 60, 80 et 100 points (`STRENGTH_LEVEL_SCORES`). */
+export const STRENGTH_LEVELS = ['beginner', 'novice', 'intermediate', 'advanced', 'elite'] as const;
+export type StrengthLevel = (typeof STRENGTH_LEVELS)[number];
+export const STRENGTH_LEVEL_SCORES = Object.freeze([20, 40, 60, 80, 100] as const);
+
+/** Poids de corps de normalisation et exposant : force relative = e1RM × (80 / poids de corps)^(2/3) à la barre (D-675) ; charge totale
+ * (tractions, dips) : exposant 1, simple proportion e1RM × 80 / poids de corps (Q-42, D-744). */
+export const STRENGTH_NORMALIZED_BODYWEIGHT_KG = 80;
+export const STRENGTH_BODYWEIGHT_EXPONENT = 2 / 3;
+
+/** Seuils d'un mouvement, en kg de force relative (ramenée à 80 kg) : Débutant, Novice, Intermédiaire, Avancé, Élite, par sexe. */
+export interface LiftThresholds {
+  readonly male: readonly number[];
+  readonly female: readonly number[];
+}
+export type StrengthThresholds = Readonly<Record<string, LiftThresholds>>;
+
+/**
+ * Méthode de dérivation des seuils (docs/STR-0300-seuils.md) : seuil = 80 kg × multiple « Intermédiaire » du mouvement (homme)
+ * × coefficient du sexe × échelle des niveaux, arrondi au 0,5 kg. Échelle « libre » (barre) ou « totale » (tractions, dips : le poids de
+ * corps fait déjà le plancher, d'où une échelle resserrée). Coefficient femme : haut du corps à la barre, bas du corps, charge totale.
+ */
+export interface StrengthThresholdMethod {
+  readonly bodyweightKg: number;
+  readonly roundingKg: number;
+  readonly ladders: { readonly free: readonly number[]; readonly total: readonly number[] };
+  readonly female: { readonly upper: number; readonly lower: number; readonly total: number };
+  readonly lifts: Readonly<Record<string, { readonly intermediate: number; readonly body: 'upper' | 'lower' | 'total' }>>;
+}
+
+export const STRENGTH_THRESHOLD_METHOD: StrengthThresholdMethod = Object.freeze({
+  bodyweightKg: 80,
+  roundingKg: 0.5,
+  ladders: Object.freeze({ free: Object.freeze([0.5, 0.75, 1, 1.3, 1.65]), total: Object.freeze([0.8, 0.9, 1, 1.2, 1.4]) }),
+  female: Object.freeze({ upper: 0.6, lower: 0.75, total: 0.82 }),
+  lifts: Object.freeze({
+    bench: { intermediate: 1.0, body: 'upper' },
+    'incline-bench': { intermediate: 0.85, body: 'upper' },
+    'barbell-row': { intermediate: 0.9, body: 'upper' },
+    'pull-up': { intermediate: 1.35, body: 'total' },
+    'chin-up': { intermediate: 1.4, body: 'total' },
+    'overhead-press': { intermediate: 0.65, body: 'upper' },
+    dip: { intermediate: 1.5, body: 'total' },
+    'back-squat': { intermediate: 1.35, body: 'lower' },
+    'front-squat': { intermediate: 1.1, body: 'lower' },
+    deadlift: { intermediate: 1.65, body: 'lower' },
+    'sumo-deadlift': { intermediate: 1.65, body: 'lower' },
+  } as const),
+});
+
+/** Seuils tirés de la méthode (contrôle : le tableau `STRENGTH_LIFT_THRESHOLDS` en est la copie exacte). */
+export function deriveStrengthThresholds(method: StrengthThresholdMethod): StrengthThresholds {
+  const round = (kg: number): number => Math.round(kg / method.roundingKg) * method.roundingKg;
+  const out: Record<string, LiftThresholds> = {};
+  for (const [key, lift] of Object.entries(method.lifts)) {
+    const ladder = lift.body === 'total' ? method.ladders.total : method.ladders.free;
+    const row = (coefficient: number): number[] => ladder.map((step) => round(method.bodyweightKg * lift.intermediate * coefficient * step));
+    out[key] = { male: row(1), female: row(method.female[lift.body]) };
+  }
+  return out;
+}
+
+/**
+ * Seuils du Strength Score maison, en kg de force relative (e1RM ramené à 80 kg ; tractions et dips : charge totale).
+ * Validés tels quels par Ali le 26/11/2026 (Q-42, D-744), avec la force relative en simple proportion sur la charge totale.
+ * Ordre : Débutant, Novice, Intermédiaire, Avancé, Élite.
+ */
+export const STRENGTH_LIFT_THRESHOLDS: StrengthThresholds = Object.freeze({
+  bench: { male: [40, 60, 80, 104, 132], female: [24, 36, 48, 62.5, 79] },
+  'incline-bench': { male: [34, 51, 68, 88.5, 112], female: [20.5, 30.5, 41, 53, 67.5] },
+  'barbell-row': { male: [36, 54, 72, 93.5, 119], female: [21.5, 32.5, 43, 56, 71.5] },
+  'pull-up': { male: [86.5, 97, 108, 129.5, 151], female: [71, 79.5, 88.5, 106.5, 124] },
+  'chin-up': { male: [89.5, 101, 112, 134.5, 157], female: [73.5, 82.5, 92, 110, 128.5] },
+  'overhead-press': { male: [26, 39, 52, 67.5, 86], female: [15.5, 23.5, 31, 40.5, 51.5] },
+  dip: { male: [96, 108, 120, 144, 168], female: [78.5, 88.5, 98.5, 118, 138] },
+  'back-squat': { male: [54, 81, 108, 140.5, 178], female: [40.5, 61, 81, 105.5, 133.5] },
+  'front-squat': { male: [44, 66, 88, 114.5, 145], female: [33, 49.5, 66, 86, 109] },
+  deadlift: { male: [66, 99, 132, 171.5, 218], female: [49.5, 74.5, 99, 128.5, 163.5] },
+  'sumo-deadlift': { male: [66, 99, 132, 171.5, 218], female: [49.5, 74.5, 99, 128.5, 163.5] },
+});
+
+/** Mouvement de référence de chaque groupe : celui dont les seuils forment le tableau soumis à Ali (5 niveaux × 8 groupes × sexe). */
+export const STRENGTH_GROUP_REFERENCE: Readonly<Record<StrengthGroup, string>> = Object.freeze({
+  chest: 'bench',
+  back: 'pull-up',
+  shoulders: 'overhead-press',
+  biceps: 'chin-up',
+  triceps: 'dip',
+  quads: 'back-squat',
+  hamstrings: 'deadlift',
+  glutes: 'sumo-deadlift',
+});
