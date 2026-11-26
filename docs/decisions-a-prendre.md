@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-378 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+379 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -197,10 +197,11 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (37 : 13 à trancher, 24 à confirmer seulement)
+### récupération (38 : 14 à trancher, 24 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
+| 8 | D-697 | REL-0.29.8 (D-696) : les documents de suivi ne comptent pas comme « même fichier » entre PR parallèles. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 7 | D-427 | SUIVIS-029a (0.29.0) : objectif de pas (PROG-02). | A garder · B réviser ; effet : moteur, synchro, données |
 | 6 | D-345 | FIX-RECUP (0.28.0) : exclusion des valeurs aberrantes de la baseline contre la moyenne et le σ des autres nuits (C-049 ). | A garder · B réviser (déjà marquée « à trancher ») ; effet : chiffre |
 | 4 | D-96 | I6-01 (0.12.0) : journal de facteurs (§ 16.7). | A garder · B réviser ; effet : données, chiffre |
@@ -242,7 +243,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-565 | DATA-0293 (C-058, D-478). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-581 | DATA-0293. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-586 | CONTENT-0293 (BL-128). | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-680 | DEC-0299 (D-664, C-056) : le saut de ligne final est exigé des fichiers du raccourci « Spartiate — récupération ». | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
 
 ### synchro et données (87 : 51 à trancher, 36 à confirmer seulement)
 
@@ -475,6 +476,6 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-623 | SHELL-0294f (BL-150) : renvois à docs/PRD.md mis en cohérence avec D-49. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-625 | SHELL-0294f (BL-165) : corps des six anciennes publications réécrits par le workflow. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-629 | DATA-0295 (BL-035) : cycle statique goalRules → week → todayList rompu. | à confirmer seulement (aucun effet visible repéré) |
-| 0 | D-679 | DEC-0299 (D-675, relecture à froid) : le contrôle « git grep -i fitnessvolt vide » porte sur le code, le contenu, les tests et docs/licences.md. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-679 | DEC-0299 (D-675, relecture à froid) : le contrôle « git grep -i fitnessvolt vide » porte sur le code, le contenu, les tests et docs/licences.md. | à confirmer seulement : citée par D-695 d'Ali (déjà validée ?) |
 
 <!-- revue-choix-prudents:fin -->
