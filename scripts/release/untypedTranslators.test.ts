@@ -13,9 +13,10 @@ const root = resolve(__dirname, '..', '..');
 const BASELINE = 'tests/untyped-translators.json';
 /**
  * Relevé de main 7f1885f2 (26/11/2026) : 43 avec la règle élargie après la relecture à froid. Plafond égal à la liste figée : abaissé à
- * chaque migration, il ne remonte jamais.
+ * chaque migration, il ne remonte jamais. CLEAN-0297 (D-645) : 24 → 2 (`tDynamic`, clé calculée de `t()` ; `tProgression`, paramètres
+ * dynamiques du moteur).
  */
-const PLAFOND = 24;
+const PLAFOND = 2;
 
 /**
  * Nom du traducteur exporté au début de `text` s'il prend ses paramètres en `Record<string, …>`, sinon null. Les paramètres sont lus de
@@ -53,6 +54,34 @@ describe('C-085 : traducteurs aux paramètres libres, liste figée qui ne peut q
     expect(untypedTranslatorOn('export function tY(key: K, params: Record<string, string> = {}): string {')).toBe('tY');
     expect(untypedTranslatorOn('export const tX = catalogText(xFr);')).toBeNull();
     expect(untypedTranslatorOn('export function tZ(key: K): string {')).toBeNull();
+  });
+
+  it('CLEAN-0297 : voit un alias de type local aux paramètres libres, même alias d’alias (faille signalée par CLEAN-0296)', () => {
+    const file = [
+      'type Params = Readonly<Record<string, string | number>>;',
+      'export type Maybe = Params | undefined;',
+      'type Narrow = Readonly<Record<"n", number>>;',
+      'export function tA(key: K, params?: Params): string {',
+      '  return key;',
+      '}',
+      'export const tB = (key: K, params: Maybe): string => key;',
+      'export function tC(key: K, params: Narrow): string {',
+      '  return key;',
+      '}',
+    ].join('\n');
+    expect([...looseAliases(file)].sort()).toEqual(['Maybe', 'Params']);
+    expect(untypedTranslatorsOf(file)).toEqual(['tA', 'tB']);
+    expect(untypedTranslatorOn('export function tA(key: K, params?: Params): string {', new Set(['Params']))).toBe('tA');
+    expect(untypedTranslatorOn('export function tA(key: K, params?: ParamsTyped): string {', new Set(['Params']))).toBeNull();
+  });
+
+  it('CLEAN-0297 : un traducteur typé par CatalogTranslator ne déborde pas sur la déclaration suivante', () => {
+    const file = [
+      'export const tX: CatalogTranslator<typeof xFr> = translate;',
+      '',
+      'export const formatKg = (kg: number, extra: Record<string, string>): string => String(kg);',
+    ].join('\n');
+    expect(untypedTranslatorsOf(file)).toEqual([]);
   });
 
   it('le relevé est exactement la liste figée (aucun ajout, chaque migration en sort)', () => {
