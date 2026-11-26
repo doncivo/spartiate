@@ -1,6 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../../src/domain/clock';
-import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice } from '../../../sim/syncDevice';
+import { createSimDevice, pair, setupFirst, syncFolders, warmSimDevices, type SimDevice, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201) : banc Spartiate (migration réelle, catalogue de production, entrées simulées sur `meal_entry`).
+selectSimSchema('i0');
 
 /**
  * DATA-0293 (BL-038) : publication. L'ajout natif au journal a réussi, puis la transaction locale (retrait des entrées de la file, tête, intention) échoue :
@@ -62,7 +65,7 @@ describe('publication : retrait local en échec après un ajout natif réussi (B
     expect(records).toBe(1);
     expect(await a.driver.select('SELECT 1 FROM sync_outbox')).toEqual([]);
     expect(await a.driver.select("SELECT 1 FROM sync_meta WHERE key = 'inflight' AND value <> 'null'")).toEqual([]);
-    expect((await b.driver.select<{ n: number }>("SELECT COUNT(*) AS n FROM task WHERE title = 'Une tâche'"))[0]?.n).toBe(1);
+    expect((await b.driver.select<{ n: number }>("SELECT COUNT(*) AS n FROM meal_entry WHERE food_name = 'Une tâche'"))[0]?.n).toBe(1);
     expect((await b.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n).toBe(0);
   });
 });

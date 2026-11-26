@@ -9,6 +9,7 @@ const root = resolve(__dirname, '..', '..', '..');
 interface Row {
   readonly path: string;
   readonly entities: readonly string[];
+  readonly test: boolean;
 }
 
 function inventory(): Row[] {
@@ -28,6 +29,13 @@ describe('inventaire du banc legacy (BL-133)', () => {
     for (const path of ['tests/unit/syncCodec.test.ts', 'tests/unit/syncCodecQa.test.ts', 'tests/unit/syncSeparation.test.ts', 'tests/unit/sync/hostile/cloudSimDeletions.test.ts', 'tests/unit/sync/sim/folderSimDeviceWait.test.ts', 'src/platform/sync/faultPlan.test.ts']) {
       expect(paths.has(path), path).toBe(false);
     }
+  });
+
+  // TECH-0298 (CLEAN-03, BL-133) : plafond exact du banc legacy. Un fichier nouveau est refusé, une baisse non reportée aussi ; le plafond ne fait que baisser,
+  // à chaque lot migré, par un commit qui le justifie (docs/TECH-0298.md).
+  it('plafond exact : 131 fichiers (101 tests) sur le banc legacy, aucune hausse', () => {
+    expect(rows.length).toBe(131);
+    expect(rows.filter((r) => r.test).length).toBe(101);
   });
 
   it('les dépendances réelles restent comptées : simulateur, kit qui l’importe, dépôt hérité appelé', () => {

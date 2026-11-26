@@ -7,7 +7,10 @@ import { applyOps } from '../../../../src/sync/apply';
 import type { SyncDeps } from '../../../../src/sync/deps';
 import { finishResumeTx } from '../../../../src/sync/join';
 import { mergeSnapshot, type LoadedSnapshot } from '../../../../src/sync/snapshot';
-import { V18_CATALOGUE, V19_CATALOGUE } from '../../../sim/syncDevice';
+import { V18_CATALOGUE, V19_CATALOGUE, selectSimSchema } from '../../../sim/syncDevice';
+
+// CLEAN-03 (D-201, D-656) : banc Spartiate déclaré ; aucun appareil simulé ici (seuls des catalogues du simulateur sont importés), marqueur d'inventaire sans effet sur les valeurs.
+selectSimSchema('i0');
 
 /**
  * FIX-A009 (audit 0.26.0, A-009 et complément PROG-04) : preuves de Codex reprises telles quelles (`docs/audit-0.26.0/preuves/
