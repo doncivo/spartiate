@@ -236,6 +236,16 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
 - [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement › Proposer une séance (« Séance proposée », puis « Commencer cette séance »), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
 
+## 0.29.9
+
+Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.9) :
+
+- [ ] **BL-172 (raccourci récupération)** — voir la section « Décisions du 26/11 » ci-dessous : modifie le raccourci, puis Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Date : ____ Version : ____
+- [ ] **BL-171 (décision et décharge)** — iPhone ou PC, sur un exercice dont tu as décidé la charge depuis la dernière séance : pendant une semaine de décharge, la charge proposée est réduite (et non reprise telle quelle), avec la note « Référence : ta dernière décision, réduite comme une séance de ton historique. », et le bouton de décharge reste disponible. Date : ____ Version : ____
+- [ ] **BL-176 (série corrigée)** — corrige la charge d'une série d'une séance terminée, puis Entraînement › Journal › la séance : la série affiche « corrigée : ancienne → nouvelle valeur ». Date : ____ Version : ____
+- [ ] **BL-168 (Journaux)** — iPhone, Plus › APP › Journaux ; PC, Plus › Journaux : l'écran s'intitule « Journaux », l'export s'appelle `spartiate-journaux-…`, et aucun « Logs » n'apparaît, y compris dans Plus › Apple Santé. Date : ____ Version : ____
+- [ ] **BL-173 (Stratégie)** — Nutrition › Stratégie : la ligne « Objectif du profil : … » montre l'objectif de ton profil ; « Modifier dans Plus › Profil et poids » ouvre l'écran « Profil et poids » ; le rythme se règle toujours ici. Date : ____ Version : ____
+
 ## Décisions du 26/11 (D-657 à D-678)
 
 - [ ] **D-664, BL-172 (raccourci Santé)** — après la version qui livre BL-172 : modifie le raccourci « Spartiate — récupération » pour qu'il écrive toujours un saut de ligne final (étape 3 bis de la partie B.1 de docs/guide-raccourcis-sante.md : action Texte après Combiner le texte, terminée par un retour à la ligne, dans chacun des quatre blocs), lance-le, puis sur l'iPhone, Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Tant que le raccourci n'est pas modifié, ces fichiers sont refusés ; `poids.csv` n'est pas concerné (D-680). Date : ____ Version : ____
@@ -330,7 +340,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | § 18.3 a | 0.29.4 |
 | C-074 | 0.29.4 |
 | BL-002 | 0.29.4 ; CSP stricte (D-650) |
-| BL-172 | Décisions du 26/11 (D-657 à D-678) |
+| BL-172 | Décisions du 26/11 (D-657 à D-678) ; 0.29.9 |
 | BL-144 | 0.29.4 ; CSP stricte (D-650) |
 | C-139 | 0.29.4 |
 | H-43 | 0.29.5 |

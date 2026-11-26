@@ -6,9 +6,17 @@ Le lot continue sans la réponse : le comportement actuel reste en place tant qu
 forme « Q-n : option ». Une question tranchée devient une D- dans docs/decisions.md et sort de ce fichier.
 
 
-Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Aucune question ouverte. La revue par thème des choix prudents (D-490, BL-149) est
+Q-1 à Q-10 tranchées par Ali le 24/11 : D-496 à D-505 ; Q-32 à Q-39 tranchées le 26/11 : D-647 à D-654 ; Q-11 à Q-31 et Q-40 tranchées le 26/11 : D-657 à D-678 (docs/decisions.md ; D-655 et D-656 sont prises par TECH-0298). Ouvertes : Q-41 (ci-dessous) ; Q-42 (seuils du Strength Score) arrive avec STR-0300. La revue par thème des choix prudents (D-490, BL-149) est
 en fin de fichier, générée par `node scripts/release/prudent-review.mjs --write` (sections « séance et moteur », « nutrition »,
 « récupération », « synchro et données », « écrans », « CI et outillage »).
+
+## Q-41 — Repères des ratios de Corps › Mesures (BL-181, D-707, D-717)
+
+Sources et limites : relevé du 26/11 (NICE NG246, OMS 2011, Crossley et al. 2012) ; aucun repère n'est affiché avant ta réponse. Réponse attendue par ratio.
+- Taille / hauteur — A (recommandé) : moins de 0,50, bandes NICE (0,40–0,49 sain ; 0,50–0,59 risque augmenté ; ≥ 0,60 élevé), mention « non valable si IMC ≥ 35 » ; B : 0,50 seul ; C : pas de repère.
+- Taille / hanches — A (recommandé) : < 0,90 homme, < 0,85 femme (OMS 2011), mention « seuils établis sur des populations européennes » ; B : idem avec note sur les seuils asiatiques ; C : pas de repère.
+- Épaules / taille — A (recommandé) : pas de repère, valeur et évolution seules (aucune source fiable) ; B : 1,618 étiqueté « non scientifique » ; C : ratio masqué.
+- Poitrine / taille — A (recommandé) : environ 1,30–1,35 (homme), étiqueté « esthétique, sans valeur santé » (Crossley et al. 2012) ; B : pas de repère ; C : ratio masqué.
 
 <!-- revue-choix-prudents:debut (généré par scripts/release/prudent-review.mjs --write ; ne pas éditer à la main) -->
 
