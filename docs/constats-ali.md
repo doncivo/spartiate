@@ -165,7 +165,7 @@ Ces constats demandent les deux appareils : coche-les après avoir fait le geste
 
 - [ ] **H-11 (licence Ciqual, BL-156)** — lis la section « Licence — table Ciqual de l'Anses » de docs/licences.md et la page de l'entrepôt citée (DOI 10.57745/RDMHWY) : la licence indiquée est bien la Licence Ouverte Etalab 2.0 ; dans Nutrition › Rechercher un aliment, tape « pomme » : l'attribution Ciqual est écrite sous les résultats. Date : ____
 - [ ] **H-9** — relis dans `docs/licences.md` la section « Médias d'exercices » : sources, licences et attributions. Puis, sur l'iPhone, vérifie que l'attribution s'affiche sous une image (légende). Date : ____ Version : ____
-- [ ] **H-37 (normes du Strength Score)** — lis la documentation de la source des normes (FitnessVolt, citée dans `docs/licences.md`) : elle dit ce que mesurent les charges publiées (1RM ou charge totale). À défaut, compare un de tes scores avec la page de la source pour le même 1RM. Date : ____ Version : ____
+- [ ] **H-37 (normes du Strength Score)** — sans objet depuis D-675 (moteur maison, aucune norme FitnessVolt) ; caduque à la livraison de BL-174. Texte d'origine : lis la documentation de la source des normes (FitnessVolt, citée dans `docs/licences.md`) : elle dit ce que mesurent les charges publiées (1RM ou charge totale). À défaut, compare un de tes scores avec la page de la source pour le même 1RM. Date : ____ Version : ____
 - [ ] **H-8 (contenu)** — relis la bibliothèque (150 exercices) au regard de tes routines et programmes : les exercices qui te manquent ou qui te gênent sont notés. Date : ____ Version : ____
 
 ---
@@ -189,9 +189,9 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.1) :
 
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.2) :
 
-- [ ] **C-103 (champ heure, Q-24)** — iPhone, Journal › Rechercher › choisir un aliment : le champ « Heure » s'affiche en 24 h (jamais AM / PM). Si tu vois AM / PM, réponds à Q-24. Date : ____ Version : ____
+- [ ] **C-103 (champ heure, D-670)** — iPhone, Journal › Rechercher › choisir un aliment : le champ « Heure » s'affiche en 24 h (jamais AM / PM). Si tu vois AM / PM, signale-le : deux champs H et M en 24 h le remplaceront (D-670). Date : ____ Version : ____
 - [ ] **Migration 22** — premier lancement après la mise à jour, sur chaque appareil → Plus › Journaux : aucune erreur de migration ; une sauvegarde « Avant mise à jour » existe ; ton profil de matériel « Salle complète » est toujours le profil actif. Date : ____ Version : ____
-- [ ] **C-105 (silhouette, Q-25)** — iPhone, Progrès › Corps : toucher le cou, les épaules et la poitrine de la silhouette sélectionne bien la zone touchée, sans en prendre une voisine. Date : ____ Version : ____
+- [ ] **C-105 (silhouette, D-671)** — iPhone, Progrès › Corps : toucher le cou, les épaules et la poitrine de la silhouette sélectionne bien la zone touchée, sans en prendre une voisine. Date : ____ Version : ____
 
 ## 0.29.3
 
@@ -235,6 +235,10 @@ Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.6) :
 Après la mise à jour des deux appareils le même jour (CHANGELOG 0.29.7) :
 
 - [ ] **C-085 (textes typés, suite)** — PC puis iPhone, ouvre Aujourd'hui, Entraînement › Proposer une séance (« Séance proposée », puis « Commencer cette séance »), Nutrition › Recettes, Progrès, Plus et Plus › Appareils et synchro : chaque texte s'affiche en entier, sans accolades ni nom technique à la place d'un mot, avec les nombres et les pluriels corrects. Date : ____ Version : ____
+
+## Décisions du 26/11 (D-657 à D-678)
+
+- [ ] **D-664, BL-172 (raccourci Santé)** — après la version qui livre BL-172 : modifie le raccourci « Spartiate — récupération » pour qu'il écrive toujours un saut de ligne final (étape décrite dans docs/guide-raccourcis-sante.md), lance-le, puis sur l'iPhone, Plus › Apple Santé › Récupération depuis Raccourcis › Importer maintenant : les quatre fichiers sont lus sans erreur. Tant que le raccourci n'est pas modifié, ces fichiers sont refusés ; `poids.csv` n'est pas concerné (D-680). Date : ____ Version : ____
 
 ## CSP stricte (D-650)
 
@@ -305,6 +309,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | § 18.3 a | 0.29.4 |
 | C-074 | 0.29.4 |
 | BL-002 | 0.29.4 ; CSP stricte (D-650) |
+| BL-172 | Décisions du 26/11 (D-657 à D-678) |
 | BL-144 | 0.29.4 ; CSP stricte (D-650) |
 | C-139 | 0.29.4 |
 | H-43 | 0.29.5 |
