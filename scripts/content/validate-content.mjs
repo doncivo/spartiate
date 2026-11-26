@@ -376,7 +376,7 @@ export function validateContent(c, opts = {}) {
     });
   }
 
-  // --- strength/standards.json (STR-01, D-310, D-311) et clés `strengthStandardKey` ---
+  // --- strength/standards.json (STR-0300, D-740 : mouvements de référence du Strength Score maison) et clés `strengthStandardKey` ---
   validateStrength(c.strength ?? null, exercisesById, err);
 
   return {
@@ -564,40 +564,30 @@ function validateReduction(entry, bytes, m, err) {
   if (height > maxHeight) err(m.where, `média réduit : hauteur ${height} > ${maxHeight} : ${m.file}`);
 }
 
-/** Groupes du Strength Score, dans l'ordre de l'écran (D-311). */
+/** Groupes du Strength Score, dans l'ordre de l'écran (D-311 ; config.ts `STRENGTH_GROUPS`). */
 export const STRENGTH_GROUP_IDS = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes'];
 
+/** STR-0300 (D-740) : champs refusés, qui porteraient une source ou des chiffres tiers (seuils : src/domain/training/config.ts). */
+const STRENGTH_FORBIDDEN = ['source', 'percentiles'];
+const STRENGTH_LIFT_FORBIDDEN = ['male', 'female', 'sourceLift'];
+
 /**
- * Normes du Strength Score : source citée, centiles croissants, catégories croissantes terminées par une catégorie ouverte, charges croissantes
- * (une par centile) ; chaque clé d'exercice connue des normes, chaque norme portée par au moins un exercice, groupes d'une norme égaux à ceux
- * que désignent les muscles PRINCIPAUX de chaque exercice qui porte sa clé.
+ * Mouvements de référence du Strength Score maison (schéma 2) : groupes dans l'ordre, clés uniques, groupes de la liste, charge totale
+ * booléenne, aucun champ de source ni de chiffre tiers ; chaque clé d'exercice connue, chaque mouvement porté par au moins un exercice,
+ * groupes d'un mouvement égaux à ceux que désignent les muscles PRINCIPAUX de chaque exercice qui porte sa clé.
  */
 function validateStrength(s, exercisesById, err) {
   const where = 'standards.json';
   const lifts = new Map();
   const groupMuscles = new Map();
   if (s !== null) {
-    if (!isObj(s) || s.schemaVersion !== 1 || !Array.isArray(s.lifts) || !Array.isArray(s.groups) || !Array.isArray(s.percentiles)) {
-      err(where, 'forme attendue { schemaVersion: 1, source, percentiles, groups, lifts }');
+    if (!isObj(s) || s.schemaVersion !== 2 || !Array.isArray(s.lifts) || !Array.isArray(s.groups)) {
+      err(where, 'forme attendue { schemaVersion: 2, groups, lifts }');
       s = null;
     }
   }
   if (s !== null) {
-    for (const field of ['name', 'url', 'license', 'attribution', 'consultedOn']) if (!isObj(s.source) || !isStr(s.source[field])) err(where, `source.${field} manquante`);
-    const hashes = isObj(s.source) ? s.source.responsesSha256 : undefined;
-    if (!isObj(hashes)) err(where, 'source.responsesSha256 manquante (empreinte SHA-256 de chaque réponse de la source)');
-    else {
-      for (const l of s.lifts) {
-        if (!isObj(l) || !isStr(l.sourceLift)) continue;
-        for (const sex of ['male', 'female']) {
-          const h = hashes[`${l.sourceLift}/${sex}`];
-          if (h === undefined) err(where, `source.responsesSha256 : empreinte manquante pour ${l.sourceLift}/${sex}`);
-          else if (typeof h !== 'string' || !/^[0-9a-f]{64}$/.test(h)) err(where, `source.responsesSha256 : empreinte illisible pour ${l.sourceLift}/${sex}`);
-        }
-      }
-    }
-    const p = s.percentiles;
-    if (!(p.length >= 2 && p.every((v, i) => isNum(v) && v > 0 && v < 100 && (i === 0 || v > p[i - 1])))) err(where, 'percentiles : nombres croissants dans ]0, 100[ attendus');
+    for (const field of STRENGTH_FORBIDDEN) if (field in s) err(where, `champ interdit : ${field}`);
     const ids = s.groups.map((g) => (isObj(g) ? g.id : null));
     if (JSON.stringify(ids) !== JSON.stringify(STRENGTH_GROUP_IDS)) err(where, `groupes attendus dans l'ordre : ${STRENGTH_GROUP_IDS.join(', ')}`);
     for (const g of s.groups) if (isObj(g) && Array.isArray(g.muscles)) groupMuscles.set(g.id, new Set(g.muscles));
@@ -606,21 +596,10 @@ function validateStrength(s, exercisesById, err) {
       if (!isObj(l) || !isStr(l.key) || !KEBAB.test(l.key)) return err(w, 'key manquante ou invalide');
       if (lifts.has(l.key)) err(w, `clé dupliquée : ${l.key}`);
       lifts.set(l.key, l);
-      if (!isStr(l.sourceLift)) err(w, 'sourceLift manquant');
+      for (const field of STRENGTH_LIFT_FORBIDDEN) if (field in l) err(w, `champ interdit : ${field}`);
       if (typeof l.totalLoad !== 'boolean') err(w, 'totalLoad : booléen attendu');
       if (!Array.isArray(l.groups) || l.groups.length === 0) err(w, 'groups : tableau non vide attendu');
       else for (const g of l.groups) if (!STRENGTH_GROUP_IDS.includes(g)) err(w, `groupe hors liste : ${String(g)}`);
-      for (const sex of ['male', 'female']) {
-        const classes = l[sex];
-        const ok = Array.isArray(classes) && classes.length > 0 && classes.every((c, k) => isObj(c) && (k === classes.length - 1 ? c.upToKg === null : isNum(c.upToKg) && c.upToKg > 0 && (k === 0 || c.upToKg > classes[k - 1].upToKg)));
-        if (!ok) err(`${l.key} ${sex}`, 'catégories croissantes, la dernière ouverte (upToKg null), attendues');
-        if (!Array.isArray(classes)) continue;
-        classes.forEach((c, k) => {
-          if (!isObj(c)) return;
-          if (!(Array.isArray(c.kg) && c.kg.length === p.length && c.kg.every((v, j) => isNum(v) && v > 0 && (j === 0 || v >= c.kg[j - 1])))) err(`${l.key} ${sex}[${k}]`, `${p.length} charges croissantes attendues`);
-          if (!(isInt(c.sampleSize) && c.sampleSize > 0)) err(`${l.key} ${sex}[${k}]`, 'sampleSize : entier > 0 attendu');
-        });
-      }
     });
   }
   const used = new Set();
@@ -628,7 +607,7 @@ function validateStrength(s, exercisesById, err) {
     if (x.strengthStandardKey === null || !isStr(x.strengthStandardKey)) continue;
     const lift = lifts.get(x.strengthStandardKey);
     if (lift === undefined) {
-      err(`exercises.json (${x.id})`, `strengthStandardKey inconnue des normes : ${x.strengthStandardKey}`);
+      err(`exercises.json (${x.id})`, `strengthStandardKey inconnue des mouvements de référence : ${x.strengthStandardKey}`);
       continue;
     }
     used.add(lift.key);
@@ -637,7 +616,7 @@ function validateStrength(s, exercisesById, err) {
     const declared = Array.isArray(lift.groups) ? [...lift.groups].sort((a, b) => STRENGTH_GROUP_IDS.indexOf(a) - STRENGTH_GROUP_IDS.indexOf(b)) : [];
     if (JSON.stringify(declared) !== JSON.stringify(derived)) err(`exercises.json (${x.id})`, `strengthStandardKey ${lift.key} : groupes [${declared.join(', ')}] différents de ceux des muscles principaux [${derived.join(', ')}]`);
   }
-  for (const key of lifts.keys()) if (!used.has(key)) err(where, `norme sans exercice : ${key}`);
+  for (const key of lifts.keys()) if (!used.has(key)) err(where, `mouvement de référence sans exercice : ${key}`);
 }
 
 function readJson(path, errors) {

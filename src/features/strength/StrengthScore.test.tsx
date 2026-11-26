@@ -29,7 +29,7 @@ async function closedBench(id: string, endedAt: string, loadKg: number, reps: nu
   await db.driver.execute(
     `INSERT INTO workout_set (id, workout_id, exercise_id, exercise_name, position, set_kind, reps, load_kg, done, created_at, updated_at, device_id, hlc)
      VALUES (?, ?, 'bench-press-barbell', 'Développé couché à la barre', 0, 'work', ?, ?, 1, ?, ?, ?, ?)`,
-    [`${id.slice(0, -2)}99`, id, reps, loadKg, endedAt, endedAt, DEVICE, HLC],
+    [`${id.slice(0, -3)}9${id.slice(-2)}`, id, reps, loadKg, endedAt, endedAt, DEVICE, HLC],
   );
 }
 
@@ -59,10 +59,10 @@ describe('Progrès › Force : Strength Score maison', () => {
   it('sexe absent du profil : la carte le dit, les 8 groupes « inconnu », aucun score global', async () => {
     await weigh(80);
     mount();
-    expect(await screen.findByText('Sexe non renseigné dans le profil : les seuils dépendent du sexe.')).toBeInTheDocument();
+    expect(await screen.findByText('Sexe non renseigné dans le profil : les normes dépendent du sexe.')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Strength Score' })).toBeInTheDocument();
     for (const name of GROUPS) expect(within(row(name)).getByText('inconnu')).toBeInTheDocument();
-    expect(screen.queryByText(/global/)).toBeNull();
+    expect(screen.queryByText(/global ·/)).toBeNull();
   });
 
   it('aucune pesée : pas de score, la carte le dit ; jamais 0', async () => {
