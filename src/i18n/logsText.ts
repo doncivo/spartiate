@@ -1,3 +1,4 @@
+import type { CatalogTranslator } from './catalogText';
 import { logsFr } from './fr.logs';
 
 /**
@@ -7,7 +8,7 @@ import { logsFr } from './fr.logs';
  */
 export type LogsTextKey = keyof typeof logsFr;
 
-export function tLogs(key: LogsTextKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: LogsTextKey, params?: Readonly<Record<string, string | number>>): string {
   const table: Readonly<Record<LogsTextKey, string>> = logsFr;
   const text = table[key];
   if (!params) return text;
@@ -16,3 +17,5 @@ export function tLogs(key: LogsTextKey, params?: Readonly<Record<string, string 
     return value === undefined ? match : String(value);
   });
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tLogs: CatalogTranslator<typeof logsFr> = translate;
