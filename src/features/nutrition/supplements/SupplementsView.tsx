@@ -17,7 +17,7 @@ import {
 import type { LocalDate, Weekday } from '../../../domain/types';
 import { formatDayMonth } from '../../../i18n/nutritionText';
 import { weekdayName } from '../../../i18n/formatRoutine';
-import { formatSupplementDose, tSupplements, type SupplementsTextKey } from '../../../i18n/supplementsText';
+import { formatSupplementDose, tSupplements, type SupplementsPlainKey } from '../../../i18n/supplementsText';
 import { Button, ConfirmDialog, Icon, Switch, WeekdayToggles } from '../../../ui';
 import { MissingValue } from '../../../ui/MissingValue';
 import { useAppContainer } from '../../app/AppContainerContext';
@@ -30,7 +30,7 @@ import './Supplements.css';
 import { SEP } from '../../../i18n/units';
 
 const WEEK: readonly Weekday[] = [1, 2, 3, 4, 5, 6, 7];
-const ERROR_KEY: Record<SupplementDraftError, SupplementsTextKey> = { name: 'errorName', dose: 'errorDose', unit: 'errorUnit', times: 'errorTimes', days: 'errorDays' };
+const ERROR_KEY: Record<SupplementDraftError, SupplementsPlainKey> = { name: 'errorName', dose: 'errorDose', unit: 'errorUnit', times: 'errorTimes', days: 'errorDays' };
 const HISTORY_DAYS = 30;
 
 type Load = { readonly status: 'loading' | 'failed' } | { readonly status: 'ready'; readonly supplements: readonly Supplement[]; readonly intakes: readonly SupplementIntake[] };
@@ -63,7 +63,7 @@ function adherenceText(a: SupplementAdherence): string {
 }
 
 const STRIP_DAYS = 14;
-const LEVEL_TEXT = { full: 'dayFull', partial: 'dayPartial', none: 'dayNone', free: 'dayFree' } as const satisfies Record<ConstancyDay['level'], SupplementsTextKey>;
+const LEVEL_TEXT = { full: 'dayFull', partial: 'dayPartial', none: 'dayNone', free: 'dayFree' } as const satisfies Record<ConstancyDay['level'], SupplementsPlainKey>;
 
 /** « Matin », « Après-midi » ou « Soir » selon l'heure de la prise (Complements-apres : « Matin · 08:00 »). */
 function momentName(time: string): string {
@@ -97,7 +97,7 @@ export function SupplementsView({ today }: { readonly today: LocalDate }) {
   const { data } = container;
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [form, setForm] = useState<FormState | null>(null);
-  const [formError, setFormError] = useState<SupplementsTextKey | null>(null);
+  const [formError, setFormError] = useState<SupplementsPlainKey | null>(null);
   const [confirm, setConfirm] = useState<Supplement | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [remindersFailed, setRemindersFailed] = useState(false);
