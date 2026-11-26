@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-407 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+412 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (120 : 78 à trancher, 42 à confirmer seulement)
+### séance et moteur (122 : 79 à trancher, 43 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -114,6 +114,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 2 | D-582 | DATA-0293. | A garder · B réviser ; effet : moteur |
 | 2 | D-588 | CONTENT-0293 (BL-113). | A garder · B réviser ; effet : moteur |
 | 2 | D-620 | SHELL-0294f (BL-150) : durée du mésocycle mise en cohérence. | A garder · B réviser ; effet : moteur |
+| 2 | D-761 | CORPS-0301d (D-714) : moments de replanification du rappel des mesures. | A garder · B réviser ; effet : écran |
 | 1 | D-271 | PROG-01 (0.24.0) : cible des jours de repos. | A garder · B réviser ; effet : chiffre |
 | 1 | D-351 | FIX-PROGRAMME (0.28.0) : « Revoir mes réglages » part de la durée réelle du cycle et ne l'écrase plus (C-117, C-064; complète D-315 ). | A garder · B réviser ; effet : écran |
 | 1 | D-455 | PROGRES-0291 (BL-114) : plage de séries jugée sur la dernière semaine complète. | A garder · B réviser ; effet : écran |
@@ -168,6 +169,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-621 | SHELL-0294f (BL-150) : § 19.2 sans platform.kind. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-633 | DATA-0295 (C-155) : fsync du dossier contrôlé; download sur la file série gardé. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-764 | CORPS-0301d (D-713, D-714) : réglage sur le PC et emplacement. | à confirmer seulement (aucun effet visible repéré) |
 
 ### nutrition (26 : 16 à trancher, 10 à confirmer seulement)
 
@@ -205,7 +207,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (41 : 15 à trancher, 26 à confirmer seulement)
+### récupération (42 : 16 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -224,6 +226,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-551 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
 | 1 | D-552 | NUTRI-0292. | A garder · B réviser ; effet : écran |
 | 1 | D-603 | SHELL-0294b (BL-162, BL-163). | A garder · B réviser ; effet : écran |
+| 1 | D-762 | CORPS-0301d (D-714) : appui sur le rappel des mesures. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -256,7 +259,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-690 | NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » sans saut de ligne final est refusé en entier, sans rien … | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (91 : 52 à trancher, 39 à confirmer seulement)
+### synchro et données (93 : 54 à trancher, 39 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -276,6 +279,7 @@ Gardées sans question (à confirmer seulement) :
 | 8 | D-430 | SUIVIS-029d (0.29.0) : bilans VISBODY en genres nouveaux de measurement, sans migration. | A garder · B réviser ; effet : synchro, schéma, chiffre, écran |
 | 8 | D-561 | NUTRI-0292. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 8 | D-630 | DATA-0295 (BL-003) : réparations de l'ancien schéma sorties de SyncRepository. | A garder · B réviser ; effet : moteur, synchro, schéma |
+| 8 | D-760 | CORPS-0301d (D-713) : clés et effacement du rythme des mesures. | A garder · B réviser ; effet : synchro, schéma, données |
 | 7 | D-75 | Catalogue alimentaire et journal persistant (I4-02, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro, schéma |
 | 7 | D-100 | I6-02 (0.13.0) : mensurations et migration 0012 (schéma 12). | A garder · B réviser ; effet : schéma, données, écran |
 | 7 | D-275 | PROG-01 (0.24.0) : limite connue de la synchro entre schémas, consignée (relecture sync-icloud du 14/11 ). | A garder · B réviser ; effet : synchro, schéma |
@@ -297,6 +301,7 @@ Gardées sans question (à confirmer seulement) :
 | 4 | D-327 | FIX-A009 (0.28.0) : colonnes inconnues d'une table connue gardées à la réception d'un instantané (audit Codex 0.26.0, A-009, bloquant; avenant 38 de … | A garder · B réviser ; effet : schéma |
 | 4 | D-583 | DATA-0293. | A garder · B réviser ; effet : synchro, écran |
 | 4 | D-627 | SHELL-0294f (BL-166) : intention d'ajout d'une époque passée jamais publiée comme tête. | A garder · B réviser ; effet : synchro |
+| 4 | D-763 | CORPS-0301d (D-713) : autorisation des notifications pour le rappel des mesures. | A garder · B réviser ; effet : synchro, écran |
 | 3 | D-469 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-141 | FIX-0173 (constat 4) : unité de measurement.value dans l'export complet selon le genre. | A garder · B réviser ; effet : chiffre |
 | 2 | D-334 | FIX-EXPORT (0.28.0) : horizon de remise à zéro dans le manifeste d'export, refus d'une archive qui ramènerait des données effacées (C-109; complète … | A garder · B réviser ; effet : données |

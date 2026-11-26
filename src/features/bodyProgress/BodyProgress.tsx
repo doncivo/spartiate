@@ -29,6 +29,7 @@ import { useSyncedData } from '../sync/remoteChanges';
 import { KIND_TEXT, Silhouette, ZoneChips, ZoneCurve, ZoneList, neighbourZone, signed } from './BodyZones';
 import { summarizeZone, type ZoneSummary } from './bodyZone';
 import { VisbodySection } from './VisbodySection';
+import { MeasurementRhythmLazy } from '../settings/measurementRhythm/lazy';
 import './BodyProgress.css';
 
 /**
@@ -321,6 +322,7 @@ export function BodyProgress({ pickPhoto = pickPhotoJpeg, part }: { readonly pic
           </Button>
         </form>
         {pc ? <p className="ct-today__muted">{tBodyProgress('entryKeys')}</p> : null}
+        <MeasurementRhythmLazy samples={measures} />
         {measureMessage && (
           <p className="ct-bodyprogress__message" role={measureMessage.alert ? 'alert' : 'status'}>
             {measureMessage.text}

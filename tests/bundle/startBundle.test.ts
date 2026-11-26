@@ -645,6 +645,21 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // CORPS-0301d (BL-180) : réglage du rythme des mesures (composant, catalogue) et texte du rappel : blocs à la demande, hors du départ.
+  it.each(['src/features/settings/measurementRhythm/MeasurementRhythmSettings.tsx', 'src/i18n/fr.measurementNotifications.ts'])('CORPS-0301d : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['Rythme des mesures', 'Le rappel est émis sur l’iPhone.', 'Séance de mesures prévue aujourd’hui.'])('CORPS-0301d : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   it('I4-03 : aucun module du domaine ni des écrans de nutrition dans le graphe du départ', () => {
     const startFiles = new Set(startChunks().map((chunk) => chunk.file));
     for (const [source, chunk] of Object.entries(manifest)) {

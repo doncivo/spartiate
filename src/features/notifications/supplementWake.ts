@@ -24,8 +24,8 @@ export function makeTroubleUpdater(data: DataAccess): SupplementActionDeps['upda
     });
 }
 
-/** Tables dont un lot reçu change le plan des rappels de compléments. */
-const SUPPLEMENT_TABLES = ['supplement', 'supplement_intake'];
+/** Tables dont un lot reçu change le plan des rappels : compléments et prises ; mesures (CORPS-0301d, D-761 : séance saisie sur l'autre appareil). */
+const REMINDER_TABLES = ['supplement', 'supplement_intake', 'measurement'];
 
 export interface SupplementWakeEnv {
   /** `dispatchEvent` (facultatif pour les faux) : signal « repos changé » vers l'écran de séance (SHELL-0294b, D-604). */
@@ -49,7 +49,8 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
     (() =>
       import('./index').then(
         // BLESSURES-b : le rappel de check-in des gênes se replanifie aux mêmes moments (même file de passages).
-        (m) => Promise.all([m.supplementNotificationsFor(container).replan(), m.injuryNotificationsFor(container).replan()]),
+        // CORPS-0301d (D-761) : le rappel des mesures aussi.
+        (m) => Promise.all([m.supplementNotificationsFor(container).replan(), m.injuryNotificationsFor(container).replan(), m.measurementNotificationsFor(container).replan()]),
         () => undefined,
       ));
   const run = (): void => void replan().catch(() => undefined);
@@ -58,7 +59,7 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
   };
   env.document.addEventListener('visibilitychange', onVisible);
   const offSync = onSyncedDataApplied((tables) => {
-    if (SUPPLEMENT_TABLES.some((t) => tables.has(t))) run();
+    if (REMINDER_TABLES.some((t) => tables.has(t))) run();
   });
   run();
   const source = env.actions === undefined ? openNotificationActionSource(container.platform.runtime, container.platform.os) : env.actions;
