@@ -54,6 +54,29 @@ describe('force relative : e1RM × (80 / poids de corps)^(2/3)', () => {
   });
 });
 
+describe('charge totale (tractions, dips) : simple proportion, e1RM × 80 / poids de corps (Q-42, D-744)', () => {
+  it('à poids égal la proportion vaut l’exposant ; ailleurs, elle ne passe pas par l’exposant 2/3', () => {
+    expect(relativeStrength(90, 80, true)).toBe(90);
+    expect(relativeStrength(90, 64, true)).toBeCloseTo(112.5, 9);
+    expect(relativeStrength(90, 64, false)).toBeCloseTo(104.436, 3);
+  });
+  it('une traction chacun (valeurs inventées) : 100 kg et 60 kg de poids de corps, même force relative 82,7 kg, même score', () => {
+    const pull = (bw: number) =>
+      group(strengthScore(input({ weighIns: [kg('2026-10-01', bw)], thresholds: STRENGTH_LIFT_THRESHOLDS, exercises: [ex('p', 'pull-up', [session(2, 0, [1])])] })), 'back');
+    const heavy = pull(100);
+    const light = pull(60);
+    expect(heavy).toMatchObject({ kind: 'value', lift: { relativeKg: expect.closeTo(82.667, 3) } });
+    expect(light).toMatchObject({ kind: 'value', lift: { relativeKg: expect.closeTo(82.667, 3) } });
+    if (heavy.kind !== 'value' || light.kind !== 'value') throw new Error('score attendu');
+    expect(heavy.score).toBe(light.score);
+    expect(heavy.level).toBe('beginner');
+  });
+  it('les mouvements à la barre gardent l’exposant 2/3 (développé couché 75 × 6 à 64 kg : 104,4 kg)', () => {
+    const r = strengthScore(input({ weighIns: [kg('2026-10-01', 64)], exercises: [ex('b', 'bench', [session(2, 75, [6])])] }));
+    expect(group(r, 'chest')).toMatchObject({ kind: 'value', lift: { relativeKg: expect.closeTo(104.436, 3) } });
+  });
+});
+
 describe('score 0–100 interpolé entre deux seuils (repères 20, 40, 60, 80, 100), arrondi vers le bas', () => {
   it('90 entre Intermédiaire (80) et Avancé (100) : 60 + 20 × 10 / 20 = 70, Intermédiaire', () => {
     expect(scoreFromThresholds(90, M)).toEqual({ score: 70, level: 'intermediate' });
