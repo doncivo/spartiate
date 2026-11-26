@@ -1,3 +1,5 @@
+import type { CatalogTranslator } from './catalogText';
+
 /**
  * Textes de l'écran « Démarrage bloqué », à part du catalogue principal (bundle de départ) : chargés seulement quand une étape du
  * démarrage dépasse 8 secondes.
@@ -14,7 +16,9 @@ export const startupBlockedFr = {
 
 export type StartupBlockedKey = keyof typeof startupBlockedFr;
 
-export function tStartupBlocked(key: StartupBlockedKey, params?: Readonly<Record<string, string | number>>): string {
+function translate(key: StartupBlockedKey, params?: Readonly<Record<string, string | number>>): string {
   const text: string = startupBlockedFr[key];
   return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => (params[name] === undefined ? match : String(params[name]))) : text;
 }
+/** CLEAN-0297 (C-085) : paramètres typés comme par `catalogText` ; corps d'origine gardé ici (départ inchangé, import de type seul). */
+export const tStartupBlocked: CatalogTranslator<typeof startupBlockedFr> = translate;
