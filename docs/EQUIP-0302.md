@@ -1,9 +1,11 @@
 # EQUIP-0302 — poids du gilet lesté au profil de matériel (lot 0.30.2)
 
 Budget M (≈ 150 k ; entraînement, data-model, sync-icloud). Registre : BL-175 (et BL-113). Décisions lues : D-674 (Ali, 26/11, Q-28 option A),
-D-383 (moteur poids du corps), D-785 (pas de défaut SQL sur une colonne publiée) ; proposées : D-791 à D-795 (choix prudents, ci-dessous).
+D-383 (moteur poids du corps), D-785 (pas de défaut SQL sur une colonne publiée) ; proposées : D-791 à D-796 (choix prudents, ci-dessous).
 Chapitres : 11.3 (« Sans charge »), 14.3 (profils de matériel), 9.1 (synchro), 23.1 (bundle de départ). Migration 0025 (schéma 25). Branche
-créée depuis SESS-0302 (migration 0024, PR #251 non fusionnée) : à rebaser sur `main` après sa fusion (aucun conflit attendu hors versions).
+créée depuis SESS-0302 ; #251 fusionnée, branche mise à jour par `git merge origin/main` (`360c249f`) : conflits des fichiers de SESS-0302 résolus par
+leur version de `main` (seuls `docs/SESS-0302.md`, `docs/constats-ali.md`, `docs/decisions.md` et `src/i18n/fr.workoutReplay.ts` différaient de la
+branche SESS-0302), différence avec `main` limitée aux fichiers de ce ticket.
 
 ## Passes
 
@@ -45,8 +47,24 @@ créée depuis SESS-0302 (migration 0024, PR #251 non fusionnée) : à rebaser s
   plafond inchangé ; `scripts/release` : 289 verts, 2 délais de 5 s (`privacy`, `purge`, connus sur `main` sur ce PC). Aucun e2e local. Rust non lancé (règle du poste) : version, déclencheurs de référence et par
   version, fixture régénérée par script, à confirmer par la CI. Tests changés dans le commit vert (rien d'affaibli) : comptes de
   déclencheurs 70 → 71 (`0004`, `0009`, `0012`, `triggers.test.ts`), dernière version lue par `0024_workout_pause.test.ts` (la 0024 est
-  passée, la 0025 suit) ; `equipmentVest.equip0302.test.tsx` part d'une copie de « Poids de corps » et non de « Salle complète » (voir
-  points non tranchés : plafond de 64 matériels). Valeurs inventées seulement.
+  passée, la 0025 suit) ; `equipmentVest.equip0302.test.tsx` part d'une copie de « Poids de corps » et non de « Salle complète » (plafond
+  de 64 matériels, corrigé ensuite par D-796, qui ajoute le cas « Salle complète »). Valeurs inventées seulement.
+- **Correction D-796 (demande du coordinateur, même ticket)** — Défaut : `MAX_LIST` (64) de `src/db/parse/equipmentJson.ts` bornait les listes
+  d'identifiants d'un profil sous la taille du catalogue (77) ; une copie de « Salle complète » (64 disponibles) ne recevait plus le gilet et
+  l'éditeur disait « Enregistrement impossible. Réessaie. ». Rouge : `4e196811` (5 tests : borne, garde, domaine, copie de « Salle complète »,
+  refus nommés). Vert : `8eefa695`. Borne fixe `EQUIPMENT_ID_LIST_MAX = 256` (domaine, `equipment.ts`), gardée par un test qui exige au moins
+  le double du catalogue embarqué ; autres listes inchangées (64, `EQUIPMENT_LIST_MAX`) ; la validation du domaine refuse désormais tout ce
+  que la lecture refuserait (longueurs, nom de barre, nombre de disques), et l'éditeur nomme chaque raison (une phrase par code, le matériel
+  forcé et interdit nommé) ; un refus du dépôt dit « Profil refusé… » ou « Ce profil n'existe plus… », « Enregistrement impossible » ne reste
+  que pour une écriture qui échoue. Borne cherchée ailleurs : aucune dans l'export (`archive.ts` ne lit pas l'inventaire) ni dans la synchro
+  (colonne `json`, 64 Ko). **Format publié** : la borne s'applique à la lecture de la colonne publiée `inventory`. Une app antérieure à ce
+  ticket qui reçoit un profil de plus de 64 matériels le lit vide (inventaire vide, le moteur ne propose alors que le poids du corps) et refuse
+  de le modifier (garde DATA-0293 : rien n'est réécrit ni perdu) jusqu'à sa mise à jour. Changement sûr dans ce sens, sans republication ;
+  les deux appareils d'Ali se mettent à jour par le même lot.
+- **qa-test après D-796 et mise à jour avec main** (`360c249f`, sans couverture, `--maxWorkers=2`) : `tsc --noEmit` sans erreur ; migrations 249 verts ;
+  `src/domain/training` 956 ; `src/domain/sync`, `src/domain/exportImport`, `src/platform/backup`, `src/db/parse` 483 ; `src/features/training` 460 ;
+  `src/db/repositories` 604 ; `tests/unit/sync/versions`, `equip0302`, `sess0302` 128 ; `npm run test:bundle` 201 (plafond inchangé) ; `scripts/release` 291 :
+  tout vert, aucun délai cette fois. Rust non lancé (CI).
 - **Relectures** — sync-icloud et code-reviewer : à faire (passe distincte, diff à froid).
 
 ## Périmètre écrit des fichiers de synchro touchés (D-26)
@@ -73,12 +91,12 @@ créée depuis SESS-0302 (migration 0024, PR #251 non fusionnée) : à rebaser s
 - **D-795** — Synchro : `vest_kg` publié, capturé par un déclencheur propre, republication de `equipment_profile` au schéma 25 (un profil
   créé par un appareil resté au 24 est mis de côté, « appareil plus ancien », ADR 0018, puis reçu entier, poids nul) ; aucune valeur par
   défaut SQL (D-785).
+- **D-796** — Listes d'identifiants d'un profil (disponible, forcé, interdit) bornées à 256, fixe, au moins le double du catalogue embarqué
+  (garde de test) ; autres listes à 64 ; le domaine valide les mêmes bornes que la lecture et l'éditeur nomme chaque refus.
 
 ## Points non tranchés
 
-- Plafond de 64 matériels par liste (`src/db/parse/equipmentJson.ts`, `MAX_LIST`) alors que le catalogue en compte 77 : une copie de
-  « Salle complète » (64 déjà disponibles) ne peut pas recevoir le gilet ; l'éditeur dit « Enregistrement impossible. Réessaie. » sans
-  dire pourquoi. Hors ticket (rien n'est perdu, l'échec est affiché) : ticket à ouvrir (relever le plafond au-delà du catalogue, message
-  nommé).
+- Profil de plus de 64 matériels lu vide par un appareil resté à une version antérieure (D-796) : effet transitoire, à dire à Ali si un
+  appareil reste en retard.
 - Gilet réglable (plusieurs crans) ou gilet additionné à un autre lest : hors D-674 (D-791).
 - Relecture sync-icloud et avis de data-model (D-674) : à faire avant fusion.
