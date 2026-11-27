@@ -7,6 +7,8 @@ export const syncEngineFr = {
     title: 'Synchronisation',
     folderFallback: 'iCloud Drive / Spartiate',
     upToDate: 'À jour · {age}',
+    // SYNC-0302 (D-673) : heure avancée alors qu'un fichier d'un autre appareil n'a pas été lu en entier.
+    upToDatePartial: 'Synchronisé · {age} · lecture partielle',
     upToDateAnnounce: 'À jour',
     ageNow: 'à l’instant',
     ageMinutes: 'il y a {n} min',
@@ -62,6 +64,7 @@ export const syncEngineFr = {
     thisDevice: 'Cet appareil · {time}',
     thisDeviceName: 'Cet appareil',
     lastSync: 'Dernière synchronisation : {time}',
+    lastSyncPartial: 'Dernière synchronisation : {time} · lecture partielle',
     lastRead: 'Dernière modification lue : {time}',
     neverRead: 'Jamais lu',
     devicePc: 'PC',
@@ -101,6 +104,7 @@ export const syncEngineFr = {
     warnReceivedUnapplied: 'Des modifications reçues n’ont pas pu être appliquées (élément manquant, ou refusé par la base) : synchronise de nouveau sur l’autre appareil, ou lance une reprise complète',
     incomplete: 'Synchro incomplète : voir les avertissements',
     warnAwaitingOthers: 'En attente des fichiers des autres appareils dans iCloud',
+    warnPartialRead: 'Lecture partielle : un fichier d’un autre appareil n’a pas pu être lu en entier. La suite sera lue au prochain cycle ; si cela dure, ouvre l’app sur l’autre appareil',
     warnCarryHeld: 'Éléments mis de côté : leur version a été remplacée par une restauration',
   },
 } as const;

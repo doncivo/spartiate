@@ -23,7 +23,7 @@ function reportLines(report: SyncReport | SyncReportUnavailable): string[] {
       platform: d.platform ?? unknown,
       version: d.appVersion ?? unknown,
       status: d.status,
-      lastSync: d.lastSyncAt ?? unknown,
+      lastSync: d.lastSyncAt === null ? unknown : `${d.lastSyncAt}${d.partialRead ? tLogs('reportPartialRead') : ''}`,
       lastSeen: d.lastSeen ?? unknown,
       cursor: d.cursor,
     }),

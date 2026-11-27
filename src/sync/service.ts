@@ -198,6 +198,8 @@ export function createSyncService(options: SyncServiceOptions): SyncEngineServic
         folderLabel: result.folderLabel ?? status.folderLabel,
         folderKind: result.folderKind ?? status.folderKind ?? null,
         lastSyncAt: result.lastSyncAt ?? status.lastSyncAt,
+        // SYNC-0302 : la mention suit l'heure affichée (heure gardée : mention gardée).
+        partialRead: result.lastSyncAt !== null ? result.partialRead === true : status.partialRead === true,
         conflictsThisWeek: conflicts,
         ...(reintegrationFailure === undefined ? {} : { reintegrationFailure }),
         ...(forget === undefined ? {} : { forget }),

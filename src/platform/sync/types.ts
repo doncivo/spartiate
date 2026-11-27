@@ -510,6 +510,11 @@ export interface SyncStatus {
   readonly ownDelete?: readonly OwnDeleteFailure[];
   readonly phase: SyncPhase;
   readonly lastSyncAt: IsoDateTime | null;
+  /**
+   * SYNC-0302 (D-673) : `lastSyncAt` posé alors qu'un fichier d'un autre appareil n'a pas pu être lu en entier (« lecture partielle » à
+   * côté de l'heure, avertissement dans Détails) ; levé au premier cycle complet. Absent : non. Facultatif.
+   */
+  readonly partialRead?: boolean;
   /** Nom du dossier (`SyncFolderInfo.label`, jamais un chemin) ; le libellé affiché est composé par l'interface avec `folderKind`. */
   readonly folderLabel: string | null;
   /** Nature du dossier (`SyncFolderInfo.kind`) : « iCloud Drive / <nom> » pour `icloud`. Ajout du lot Y2 (fusion avec Y1), facultatif. */

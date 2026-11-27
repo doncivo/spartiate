@@ -118,7 +118,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
           <li key={device.deviceId} className="ct-settings__row ct-sync__device" data-status={device.status} data-device-id={device.deviceId}>
             <div className="ct-sync__deviceIdentity">
               <SyncDeviceName device={device} devices={status.devices} />
-              <span className="ct-sync__deviceRead">{device.lastReadAt ? t(device.self ? 'sync.status.lastSync' : 'sync.status.lastRead', { time: formatSyncTime(device.lastReadAt, nowMs) }) : t('sync.status.neverRead')}</span>
+              <span className="ct-sync__deviceRead">{device.lastReadAt ? t(device.self ? (status.partialRead ? 'sync.status.lastSyncPartial' : 'sync.status.lastSync') : 'sync.status.lastRead', { time: formatSyncTime(device.lastReadAt, nowMs) }) : t('sync.status.neverRead')}</span>
             </div>
             {/* Pastille de statut alignée à droite (critère 4) : un seul gabarit pour tous les appareils. */}
             <span className="ct-settings__value ct-sync__deviceState" data-tone={deviceTone(device)}>
@@ -143,14 +143,20 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
       {/* L'aide sort de la zone de contenu : sous la liste (règle du README des refontes). */}
       {status.devices.length > 0 && <p className="ct-settings__hint ct-sync__namesHint">{t('sync.status.namesLocal')}</p>}
       {slots.forget ?? <SyncDetailsForget />}
-      {(status.stateUnreadable === true || shownWarnings.length > 0 || carryRaised) && (
+      {(status.stateUnreadable === true || status.partialRead === true || shownWarnings.length > 0 || carryRaised) && (
         <>
           <h2 className="ct-settings__section ct-section-title">{t('sync.status.sectionWarnings')}</h2>
-          {(status.stateUnreadable === true || shownWarnings.length > 0) && (
+          {(status.stateUnreadable === true || status.partialRead === true || shownWarnings.length > 0) && (
             <ul className="ct-sync__warnings">
               {status.stateUnreadable === true && (
                 <li className="ct-settings__row" data-warning="state-unreadable">
                   {t('status.syncStateUnreadable')}
+                </li>
+              )}
+              {/* SYNC-0302 (D-673) : avertissement court de la lecture partielle (heure avancée, suite au prochain cycle). */}
+              {status.partialRead === true && (
+                <li className="ct-settings__row" data-warning="partial-read">
+                  {t('sync.status.warnPartialRead')}
                 </li>
               )}
               {shownWarnings.map((code) => (

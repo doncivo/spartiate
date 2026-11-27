@@ -32,11 +32,13 @@ async function twoDevices(): Promise<[SimDevice, SimDevice]> {
 
 const partialMeta = async (d: SimDevice): Promise<string | null> =>
   (await d.driver.select<{ value: string | null }>("SELECT value FROM sync_meta WHERE key = 'partialRead'"))[0]?.value ?? null;
-const cursorOf = async (d: SimDevice, id: string) => (await d.driver.select<{ cursor_segment: number; cursor_record: number }>('SELECT cursor_segment, cursor_record FROM sync_state WHERE device_id = ?', [id]))[0];
+const stateOf = async (d: SimDevice, id: string) => (await d.driver.select<{ status: string }>('SELECT status FROM sync_state WHERE device_id = ?', [id]))[0];
 
 /** B lit un segment de A dont un enregistrement est illisible (aucun instantané plus récent) : lecture partielle. */
 async function partialCycle(a: SimDevice, b: SimDevice): Promise<Awaited<ReturnType<SimDevice['cycle']>>> {
+  // Deux cycles de A : deux enregistrements dans le même segment ; le second sera illisible chez B.
   await a.createTask('Un');
+  await a.cycle();
   a.clock.advance(5);
   await a.createTask('Deux');
   await a.cycle();
@@ -71,9 +73,9 @@ describe('SYNC-0302 : lecture partielle à côté de l’heure de dernière sync
     expect(status.pendingFiles).toEqual([]);
     expect(status.partialRead).toBe(true);
     expect(JSON.parse((await partialMeta(b)) ?? 'null')).toEqual({ at });
-    // Moteur de lecture inchangé : la ligne lisible est appliquée, le curseur s'arrête avant l'enregistrement illisible.
+    // Moteur de lecture inchangé : la ligne lisible est appliquée, l'appareil est marqué « Fichiers illisibles » (statut existant).
     expect((await b.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM meal_entry'))[0]?.n).toBe(1);
-    expect(await cursorOf(b, A_ID)).toMatchObject({ cursor_segment: 1 });
+    expect((await stateOf(b, A_ID))?.status).toBe('corrupt');
 
     // A republie (fichier intact recopié, tête avancée) : cycle complet, indicateur levé, méta effacée.
     a.clock.advance(1_000);

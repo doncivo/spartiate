@@ -42,6 +42,8 @@ export const logsFr = {
   reportUnavailable: 'Bilan de synchro indisponible (code : {code})',
   reportDevice: 'Appareil {id}{self} : {platform}, version {version}, statut {status}, dernière synchro {lastSync}, dernière modification lue {lastSeen}, curseur {cursor}',
   reportSelf: ' (cet appareil)',
+  // SYNC-0302 (D-673) : heure de dernière synchro posée par une lecture partielle.
+  reportPartialRead: ' (lecture partielle)',
   reportUnknownValue: 'inconnue',
   reportNoDevice: 'Aucun appareil connu.',
   reportOutbox: 'Entrées en attente d’envoi : {count}',

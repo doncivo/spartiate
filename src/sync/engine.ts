@@ -71,6 +71,8 @@ export interface CycleResult extends CycleFacts {
   readonly folderLabel: string | null;
   readonly folderKind?: SyncFolderInfo['kind'] | null;
   readonly lastSyncAt: IsoDateTime | null;
+  /** SYNC-0302 (D-673) : `lastSyncAt` posé par un cycle où un appareil n'a pas été lu en entier (`sync_meta.partialRead`) ; absent : non. */
+  readonly partialRead?: boolean;
   readonly worked: boolean;
   /** Y-11 (`resetCheck`) : premier appareil pas encore lu jusqu'à sa tête (null : la réinitialisation peut commencer). */
   readonly resetLag?: ReturnType<typeof resetLagging>;
@@ -81,6 +83,21 @@ const EMPTY: Omit<CycleResult, 'outcome'> = { errorCode: null, pendingFiles: [],
 const ZERO: RecordCursor = { segment: 0, record: 0 };
 
 export const iso = (ms: number): IsoDateTime => new Date(ms).toISOString() as IsoDateTime;
+
+/**
+ * SYNC-0302 (D-673) : l'heure gardée `at` a-t-elle été posée par une lecture partielle (`sync_meta.partialRead` qui la désigne) ? Valeur
+ * illisible : journalisée et tenue pour partielle (prudence : jamais une heure présentée comme complète sans preuve), jamais un cycle en échec.
+ */
+async function partialReadAt(deps: SyncDeps, at: IsoDateTime | null): Promise<boolean> {
+  if (at === null) return false;
+  try {
+    return (await readJson<{ at?: unknown }>(deps.data.repos, META.partialRead, deps.logger))?.at === at;
+  } catch (error) {
+    if (isCycleInterrupted(error)) throw error;
+    deps.logger.log('partial-read-unreadable', { code: syncErrorCodeOf(error) });
+    return true;
+  }
+}
 
 function acksToJson(acks: ReadonlyMap<DeviceId, DeviceAck>): string {
   const out: Record<string, DeviceAck> = {};
@@ -1176,7 +1193,21 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     // 8. Heure de dernière synchro (jamais après l'échéance d'un cycle borné : le cycle n'est pas complet).
     deps.deadline?.check('finish');
     const lastSyncAt = iso(deps.clock.nowMs());
-    if (publishError === null && !readFailed && pending.size === 0) await repos.sync.saveState(self, { lastSyncAt });
+    const advanced = publishError === null && !readFailed && pending.size === 0;
+    // SYNC-0302 (D-673, option C) : l'heure avance même si un appareil n'a pas été lu en entier (`allRead` faux) ; la mention « lecture
+    // partielle » suit cette heure (`sync_meta.partialRead`, local, jamais publié) et disparaît au premier cycle complet. Moteur de lecture inchangé.
+    // Méta écrite seulement quand elle change (cycle complet sans mention : mêmes écritures qu'avant, une seule `saveState`).
+    if (advanced) {
+      const partialValue = allRead ? null : JSON.stringify({ at: lastSyncAt });
+      if ((await repos.sync.getMeta(META.partialRead)) === partialValue) await repos.sync.saveState(self, { lastSyncAt });
+      else {
+        await data.transaction(async (tx) => {
+          await tx.sync.saveState(self, { lastSyncAt });
+          await tx.sync.setMeta(META.partialRead, partialValue);
+        });
+      }
+    }
+    const partialRead = advanced ? !allRead : await partialReadAt(deps, selfRow?.lastSyncAt ?? null);
     // Y-11 (revue 13) : un appareil attendu par la réinitialisation est toujours dans APPAREILS (« jamais vu » s'il n'a jamais été lu).
     const resetWaiting = directive.kind === 'initiator' ? directive.view.waiting : [];
     const devices = withUnseenDevices(await deviceStatuses(repos, self, accepted, deps.sv, logger), scan, self, [...(await readWaitingDevices(repos)), ...resetWaiting]);
@@ -1184,7 +1215,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     const resetLag = options.resetCheck ? resetLagging(deps, { scan, forget: forgetView, accepted, own: lastWritten ?? ownState }) : undefined;
     const lag = resetLag === undefined ? {} : { resetLag };
     if (publishError !== null) return { ...EMPTY, outcome: 'failed', errorCode: publishError as SyncErrorCode, pendingFiles: [...pending], devices, folderLabel, folderKind, worked, keyMismatch, ...lag };
-    return { outcome: 'done', errorCode: null, pendingFiles: [...pending], devices, keyMismatch, folderLabel, folderKind, lastSyncAt: pending.size === 0 && !readFailed ? lastSyncAt : (selfRow?.lastSyncAt ?? null), worked, ...lag };
+    return { outcome: 'done', errorCode: null, pendingFiles: [...pending], devices, keyMismatch, folderLabel, folderKind, lastSyncAt: pending.size === 0 && !readFailed ? lastSyncAt : (selfRow?.lastSyncAt ?? null), ...(partialRead ? { partialRead: true } : {}), worked, ...lag };
   } catch (error) {
     if (isCycleInterrupted(error)) throw error;
     const code = syncErrorCodeOf(error);
