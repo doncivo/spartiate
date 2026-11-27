@@ -163,6 +163,13 @@ export interface WorkoutRepository {
   /** Efface l'échéance. Sans effet si aucun repos. */
   skipRest(): Promise<void>;
   getRest(): Promise<RestTimer | null>;
+  /**
+   * SESS-0302 (BL-110, D-658, § 13.2) : met la séance OUVERTE en pause (`paused_at`) et annule le repos en cours dans la même écriture. Déjà en pause :
+   * rien n'est écrit. Pendant la pause, `startRest` et `extendRest` sont refusés (`'invalid'`). Close : `'invalid'` ; absente : `'not-found'`.
+   */
+  pauseWorkout(id: string): Promise<WorkoutWithSets>;
+  /** SESS-0302 : reprend la séance OUVERTE : la durée de la pause rejoint `paused_ms` ; hors pause : rien n'est écrit. Erreurs comme `pauseWorkout`. */
+  resumeWorkout(id: string): Promise<WorkoutWithSets>;
   /** Abandon d'une séance ouverte : suppression logique de la séance et de ses séries. Séance close : `'invalid'`. */
   discard(id: string): Promise<void>;
 

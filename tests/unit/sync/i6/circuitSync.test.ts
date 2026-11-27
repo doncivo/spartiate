@@ -67,7 +67,8 @@ const id = SYNC_CATALOGUE.column('workout_set', 'circuit_id');
 const rest = SYNC_CATALOGUE.column('workout_set', 'circuit_rest_sec');
 if (!id || !rest) throw new Error('colonnes absentes');
 
-const AFTER_13: readonly string[] = ['distance_m', 'added', 'corrected_from'];
+// SESS-0302 : colonnes de `workout` de la 0024 (pause), gardées elles aussi chez un appareil plus ancien.
+const AFTER_13: readonly string[] = ['distance_m', 'added', 'corrected_from', 'paused_at', 'paused_ms'];
 
 describe('(a) catalogue', () => {
   it('colonnes publiées après difficulty : circuit_id (texte nul, 64 au plus), circuit_rest_sec (entier nul)', () => {

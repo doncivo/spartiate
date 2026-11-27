@@ -410,6 +410,10 @@ const WORKOUT_TABLE = table(
     c('notes', 'text', false),
     createdAt,
     deletedAt,
+    // SESS-0302 (migration 0024, D-658) : pause en cours (nulle sur une séance close) et cumul des pauses (ms, nul = 0), publiés avec la séance close ;
+    // masqués (aucun déclencheur : séance ouverte seulement, la clôture publie la ligne entière).
+    c('paused_at', 'datetime', true, hidden),
+    c('paused_ms', 'int', true, hidden),
   ],
   { local: ['rest_timer_end_at', 'rest_timer_seconds'], publishWhen: { notNull: 'ended_at' }, titleSource: { kind: 'own', column: 'name' } },
 );
