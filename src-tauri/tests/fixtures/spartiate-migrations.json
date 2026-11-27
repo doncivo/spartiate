@@ -314,6 +314,14 @@
     "ALTER TABLE workout ADD COLUMN paused_at TEXT",
     "ALTER TABLE workout ADD COLUMN paused_ms INTEGER CHECK (paused_ms IS NULL OR paused_ms >= 0)"
    ]
+  },
+  {
+   "version": 25,
+   "name": "equipment_vest",
+   "statements": [
+    "ALTER TABLE equipment_profile ADD COLUMN vest_kg REAL CHECK (vest_kg IS NULL OR (vest_kg > 0 AND vest_kg <= 60))",
+    "CREATE TRIGGER sync_equipment_profile_vest_au AFTER UPDATE OF vest_kg ON equipment_profile\n     WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n         SELECT 'equipment_profile', NEW.id, '*', OLD.hlc, NULL\n         WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = '*');\n       INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc)\n       SELECT 'equipment_profile', NEW.id, 'vest_kg', NEW.hlc,\n         CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field IN ('vest_kg', '*'))\n           THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg')\n           ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = '*'), OLD.hlc) END\n       WHERE OLD.vest_kg IS NOT NEW.vest_kg\n       ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc;\nDELETE FROM sync_outbox WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg' AND OLD.vest_kg IS NOT NEW.vest_kg;\nINSERT INTO sync_outbox (table_name, row_id, field) SELECT 'equipment_profile', NEW.id, 'vest_kg' WHERE OLD.vest_kg IS NOT NEW.vest_kg;\n     END"
+   ]
   }
  ],
  "versions": [
@@ -2387,6 +2395,131 @@
     "sync_workout_set_corrected_from_au",
     "sync_workout_set_difficulty_au"
    ]
+  },
+  {
+   "version": 25,
+   "tables": [
+    "body_weight",
+    "cardio_session",
+    "cardio_track",
+    "conflict_log",
+    "data_reset",
+    "day_completeness",
+    "epoch_carry_report",
+    "equipment_profile",
+    "exercise",
+    "exercise_exclusion",
+    "food",
+    "food_favorite",
+    "food_portion",
+    "injury",
+    "meal_entry",
+    "measurement",
+    "mesocycle",
+    "muscle_recovery",
+    "nutrition_target",
+    "profile",
+    "progress_photo",
+    "progress_photo_file",
+    "progression_profile",
+    "recipe",
+    "recipe_ingredient",
+    "recommendation_decision",
+    "recovery_day",
+    "recovery_factor",
+    "recovery_import_state",
+    "recovery_sample",
+    "routine",
+    "routine_day",
+    "routine_exercise",
+    "schema_migrations",
+    "settings",
+    "supplement",
+    "supplement_intake",
+    "sync_field_clock",
+    "sync_guard",
+    "sync_meta",
+    "sync_outbox",
+    "sync_parked",
+    "sync_state",
+    "sync_tombstone",
+    "sync_unknown",
+    "workout",
+    "workout_set"
+   ],
+   "triggers": [
+    "sync_body_weight_ai",
+    "sync_body_weight_au",
+    "sync_cardio_session_ai",
+    "sync_cardio_session_au",
+    "sync_data_reset_ai",
+    "sync_data_reset_au",
+    "sync_day_completeness_ai",
+    "sync_day_completeness_au",
+    "sync_equipment_profile_ai",
+    "sync_equipment_profile_au",
+    "sync_equipment_profile_vest_au",
+    "sync_exercise_ai",
+    "sync_exercise_au",
+    "sync_exercise_exclusion_ai",
+    "sync_exercise_exclusion_au",
+    "sync_food_ai",
+    "sync_food_au",
+    "sync_food_favorite_ai",
+    "sync_food_favorite_au",
+    "sync_food_portion_ai",
+    "sync_food_portion_au",
+    "sync_injury_ai",
+    "sync_injury_au",
+    "sync_meal_entry_ai",
+    "sync_meal_entry_au",
+    "sync_measurement_ai",
+    "sync_measurement_au",
+    "sync_mesocycle_ai",
+    "sync_mesocycle_au",
+    "sync_mesocycle_program_au",
+    "sync_muscle_recovery_ai",
+    "sync_muscle_recovery_au",
+    "sync_nutrition_target_ai",
+    "sync_nutrition_target_au",
+    "sync_nutrition_target_rest_au",
+    "sync_profile_ai",
+    "sync_profile_au",
+    "sync_progress_photo_ai",
+    "sync_progress_photo_au",
+    "sync_progression_profile_ai",
+    "sync_progression_profile_au",
+    "sync_progression_profile_overrides_au",
+    "sync_recipe_ai",
+    "sync_recipe_au",
+    "sync_recipe_ingredient_ai",
+    "sync_recipe_ingredient_au",
+    "sync_recommendation_decision_ai",
+    "sync_recommendation_decision_au",
+    "sync_recovery_day_ai",
+    "sync_recovery_day_au",
+    "sync_recovery_factor_ai",
+    "sync_recovery_factor_au",
+    "sync_routine_ai",
+    "sync_routine_au",
+    "sync_routine_day_ai",
+    "sync_routine_day_au",
+    "sync_routine_day_weekday_au",
+    "sync_routine_exercise_ai",
+    "sync_routine_exercise_au",
+    "sync_routine_exercise_circuit_au",
+    "sync_supplement_ai",
+    "sync_supplement_au",
+    "sync_supplement_intake_ai",
+    "sync_supplement_intake_au",
+    "sync_workout_ai",
+    "sync_workout_au",
+    "sync_workout_close_decisions_au",
+    "sync_workout_set_ai",
+    "sync_workout_set_au",
+    "sync_workout_set_corrected_from_au",
+    "sync_workout_set_difficulty_au"
+   ]
   }
  ],
  "triggers": [
@@ -2418,7 +2551,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2449,7 +2583,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2463,7 +2598,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2477,7 +2613,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2493,7 +2630,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2509,7 +2647,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2532,7 +2671,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2555,7 +2695,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2585,7 +2726,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2615,7 +2757,16 @@
     21,
     22,
     23,
-    24
+    24,
+    25
+   ]
+  },
+  {
+   "name": "sync_equipment_profile_vest_au",
+   "table": "equipment_profile",
+   "sql": "CREATE TRIGGER sync_equipment_profile_vest_au AFTER UPDATE OF vest_kg ON equipment_profile WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'equipment_profile', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'equipment_profile', NEW.id, 'vest_kg', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field IN ('vest_kg', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.vest_kg IS NOT NEW.vest_kg ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'equipment_profile' AND row_id = NEW.id AND field = 'vest_kg' AND OLD.vest_kg IS NOT NEW.vest_kg; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'equipment_profile', NEW.id, 'vest_kg' WHERE OLD.vest_kg IS NOT NEW.vest_kg; END",
+   "versions": [
+    25
    ]
   },
   {
@@ -2645,7 +2796,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2675,7 +2827,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2686,7 +2839,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2697,7 +2851,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2721,7 +2876,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2745,7 +2901,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2762,7 +2919,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2779,7 +2937,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2803,7 +2962,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2827,7 +2987,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2838,7 +2999,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2849,7 +3011,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2873,7 +3036,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2897,7 +3061,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2917,7 +3082,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2937,7 +3103,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2962,7 +3129,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -2987,7 +3155,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3000,7 +3169,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3022,7 +3192,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3044,7 +3215,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3068,7 +3240,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3092,7 +3265,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3105,7 +3279,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3136,7 +3311,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3167,7 +3343,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3187,7 +3364,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3207,7 +3385,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3233,7 +3412,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3259,7 +3439,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3268,7 +3449,8 @@
    "sql": "CREATE TRIGGER sync_progression_profile_overrides_au AFTER UPDATE OF config_overrides ON progression_profile WHEN NOT EXISTS (SELECT 1 FROM sync_guard) BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'progression_profile', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'progression_profile', NEW.id, 'config_overrides', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field IN ('config_overrides', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.config_overrides IS NOT NEW.config_overrides ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'progression_profile' AND row_id = NEW.id AND field = 'config_overrides' AND OLD.config_overrides IS NOT NEW.config_overrides; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'progression_profile', NEW.id, 'config_overrides' WHERE OLD.config_overrides IS NOT NEW.config_overrides; END",
    "versions": [
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3291,7 +3473,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3314,7 +3497,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3337,7 +3521,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3360,7 +3545,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3386,7 +3572,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3412,7 +3599,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3434,7 +3622,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3456,7 +3645,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3477,7 +3667,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3498,7 +3689,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3528,7 +3720,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3558,7 +3751,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3588,7 +3782,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3618,7 +3813,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3630,7 +3826,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3660,7 +3857,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3690,7 +3888,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3708,7 +3907,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3723,7 +3923,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3738,7 +3939,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3753,7 +3955,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3768,7 +3971,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3796,7 +4000,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3824,7 +4029,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3850,7 +4056,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3878,7 +4085,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3906,7 +4114,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3915,7 +4124,8 @@
    "sql": "CREATE TRIGGER sync_workout_set_corrected_from_au AFTER UPDATE OF corrected_from ON workout_set WHEN NOT EXISTS (SELECT 1 FROM sync_guard) AND (SELECT ended_at FROM workout WHERE id = NEW.workout_id) IS NOT NULL BEGIN INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'workout_set', NEW.id, '*', OLD.hlc, NULL WHERE OLD.hlc IS NOT NEW.hlc AND NOT EXISTS (SELECT 1 FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = '*'); INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) SELECT 'workout_set', NEW.id, 'corrected_from', NEW.hlc, CASE WHEN EXISTS (SELECT 1 FROM sync_outbox WHERE table_name = 'workout_set' AND row_id = NEW.id AND field IN ('corrected_from', '*')) THEN (SELECT base_hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from') ELSE COALESCE((SELECT hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from'), (SELECT hlc FROM sync_field_clock WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = '*'), OLD.hlc) END WHERE OLD.corrected_from IS NOT NEW.corrected_from ON CONFLICT (table_name, row_id, field) DO UPDATE SET hlc = excluded.hlc, base_hlc = excluded.base_hlc; DELETE FROM sync_outbox WHERE table_name = 'workout_set' AND row_id = NEW.id AND field = 'corrected_from' AND OLD.corrected_from IS NOT NEW.corrected_from; INSERT INTO sync_outbox (table_name, row_id, field) SELECT 'workout_set', NEW.id, 'corrected_from' WHERE OLD.corrected_from IS NOT NEW.corrected_from; END",
    "versions": [
     23,
-    24
+    24,
+    25
    ]
   },
   {
@@ -3941,7 +4151,8 @@
     21,
     22,
     23,
-    24
+    24,
+    25
    ]
   }
  ]

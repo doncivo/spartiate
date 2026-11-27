@@ -129,6 +129,7 @@ Profils de matériel (inventaire et incréments en JSON).
 | `kind` | enum | — | non |  |
 | `inventory` | json | — | non |  |
 | `increments` | json | — | non |  |
+| `vest_kg` | real | kg | oui | poids du gilet lesté (vide = non renseigné, aucun lest proposé par le gilet ; archives d'avant le schéma 25 : vide) |
 
 ### `csv/routine.csv`
 

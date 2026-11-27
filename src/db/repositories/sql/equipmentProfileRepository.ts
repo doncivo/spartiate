@@ -14,6 +14,8 @@ interface ProfileRow extends SqlRow, SyncRow {
   readonly kind: string;
   readonly inventory: string;
   readonly increments: string;
+  /** EQUIP-0302 : absente d'une base antérieure à la migration 0025 (jamais en production : le migrateur passe avant ; banc de synchro au schéma 24). */
+  readonly vest_kg?: number | null;
 }
 
 /** Lecture tolérante : un inventaire ou des incréments illisibles (autre version) se lisent vides, la ligne reste visible. */
@@ -23,6 +25,7 @@ const rowToProfile = (row: ProfileRow): EquipmentProfile => ({
   kind: row.kind as EquipmentProfileKind,
   inventory: parseInventory(decodeJson(row.inventory)) ?? emptyInventory(),
   increments: parseIncrements(decodeJson(row.increments)) ?? {},
+  vestKg: row.vest_kg ?? null,
   ...readSyncMeta(row),
 });
 
@@ -63,9 +66,11 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
       const json = encode(input);
       if ((await read(input.id)) !== undefined) throw new RepositoryError('conflict', 'equipment_profile', input.id);
       const stamp = stamper.next();
+      // EQUIP-0302 : poids du gilet écrit seulement s'il est renseigné (nul sinon, sans valeur par défaut SQL).
+      const vest = input.vestKg ?? null;
       await db.execute(
-        'INSERT INTO equipment_profile (id, name, kind, inventory, increments, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [input.id, input.name.trim(), input.kind, json.inventory, json.increments, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        `INSERT INTO equipment_profile (id, name, kind, inventory, increments, created_at, updated_at, device_id, hlc${vest === null ? '' : ', vest_kg'}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${vest === null ? '' : ', ?'})`,
+        [input.id, input.name.trim(), input.kind, json.inventory, json.increments, stamp.at, stamp.at, stamp.deviceId, stamp.hlc, ...(vest === null ? [] : [vest])],
       );
       return reload(input.id);
     },
@@ -83,14 +88,18 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
         kind: patch.kind ?? current.kind,
         inventory: patch.inventory ?? current.inventory,
         increments: patch.increments ?? current.increments,
+        vestKg: patch.vestKg === undefined ? current.vestKg : patch.vestKg,
       };
       const json = encode(merged);
       const stamp = stamper.next();
-      await db.execute('UPDATE equipment_profile SET name = ?, kind = ?, inventory = ?, increments = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+      // EQUIP-0302 : le poids du gilet n'est écrit que si la modification le nomme (capturé alors par `sync_equipment_profile_vest_au`).
+      const vest = patch.vestKg === undefined ? [] : [merged.vestKg ?? null];
+      await db.execute(`UPDATE equipment_profile SET name = ?, kind = ?, inventory = ?, increments = ?${vest.length > 0 ? ', vest_kg = ?' : ''}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`, [
         merged.name.trim(),
         merged.kind,
         json.inventory,
         json.increments,
+        ...vest,
         stamp.at,
         stamp.deviceId,
         stamp.hlc,

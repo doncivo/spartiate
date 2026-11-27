@@ -161,6 +161,11 @@ export const trainingFr = {
   dumbbellStep: 'Pas des haltères (kg)',
   platesList: 'Disques par côté (kg, séparés par des points-virgules ; nombre après « × », ex. 20 × 4 ; 10)',
   kettlebellsList: 'Kettlebells (kg, séparés par des points-virgules)',
+  /** EQUIP-0302 (D-674) : poids du gilet lesté, le lest proposé par le gilet. */
+  vestWeight: 'Poids du gilet (kg)',
+  vestWeightHint: 'Sans poids renseigné, le gilet n’est pas proposé comme lest.',
+  vestWeightUnset: 'Poids non renseigné : pas de lest proposé',
+  errorVestWeight: 'Poids du gilet : un nombre de {min} à {max} kg, au dixième (ex. 7,5).',
   saveProfile: 'Enregistrer le profil',
   profileSaved: 'Profil enregistré',
   deleteProfile: 'Supprimer le profil',

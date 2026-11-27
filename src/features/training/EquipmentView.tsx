@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { EQUIPMENT_PROFILE_KINDS, isVestKg, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
@@ -23,6 +23,9 @@ const INCREMENT_KEYS = [
 ] as const satisfies readonly (readonly [string, TrainingTextKey])[];
 
 const kg = (n: number): string => tTraining('kg', { n: formatNumber(n) });
+/** EQUIP-0302 (D-674) : gilet lesté du catalogue du matériel (même identifiant que le moteur, `WEIGHTED_VEST_ID`). */
+const VEST_ID = 'weighted-vest';
+const vestChecked = (inv: Pick<EquipmentInventory, 'available' | 'forced'>): boolean => inv.available.includes(VEST_ID) || inv.forced.includes(VEST_ID);
 const range = (r: StackRange): string => tTraining('rangeKg', { min: formatNumber(r.minKg), max: formatNumber(r.maxKg), step: formatNumber(r.stepKg) });
 
 function VerifyTag({ show }: { readonly show: boolean }) {
@@ -97,6 +100,7 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
             <Row label={tTraining('dumbbells')} value={inv.dumbbells ? tTraining('equipmentDumbbellRange', { min: formatNumber(inv.dumbbells.minKg), max: formatNumber(inv.dumbbells.maxKg) }) : tTraining('none')} verify={check.has('dumbbells')} />
             {inv.dumbbells ? <Row label={tTraining('equipmentStep')} value={kg(inv.dumbbells.stepKg)} /> : null}
             <Row label={tTraining('kettlebells')} value={inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(SEP)} verify={check.has('kettlebells')} />
+            {vestChecked(inv) ? <Row label={names.get(VEST_ID)?.nameFr ?? VEST_ID} value={profile.origin === 'personal' && profile.vestKg !== null ? kg(profile.vestKg) : tTraining('vestWeightUnset')} /> : null}
           </dl>
         </section>
         <section className="ct-equipment__block">
@@ -206,6 +210,9 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   // SEANCE-0292 (§ 14.3 b) : matériel forcé (toujours proposé) et interdit (jamais proposé), modifiables ; les deux à la fois : refusé.
   const [forced, setForced] = useState<readonly string[]>(inv.forced);
   const [forbidden, setForbidden] = useState<readonly string[]>(inv.forbidden);
+  // EQUIP-0302 (D-674) : poids du gilet, saisi quand le gilet est coché (disponible ou forcé) ; décoché, la valeur enregistrée est gardée.
+  const [vest, setVest] = useState(typeof profile.vestKg === 'number' ? formatNumber(profile.vestKg) : '');
+  const showVest = vestChecked({ available, forced });
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
@@ -235,7 +242,13 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       forced,
       forbidden,
     };
-    const input = { name: name.trim(), kind, inventory, increments: inc };
+    const vestText = vest.trim();
+    const vestKg = vestText === '' ? null : parseNumber(vestText);
+    if (showVest && vestText !== '' && (vestKg === null || !isVestKg(vestKg))) {
+      setError(tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) }));
+      return;
+    }
+    const input = { name: name.trim(), kind, inventory, increments: inc, ...(showVest ? { vestKg } : {}) };
     if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
       setError(plateRead.error ?? kbRead.error ?? tTraining('errorProfile'));
       return;
@@ -351,6 +364,17 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
           </div>
         </fieldset>
       ))}
+      {showVest && (
+        <div className="ct-training__field">
+          <label className="ct-training__label" htmlFor="ct-vest-kg">
+            {tTraining('vestWeight')}
+          </label>
+          <input id="ct-vest-kg" className="ct-training__input ct-training__num" inputMode="decimal" value={vest} aria-describedby="ct-vest-hint" onChange={(e) => setVest(e.target.value)} />
+          <p id="ct-vest-hint" className="ct-training__muted">
+            {tTraining('vestWeightHint')}
+          </p>
+        </div>
+      )}
       {error && (
         <p className="ct-training__error" role="alert">
           {error}

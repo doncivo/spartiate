@@ -16,6 +16,8 @@ import { TrainingScreen } from './TrainingScreen';
  */
 const DEVICE = '60000000-0000-4000-8000-0000000302e1' as DeviceId;
 const FIELD = /^Poids du gilet \(kg\)/;
+/** Copie du profil « Poids de corps » : la copie de « Salle complète » a déjà 64 matériels disponibles, plafond de la liste (constat hors ticket). */
+const COPY = 'Poids de corps (copie)';
 
 describe('EQUIP-0302 : éditeur, poids du gilet', () => {
   let db: TestDb;
@@ -31,8 +33,9 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
   const vest = async () => (await db.driver.select<{ vest_kg: number | null }>('SELECT vest_kg FROM equipment_profile'))[0]?.vest_kg;
   const editCopy = async (): Promise<void> => {
     open();
+    fireEvent.click(await screen.findByRole('button', { name: /^Poids de corps/ }));
     fireEvent.click(await screen.findByRole('button', { name: 'Dupliquer pour modifier' }));
-    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    await screen.findByRole('heading', { name: COPY });
     fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
   };
   const vestBox = (group: string) => within(screen.getByRole('group', { name: group })).getByRole('checkbox', { name: 'Gilet lesté' });
@@ -71,7 +74,7 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
     fireEvent.click(vestBox('Matériel disponible'));
     fireEvent.change(screen.getByLabelText(FIELD), { target: { value: '7,5' } });
     await save();
-    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    await screen.findByRole('heading', { name: COPY });
     expect(await vest()).toBe(7.5);
     expect(screen.getByText('Gilet lesté', { selector: 'dt' }).nextElementSibling).toHaveTextContent('7,5 kg');
     fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
@@ -93,17 +96,17 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
     await editCopy();
     fireEvent.click(vestBox('Matériel disponible'));
     await save();
-    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    await screen.findByRole('heading', { name: COPY });
     expect(await vest()).toBeNull();
     expect(screen.getByText('Gilet lesté', { selector: 'dt' }).nextElementSibling).toHaveTextContent('Poids non renseigné : pas de lest proposé');
     fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
     fireEvent.change(screen.getByLabelText(FIELD), { target: { value: '12' } });
     await save();
-    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    await screen.findByRole('heading', { name: COPY });
     fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
     fireEvent.click(vestBox('Matériel disponible'));
     await save();
-    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    await screen.findByRole('heading', { name: COPY });
     expect(await vest()).toBe(12);
     expect(screen.queryByText('Gilet lesté', { selector: 'dt' })).toBeNull();
   });

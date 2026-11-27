@@ -8,7 +8,7 @@ import { EQUIPMENT_PROFILE_KINDS, type EquipmentIncrements, type EquipmentInvent
  */
 
 export interface EquipmentIssue {
-  readonly code: 'name-empty' | 'kind' | 'forced-forbidden' | 'dumbbells' | 'cables' | 'machines' | 'kettlebells' | 'barbells' | 'plates' | 'ids' | 'increment';
+  readonly code: 'name-empty' | 'kind' | 'forced-forbidden' | 'dumbbells' | 'cables' | 'machines' | 'kettlebells' | 'barbells' | 'plates' | 'ids' | 'increment' | 'vest';
 }
 
 /** Identifiant de matériel : kebab-case minuscule (catalogue fermé `equipment.json`). */
@@ -119,7 +119,15 @@ const hasDuplicate = (values: readonly number[]): boolean => new Set(values).siz
 const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg) && positive(r.stepKg) && r.minKg <= r.maxKg;
 const ids = (list: readonly string[]): boolean => list.every((id) => EQUIPMENT_ID_RE.test(id));
 
-export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'name' | 'kind' | 'inventory' | 'increments'>): EquipmentIssue[] {
+/** EQUIP-0302 (D-674) : bornes du poids du gilet lesté (kg), saisi au dixième. */
+export const VEST_KG_MIN = 0.5;
+export const VEST_KG_MAX = 60;
+/** Poids de gilet admis : fini, de `VEST_KG_MIN` à `VEST_KG_MAX`, au dixième de kg. */
+export function isVestKg(kg: number): boolean {
+  return Number.isFinite(kg) && kg >= VEST_KG_MIN && kg <= VEST_KG_MAX && Math.abs(Math.round(kg * 10) - kg * 10) < 1e-9;
+}
+
+export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'name' | 'kind' | 'inventory' | 'increments' | 'vestKg'>): EquipmentIssue[] {
   const issues: EquipmentIssue[] = [];
   const add = (code: EquipmentIssue['code']): void => void issues.push({ code });
   if (input.name.trim() === '' || input.name.length > MAX_NAME) add('name-empty');
@@ -135,5 +143,6 @@ export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'nam
   if (inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
   const increments: EquipmentIncrements = input.increments;
   if (Object.values(increments).some((v) => !positive(v))) add('increment');
+  if (input.vestKg !== undefined && input.vestKg !== null && !isVestKg(input.vestKg)) add('vest');
   return issues;
 }

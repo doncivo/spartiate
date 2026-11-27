@@ -154,9 +154,16 @@ export interface EquipmentProfileInput {
   readonly kind: EquipmentProfileKind;
   readonly inventory: EquipmentInventory;
   readonly increments: EquipmentIncrements;
+  /**
+   * EQUIP-0302 (D-674) : poids du gilet lesté (kg, colonne `vest_kg`, migration 0025), lest utilisable quand le gilet (`weighted-vest`) est
+   * disponible ou forcé. Nul ou absent : non renseigné (aucun lest proposé par le gilet) ; absent d'une modification : valeur gardée.
+   */
+  readonly vestKg?: number | null;
 }
 
 export interface EquipmentProfile extends EquipmentProfileInput {
+  /** Toujours présent à la lecture (nul : non renseigné, ou base antérieure à la 0025). */
+  readonly vestKg: number | null;
   readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
   readonly deletedAt: IsoDateTime | null;
@@ -304,7 +311,7 @@ export interface DecisionReference {
 }
 
 /** Matériel vu par le moteur : inventaire et incréments d'un profil (le profil actif est choisi par l'appelant ; défaut : « Salle complète », FIX-0173). */
-export type ProgressionEquipment = Pick<EquipmentProfileInput, 'inventory' | 'increments'>;
+export type ProgressionEquipment = Pick<EquipmentProfileInput, 'inventory' | 'increments' | 'vestKg'>;
 
 /** Exercice vu par le moteur. */
 export interface ProgressionExercise {
