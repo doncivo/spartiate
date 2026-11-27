@@ -327,6 +327,8 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-181 | DEC-0301 (D-707, D-717, D-678) | Proposer les repères des 4 ratios (taille / hauteur, épaules / taille, taille / hanches, poitrine / taille) avec leurs sources ; question fermée à Ali ; statut « à trancher par Ali » une fois proposée ; aucune version ni aucun tag n'affiche un repère avant sa D- | fait (PROG-0301b : Q-41 tranchée par Ali, D-745, repères en domaine pur rouge `d092fea3` ; CORPS-0301c : repères affichés dans Corps › Mesures, D-753) |
 | BL-182 | demande d'Ali du 27/11 (point 2) | Test « rien ne disparaît de Progrès » instable en local (2 échecs sur 5 à 17 fichiers) : cause et correctif, ni ignoré ni relancé | fait (FIX-0302b, PR #246, rouge bfc82a95, vert 7abf845f ; cause : imports à froid pendant les attentes, docs/journal.md 2026-11-27) |
 | BL-183 | demande d'Ali du 27/11 (point 2) ; relecture CORPS-0301d | Rythme des mesures enregistré à sa valeur par défaut quand on le change avant la lecture des réglages (peut écraser un 14 ou un 28) | fait (FIX-0302a, rouge 77b2bddb, vert d5dfda16 : contrôles inactifs jusqu'à la lecture) |
+| BL-184 | demande d'Ali du 27/11 (point 1, D-765) | Liens directs : chaque notification ouvre l'écran qu'elle concerne (rappel des mesures → Progrès › Corps › Mesures) ; inventaire de toutes les familles et de leur écran, test « chaque notification a une cible » | à faire (0.30.2, coquille, iOS et qualité, M) |
+| BL-185 | demande d'Ali du 27/11 (point 3, D-767) | SideStore renouvelé : relever la date exacte d'expiration affichée dans Plus › À propos et diagnostic | constat d'Ali à faire (docs/constats-ali.md, section « SideStore (renouvellement du 27/11) ») |
 
 ## 3. Audit Codex 0.26.0
 
