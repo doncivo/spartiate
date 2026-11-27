@@ -108,8 +108,6 @@ describe('EQUIP-0302, contre-relecture code : borne propre du nom des barres', (
     expect(BARBELL_NAME_MAX).toBe(64);
     const base = { name: 'Salle', kind: 'salle' as const, inventory: { ...BODYWEIGHT_ONLY.inventory, barbells: [{ type: 'x'.repeat(BARBELL_NAME_MAX + 1), weightKg: 20 }] }, increments: {} };
     expect(validateEquipmentProfile(base)).toEqual([{ code: 'barbells' }]);
-    const { trainingFr } = await import('../../i18n/fr.training');
-    expect(trainingFr.errorProfileBarbells).toContain('{name}');
-    expect(trainingFr.errorProfileBarbells).toContain('{max}');
+    // Texte du refus : src/i18n/equipmentVest.equip0302.test.ts (un test du domaine n'importe pas i18n, ADR 0001, BL-145).
   });
 });
