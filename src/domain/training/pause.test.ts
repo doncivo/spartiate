@@ -1,18 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { summarizeWorkout, workoutDurationSec, type WorkoutSet, type WorkoutWithSets } from './index';
-import { healthWorkoutOf, STRENGTH_TRAINING_MET } from './healthWorkout';
 import { effectiveElapsedMs, endPause, isPaused, pausedMsAt, startPause } from './pause';
 import { replayWorkout } from './replay';
 
 /**
  * SESS-0302 (BL-110, D-658, § 13.2) : vraie pause de séance. Durée effective = fin − début − cumul des pauses (− pause en cours) ; elle sert au chrono,
- * au résumé, à l'énergie envoyée à Apple Santé et au replay. Une ligne d'avant la migration 0024 (sans les deux champs) vaut 0. Valeurs inventées.
+ * au résumé et au replay (l'énergie envoyée à Apple Santé est sans objet : aucun envoi n'existe, H-3). Une ligne d'avant la migration 0024 (sans les deux champs) vaut 0. Valeurs inventées.
  */
 const T0 = Date.parse('2026-11-27T17:00:00.000Z');
 const iso = (min: number): string => new Date(T0 + min * 60_000).toISOString();
 const MIN = 60_000;
 
-describe('pause.ts : cumul, pause en cours, durée effective', () => {
+describe('SESS-0302 — pause.ts : cumul, pause en cours, durée effective', () => {
   it('sans champ (ancienne ligne) : aucune pause, cumul 0', () => {
     expect(isPaused({})).toBe(false);
     expect(pausedMsAt({}, T0)).toBe(0);
@@ -94,7 +93,7 @@ const closed = (pausedMs: number | undefined, sets: WorkoutSet[] = [set(0, 2), s
     sets,
   }) as unknown as WorkoutWithSets;
 
-describe('résumé et durée d’une séance close', () => {
+describe('SESS-0302 — résumé et durée d’une séance close', () => {
   it('durée = fin − début − cumul ; ancienne séance sans champ : durée brute', () => {
     expect(workoutDurationSec(closed(undefined))).toBe(3600);
     expect(workoutDurationSec(closed(0))).toBe(3600);
@@ -108,31 +107,21 @@ describe('résumé et durée d’une séance close', () => {
   });
 });
 
-describe('Apple Santé : HKWorkout traditionalStrengthTraining, énergie sur la durée effective', () => {
-  it('début et fin réels, énergie = MET × kg × heures effectives (arrondie) ; sans poids : énergie inconnue ; séance ouverte : rien', () => {
-    const payload = healthWorkoutOf(closed(15 * MIN), 80);
-    expect(payload).toEqual({ activity: 'traditionalStrengthTraining', startedAt: iso(0), endedAt: iso(60), activeSec: 2700, energyKcal: Math.round(STRENGTH_TRAINING_MET * 80 * 0.75) });
-    expect(healthWorkoutOf(closed(0), 80)?.energyKcal).toBe(Math.round(STRENGTH_TRAINING_MET * 80));
-    expect(healthWorkoutOf(closed(15 * MIN), null)?.energyKcal).toBeNull();
-    expect(healthWorkoutOf(closed(15 * MIN), 0)?.energyKcal).toBeNull();
-    expect(healthWorkoutOf({ ...closed(0), endedAt: null }, 80)).toBeNull();
-  });
-});
-
-describe('replay : la pause est retirée du repos qui la contient', () => {
-  it('un seul repos assez long pour la contenir : pause retirée de ce repos, signalée ; les autres inchangés', () => {
-    const r = replayWorkout(closed(10 * MIN, [set(0, 2), set(1, 4), set(2, 16), set(3, 18)]));
-    expect(r.steps.map((s) => s.rest.actualSec)).toEqual([120, 120, 120, null]);
-    expect(r.steps.map((s) => s.rest.pausedSec ?? 0)).toEqual([0, 600, 0, 0]);
-    expect(r.pause).toEqual({ pausedSec: 600, placed: true });
+describe('SESS-0302 — replay : la pause est retirée de la durée totale, jamais d’un repos (D-781)', () => {
+  it('pause en début de séance avec un seul repos long : aucun repos raccourci ; durée effective et pause dites à part', () => {
+    const r = replayWorkout(closed(10 * MIN, [set(0, 12), set(1, 24)]));
+    expect(r.steps.map((s) => s.rest.actualSec)).toEqual([720, null]);
+    expect(r.pause).toEqual({ pausedSec: 600, effectiveSec: 3000 });
   });
 
-  it('aucun ou plusieurs repos possibles : rien n’est retiré au hasard, la pause est dite non située', () => {
-    const several = replayWorkout(closed(3 * MIN, [set(0, 2), set(1, 8), set(2, 14)]));
-    expect(several.steps.map((s) => s.rest.actualSec)).toEqual([360, 360, null]);
-    expect(several.pause).toEqual({ pausedSec: 180, placed: false });
-    const none = replayWorkout(closed(30 * MIN, [set(0, 2), set(1, 4)]));
-    expect(none.pause).toEqual({ pausedSec: 1800, placed: false });
+  it('plusieurs repos : tous inchangés, quelle que soit leur longueur', () => {
+    const r = replayWorkout(closed(3 * MIN, [set(0, 2), set(1, 8), set(2, 14)]));
+    expect(r.steps.map((s) => s.rest.actualSec)).toEqual([360, 360, null]);
+    expect(r.pause).toEqual({ pausedSec: 180, effectiveSec: 3420 });
+  });
+
+  it('sans début ni fin (séries seules) : pause dite, durée effective inconnue', () => {
+    expect(replayWorkout({ sets: [set(0, 2)], pausedMs: 60_000 }).pause).toEqual({ pausedSec: 60, effectiveSec: null });
   });
 
   it('sans pause ou ancienne séance : déroulé inchangé, aucune mention', () => {

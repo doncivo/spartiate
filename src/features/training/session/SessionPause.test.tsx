@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import type { DeviceId } from '../../../domain/types';
@@ -36,6 +36,10 @@ function fakes() {
 }
 
 let db: TestDb;
+// Importations à froid (écran, séance active, blocs à la demande) préchauffées, modèle de Circuit.test.tsx : aucun délai de `findBy` allongé.
+beforeAll(async () => {
+  await Promise.all([import('../TrainingScreen'), import('./ActiveSession'), import('./ExerciseProgression'), import('./StartSession'), import('./RecoverySession'), import('./WorkoutSummary')]);
+}, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-27T17:00:00.000Z');
@@ -55,6 +59,12 @@ const openScreen = (f = fakes()) => {
   );
   return f;
 };
+/** Région d'annonce de la pause (`role="status"`, toujours montée). */
+const pauseStatus = (): HTMLElement => {
+  const el = document.querySelector<HTMLElement>('.ct-session__paused');
+  if (el === null || el.getAttribute('role') !== 'status') throw new Error('région d’annonce absente');
+  return el;
+};
 const elapsed = () => screen.getByRole('timer', { name: tTraining('sessionElapsed') }).textContent;
 
 describe('SESS-0302 : pause de la séance active', () => {
@@ -69,9 +79,14 @@ describe('SESS-0302 : pause de la séance active', () => {
     fireEvent.click(within(first).getByRole('button', { name: tTraining('sessionValidate') }));
     await screen.findByRole('timer', { name: tTraining('restRemaining') });
 
+    // Accessibilité : région d'annonce présente avant la pause, vide ; seul « En pause » y est injecté.
+    const announce = pauseStatus();
+    expect(announce.textContent).toBe('');
     act(() => db.clock.advance(60_000));
     fireEvent.click(screen.getByRole('button', { name: tSession('pause') }));
     await screen.findByText(tSession('paused'));
+    expect(pauseStatus()).toBe(announce);
+    expect(announce.textContent).toBe(tSession('paused'));
     const resume = screen.getByRole('button', { name: tSession('pauseResume') });
     await waitFor(() => expect(screen.queryByRole('timer', { name: tTraining('restRemaining') })).toBeNull());
     expect(f.calls.cancel).toBeGreaterThan(0);
@@ -91,6 +106,8 @@ describe('SESS-0302 : pause de la séance active', () => {
 
     fireEvent.click(resume);
     await waitFor(() => expect(screen.queryByText(tSession('paused'))).toBeNull());
+    expect(pauseStatus()).toBe(announce);
+    expect(announce.textContent).toBe('');
     expect(screen.getByRole('button', { name: tSession('pause') })).toBeTruthy();
     expect(await db.driver.select('SELECT paused_at, paused_ms FROM workout WHERE ended_at IS NULL')).toEqual([{ paused_at: null, paused_ms: 300_000 }]);
     await waitFor(() => expect(elapsed()).toBe('1:00'));

@@ -48,9 +48,6 @@ function restText(rest: ReplayRest): string {
   return tReplay('rest', { actual: formatRest(rest.actualSec), target: formatRest(rest.targetSec), gap });
 }
 
-/** SESS-0302 : pause retirée de ce repos, dite à côté. */
-const restLine = (rest: ReplayRest): string => (rest.pausedSec ? tReplay('restPaused', { rest: restText(rest), d: formatRest(rest.pausedSec) }) : restText(rest));
-
 function stepTitle(step: ReplayStep): string {
   const name = step.set.exerciseName;
   if (step.setNumber === null) return tReplay('stepTitleWarmup', { order: step.order, name });
@@ -74,14 +71,19 @@ export function HistoryTimelineView({ workout, heldOf = () => null }: { readonly
                 <p className="ct-session__muted">{step.set.doneAt === null ? tReplay('atUnknown') : tReplay('at', { time: formatReplayTime(step.set.doneAt) })}</p>
                 <p>{loadText(step.load, heldOf(step.set.exerciseId))}</p>
                 <p>{effortText(step.effort)}</p>
-                <p>{restLine(step.rest)}</p>
+                <p>{restText(step.rest)}</p>
               </div>
             </li>
           ))}
         </ol>
       )}
       {replay.notDone > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.notDone, 'notDoneOne', 'notDone')}</p> : null}
-      {replay.pause ? <p className="ct-session__muted">{tReplay(replay.pause.placed ? 'pausePlaced' : 'pauseUnplaced', { d: formatRest(replay.pause.pausedSec) })}</p> : null}
+      {/* SESS-0302 (D-781) : la pause est retirée de la durée totale ; elle n'est attribuée à aucun repos. */}
+      {replay.pause ? (
+        <p className="ct-session__muted">
+          {replay.pause.effectiveSec === null ? tReplay('pauseOnly', { p: formatRest(replay.pause.pausedSec) }) : tReplay('pauseTotal', { d: formatRest(replay.pause.effectiveSec), p: formatRest(replay.pause.pausedSec) })}
+        </p>
+      ) : null}
       {replay.missingInstants > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.missingInstants, 'missingOne', 'missing')}</p> : null}
     </section>
   );

@@ -88,4 +88,23 @@ describe('SESS-0302 : pause et reprise de la séance ouverte', () => {
     await expect(r.resumeWorkout(W)).rejects.toMatchObject({ code: 'invalid' });
     await expect(r.pauseWorkout('3c5d7e9f-0000-4000-8000-000000000999')).rejects.toMatchObject({ code: 'not-found' });
   });
+
+  it('abandon pendant une pause : séance et séries supprimées, repos effacé, rien de publié ; une nouvelle séance démarre sans pause', async () => {
+    const { r, sets } = await openSession();
+    await r.validateSet(sets[0]?.id ?? '', { reps: 8, loadKg: 80 });
+    await r.startRest({ seconds: 120 });
+    await db.driver.execute('DELETE FROM sync_outbox');
+    await r.pauseWorkout(W);
+    db.clock.advance(60_000);
+    await db.data.transaction(async (repos) => (await repos.workouts()).discard(W));
+    expect(await r.getOpen()).toBeNull();
+    expect(await r.get(W)).toBeNull();
+    expect(await db.driver.select('SELECT deleted_at IS NOT NULL AS deleted, rest_timer_end_at FROM workout WHERE id = ?', [W])).toEqual([{ deleted: 1, rest_timer_end_at: null }]);
+    expect(await db.driver.select('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ? AND deleted_at IS NULL', [W])).toEqual([{ n: 0 }]);
+    expect(await db.driver.select("SELECT 1 FROM sync_outbox WHERE table_name IN ('workout', 'workout_set')")).toEqual([]);
+    await expect(r.resumeWorkout(W)).rejects.toMatchObject({ code: 'not-found' });
+    const next = await r.start({ source: 'empty', name: 'Suivante' });
+    expect(next.pausedAt ?? null).toBeNull();
+    expect(next.pausedMs ?? 0).toBe(0);
+  });
 });

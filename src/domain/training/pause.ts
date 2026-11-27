@@ -3,7 +3,8 @@
  *
  * Deux champs de `workout` (migration 0024) : `pausedAt`, instant du début de la pause EN COURS (null hors pause), et `pausedMs`, cumul des pauses
  * terminées. Absents (ligne d'avant la 0024, ancien export ou journal) : aucune pause, cumul 0. La durée effective d'une séance est fin − début − pauses ;
- * elle sert au chrono, au résumé, à l'énergie envoyée à Apple Santé et au replay. Une horloge reculée ou un instant illisible ne produit jamais de
+ * elle sert au chrono, au résumé et au replay (le volet « énergie envoyée à Apple Santé » de D-658 est sans objet tant qu'aucun envoi n'existe,
+ * H-3). Une horloge reculée ou un instant illisible ne produit jamais de
  * durée négative ni NaN.
  */
 

@@ -600,11 +600,13 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             <Button variant="secondary" disabled={busy} {...(paused ? { describedBy: 'ct-session-paused' } : {})} onClick={() => void togglePause()}>
               {tSession(paused ? 'pauseResume' : 'pause')}
             </Button>
+            {/* Région d'annonce toujours présente (vide hors pause) : seul « En pause » y est injecté, l'aide reste hors annonce. */}
+            <p className="ct-session__paused" role="status">
+              {paused ? <strong>{tSession('paused')}</strong> : null}
+            </p>
             {paused ? (
-              <p id="ct-session-paused" className="ct-session__paused" role="status">
-                <strong>{tSession('paused')}</strong>
-                {SEP}
-                <span>{tSession('pausedHint')}</span>
+              <p id="ct-session-paused" className="ct-session__hint">
+                {tSession('pausedHint')}
               </p>
             ) : null}
           </div>

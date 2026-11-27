@@ -43,8 +43,7 @@ export const workoutReplayFr = {
   notDone: '{n} séries non validées, absentes du déroulé.',
   missingOne: '{n} série sans instant de validation : sa place est estimée, son repos est inconnu.',
   missing: '{n} séries sans instant de validation : leur place est estimée, leur repos est inconnu.',
-  // SESS-0302 (D-658) : temps de pause de la séance.
-  pausePlaced: 'Pause de {d} retirée du repos qui la contient.',
-  pauseUnplaced: 'Pause de {d} : son moment n’est pas connu, les repos sont montrés sans la retirer.',
-  restPaused: '{rest} (dont {d} de pause retirée)',
+  // SESS-0302 (D-658, D-781) : temps de pause de la séance, retiré de la durée totale, jamais d'un repos (moment inconnu).
+  pauseTotal: 'Durée hors pause : {d}, dont {p} de pause.',
+  pauseOnly: 'Dont {p} de pause.',
 } as const;

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createManualClock } from '../../../../src/domain/clock';
+import { setSnapshotTestHooks } from '../../../../src/sync/snapshot';
 import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type SimSchema } from '../../../sim/syncDevice';
 
 /**
@@ -15,6 +16,7 @@ const W_OLD = '5c1d0e2f-0000-4000-8000-000000000301';
 
 let devices: SimDevice[] = [];
 afterEach(async () => {
+  setSnapshotTestHooks({});
   await Promise.all(devices.map((d) => d.close()));
   devices = [];
 });
@@ -98,5 +100,44 @@ describe('SESS-0302 : pause de séance à deux bases', () => {
     expect(await pauseRow(b, W_OLD)).toEqual([{ paused_at: null, paused_ms: null }]);
     expect((await (await a.data.repos.workouts()).getClosed(W_OLD))?.pausedMs).toBe(0);
     expect(await a.driver.select('SELECT exercise_name, reps FROM workout_set WHERE workout_id = ?', [W_OLD])).toEqual([{ exercise_name: 'Développé couché', reps: 8 }]);
+  });
+
+  /** Relecture : A clôt sa séance en pause AVANT l'arrivée de B ; B rejoint par l'instantané (époque 1), jamais par le journal seul. */
+  async function lateJoiner(bSchema: SimSchema): Promise<{ a: SimDevice; b: SimDevice; batches: () => number }> {
+    const a = await createSimDevice(A_ID, { name: 'PC', schema: 'i0' });
+    devices = [a];
+    await setupFirst(a);
+    await pausedOn(a, W);
+    await closeOn(a, W);
+    expect((await a.cycle()).phase).toBe('idle');
+    const b = await createSimDevice(B_ID, { name: 'iPhone', schema: bSchema, clock: createManualClock(a.clock.nowMs()) });
+    devices = [a, b];
+    let count = 0;
+    setSnapshotTestHooks({ beforeBatch: () => void (count += 1) });
+    await pair(a, b);
+    await b.cycle();
+    setSnapshotTestHooks({});
+    return { a, b, batches: () => count };
+  }
+
+  it('instantané : appareil arrivé après la clôture, reçoit le cumul par l’instantané', async () => {
+    const { a, b, batches } = await lateJoiner('i0');
+    expect(batches()).toBeGreaterThan(0);
+    expect(await pauseRow(b, W)).toEqual([{ paused_at: null, paused_ms: 90_000 }]);
+    expect(await pauseRow(b, W)).toEqual(await pauseRow(a, W));
+    expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
+  });
+
+  it('instantané du schéma 24 lu par un appareil au schéma 23 : champs gardés dans sync_unknown, réintégrés après sa mise à jour', async () => {
+    const { b, batches } = await lateJoiner('v23');
+    expect(batches()).toBeGreaterThan(0);
+    expect(await b.driver.select('SELECT name FROM workout WHERE id = ?', [W])).toEqual([{ name: 'Séance' }]);
+    const unknown = (await b.driver.select<{ field: string }>("SELECT field FROM sync_unknown WHERE table_name = 'workout' ORDER BY field")).map((r) => r.field);
+    expect(unknown).toEqual(['paused_at', 'paused_ms']);
+    await b.upgradeSchema('i0');
+    devices.forEach((d) => d.clock.advance(1_000));
+    await b.cycle();
+    expect(await pauseRow(b, W)).toEqual([{ paused_at: null, paused_ms: 90_000 }]);
+    expect(await b.driver.select("SELECT 1 FROM sync_unknown WHERE table_name = 'workout'")).toEqual([]);
   });
 });
