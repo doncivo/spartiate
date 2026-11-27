@@ -288,6 +288,14 @@ Après la mise à jour des deux appareils le même jour (version qui livre BL-17
 - [ ] **BL-179 (liste des zones)** — Progrès › Corps › Mesures : la liste « Zones · dernière · 4 sem. » est toujours là, ↑ ↓ changent de zone, chaque ligne porte une marque de tendance avec un mot ; courbe avec période, ratios, symétrie et saisie guidée comme sur l'iPhone ; la grille de 1, 2 ou 3 colonnes suit la largeur. Date : ____ Version : ____
 - [ ] **BL-180 (rythme sur PC)** — Progrès › Corps › Mesures : le rythme se règle et les deux phrases « dernière séance… » et « prochaine conseillée… » s'affichent ; le PC dit que le rappel est émis sur l'iPhone (nouveau libellé) et n'envoie aucune notification. Date : ____ Version : ____
 
+## 0.30.3 (gestes iPhone)
+
+Après la mise à jour des deux appareils le même jour (version qui livre BL-169 ; D-797 à D-801).
+
+### iPhone
+
+- [ ] **BL-169 (gestes de la séance)** — pendant une séance : glisse une série à faire vers la gauche → elle disparaît et « Annuler » la remet à sa place ; un défilement vertical ne supprime rien ; appui long sur le titre d'un exercice → il se soulève (vibration), glisse-le plus haut puis relâche → l'ordre est gardé après la fin de la séance. Date : ____ Version : ____
+
 ## 0.30.2 (défauts, liens directs des notifications, données et synchro)
 
 Après la mise à jour des deux appareils le même jour (version qui livre BL-182 à BL-184 ; D-765 à D-773).
@@ -320,6 +328,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | C-105 | 0.29.2 |
 | BL-039 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-110 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
+| BL-169 | 0.30.3 (gestes iPhone) › iPhone |
 | BL-175 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-183 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › PC |
 | BL-184 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
