@@ -127,7 +127,9 @@ describe('PROG-0301a : liste figée P-01 à P-38 (fermée sur docs/PROGRES-0301.
  * FIX-0302b (cause de l'instabilité locale, docs/journal.md 2026-11-27) : un bloc de Progrès qui importe à froid un module pendant une attente de
  * `findBy*` (une seconde) peut la dépasser sur un poste chargé. Tout module chargé à la demande par les blocs montés ici est donc préchauffé
  * avant les attentes : chaque `import('…')` littéral des fichiers de ces blocs figure dans `warmBlocks`, et chaque dépôt lu pendant
- * l'inventaire a été préchauffé (`warmRepos`). Aucun délai d'attente allongé.
+ * l'inventaire a été préchauffé (`warmRepos`). Aucun délai d'attente allongé. Limites : la garde statique ne lit que `PROGRESS_BLOCK_SOURCES`
+ * (un `import()` d'un module partagé hors de ces dossiers n'est pas vu) ; pour les dépôts, le critère tient parce que `warmRepos` chauffe toutes
+ * les fabriques (la garde de l'inventaire ne voit pas les dépôts reçus par `data.transaction`).
  */
 const PROGRESS_BLOCK_SOURCES = [
   'src/features/app/SectionNoticeProgress.tsx',
@@ -148,7 +150,7 @@ function sourceFiles(path: string): string[] {
 
 /** Chemins (depuis la racine, sans extension .ts/.tsx) des `import('…')` littéraux d'un fichier. */
 function dynamicImports(file: string, text: string = readFileSync(file, 'utf8')): string[] {
-  return [...text.matchAll(/import\(\s*'([^']+)'\s*\)/g)].map((m) => normalize(join(dirname(file), m[1] ?? '')).replace(/\\/g, '/').replace(/\.tsx?$/, ''));
+  return [...text.matchAll(/import\(\s*['"`]([^'"`]+)['"`]\s*\)/g)].map((m) => normalize(join(dirname(file), m[1] ?? '')).replace(/\\/g, '/').replace(/\.tsx?$/, ''));
 }
 
 describe('FIX-0302b : aucun import à froid pendant les attentes de l’inventaire', () => {
