@@ -1,4 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
@@ -72,6 +74,20 @@ afterEach(async () => {
   cleanup();
   await db.close();
 });
+
+/** Séance déjà ouverte (reprise) : écran monté sur la séance de la base. */
+async function openOpen(os: 'ios' | 'other' = 'ios'): Promise<void> {
+  act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
+  const container = createAppContainer({ clock: db.clock, hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }), data: db.data, haptics });
+  render(
+    <AppContainerProvider container={container}>
+      <TrainingScreen session={{ os, notifier, liveActivity }} />
+      <UndoToast />
+    </AppContainerProvider>,
+  );
+  await screen.findByRole('region', { name: BENCH });
+  if (os === 'ios') await waitFor(() => expect(document.querySelector('.ct-session__active')).toHaveAttribute('data-gestures', 'on'));
+}
 
 async function openAndStart(os: 'ios' | 'other' = 'ios'): Promise<void> {
   act(() => useNavigationStore.getState().navigate({ tab: 'training', screen: 'session' } as Route));
@@ -297,5 +313,145 @@ describe('GEST-0303 : appui long sur un exercice', () => {
     fireEvent.click(screen.getByRole('button', { name: tSession('pause') }));
     await screen.findByText(tSession('paused'));
     expect(screen.getByRole('button', { name: tSession('moveDownLabel', { name: BENCH }) })).toBeDisabled();
+  });
+});
+
+const undoButton = (): HTMLElement => within(document.querySelector<HTMLElement>('.ct-undo-host') ?? document.body).getByRole('button', { name: 'Annuler' });
+const moveStatus = (): HTMLElement => {
+  const el = document.querySelector<HTMLElement>('.ct-session__move-status');
+  if (el === null || el.getAttribute('role') !== 'status') throw new Error('région d’annonce absente');
+  return el;
+};
+
+describe('GEST-0303 relecture : annulation après d’autres changements', () => {
+  it('réordonner puis annuler : la série revient après sa voisine de l’exercice, pas à son ancien index', async () => {
+    await openAndStart();
+    const [b0, b1, b2, r0, r1, c0] = await liveSetIds();
+    swipe(second(), -150, 0);
+    await waitFor(() => expect(benchSets()).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: tSession('moveDownLabel', { name: BENCH }) }));
+    await screen.findByText(tSession('reorderDone', { name: BENCH, n: 2, total: 3 }));
+    fireEvent.click(undoButton());
+    await waitFor(() => expect(benchSets()).toHaveLength(3));
+    expect(await liveSetIds()).toEqual([r0, r1, b0, b1, b2, c0]);
+  });
+
+  it('série ajoutée entre-temps : la série revient après sa voisine', async () => {
+    await openAndStart();
+    const [b0, b1] = await liveSetIds();
+    swipe(second(), -150, 0);
+    await waitFor(() => expect(benchSets()).toHaveLength(2));
+    const bench = screen.getByRole('region', { name: BENCH });
+    fireEvent.click(within(bench).getByRole('button', { name: tTraining('sessionAddSet') }));
+    await waitFor(() => expect(benchSets()).toHaveLength(3));
+    fireEvent.click(undoButton());
+    await waitFor(() => expect(benchSets()).toHaveLength(4));
+    const live = await liveSetIds();
+    expect(live.slice(0, 2)).toEqual([b0, b1]);
+  });
+
+  it('voisine retirée entre-temps : « Série impossible à rétablir : la séance a changé. », rien n’est écrit', async () => {
+    await openAndStart();
+    swipe(second(), -150, 0);
+    await waitFor(() => expect(benchSets()).toHaveLength(2));
+    const [first] = benchSets();
+    if (!first) throw new Error('première série absente');
+    fireEvent.click(within(first).getByRole('button', { name: tTraining('sessionRemoveSet') }));
+    await waitFor(() => expect(benchSets()).toHaveLength(1));
+    const before = await liveSetIds();
+    fireEvent.click(undoButton());
+    await screen.findByText(tSession('undoStaleSet'));
+    expect(screen.queryByText('Action impossible à annuler : la tâche a changé')).toBeNull();
+    expect(await liveSetIds()).toEqual(before);
+  });
+
+  it('pendant la pause : « Série impossible à rétablir pendant la pause. », rien n’est écrit', async () => {
+    await openAndStart();
+    swipe(second(), -150, 0);
+    await waitFor(() => expect(benchSets()).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: tSession('pause') }));
+    await screen.findByText(tSession('paused'));
+    const before = await liveSetIds();
+    fireEvent.click(undoButton());
+    await screen.findByText(tSession('undoStaleSetPaused'));
+    expect(await liveSetIds()).toEqual(before);
+  });
+});
+
+describe('GEST-0303 relecture : accessibilité', () => {
+  it('« Monter » / « Descendre » : dans le DOM, nommés, focalisables, masqués visuellement sauf au focus (jamais display:none ni visibility:hidden)', async () => {
+    await openAndStart('other');
+    const down = screen.getByRole('button', { name: tSession('moveDownLabel', { name: BENCH }) });
+    expect(down).toHaveClass('ct-session__move');
+    down.focus();
+    expect(document.activeElement).toBe(down);
+    const css = readFileSync(resolve('src/features/training/session/Session.css'), 'utf8');
+    const hidden = /\.ct-button\.ct-session__move\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+    const shown = /\.ct-button\.ct-session__move:focus-visible\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+    expect(hidden).toMatch(/clip-path:\s*inset\(50%\)/);
+    expect(hidden).toMatch(/width:\s*1px/);
+    expect(hidden).not.toMatch(/display:\s*none|visibility:\s*hidden/);
+    expect(shown).toMatch(/min-height:\s*var\(--ct-hit-target-min\)/);
+    expect(shown).toMatch(/clip-path:\s*none/);
+  });
+
+  it('annonce identique relue : la région est vidée avant chaque déplacement', async () => {
+    await openAndStart('other');
+    fireEvent.click(screen.getByRole('button', { name: tSession('moveDownLabel', { name: BENCH }) }));
+    await screen.findByText(tSession('reorderDone', { name: BENCH, n: 2, total: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: tSession('moveUpLabel', { name: BENCH }) }));
+    expect(moveStatus().textContent).toBe('');
+    await screen.findByText(tSession('reorderDone', { name: BENCH, n: 1, total: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: tSession('moveDownLabel', { name: BENCH }) }));
+    expect(moveStatus().textContent).toBe('');
+    await screen.findByText(tSession('reorderDone', { name: BENCH, n: 2, total: 3 }));
+  });
+
+  it('région d’annonce vide sans marge (règle :empty)', () => {
+    const css = readFileSync(resolve('src/features/training/session/Session.css'), 'utf8');
+    expect(/\.ct-session__move-status:empty\s*\{[^}]*margin:\s*0/.test(css)).toBe(true);
+  });
+
+  it('après un appui long, le focus va sur la tête de l’exercice déplacé', async () => {
+    await openAndStart();
+    layout();
+    const curl = handle(CURL);
+    hold(curl, 250);
+    pointer(curl, 'pointerMove', 100, 30);
+    pointer(curl, 'pointerUp', 100, 30);
+    await screen.findByText(tSession('reorderDone', { name: CURL, n: 1, total: 3 }));
+    await waitFor(() => expect(document.activeElement).toBe(handle(CURL)));
+  });
+
+  it('retour élastique : la classe de transition est retirée même sans transitionend (animations réduites)', async () => {
+    await openAndStart();
+    const row = second();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    pointer(row, 'pointerDown', 300, 50);
+    pointer(row, 'pointerMove', 250, 52);
+    pointer(row, 'pointerUp', 250, 52);
+    expect(row).toHaveClass('ct-session__set--returning');
+    vi.advanceTimersByTime(400);
+    vi.useRealTimers();
+    expect(row).not.toHaveClass('ct-session__set--returning');
+  });
+});
+
+describe('GEST-0303 relecture : exercice groupé', () => {
+  it('appui long sur un exercice d’un groupe : le groupe entier change de place, séries alternées gardées', async () => {
+    const repo = await db.data.repos.workouts();
+    const w = await repo.start({ source: 'routine', routineId: u(1), dayId: u(2) });
+    await repo.groupExercises(w.id, { exerciseIds: ['bench-press-barbell', 'row-barbell'], restBetweenSec: 0, restRoundSec: null });
+    await openOpen();
+    layout();
+    const row = handle(ROW);
+    hold(row, 150);
+    pointer(row, 'pointerMove', 100, 290);
+    pointer(row, 'pointerUp', 100, 290);
+    await waitFor(async () => expect(await order()).toEqual(['curl-barbell', 'bench-press-barbell', 'row-barbell']));
+    const rows = await db.driver.select<{ exercise_id: string; circuit_id: string | null }>('SELECT exercise_id, circuit_id FROM workout_set WHERE deleted_at IS NULL ORDER BY position');
+    expect(rows[0]?.exercise_id).toBe('curl-barbell');
+    expect(rows.slice(1).every((r) => r.circuit_id !== null)).toBe(true);
+    expect(rows.slice(1).map((r) => r.exercise_id)).toEqual(['bench-press-barbell', 'row-barbell', 'bench-press-barbell', 'row-barbell', 'bench-press-barbell', 'row-barbell']);
   });
 });

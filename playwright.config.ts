@@ -61,7 +61,8 @@ const WEBKIT_SERVER: NonNullable<PlaywrightTestConfig['webServer']> = {
 const WEBKIT_PROJECT: NonNullable<PlaywrightTestConfig['projects']>[number] = {
   name: 'iphone-webkit',
   // SPA-001b : écrans conservés (Logs, sauvegardes, restauration interrompue) vérifiés aussi dans le moteur de l'iPhone ; les specs de titres et de roue sont retirées.
-  testMatch: /lot-f-screens\.spec\.ts$/,
+  // GEST-0303 : gestes de la séance active vérifiés aussi dans le moteur de l'iPhone.
+  testMatch: /(?:lot-f-screens|GEST-0303-gestes-iphone)\.spec\.ts$/,
   use: {
     browserName: 'webkit',
     viewport: { width: 440, height: 956 },

@@ -21,7 +21,7 @@ async function touch(target: Locator, type: 'pointerdown' | 'pointermove' | 'poi
 }
 
 test.beforeEach(async ({ page }, info) => {
-  test.skip(info.project.name !== 'iphone', 'gestes de l’iPhone seulement (D-653)');
+  test.skip(info.project.name !== 'iphone' && info.project.name !== 'iphone-webkit', 'gestes de l’iPhone seulement (D-653)');
   await page.clock.setFixedTime(new Date('2026-11-27T17:00:00Z'));
   await openToday(page);
   await nav(page, 'Entraînement').click();
