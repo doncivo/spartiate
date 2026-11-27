@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -9,6 +9,7 @@ import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { TodaySessionCard } from '../session/TodaySessionCard';
 import { applyRemoteChanges, onSyncedDataApplied } from '../../sync/remoteChanges';
+import { warmTraining } from '../warmTraining';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -54,6 +55,14 @@ const openDetail = async (name: RegExp) => {
   return screen.findByRole('region', { name: 'Détail de la séance' });
 };
 
+beforeAll(async () => {
+  const warm = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
+  try {
+    await warmTraining(warm);
+  } finally {
+    await warm.close();
+  }
+}, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');

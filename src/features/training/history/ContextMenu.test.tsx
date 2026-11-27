@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -7,6 +7,7 @@ import { seedPastWorkout } from '../../../../tests/fixtures/training/workout';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
+import { warmTraining } from '../warmTraining';
 import { TrainingScreen } from '../TrainingScreen';
 
 /** COQUILLE-PC-a (§ 18.1, C-192) : clic droit et double-clic sur une séance de l'historique (jsdom : mise en page PC). */
@@ -28,6 +29,14 @@ const firstRow = async (): Promise<HTMLElement> => {
   return row;
 };
 
+beforeAll(async () => {
+  const warm = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
+  try {
+    await warmTraining(warm);
+  } finally {
+    await warm.close();
+  }
+}, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
