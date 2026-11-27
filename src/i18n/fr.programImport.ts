@@ -5,12 +5,12 @@
 export const programImportFr = {
   title: 'Importer un programme',
   back: 'Retour aux routines',
-  intro: 'Colle un programme (bloc préparé avec Claude ou lignes « Squat 4×8-10 ») ou lis une photo. Rien n’est enregistré avant « Créer la routine ».',
+  intro: 'Colle un programme (bloc préparé avec Claude ou lignes « Squat 4×8-10 »), lis une photo ou un PDF. Rien n’est enregistré avant « Créer la routine ».',
   guideHint: 'Format et consigne à donner à Claude : guide « Importer un programme » (docs/guide-import-programme.md).',
   textLabel: 'Texte du programme',
   textPlaceholder: 'Jour A — Haut\nDéveloppé couché 4×8-10 RIR 2\nRowing à la barre 4 x 10\n\nJour B — Bas\nSquat à la barre : 4 séries de 6',
   analyze: 'Analyser le texte',
-  emptyText: 'Colle d’abord un texte, ou lis une photo.',
+  emptyText: 'Colle d’abord un texte, ou lis une photo ou un PDF.',
   privacy: 'Le texte et l’image restent sur cet appareil : rien n’est envoyé.',
   // IMPORT-029b : photo ou capture (OCR natif).
   photo: 'Lire une photo ou une capture',
@@ -23,7 +23,8 @@ export const programImportFr = {
   photoLanguage: 'La lecture du texte en français n’est pas installée sur cet appareil.',
   photoFailed: 'La lecture de l’image a échoué ({reason}). Le texte n’a pas changé.',
   photoFailedCode: 'La lecture de l’image a échoué ({reason}, code {code}). Le texte n’a pas changé.',
-  pdfLater: 'PDF : pas encore lu. Fais une capture de la page et lis-la comme une photo.',
+  // IMPORT-0303 : le lecteur PDF est un bloc à la demande ; s'il ne se charge pas, la vue d'import le dit avec ce texte.
+  pdfLoadFailed: 'La lecture des PDF n’a pas pu se charger. Ferme puis rouvre l’import pour réessayer.',
   'ocr_unsupported-format': 'format d’image non pris en charge',
   'ocr_too-large': 'image trop lourde',
   ocr_dimensions: 'image trop grande',

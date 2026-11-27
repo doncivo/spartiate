@@ -147,6 +147,7 @@ Toutes les dépendances de `dependencies` (package.json), version et licence du 
 | `@tauri-apps/plugin-sql` | 2.5.0 | MIT OR Apache-2.0 |
 | `@tauri-apps/plugin-updater` | 2.13.1 | MIT OR Apache-2.0 |
 | `lucide-react` | 1.49.0 | ISC |
+| `pdfjs-dist` | 6.5.438 | Apache-2.0 |
 | `qrcode-generator` | 2.0.4 | MIT |
 | `react` | 18.3.1 | MIT |
 | `react-dom` | 18.3.1 | MIT |
@@ -159,3 +160,12 @@ Toutes les dépendances de `dependencies` (package.json), version et licence du 
 - Licence : œuvre originale du projet Spartiate, mêmes conditions que le code du projet ; aucune attribution tierce exigée. Aucune donnée personnelle.
 - Affichage : mention discrète « pictogramme » sous le dessin ; une photo sous licence (Everkinetic, plus haut) reste prioritaire et le validateur refuse un pictogramme pour un exercice qui a une photo.
 - Contrôle : `validate-content.mjs` (plafond 6 144 octets, aucun script, `on*`, lien, adresse externe, `foreignObject`, feuille de style, couleur en dur).
+
+# Licence — lecture du texte des PDF (IMPORT-0303, D-676)
+
+- Rôle : extraction locale du texte d'un PDF dans l'import de programme (`src/platform/pdf/index.ts`, seul point d'import), chargée à la demande ; aucun appel réseau.
+- Paquet : [`pdfjs-dist`](https://www.npmjs.com/package/pdfjs-dist) **6.5.438** (version exacte), projet PDF.js de Mozilla.
+- Licence : **Apache-2.0** ; texte complet : `node_modules/pdfjs-dist/LICENSE`, repris dans `public/THIRD-PARTY-NOTICES.txt`. Le paquet ne contient aucun fichier NOTICE.
+- Fichiers embarqués (dans `dist/assets`, hors du bundle de départ) : `legacy/build/pdf.min.mjs` (bloc à la demande `pdf.min-*.js`) et `legacy/build/pdf.worker.min.mjs` (worker `pdf.worker.min-*.mjs`). Aucun CMap, police standard, profil ICC ni module wasm du paquet n'est embarqué ni chargé.
+- Dépendance facultative `@napi-rs/canvas` (MIT, binaires Node par plateforme) : installée pour les tests sous Node seulement, jamais dans `dist/`.
+- Aucun crate cargo ajouté.
