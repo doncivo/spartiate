@@ -78,9 +78,9 @@ describe('export / import des favoris (FIX-0181)', () => {
     expect(await count(db)).toBe(0);
   });
 
-  it('archive de schéma 24 : refusée (future-version)', async () => {
+  it('archive d’un schéma plus récent (EXPORT_SV + 1) : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 24)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), EXPORT_SV + 1)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne incohérente : refusée à l’import, rien n’est écrit', async () => {

@@ -84,9 +84,9 @@ describe('export / import des mensurations et des fiches de photos (I6-02)', () 
     expect((await (await db.data.repos.progressPhotos()).listDeletedWithFile()).map((p) => p.id)).toEqual([photo.id]);
   });
 
-  it('archive de schéma 24 : refusée (future-version)', async () => {
+  it('archive d’un schéma plus récent (EXPORT_SV + 1) : refusée (future-version)', async () => {
     const db = await open(A);
-    await expect(parse(await read(db), 24)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), EXPORT_SV + 1)).rejects.toMatchObject({ code: 'future-version' });
   });
 
   it('ligne hors bornes, à l’identifiant faux ou au nom de fichier avec chemin : refusée à l’import, rien n’est écrit', async () => {

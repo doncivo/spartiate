@@ -92,7 +92,7 @@ const closed = (pausedMs: number | undefined, sets: WorkoutSet[] = [set(0, 2), s
     hlc: 'h',
     ...(pausedMs === undefined ? {} : { pausedAt: null, pausedMs }),
     sets,
-  }) as WorkoutWithSets;
+  }) as unknown as WorkoutWithSets;
 
 describe('résumé et durée d’une séance close', () => {
   it('durée = fin − début − cumul ; ancienne séance sans champ : durée brute', () => {
@@ -136,7 +136,8 @@ describe('replay : la pause est retirée du repos qui la contient', () => {
   });
 
   it('sans pause ou ancienne séance : déroulé inchangé, aucune mention', () => {
-    expect(replayWorkout(closed(undefined)).pause).toEqual({ pausedSec: 0, placed: false });
+    expect(replayWorkout(closed(undefined)).pause).toBeUndefined();
+    expect(replayWorkout(closed(0)).pause).toBeUndefined();
     expect(replayWorkout(closed(0)).steps.map((s) => s.rest.actualSec)).toEqual([120, null]);
   });
 });

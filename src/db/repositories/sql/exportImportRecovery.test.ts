@@ -115,9 +115,9 @@ describe('export / import des résumés de récupération (I5-01)', () => {
     expect(await db.driver.select('SELECT COUNT(*) AS n FROM recovery_sample')).toEqual([{ n: 1 }]); // les échantillons ne sont pas des données d'archive
   });
 
-  it('archive de schéma 24 : refusée (future-version)', async () => {
+  it('archive d’un schéma plus récent (EXPORT_SV + 1) : refusée (future-version)', async () => {
     const db = await openWriter(IPHONE);
-    await expect(parse(await read(db), 24)).rejects.toMatchObject({ code: 'future-version' });
+    await expect(parse(await read(db), EXPORT_SV + 1)).rejects.toMatchObject({ code: 'future-version' });
   });
 });
 

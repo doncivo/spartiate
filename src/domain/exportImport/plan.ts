@@ -10,9 +10,10 @@
  */
 
 import { localDateOfInstant } from '../donePeriod';
+import { endPause } from '../training/pause';
 import type { IsoDateTime } from '../types';
 import { weekdayFromDayName } from '../training/programDay';
-import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable } from './archive';
+import { TABLE_SINCE_SV, TRAINING_EXPORT_TABLES, trainingColumns, trainingRows, trainingTable, type ExportData, type ExportProfile, type ExportWeight, type TrainingRow, type TrainingTable, type TrainingValue } from './archive';
 
 export type ImportMode = 'merge' | 'replace';
 export type ImportTable = 'profile' | 'body_weight' | 'settings' | TrainingTable;
@@ -131,6 +132,20 @@ function openWorkoutRules(local: ExportData, incoming: ExportData): OpenWorkoutR
   return { skip, closeAt, keepLocal };
 }
 
+/**
+ * Séance ouverte de l'archive close à l'import (`closeAt`) ; SESS-0302 (D-658) : une pause restée en cours y est ajoutée au cumul jusqu'à la clôture
+ * (une séance close n'a jamais de pause en cours).
+ */
+function closeImported(row: TrainingRow, endedAt: string | null): TrainingRow {
+  const values: Record<string, TrainingValue> = { ...row.values, ended_at: endedAt };
+  if (typeof row.values['paused_at'] === 'string' && endedAt !== null) {
+    const folded = endPause({ pausedAt: row.values['paused_at'], pausedMs: typeof row.values['paused_ms'] === 'number' ? row.values['paused_ms'] : 0 }, Date.parse(endedAt));
+    values['paused_at'] = null;
+    values['paused_ms'] = folded.pausedMs;
+  }
+  return { ...row, values };
+}
+
 export function planImport(local: ExportData, incoming: ExportData, mode: ImportMode): ImportPlan {
   const ops: ImportOp[] = [];
   let unchanged = 0;
@@ -239,7 +254,7 @@ export function planImport(local: ExportData, incoming: ExportData, mode: Import
       // à sa date et ne passe devant aucune de ces décisions ; même semaine ou avant : règle REV-01 constat 3 inchangée.
       const plannedLater = String(incomingRow.values['week_start'] ?? '') > latestLocalDay;
       if (table === 'nutrition_target' && !localRows.has(incomingRow.id) && incomingRow.values['accepted'] === 1 && decidedAt(incomingRow) !== '' && decidedAt(incomingRow) < newestLocalDecision && !plannedLater) continue;
-      const closed = table === 'workout' && open.closeAt.has(incomingRow.id) ? { ...incomingRow, values: { ...incomingRow.values, ended_at: open.closeAt.get(incomingRow.id) ?? null } } : incomingRow;
+      const closed = table === 'workout' && open.closeAt.has(incomingRow.id) ? closeImported(incomingRow, open.closeAt.get(incomingRow.id) ?? null) : incomingRow;
       const existing = localRows.get(closed.id);
       // FIX-0171 (constat 1, D-120) : une colonne absente de l'archive (schéma plus ancien) garde la valeur locale, dans les deux modes ; une valeur
       // nulle présente dans l'archive reste un effacement explicite. Ligne nouvelle : la colonne absente reste nulle.

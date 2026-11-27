@@ -13,6 +13,8 @@ import type { WorkoutSet } from './session';
  * - Cible du repos : dans un groupe, entre deux exercices d'un même tour, le repos du groupe (0 = aucun) ; sinon la cible de repos de la série (null :
  *   sans cible). Écart de `REPLAY_REST_TOLERANCE_SEC` ou moins : conforme.
  * - Charge et répétitions (ou durée d'une série chronométrée) face aux cibles de la série : au-dessus, en dessous, conforme, sans cible, non saisie.
+ * - SESS-0302 (D-658) : le temps de pause de la séance (cumul `pausedMs`, sans ses instants) est retiré du SEUL repos mesuré assez long pour le
+ *   contenir ; aucun ou plusieurs candidats : rien n'est retiré au hasard, la pause est dite « non située » (`pause.placed` faux).
  */
 
 /** Écart toléré entre repos réel et cible (secondes, borne comprise) ; choix prudent révisable par Ali (D-151). */
@@ -47,6 +49,8 @@ export interface ReplayRest {
   readonly deviation: ReplayRestDeviation;
   /** Réel − cible (secondes) ; null quand l'un des deux manque. */
   readonly deltaSec: number | null;
+  /** SESS-0302 : temps de pause retiré de ce repos (secondes) ; absent : aucun. */
+  readonly pausedSec?: number;
 }
 
 export interface ReplayStep {
@@ -69,6 +73,8 @@ export interface WorkoutReplay {
   readonly notDone: number;
   /** Séries validées sans instant de validation. */
   readonly missingInstants: number;
+  /** SESS-0302 : temps de pause de la séance (secondes) et s'il a pu être retiré d'un repos ; absent sans pause (déroulé d'avant inchangé). */
+  readonly pause?: { readonly pausedSec: number; readonly placed: boolean };
 }
 
 const byPosition = (a: WorkoutSet, b: WorkoutSet): number => a.position - b.position || a.id.localeCompare(b.id);
@@ -126,15 +132,28 @@ function restOf(sets: readonly WorkoutSet[], set: WorkoutSet, next: WorkoutSet |
   const to = instantOf(next);
   if (from === null || to === null) return { actualSec: null, targetSec, deviation: 'unknown', deltaSec: null };
   const interval = Math.round((to - from) / 1000);
-  const actualSec = Math.max(0, interval - (next.setKind === 'timed' && next.durationSec !== null ? next.durationSec : 0));
+  return measured(Math.max(0, interval - (next.setKind === 'timed' && next.durationSec !== null ? next.durationSec : 0)), targetSec);
+}
+
+function measured(actualSec: number, targetSec: number | null): ReplayRest {
   if (targetSec === null) return { actualSec, targetSec, deviation: 'noTarget', deltaSec: null };
   const deltaSec = actualSec - targetSec;
   const deviation: ReplayRestDeviation = Math.abs(deltaSec) <= REPLAY_REST_TOLERANCE_SEC ? 'onTarget' : deltaSec > 0 ? 'longer' : 'shorter';
   return { actualSec, targetSec, deviation, deltaSec };
 }
 
+/** SESS-0302 : pause retirée du seul repos mesuré qui peut la contenir. */
+function withPause(steps: ReplayStep[], pausedSec: number): { steps: ReplayStep[]; placed: boolean } {
+  if (pausedSec <= 0) return { steps, placed: false };
+  const candidates = steps.filter((s) => s.rest.actualSec !== null && s.rest.actualSec >= pausedSec);
+  const only = candidates.length === 1 ? candidates[0] : undefined;
+  if (only === undefined) return { steps, placed: false };
+  const rest: ReplayRest = { ...measured((only.rest.actualSec as number) - pausedSec, only.rest.targetSec), pausedSec };
+  return { steps: steps.map((s) => (s === only ? { ...s, rest } : s)), placed: true };
+}
+
 /** Déroulé d'une séance (close en pratique) : étapes dans l'ordre réel, écarts, repos réels ; séries non validées comptées à part. */
-export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[] }): WorkoutReplay {
+export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[]; readonly pausedMs?: number | null }): WorkoutReplay {
   const sets = [...workout.sets].sort(byPosition);
   const done = sets.filter((s) => s.done);
   const ordered = executionOrder(done);
@@ -151,5 +170,7 @@ export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[] })
       rest: restOf(sets, set, ordered[index + 1]),
     }),
   );
-  return { steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => instantOf(s) === null).length };
+  const pausedSec = typeof workout.pausedMs === 'number' && Number.isFinite(workout.pausedMs) && workout.pausedMs > 0 ? Math.round(workout.pausedMs / 1000) : 0;
+  const paused = withPause(steps, pausedSec);
+  return { steps: paused.steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => instantOf(s) === null).length, ...(pausedSec > 0 ? { pause: { pausedSec, placed: paused.placed } } : {}) };
 }

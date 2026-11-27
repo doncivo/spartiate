@@ -5,7 +5,7 @@ import { createSimDevice, pair, setupFirst, syncFolders, type SimDevice, type Si
 /**
  * SESS-0302 (BL-110, D-658, D-26, D-27) : `workout.paused_at` et `workout.paused_ms` (migration 0024) à deux bases. Une séance ouverte en pause n'est
  * jamais publiée ; close, elle arrive avec son cumul. Un appareil resté au schéma 23 garde les deux champs dans `sync_unknown` et les réintègre après sa
- * mise à jour ; une séance close qu'il a écrite (sans les champs) est mise de côté chez l'appareil à jour, puis reçue entière avec un cumul 0 après la
+ * mise à jour ; une séance close qu'il a écrite (sans les champs) est mise de côté chez l'appareil à jour, puis reçue entière avec un cumul nul (lu 0) après la
  * republication de `workout` (schéma 24). Données synthétiques.
  */
 const A_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbb302';
@@ -62,12 +62,13 @@ describe('SESS-0302 : pause de séance à deux bases', () => {
     expect(await b.driver.select('SELECT 1 FROM workout WHERE id = ?', [W])).toEqual([]);
     await closeOn(a, W);
     await roundTrip(2);
-    expect(await pauseRow(b, W)).toEqual([{ paused_at: null, paused_ms: 90_000 }]);
+    // 90 s de pause, plus les 2 s des deux cycles de A pendant lesquels la séance est restée en pause avant sa clôture.
+    expect(await pauseRow(b, W)).toEqual([{ paused_at: null, paused_ms: 92_000 }]);
     expect(await pauseRow(a, W)).toEqual(await pauseRow(b, W));
     expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
     expect((await b.driver.select<{ n: number }>('SELECT COUNT(*) AS n FROM conflict_log'))[0]?.n).toBe(0);
     const closed = await (await b.data.repos.workouts()).getClosed(W);
-    expect(closed?.pausedMs).toBe(90_000);
+    expect(closed?.pausedMs).toBe(92_000);
   });
 
   it('appareil resté au schéma 23 : champs gardés dans sync_unknown, réintégrés après sa mise à jour', async () => {
@@ -84,7 +85,7 @@ describe('SESS-0302 : pause de séance à deux bases', () => {
     expect(await b.driver.select("SELECT 1 FROM sync_unknown WHERE table_name = 'workout'")).toEqual([]);
   });
 
-  it('séance close écrite au schéma 23 (sans les champs) : mise de côté chez l’appareil à jour, puis reçue avec un cumul 0 après la mise à jour', async () => {
+  it('séance close écrite au schéma 23 (sans les champs) : mise de côté chez l’appareil à jour, puis reçue avec un cumul nul (lu 0) après la mise à jour', async () => {
     const { a, b } = await two('v23');
     await pausedOn(b, W_OLD, false);
     await closeOn(b, W_OLD);
@@ -93,8 +94,9 @@ describe('SESS-0302 : pause de séance à deux bases', () => {
     expect((await a.driver.select<{ n: number }>("SELECT COUNT(*) AS n FROM sync_parked WHERE table_name = 'workout'"))[0]?.n).toBeGreaterThan(0);
     await b.upgradeSchema('i0');
     await roundTrip(4);
-    expect(await pauseRow(a, W_OLD)).toEqual([{ paused_at: null, paused_ms: 0 }]);
-    expect(await pauseRow(b, W_OLD)).toEqual([{ paused_at: null, paused_ms: 0 }]);
+    expect(await pauseRow(a, W_OLD)).toEqual([{ paused_at: null, paused_ms: null }]);
+    expect(await pauseRow(b, W_OLD)).toEqual([{ paused_at: null, paused_ms: null }]);
+    expect((await (await a.data.repos.workouts()).getClosed(W_OLD))?.pausedMs).toBe(0);
     expect(await a.driver.select('SELECT exercise_name, reps FROM workout_set WHERE workout_id = ?', [W_OLD])).toEqual([{ exercise_name: 'Développé couché', reps: 8 }]);
   });
 });

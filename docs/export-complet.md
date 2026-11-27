@@ -186,6 +186,8 @@ Séances, terminées ou ouvertes (`ended_at` vide = séance ouverte).
 | `source` | enum | — | non |  |
 | `copied_from_workout_id` | text | — | oui |  |
 | `notes` | text | — | non |  |
+| `paused_at` | datetime | — | oui | début de la pause en cours (vide hors pause) |
+| `paused_ms` | int | ms | oui | temps de pause cumulé, retiré de la durée (vide = 0) |
 
 ### `csv/workout_set.csv`
 

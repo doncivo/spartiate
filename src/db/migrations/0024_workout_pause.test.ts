@@ -9,7 +9,7 @@ import { migrations } from './index';
 
 /**
  * SESS-0302 (BL-110, D-658, § 13.2) : migration 0024 (schéma 24), additive : `workout.paused_at` (début de la pause en cours, nul hors pause) et
- * `workout.paused_ms` (cumul des pauses terminées, entier >= 0, 0 par défaut), PUBLIÉES avec la séance close, sans déclencheur (modèle de la 0013 :
+ * `workout.paused_ms` (cumul des pauses terminées, entier >= 0, nul = 0 : aucune valeur par défaut, garde FIX-A009b), PUBLIÉES avec la séance close, sans déclencheur (modèle de la 0013 :
  * une séance ouverte n'est jamais publiée, la clôture met la ligne entière en file). Données synthétiques.
  */
 const DEV = '0f8fad5b-d9cb-469f-a165-70867728950e';
@@ -37,7 +37,7 @@ describe('migration 0024 : workout_pause (SESS-0302)', () => {
     for (const sql of migration0024WorkoutPause.statements) expect(sql.trim()).toMatch(/^ALTER TABLE workout ADD COLUMN /);
   });
 
-  it('depuis la version 23 : séances ouvertes et closes intactes, pause nulle et cumul 0, rien de mis en file', async () => {
+  it('depuis la version 23 : séances ouvertes et closes intactes, pause et cumul nuls (cumul nul = 0), rien de mis en file', async () => {
     const db = await dbAt(23);
     await workout(db, u(1));
     await workout(db, u(2), AT);
@@ -46,20 +46,21 @@ describe('migration 0024 : workout_pause (SESS-0302)', () => {
     await migrate(db, migrations);
     expect(await db.select('SELECT id, name, started_at, ended_at, hlc FROM workout ORDER BY id')).toEqual(before);
     expect(await db.select('SELECT paused_at, paused_ms FROM workout ORDER BY id')).toEqual([
-      { paused_at: null, paused_ms: 0 },
-      { paused_at: null, paused_ms: 0 },
+      { paused_at: null, paused_ms: null },
+      { paused_at: null, paused_ms: null },
     ]);
     expect(await db.select('SELECT 1 FROM sync_outbox')).toEqual([]);
     expect(await db.select('SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1')).toEqual([{ version: 24 }]);
     await db.close();
   });
 
-  it('contraintes : cumul entier >= 0, jamais nul ; nouvelle ligne sans valeur : 0', async () => {
+  it('contraintes : cumul nul ou entier >= 0 ; nouvelle ligne sans valeur : nul (aucune valeur par défaut)', async () => {
     const db = await dbAt(24);
     await workout(db, u(1));
-    expect(await db.select('SELECT paused_ms FROM workout')).toEqual([{ paused_ms: 0 }]);
+    expect(await db.select('SELECT paused_ms FROM workout')).toEqual([{ paused_ms: null }]);
+    expect(await db.select("SELECT dflt_value FROM pragma_table_info('workout') WHERE name IN ('paused_at', 'paused_ms')")).toEqual([{ dflt_value: null }, { dflt_value: null }]);
     await expect(db.execute('UPDATE workout SET paused_ms = -1')).rejects.toThrow();
-    await expect(db.execute('UPDATE workout SET paused_ms = NULL')).rejects.toThrow();
+    await expect(db.execute('UPDATE workout SET paused_ms = NULL')).resolves.toBeDefined();
     await expect(db.execute('UPDATE workout SET paused_ms = 90000, paused_at = ?', [AT])).resolves.toBeDefined();
     await db.close();
   });
@@ -76,12 +77,12 @@ describe('migration 0024 : workout_pause (SESS-0302)', () => {
     await db.close();
   });
 
-  it('catalogue : paused_at (instant, facultatif) et paused_ms (entier, obligatoire) publiés, masqués du journal des conflits ; workout republiée au schéma 24', () => {
+  it('catalogue : paused_at (instant) et paused_ms (entier) publiés, facultatifs, masqués du journal des conflits ; workout republiée au schéma 24', () => {
     const t = SYNC_CATALOGUE.table('workout');
     if (!t) throw new Error('workout');
     expect([...publishedColumns(t)]).toEqual(expect.arrayContaining(['paused_at', 'paused_ms']));
     expect(t.columns.find((c) => c.name === 'paused_at')).toMatchObject({ type: 'datetime', nullable: true, conflictVisible: false });
-    expect(t.columns.find((c) => c.name === 'paused_ms')).toMatchObject({ type: 'int', nullable: false, conflictVisible: false });
+    expect(t.columns.find((c) => c.name === 'paused_ms')).toMatchObject({ type: 'int', nullable: true, conflictVisible: false });
     expect(t.local).toEqual(['rest_timer_end_at', 'rest_timer_seconds']);
     expect(SCHEMA_REPUBLISH[24]).toEqual(['workout']);
   });

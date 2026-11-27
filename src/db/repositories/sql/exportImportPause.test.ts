@@ -8,7 +8,7 @@ import { openBaseDb, type TestDb } from './testSetup';
 
 /**
  * SESS-0302 (D-658) : export et import de `workout.paused_at` et `workout.paused_ms` (migration 0024). Une archive du schéma 23 (sans ces clés) est lue
- * avec un cumul 0 ; une archive du 24 les rend telles quelles ; « Fusionner » une archive ancienne garde le cumul local. Données synthétiques.
+ * avec un cumul nul (lu 0) ; une archive du 24 les rend telles quelles ; « Fusionner » une archive ancienne garde le cumul local. Données synthétiques.
  */
 const A = '60000000-0000-4000-8000-0000000302a1' as DeviceId;
 const B = '60000000-0000-4000-8000-0000000302b1' as DeviceId;
@@ -60,14 +60,15 @@ describe('SESS-0302 : export et import de la pause de séance', () => {
     expect(await pause(b)).toEqual([{ paused_at: null, paused_ms: 120_000 }]);
   });
 
-  it('archive du schéma 23 (sans ces clés) : lue sans erreur, cumul 0 et aucune pause en cours', async () => {
+  it('archive du schéma 23 (sans ces clés) : lue sans erreur, cumul nul (lu 0) et aucune pause en cours', async () => {
     const a = await open(A);
     await seed(a, 120_000);
     const data = await archive(a, 23);
-    expect(data.training?.workout?.[0]?.values).toMatchObject({ paused_at: null, paused_ms: 0 });
+    expect(data.training?.workout?.[0]?.values).toMatchObject({ paused_at: null, paused_ms: null });
     const b = await open(B);
     await importInto(b, data, 'replace');
-    expect(await pause(b)).toEqual([{ paused_at: null, paused_ms: 0 }]);
+    expect(await pause(b)).toEqual([{ paused_at: null, paused_ms: null }]);
+    expect((await (await b.data.repos.workouts()).getClosed(W))?.pausedMs).toBe(0);
   });
 
   it('archive du schéma 23, « Fusionner » sur une base du 24 : le cumul local est gardé', async () => {

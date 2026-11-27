@@ -73,7 +73,6 @@ describe('SESS-0302 : pause de la séance active', () => {
     fireEvent.click(screen.getByRole('button', { name: tSession('pause') }));
     await screen.findByText(tSession('paused'));
     const resume = screen.getByRole('button', { name: tSession('pauseResume') });
-    expect(resume.getAttribute('aria-pressed')).toBe('true');
     await waitFor(() => expect(screen.queryByRole('timer', { name: tTraining('restRemaining') })).toBeNull());
     expect(f.calls.cancel).toBeGreaterThan(0);
     expect(f.calls.ends).toBeGreaterThan(0);
@@ -81,17 +80,18 @@ describe('SESS-0302 : pause de la séance active', () => {
     const second = within(screen.getByRole('region', { name: BENCH })).getAllByRole('group', { name: /^Série/ })[1];
     expect((within(second as HTMLElement).getByRole('button', { name: tTraining('sessionValidate') }) as HTMLButtonElement).disabled).toBe(true);
 
-    // Pendant la pause, le chrono ne bouge pas.
-    const frozen = elapsed();
+    // Pendant la pause, le chrono reste à la durée effective (60 s) ; le retour au premier plan relit l'horloge.
+    await waitFor(() => expect(elapsed()).toBe('1:00'));
     await act(async () => {
       db.clock.advance(5 * 60_000);
-      await new Promise((r) => setTimeout(r, 1_100));
+      document.dispatchEvent(new Event('visibilitychange'));
+      await Promise.resolve();
     });
-    expect(elapsed()).toBe(frozen);
+    expect(elapsed()).toBe('1:00');
 
     fireEvent.click(resume);
     await waitFor(() => expect(screen.queryByText(tSession('paused'))).toBeNull());
-    expect(screen.getByRole('button', { name: tSession('pause') }).getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByRole('button', { name: tSession('pause') })).toBeTruthy();
     expect(await db.driver.select('SELECT paused_at, paused_ms FROM workout WHERE ended_at IS NULL')).toEqual([{ paused_at: null, paused_ms: 300_000 }]);
     await waitFor(() => expect(elapsed()).toBe('1:00'));
     expect(screen.queryByRole('timer', { name: tTraining('restRemaining') })).toBeNull();

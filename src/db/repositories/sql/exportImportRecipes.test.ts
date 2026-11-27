@@ -108,9 +108,9 @@ describe('export / import des recettes et de la journée déclarée (I4-07)', ()
     expect(await canonicalHash(await read(db))).toBe(before);
   });
 
-  it('archive d’un schéma plus récent (24) : refusée, rien n’est écrit', async () => {
+  it('archive d’un schéma plus récent (EXPORT_SV + 1) : refusée, rien n’est écrit', async () => {
     const db = await open(A);
-    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: 24 });
+    const archive = await buildExportArchive(await read(db), { date: '2026-11-09T10:00:00.000Z', sv: EXPORT_SV + 1 });
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toBeInstanceOf(ArchiveError);
     await expect(parseExportArchive(archive.bytes, { currentSv: EXPORT_SV, currentYear: 2026 })).rejects.toMatchObject({ code: 'future-version' });
   });
