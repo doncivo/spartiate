@@ -122,6 +122,17 @@ const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg)
  * embarqué (77 en 0.30.2 ; garde : `src/db/parse/equipmentJson.equip0302.test.ts`). L'ancienne borne (64) était sous le catalogue.
  */
 export const EQUIPMENT_ID_LIST_MAX = 256;
+/**
+ * EQUIP-0302 (D-796, relecture sync-icloud) : borne de lecture des listes d'identifiants des versions antérieures au schéma 25. Une telle app lit
+ * VIDE un inventaire plus long et son éditeur l'écraserait : tant qu'un appareil actif publie un `sv` < `EQUIPMENT_LONG_LISTS_SINCE_SV`, aucune
+ * liste plus longue n'est enregistrée.
+ */
+export const LEGACY_EQUIPMENT_ID_LIST_MAX = 64;
+export const EQUIPMENT_LONG_LISTS_SINCE_SV = 25;
+/** Une liste d'identifiants (disponible, forcé, interdit) dépasse-t-elle la borne des versions antérieures ? */
+export function exceedsLegacyLists(inv: Pick<EquipmentInventory, 'available' | 'forced' | 'forbidden'>): boolean {
+  return [inv.available, inv.forced, inv.forbidden].some((list) => new Set(list).size > LEGACY_EQUIPMENT_ID_LIST_MAX);
+}
 /** Borne des autres listes d'un profil (barres, disques, kettlebells, machines, poulies), inchangée. */
 export const EQUIPMENT_LIST_MAX = 64;
 /** Nombre de disques d'un même poids admis à la lecture (`equipmentJson.ts`). */

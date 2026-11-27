@@ -9,12 +9,17 @@ import { EQUIPMENT_ID_LIST_MAX, EQUIPMENT_LIST_MAX, PLATE_COUNT_MAX, type Barbel
 const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // EQUIP-0302 (D-796) : bornes partagées avec la validation du domaine (`equipment.ts`) ; listes d'identifiants jusqu'à 256 (catalogue entier).
 const MAX_LIST = EQUIPMENT_LIST_MAX;
+/** EQUIP-0302 : crochet du banc de synchro (borne de lecture d'une version antérieure, 64) ; jamais posé par l'app. */
+let idListMax: number = EQUIPMENT_ID_LIST_MAX;
+export function setEquipmentJsonTestHooks(hooks: { readonly idListMax?: number }): void {
+  idListMax = hooks.idListMax ?? EQUIPMENT_ID_LIST_MAX;
+}
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const positive = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
 
 function idList(value: unknown): string[] | null {
-  if (!Array.isArray(value) || value.length > EQUIPMENT_ID_LIST_MAX) return null;
+  if (!Array.isArray(value) || value.length > idListMax) return null;
   const out: string[] = [];
   for (const item of value as unknown[]) {
     if (typeof item !== 'string' || !ID_RE.test(item)) return null;

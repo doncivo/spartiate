@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, isVestKg, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { EQUIPMENT_LIST_MAX, EQUIPMENT_PROFILE_KINDS, exceedsLegacyLists, isVestKg, LEGACY_EQUIPMENT_ID_LIST_MAX, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
+import { WEIGHTED_VEST_ID } from '../../domain/training/prescribe';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
 import { Button, ConfirmDialog, SectionTitle, SegmentedControl, Switch } from '../../ui';
@@ -23,8 +24,8 @@ const INCREMENT_KEYS = [
 ] as const satisfies readonly (readonly [string, TrainingTextKey])[];
 
 const kg = (n: number): string => tTraining('kg', { n: formatNumber(n) });
-/** EQUIP-0302 (D-674) : gilet lesté du catalogue du matériel (même identifiant que le moteur, `WEIGHTED_VEST_ID`). */
-const VEST_ID = 'weighted-vest';
+/** EQUIP-0302 (D-674) : gilet lesté du catalogue du matériel (identifiant du moteur). */
+const VEST_ID = WEIGHTED_VEST_ID;
 const vestChecked = (inv: Pick<EquipmentInventory, 'available' | 'forced'>): boolean => inv.available.includes(VEST_ID) || inv.forced.includes(VEST_ID);
 const range = (r: StackRange): string => tTraining('rangeKg', { min: formatNumber(r.minKg), max: formatNumber(r.maxKg), step: formatNumber(r.stepKg) });
 
@@ -173,13 +174,16 @@ const ISSUE_KEY = {
   kind: 'errorProfileKind',
   ids: 'errorProfileIds',
   dumbbells: 'errorProfileDumbbells',
+  increment: 'errorProfileIncrement',
+} as const satisfies Readonly<Partial<Record<EquipmentIssue['code'], TrainingPlainKey>>>;
+/** Raisons qui disent la borne des listes (`EQUIPMENT_LIST_MAX`), interpolée. */
+const ISSUE_MAX_KEY = {
   cables: 'errorProfileCables',
   machines: 'errorProfileMachines',
   kettlebells: 'errorProfileKettlebells',
   barbells: 'errorProfileBarbells',
   plates: 'errorProfilePlates',
-  increment: 'errorProfileIncrement',
-} as const satisfies Readonly<Record<Exclude<EquipmentIssue['code'], 'forced-forbidden' | 'vest'>, TrainingPlainKey>>;
+} as const;
 
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
 
@@ -226,7 +230,7 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   const [forbidden, setForbidden] = useState<readonly string[]>(inv.forbidden);
   // EQUIP-0302 (D-674) : poids du gilet, saisi quand le gilet est coché (disponible ou forcé) ; décoché, la valeur enregistrée est gardée.
   const [vest, setVest] = useState(typeof profile.vestKg === 'number' ? formatNumber(profile.vestKg) : '');
-  const showVest = vestChecked({ available, forced });
+  const showVest = vestChecked({ available, forced }) && !forbidden.includes(VEST_ID);
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
@@ -271,13 +275,21 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
           ? tTraining('errorProfileForcedForbidden', { names: forced.filter((id) => forbidden.includes(id)).map((id) => names.get(id) ?? id).join(', ') })
           : issue.code === 'vest'
             ? tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) })
-            : tTraining(ISSUE_KEY[issue.code]);
+            : issue.code in ISSUE_MAX_KEY
+              ? tTraining(ISSUE_MAX_KEY[issue.code as keyof typeof ISSUE_MAX_KEY], { max: String(EQUIPMENT_LIST_MAX) })
+              : tTraining(ISSUE_KEY[issue.code as keyof typeof ISSUE_KEY]);
       const reasons = [plateRead.error, kbRead.error, badIncrement ? tTraining('errorProfileIncrement') : null, ...issues.map(reason)].filter((r): r is string => r !== null);
       setError([...new Set(reasons)].join(' ') || tTraining('errorProfile'));
       return;
     }
     try {
-      await (await access.repos.equipmentProfiles()).update(profile.id, input);
+      const repo = await access.repos.equipmentProfiles();
+      // EQUIP-0302 (D-796) : un appareil plus ancien lirait vide une liste plus longue et l'écraserait : refus nommé, rien d'écrit.
+      if (exceedsLegacyLists(inventory) && (await repo.longListsBlocked())) {
+        setError(tTraining('errorProfileOlderDevice', { max: String(LEGACY_EQUIPMENT_ID_LIST_MAX) }));
+        return;
+      }
+      await repo.update(profile.id, input);
       onDone(true);
     } catch (failure) {
       // EQUIP-0302 (D-796) : refus du dépôt nommé ; seule une écriture qui échoue vraiment dit « Enregistrement impossible ».
@@ -485,7 +497,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
             {message}
           </p>
         )}
-        {editing && viewed.origin === 'personal' ? (
+        {editing && viewed.origin === 'personal' && viewed.unreadable !== true ? (
           <ProfileForm
             data={data}
             access={access}
@@ -522,15 +534,17 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
                 </Button>
               ) : (
                 <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setMessage(null);
-                      setEditing(true);
-                    }}
-                  >
-                    {tTraining('editProfile')}
-                  </Button>
+                  {viewed.unreadable === true ? null : (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setMessage(null);
+                        setEditing(true);
+                      }}
+                    >
+                      {tTraining('editProfile')}
+                    </Button>
+                  )}
                   {/* ERGO-02 : une seule action rouge à l'écran ; « Activer » l'est déjà quand le profil n'est pas actif (suppression confirmée). */}
                   <Button variant={isActive ? 'danger' : 'secondary'} disabled={busy} onClick={() => setConfirm(true)}>
                     {tTraining('deleteProfile')}
@@ -539,6 +553,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
               )}
             </div>
             {viewed.origin === 'embedded' && <p className="ct-training__muted">{tTraining('readOnly')}</p>}
+            {viewed.origin === 'personal' && viewed.unreadable === true && <p className="ct-training__muted">{tTraining('profileUnreadable')}</p>}
             <Inventory data={data} profile={viewed} />
           </>
         )}

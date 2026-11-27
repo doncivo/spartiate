@@ -11,6 +11,11 @@ export interface EquipmentProfileRepository {
   update(id: string, patch: Partial<Omit<EquipmentProfileInput, 'id'>>): Promise<EquipmentProfile>;
   softDelete(id: string): Promise<void>;
   get(id: string, options?: ReadOptions): Promise<EquipmentProfile | null>;
+  /**
+   * EQUIP-0302 (D-796) : un appareil actif publie-t-il une version antérieure au schéma 25 ? Alors aucune liste de matériel au-delà de 64 n'est
+   * enregistrée (`create` et `update` refusent, `'invalid'`).
+   */
+  longListsBlocked(): Promise<boolean>;
   /** Triés par nom. */
   list(options?: ReadOptions): Promise<EquipmentProfile[]>;
   /** Identifiant du profil actif de cet appareil, ou `null`. Peut désigner un profil absent ou supprimé : voir `getActive`. */

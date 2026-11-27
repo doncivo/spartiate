@@ -170,7 +170,7 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
     await db.driver.execute(`UPDATE equipment_profile SET inventory = '["v2"]'`);
     cleanup();
     open();
-    fireEvent.click(await screen.findByRole('button', { name: /^Poids de corps (copie)/ }));
+    fireEvent.click(await screen.findByRole('button', { name: (n) => n.startsWith(COPY) }));
     await screen.findByRole('heading', { name: COPY });
     expect(screen.getByText('Ce profil a été écrit par une version plus récente de Spartiate : mets l’app à jour pour le modifier.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Modifier le profil' })).toBeNull();

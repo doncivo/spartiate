@@ -164,6 +164,8 @@ export interface EquipmentProfileInput {
 export interface EquipmentProfile extends EquipmentProfileInput {
   /** Toujours présent à la lecture (nul : non renseigné, ou base antérieure à la 0025). */
   readonly vestKg: number | null;
+  /** EQUIP-0302 (D-796) : inventaire ou incréments stockés illisibles (version plus récente) : lus vides, jamais remplacés (lecture seule). */
+  readonly unreadable?: true;
   readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
   readonly deletedAt: IsoDateTime | null;
