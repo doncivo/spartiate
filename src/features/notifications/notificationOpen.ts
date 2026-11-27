@@ -42,5 +42,10 @@ function goTo(screen: NotificationScreen): void {
     case 'today':
       nav.navigate({ tab: 'today' });
       return;
+    default: {
+      // Écran ajouté à la table sans route ici : erreur de typage.
+      const missing: never = screen;
+      throw new Error(`notification-open: ${String(missing)}`);
+    }
   }
 }

@@ -38,7 +38,7 @@ const INVENTORY: readonly (readonly [NotificationFamily, string, NotificationScr
   ['snooze', snoozeNotificationId(taskNotificationId(R)), 'today'],
 ];
 
-/** Fichiers de `src` (hors tests) qui posent une notification : chacun porte `extra: { sid … }`. */
+/** Fichiers de `src` (hors tests) qui posent une notification (`bridge.show(`, commande `plugin:notification|`, `extra` avec `sid`). */
 const EMITTERS = ['src/platform/notifications/tauriNotifications.ts', 'src/platform/notifications/timerNotification.ts', 'src/platform/signing/tauriSigningAlert.ts'];
 
 function sources(dir: string): string[] {
@@ -63,7 +63,8 @@ describe('NOTIF-0302 : inventaire des notifications et de leur écran', () => {
   });
 
   it('aucun émetteur hors de l’inventaire : seuls les fichiers connus posent une notification', () => {
-    const found = sources('src').filter((file) => /extra:\s*\{\s*sid:/.test(readFileSync(file, 'utf8')));
+    const emits = (text: string): boolean => /\bbridge\.show\(|'plugin:notification\|'|extra:\s*\{[^}]*\bsid\b/.test(text);
+    const found = sources('src').filter((file) => emits(readFileSync(file, 'utf8')));
     expect(found.sort()).toEqual([...EMITTERS].sort());
   });
 

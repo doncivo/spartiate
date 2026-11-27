@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { RawNotificationAction } from '../../domain/notificationActions';
 import { NotificationActionSourceError, type ActionTypeSpec } from './actions';
 import { createFakeNotificationActionSource } from './fakeActions';
@@ -158,7 +159,7 @@ describe('NOTIF-0302 (BL-184, D-765) : appui simple sur une notification', () =>
   });
 
   it('Swift : l’appui simple (UNNotificationDefaultActionIdentifier) est écrit comme « open » avec son sid, et relu au drain', () => {
-    const swift = readFileSync('src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift', 'utf8');
+    const swift = readFileSync(join(__dirname, '..', '..', '..', 'src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift'), 'utf8');
     expect(swift).toMatch(/knownActions: Set<String> = \[[^\]]*"open"/);
     expect(swift).toMatch(/UNNotificationDefaultActionIdentifier\s*\?\s*"open"/);
   });
