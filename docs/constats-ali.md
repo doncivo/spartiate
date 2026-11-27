@@ -295,6 +295,7 @@ Après la mise à jour des deux appareils le même jour (version qui livre BL-18
 ### iPhone
 
 - [ ] **BL-184, H-44 (appui sur une notification)** — app fermée : le matin du rappel des mesures, touche la notification → Progrès › Corps › Mesures s'ouvre ; app en arrière-plan : touche la notification de fin de repos pendant une séance → l'écran de la séance s'ouvre ; touche un rappel de complément → Nutrition › Compléments. Date : ____ Version : ____
+- [ ] **BL-110 (pause de séance)** — pendant une séance, touche Pause : « En pause » s'affiche, le repos en cours s'arrête, la saisie est suspendue ; après 2 minutes, Reprendre : le chrono reprend sans compter la pause ; à la fin, le résumé et l'Historique donnent la durée hors pause et « dont … de pause » ; sur le PC, la séance reçue montre la même durée. Date : ____ Version : ____
 
 ## SideStore (renouvellement du 27/11)
 
@@ -310,6 +311,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | --- | --- |
 | C-103 | 0.29.2 |
 | C-105 | 0.29.2 |
+| BL-110 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-184 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-185 | SideStore (renouvellement du 27/11) › iPhone |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
