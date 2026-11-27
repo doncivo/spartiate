@@ -1,4 +1,4 @@
-import type { BarbellSpec, EquipmentIncrements, EquipmentInventory, MachineSpec, PlateSpec, StackRange } from '../../domain/training';
+import { EQUIPMENT_ID_LIST_MAX, EQUIPMENT_LIST_MAX, PLATE_COUNT_MAX, type BarbellSpec, type EquipmentIncrements, type EquipmentInventory, type MachineSpec, type PlateSpec, type StackRange } from '../../domain/training';
 
 /**
  * Validation à la main des JSON d'un profil de matériel (ADR 0008). Valeur typée ou `null`. `parseInventory` complète les champs absents
@@ -7,13 +7,14 @@ import type { BarbellSpec, EquipmentIncrements, EquipmentInventory, MachineSpec,
  */
 
 const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const MAX_LIST = 64;
+// EQUIP-0302 (D-796) : bornes partagées avec la validation du domaine (`equipment.ts`) ; listes d'identifiants jusqu'à 256 (catalogue entier).
+const MAX_LIST = EQUIPMENT_LIST_MAX;
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const positive = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0;
 
 function idList(value: unknown): string[] | null {
-  if (!Array.isArray(value) || value.length > MAX_LIST) return null;
+  if (!Array.isArray(value) || value.length > EQUIPMENT_ID_LIST_MAX) return null;
   const out: string[] = [];
   for (const item of value as unknown[]) {
     if (typeof item !== 'string' || !ID_RE.test(item)) return null;
@@ -48,7 +49,7 @@ const barbell = (v: unknown): BarbellSpec | null => {
   return typeof equipmentId === 'string' && ID_RE.test(equipmentId) ? { type: v['type'], weightKg: v['weightKg'], equipmentId } : null;
 };
 const plate = (v: unknown): PlateSpec | null =>
-  isRecord(v) && positive(v['weightKg']) && typeof v['count'] === 'number' && Number.isInteger(v['count']) && v['count'] >= 1 && v['count'] <= 100 ? { weightKg: v['weightKg'], count: v['count'] } : null;
+  isRecord(v) && positive(v['weightKg']) && typeof v['count'] === 'number' && Number.isInteger(v['count']) && v['count'] >= 1 && v['count'] <= PLATE_COUNT_MAX ? { weightKg: v['weightKg'], count: v['count'] } : null;
 const machine = (v: unknown): MachineSpec | null =>
   isRecord(v) && typeof v['equipmentId'] === 'string' && ID_RE.test(v['equipmentId']) && positive(v['stackMinKg']) && positive(v['stackMaxKg']) && positive(v['stepKg'])
     ? { equipmentId: v['equipmentId'], stackMinKg: v['stackMinKg'], stackMaxKg: v['stackMaxKg'], stepKg: v['stepKg'] }

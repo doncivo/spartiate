@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, isVestKg, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { EQUIPMENT_PROFILE_KINDS, isVestKg, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
@@ -167,6 +167,20 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
   );
 }
 
+/** EQUIP-0302 (D-796) : raison nommée de chaque refus de la validation du profil. */
+const ISSUE_KEY = {
+  'name-empty': 'errorProfileName',
+  kind: 'errorProfileKind',
+  ids: 'errorProfileIds',
+  dumbbells: 'errorProfileDumbbells',
+  cables: 'errorProfileCables',
+  machines: 'errorProfileMachines',
+  kettlebells: 'errorProfileKettlebells',
+  barbells: 'errorProfileBarbells',
+  plates: 'errorProfilePlates',
+  increment: 'errorProfileIncrement',
+} as const satisfies Readonly<Record<Exclude<EquipmentIssue['code'], 'forced-forbidden' | 'vest'>, TrainingPlainKey>>;
+
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
 
 /** SEANCE-0292 (C-066) : liste lue par le domaine (`parseWeightList`) ; refus : message qui nomme l'élément fautif. */
@@ -249,15 +263,26 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       return;
     }
     const input = { name: name.trim(), kind, inventory, increments: inc, ...(showVest ? { vestKg } : {}) };
-    if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
-      setError(plateRead.error ?? kbRead.error ?? tTraining('errorProfile'));
+    const issues = validateEquipmentProfile(input);
+    if (plateList === null || kbList === null || badIncrement || issues.length > 0) {
+      const names = new Map(data.content.equipment.map((e) => [e.id, e.nameFr]));
+      const reason = (issue: EquipmentIssue): string =>
+        issue.code === 'forced-forbidden'
+          ? tTraining('errorProfileForcedForbidden', { names: forced.filter((id) => forbidden.includes(id)).map((id) => names.get(id) ?? id).join(', ') })
+          : issue.code === 'vest'
+            ? tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) })
+            : tTraining(ISSUE_KEY[issue.code]);
+      const reasons = [plateRead.error, kbRead.error, badIncrement ? tTraining('errorProfileIncrement') : null, ...issues.map(reason)].filter((r): r is string => r !== null);
+      setError([...new Set(reasons)].join(' ') || tTraining('errorProfile'));
       return;
     }
     try {
       await (await access.repos.equipmentProfiles()).update(profile.id, input);
       onDone(true);
-    } catch {
-      setError(tTraining('saveError'));
+    } catch (failure) {
+      // EQUIP-0302 (D-796) : refus du dépôt nommé ; seule une écriture qui échoue vraiment dit « Enregistrement impossible ».
+      const code = (failure as { readonly code?: unknown } | null)?.code;
+      setError(code === 'not-found' ? tTraining('errorProfileGone') : code === 'invalid' ? tTraining('errorProfileRejected') : tTraining('saveError'));
     }
   }
 

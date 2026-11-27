@@ -117,7 +117,17 @@ const positive = (n: number): boolean => Number.isFinite(n) && n > 0;
 /** SEANCE-0292 (C-081) : un même poids deux fois (clé d'affichage en double, nombre ambigu). */
 const hasDuplicate = (values: readonly number[]): boolean => new Set(values).size !== values.length;
 const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg) && positive(r.stepKg) && r.minKg <= r.maxKg;
-const ids = (list: readonly string[]): boolean => list.every((id) => EQUIPMENT_ID_RE.test(id));
+/**
+ * EQUIP-0302 (D-796) : borne des listes d'identifiants d'un profil (disponible, forcé, interdit), fixe et sûre, au moins le double du catalogue
+ * embarqué (77 en 0.30.2 ; garde : `src/db/parse/equipmentJson.equip0302.test.ts`). L'ancienne borne (64) était sous le catalogue.
+ */
+export const EQUIPMENT_ID_LIST_MAX = 256;
+/** Borne des autres listes d'un profil (barres, disques, kettlebells, machines, poulies), inchangée. */
+export const EQUIPMENT_LIST_MAX = 64;
+/** Nombre de disques d'un même poids admis à la lecture (`equipmentJson.ts`). */
+export const PLATE_COUNT_MAX = 100;
+const ids = (list: readonly string[]): boolean => list.length <= EQUIPMENT_ID_LIST_MAX && list.every((id) => EQUIPMENT_ID_RE.test(id));
+const tooLong = (list: readonly unknown[]): boolean => list.length > EQUIPMENT_LIST_MAX;
 
 /** EQUIP-0302 (D-674) : bornes du poids du gilet lesté (kg), saisi au dixième. */
 export const VEST_KG_MIN = 0.5;
@@ -136,11 +146,11 @@ export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'nam
   if (!ids(inv.available) || !ids(inv.forced) || !ids(inv.forbidden)) add('ids');
   if (inv.forced.some((id) => inv.forbidden.includes(id))) add('forced-forbidden');
   if (inv.dumbbells !== null && !range(inv.dumbbells)) add('dumbbells');
-  if (inv.cables.some((c) => !range(c))) add('cables');
-  if (inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
-  if (inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
-  if (inv.barbells.some((b) => b.type.trim() === '' || !positive(b.weightKg))) add('barbells');
-  if (inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
+  if (tooLong(inv.cables) || inv.cables.some((c) => !range(c))) add('cables');
+  if (tooLong(inv.machines) || inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
+  if (tooLong(inv.kettlebellsKg) || inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
+  if (tooLong(inv.barbells) || inv.barbells.some((b) => b.type.trim() === '' || b.type.length > 64 || !positive(b.weightKg))) add('barbells');
+  if (tooLong(inv.platesPerSideKg) || inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1 || p.count > PLATE_COUNT_MAX) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
   const increments: EquipmentIncrements = input.increments;
   if (Object.values(increments).some((v) => !positive(v))) add('increment');
   if (input.vestKg !== undefined && input.vestKg !== null && !isVestKg(input.vestKg)) add('vest');
