@@ -83,7 +83,17 @@ branche SESS-0302), différence avec `main` limitée aux fichiers de ce ticket.
     messages (`{max}`) ; commentaire périmé du test d'éditeur corrigé ; cas de vrai conflit sur `vest_kg` ajouté à `vestSync.test.ts` (vert dès le
     rouge : comportement existant, test de couverture). Correction d'un test dans le commit vert : nom du profil cherché par `startsWith` (la
     parenthèse de l'expression régulière avait perdu son échappement).
-  - Relecture des corrections : à faire.
+  - Contre-relectures : sync-icloud **approuvé**, code-reviewer **approuvé**, avec deux retouches faites : rouge `cf697195`, vert `852c4611`.
+    (1) `olderActiveDevices` n'écarte plus que les appareils `forgotten` et `foreign` : un appareil `expired`, `corrupt` ou `rollback` peut être
+    resté en 0.30.1, mieux vaut bloquer à tort qu'écraser (`newerDevices` inchangé ; tests du domaine et du dépôt par statut). (2) Table des
+    raisons de l'éditeur exhaustive (`Record` sur l'union des codes, sans conversion de type : un code ajouté sans texte ne compile pas) ;
+    borne propre du nom des barres (`BARBELL_NAME_MAX`, 64, distincte de `EQUIPMENT_LIST_MAX`). Suites : `tsc --noEmit` et eslint sans erreur ; `tests/unit/sync/equip0302`, `src/domain/sync`, `src/db/parse`, éditeur et dépôt du matériel,
+    libellés de conflit : 40 fichiers, 456 tests verts.
+  - Risque restant **accepté par sync-icloud** : une app réellement en 0.30.1 que cet appareil ne connaît pas encore, ou inactive depuis
+    180 jours (oubliée), ou un troisième appareil jamais associé ici, peut lire vide un profil de plus de 64 matériels et l'écraser. Phrase
+    pour Ali : « mettre à jour les deux appareils avant d'enregistrer un profil de plus de 64 matériels ». Suite proposée, non faite : parade
+    complète par une règle d'application dans `apply.ts` (refus d'un inventaire raccourci écrit par un appareil plus ancien), par ADR ou
+    avenant à l'ADR 0011, avec architect et sync-icloud.
 - **qa-test après relecture** (`f0f0fa3c`) : sans couverture, `--maxWorkers=2` : `tsc --noEmit` et eslint des fichiers touchés sans erreur ; `tests/unit/sync` entier 2 043 tests, 2 042
   verts, 1 délai de 5 s sous charge (`epochCarryReplacedParentRules`, vert seul) ; migrations 249 ; `src/domain/training` 956 (1 délai,
   `programImport.qa`, vert seul, hors ticket) ; `src/domain/sync`, `src/domain/exportImport`, `src/platform/backup`, `src/db/parse` 484 ;
@@ -128,7 +138,7 @@ branche SESS-0302), différence avec `main` limitée aux fichiers de ce ticket.
 
 ## Points non tranchés
 
-- Risque restant de D-796 (appareil ancien inconnu au moment de l'enregistrement d'une liste longue) : à dire à Ali avec le lot ; une
-  parade complète demanderait une règle dans `apply.ts` ou le protocole (hors ticket, choix de sync-icloud).
+- Risque restant de D-796, accepté par sync-icloud : à dire à Ali avec le lot (« mettre à jour les deux appareils avant d'enregistrer un
+  profil de plus de 64 matériels ») ; parade complète (règle dans `apply.ts`, ADR ou avenant 0011, architect) proposée comme suite, non faite.
 - Gilet réglable (plusieurs crans) ou gilet additionné à un autre lest : hors D-674 (D-791).
-- Relecture des corrections (sync-icloud, code-reviewer) : à faire avant fusion.
+- Relectures : sync-icloud et code-reviewer approuvées (contre-relecture), data-model favorable ; reste la CI (Rust compris).
