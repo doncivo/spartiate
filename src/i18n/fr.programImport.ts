@@ -24,6 +24,8 @@ export const programImportFr = {
   photoFailed: 'La lecture de l’image a échoué ({reason}). Le texte n’a pas changé.',
   photoFailedCode: 'La lecture de l’image a échoué ({reason}, code {code}). Le texte n’a pas changé.',
   // IMPORT-0303 : le lecteur PDF est un bloc à la demande ; s'il ne se charge pas, la vue d'import le dit avec ce texte.
+  // Relecture IMPORT-0303 : lignes lues (photo ou PDF) qui dépasseraient la borne du texte (50 000 caractères).
+  textTooLong: 'Texte trop long (plus de 50 000 caractères) : les lignes lues n’ont pas été ajoutées. Garde seulement les pages du programme.',
   pdfLoadFailed: 'La lecture des PDF n’a pas pu se charger. Ferme puis rouvre l’import pour réessayer.',
   'ocr_unsupported-format': 'format d’image non pris en charge',
   'ocr_too-large': 'image trop lourde',

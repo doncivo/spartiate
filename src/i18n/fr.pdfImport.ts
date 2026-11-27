@@ -13,5 +13,6 @@ export const pdfImportFr = {
   pdf_encrypted: 'PDF protégé par un mot de passe : rien n’a été lu. Enregistre-le sans protection, ou fais une capture de la page et lis-la comme une photo.',
   pdf_invalid: 'Ce fichier n’est pas un PDF lisible : rien n’a été lu.',
   'pdf_no-text': 'Ce PDF ne contient pas de texte (page scannée ?). Fais une capture de la page et lis-la comme une photo.',
+  pdf_timeout: 'La lecture du PDF a pris plus de 20 secondes et a été arrêtée : rien n’a été lu. Garde seulement les pages du programme, ou fais une capture de la page et lis-la comme une photo.',
   pdf_unsupported: 'La lecture des PDF n’a pas pu démarrer sur cet appareil. Fais une capture de la page et lis-la comme une photo.',
 } as const;

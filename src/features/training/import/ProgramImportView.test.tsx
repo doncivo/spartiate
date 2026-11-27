@@ -39,8 +39,9 @@ async function analyze(text: string): Promise<void> {
 }
 const card = (readName: string): HTMLElement => screen.getByRole('group', { name: tImport('exerciseGroup', { name: readName }) });
 
+// Relecture IMPORT-0303 (motif FIX-0302b) : la vue importe le lecteur PDF à la demande ; préchauffé ici, jamais à froid pendant une attente.
 beforeAll(async () => {
-  await Promise.all([import('../TrainingScreen'), import('./ProgramImportView')]);
+  await Promise.all([import('../TrainingScreen'), import('./ProgramImportView'), import('./PdfReader')]);
 }, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);

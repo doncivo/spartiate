@@ -17,9 +17,11 @@ export const PDF_IMPORT_LIMITS: PdfImportLimits = { maxBytes: 10 * 1024 * 1024, 
 /** En dessous de 20 lettres ou chiffres sur l'ensemble des pages, le PDF est tenu pour scanné (aucun texte à lire). */
 export const PDF_IMPORT_MIN_USEFUL_CHARS = 20;
 
-/** Raisons de refus, toutes dites à l'écran. `unsupported` : la bibliothèque n'a pas pu se charger sur l'appareil. */
-export type PdfRefusal = 'too-large' | 'too-many-pages' | 'encrypted' | 'invalid' | 'no-text' | 'unsupported';
-export const PDF_REFUSALS: readonly PdfRefusal[] = ['too-large', 'too-many-pages', 'encrypted', 'invalid', 'no-text', 'unsupported'];
+/** Raisons de refus, toutes dites à l'écran. `unsupported` : la bibliothèque n'a pas pu se charger sur l'appareil ; `timeout` : lecture trop longue. */
+export type PdfRefusal = 'too-large' | 'too-many-pages' | 'encrypted' | 'invalid' | 'no-text' | 'unsupported' | 'timeout';
+export const PDF_REFUSALS: readonly PdfRefusal[] = ['too-large', 'too-many-pages', 'encrypted', 'invalid', 'no-text', 'unsupported', 'timeout'];
+/** Relecture IMPORT-0303 : au-delà de 20 s, la lecture du document est arrêtée (`destroy()`) et refusée « timeout ». */
+export const PDF_IMPORT_TIMEOUT_MS = 20_000;
 
 /** Résultat de la lecture : lignes de chaque page, ou refus. */
 export type PdfTextResult = { readonly pages: readonly (readonly string[])[] } | { readonly reason: PdfRefusal };

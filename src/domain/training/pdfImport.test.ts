@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   PDF_IMPORT_LIMITS,
   PDF_IMPORT_MIN_USEFUL_CHARS,
+  PDF_IMPORT_TIMEOUT_MS,
+  PDF_REFUSALS,
   pdfBytesRefusal,
   pdfLinesFromItems,
   pdfPagesRefusal,
@@ -22,6 +24,8 @@ describe('limites (avant tout appel à la bibliothèque)', () => {
   it('Given les limites par défaut, Then 10 Mo et 20 pages, 20 caractères utiles', () => {
     expect(PDF_IMPORT_LIMITS).toEqual({ maxBytes: 10 * 1024 * 1024, maxPages: 20 });
     expect(PDF_IMPORT_MIN_USEFUL_CHARS).toBe(20);
+    expect(PDF_IMPORT_TIMEOUT_MS).toBe(20_000);
+    expect(PDF_REFUSALS).toContain('timeout');
   });
 
   it('Given une taille au-delà de 10 Mo, Then « too-large » ; à la limite, accepté', () => {

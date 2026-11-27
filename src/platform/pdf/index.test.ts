@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { PDF_IMPORT_LIMITS } from '../../domain/training/pdfImport';
+import { PDF_IMPORT_LIMITS, PDF_IMPORT_TIMEOUT_MS } from '../../domain/training/pdfImport';
 import { createPdfTextExtractor, extractPdfText, type PdfjsModule } from './index';
 import { createFakePdfReader } from './testing';
 
@@ -19,6 +19,8 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('extractPdfText (pdf.js réel)', () => {
   it('Given un PDF texte de deux pages, Then les lignes de chaque page, ordre vertical puis horizontal, sans appel réseau', async () => {
+    // Relecture : sous Node, pdf.js n'utilise de toute façon pas `fetch` pour des octets en mémoire ; cet espion prouve peu. La garde
+    // réelle de « aucun appel réseau » est le test des options (aucune URL, `useWorkerFetch: false`) plus bas.
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const result = await extractPdfText(fixture('texte.pdf'), PDF_IMPORT_LIMITS);
     expect(result).toEqual({
@@ -108,6 +110,27 @@ describe('createPdfTextExtractor (module pdf.js simulé)', () => {
       const stub = stubModule(1, [], error);
       expect(await createPdfTextExtractor(() => Promise.resolve(stub.module))(pdfBytes, PDF_IMPORT_LIMITS)).toEqual({ reason });
       expect(stub.destroy).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it('Given une lecture qui ne rend jamais la main, Then après 20 s (horloge simulée) refus « timeout » et destroy() appelé', async () => {
+    vi.useFakeTimers();
+    try {
+      const destroy = vi.fn(() => Promise.resolve());
+      const module = {
+        GlobalWorkerOptions: { workerSrc: '' },
+        getDocument: () => ({ promise: new Promise(() => undefined), destroy }),
+      } as unknown as PdfjsModule;
+      let settled: unknown = null;
+      const pending = createPdfTextExtractor(() => Promise.resolve(module))(pdfBytes, PDF_IMPORT_LIMITS).then((r) => (settled = r));
+      await vi.advanceTimersByTimeAsync(PDF_IMPORT_TIMEOUT_MS - 1);
+      expect(settled).toBeNull();
+      await vi.advanceTimersByTimeAsync(1);
+      await pending;
+      expect(settled).toEqual({ reason: 'timeout' });
+      expect(destroy).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
     }
   });
 

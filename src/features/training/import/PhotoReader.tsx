@@ -11,7 +11,8 @@ import { tImport, type ProgramImportPlainKey } from '../../../i18n/programImport
  */
 
 export interface PhotoReaderProps {
-  readonly onLines: (lines: readonly string[]) => void;
+  /** Ajoute les lignes au texte ; faux si elles sont refusées (texte trop long : la vue l'a dit, aucun autre message). */
+  readonly onLines: (lines: readonly string[]) => boolean;
   readonly onStatus: (message: string | null) => void;
   /** Moteurs de lecture ; par défaut ceux de l'appareil (`openOcrService`). */
   readonly open?: () => OcrService;
@@ -92,7 +93,7 @@ export function PhotoReader({ onLines, onStatus, open }: PhotoReaderProps) {
         onStatus(tImport('photoNone'));
         return;
       }
-      onLines(lines);
+      if (!onLines(lines)) return;
       const done = tPlural(tImport, lines.length, 'photoDoneOne', 'photoDone');
       onStatus(result.truncated === true ? `${done} ${tImport('photoTruncated')}` : done);
     } catch (error) {

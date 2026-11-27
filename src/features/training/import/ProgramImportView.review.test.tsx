@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { uuidGenerator } from '../../../domain/id';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -24,6 +24,11 @@ async function view(onCreated: () => Promise<void>): Promise<void> {
   const data = await readTrainingData(db.data);
   render(<ProgramImportView data={data} access={db.data} ids={uuidGenerator} onClose={() => undefined} onCreated={onCreated} />);
 }
+
+// Relecture IMPORT-0303 (motif FIX-0302b) : la vue importe le lecteur PDF à la demande ; préchauffé ici, jamais à froid pendant une attente.
+beforeAll(async () => {
+  await import('./PdfReader');
+}, 60_000);
 
 describe('IMPORT-029 revue : vue d’import', () => {
   it('routine écrite puis ouverture en échec : création désactivée, une seule routine', async () => {

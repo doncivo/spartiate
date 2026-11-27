@@ -86,6 +86,7 @@ describe('IMPORT-0303 : programme lu dans un PDF', () => {
     ['no-text', 'pdf_no-text'],
     ['unsupported', 'pdf_unsupported'],
     ['too-large', 'pdf_too-large'],
+    ['timeout', 'pdf_timeout'],
   ] as const)('Given un refus « %s », Then il est dit à l’écran et le texte ne change pas', async (reason, key) => {
     setHook({ result: { reason }, calls: [] });
     await openImport();
@@ -93,6 +94,17 @@ describe('IMPORT-0303 : programme lu dans un PDF', () => {
     await choosePdf();
     await screen.findByText(tPdfImport(key));
     expect(textArea().value).toBe('Squat 3x5');
+  });
+
+  it('Relecture : Given des lignes lues qui dépasseraient 50 000 caractères, Then rien n’est ajouté et « Texte trop long » est dit', async () => {
+    const long = Array.from({ length: 2_000 }, (_, i) => `Squat ${i} 4×8-10 RIR 2 — ligne longue pour dépasser la borne`);
+    setHook({ result: { pages: [long] }, calls: [] });
+    await openImport();
+    fireEvent.change(textArea(), { target: { value: 'Squat 3x5' } });
+    await choosePdf();
+    await screen.findByText(tImport('textTooLong'));
+    expect(textArea().value).toBe('Squat 3x5');
+    expect(screen.queryByText(/lignes lues dans le PDF/)).toBeNull();
   });
 
   it('Given un PDF scanné, Then la consigne « fais une capture de la page et lis-la comme une photo »', () => {

@@ -13,7 +13,8 @@ import { extractPdfText, type ExtractPdfText } from '../../../platform/pdf';
  */
 
 export interface PdfReaderProps {
-  readonly onLines: (lines: readonly string[]) => void;
+  /** Ajoute les lignes au texte ; faux si elles sont refusées (texte trop long : la vue l'a dit, aucun autre message). */
+  readonly onLines: (lines: readonly string[]) => boolean;
   readonly onStatus: (message: string | null) => void;
   /** Lecture du texte ; par défaut la façade de l'appareil (`extractPdfText`). */
   readonly read?: ExtractPdfText;
@@ -26,6 +27,7 @@ const REFUSAL_KEYS: Readonly<Record<PdfRefusal, PdfImportPlainKey>> = {
   invalid: 'pdf_invalid',
   'no-text': 'pdf_no-text',
   unsupported: 'pdf_unsupported',
+  timeout: 'pdf_timeout',
 };
 
 export function PdfReader({ onLines, onStatus, read = extractPdfText }: PdfReaderProps) {
@@ -51,7 +53,7 @@ export function PdfReader({ onLines, onStatus, read = extractPdfText }: PdfReade
         return;
       }
       const lines = pdfPagesToImportText(result.pages).split('\n').filter((line) => line !== '');
-      onLines(lines);
+      if (!onLines(lines)) return;
       onStatus(tPlural(tPdfImport, lines.length, 'pdfDoneOne', 'pdfDone', { pages: result.pages.length }));
     } catch {
       // La façade ne rejette pas ; la lecture du fichier par le navigateur, elle, peut échouer : dit, jamais silencieux.

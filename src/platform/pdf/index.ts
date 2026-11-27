@@ -1,5 +1,5 @@
 import type * as Pdfjs from 'pdfjs-dist';
-import { pdfBytesRefusal, pdfLinesFromItems, pdfPagesRefusal, pdfTextRefusal, type PdfTextItem } from '../../domain/training/pdfImport';
+import { PDF_IMPORT_TIMEOUT_MS, pdfBytesRefusal, pdfLinesFromItems, pdfPagesRefusal, pdfTextRefusal, type PdfTextItem } from '../../domain/training/pdfImport';
 import type { FakePdfHook } from './testing';
 import type { ExtractPdfText, PdfImportLimits, PdfTextResult } from './types';
 
@@ -13,6 +13,7 @@ export type { ExtractPdfText, PdfImportLimits, PdfRefusal, PdfTextResult } from 
  *   document, de CMap, de police standard, d'ICC ni de wasm : rien n'est demandé au réseau.
  * - Options : polices jamais converties ni cherchées sur le système, XFA ignoré, wasm coupé, arrêt à la première erreur de structure.
  * - Limites du domaine (`PDF_IMPORT_LIMITS`) vérifiées avant tout chargement ; `destroy()` de la tâche après chaque lecture, réussie ou non.
+ * - Délai maximal `PDF_IMPORT_TIMEOUT_MS` (20 s) : au-delà, tâche détruite et refus « timeout » (relecture).
  * - Ne rejette jamais : tout échec est un refus nommé que l'écran affiche.
  */
 
@@ -55,7 +56,7 @@ function textItems(items: readonly unknown[]): PdfTextItem[] {
 }
 
 /** Lecteur sur un module pdf.js donné (injecté par les tests ; `extractPdfText` charge le vrai). */
-export function createPdfTextExtractor(load: () => Promise<PdfjsModule>): ExtractPdfText {
+export function createPdfTextExtractor(load: () => Promise<PdfjsModule>, timeoutMs: number = PDF_IMPORT_TIMEOUT_MS): ExtractPdfText {
   return async (bytes: Uint8Array, limits: PdfImportLimits): Promise<PdfTextResult> => {
     const early = pdfBytesRefusal(bytes, limits);
     if (early !== null) return { reason: early };
@@ -81,21 +82,32 @@ export function createPdfTextExtractor(load: () => Promise<PdfjsModule>): Extrac
     } catch {
       return { reason: 'invalid' };
     }
-    try {
-      const pdf = await task.promise;
-      const pages = pdfPagesRefusal(pdf.numPages, limits);
-      if (pages !== null) return { reason: pages };
-      const lines: string[][] = [];
-      for (let n = 1; n <= pdf.numPages; n++) {
-        const page = await pdf.getPage(n);
-        const content = await page.getTextContent();
-        lines.push(pdfLinesFromItems(textItems(content.items)));
+    const reading = (async (): Promise<PdfTextResult> => {
+      try {
+        const pdf = await task.promise;
+        const pages = pdfPagesRefusal(pdf.numPages, limits);
+        if (pages !== null) return { reason: pages };
+        const lines: string[][] = [];
+        for (let n = 1; n <= pdf.numPages; n++) {
+          const page = await pdf.getPage(n);
+          const content = await page.getTextContent();
+          lines.push(pdfLinesFromItems(textItems(content.items)));
+        }
+        const scanned = pdfTextRefusal(lines);
+        return scanned !== null ? { reason: scanned } : { pages: lines };
+      } catch (error) {
+        return { reason: refusalOf(error) };
       }
-      const scanned = pdfTextRefusal(lines);
-      return scanned !== null ? { reason: scanned } : { pages: lines };
-    } catch (error) {
-      return { reason: refusalOf(error) };
+    })();
+    // Relecture IMPORT-0303 : délai maximal ; au-delà, la tâche est détruite (worker arrêté) et la lecture refusée « timeout ».
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const expired = new Promise<PdfTextResult>((resolve) => {
+      timer = setTimeout(() => resolve({ reason: 'timeout' }), timeoutMs);
+    });
+    try {
+      return await Promise.race([reading, expired]);
     } finally {
+      clearTimeout(timer);
       await task.destroy().catch(() => undefined);
     }
   };

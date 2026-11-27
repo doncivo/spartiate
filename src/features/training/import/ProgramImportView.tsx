@@ -72,6 +72,10 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr, 
   // Revue : la routine écrite, la création est fermée pour de bon (une ouverture de l'éditeur en échec ne la rouvre jamais).
   const [written, setWritten] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
+  const textRef = useRef(text);
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
   const previewHeading = useRef<HTMLHeadingElement>(null);
 
   const byId = useMemo(() => new Map(data.exercises.map((e) => [e.id, e])), [data]);
@@ -101,7 +105,19 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr, 
       alive = false;
     };
   }, []);
-  const appendLines = (lines: readonly string[]): void => setText((current) => (current.trim() === '' ? lines.join('\n') : `${current.replace(/\s+$/, '')}\n${lines.join('\n')}`));
+  // Relecture IMPORT-0303 : les lignes lues (photo, PDF) respectent la même borne que la saisie ; au-delà, rien n'est ajouté et c'est dit.
+  // Le texte courant est lu par une ref : une lecture lente ne réécrit jamais une saisie faite pendant l'attente.
+  const appendLines = (lines: readonly string[]): boolean => {
+    const current = textRef.current;
+    const next = current.trim() === '' ? lines.join('\n') : `${current.replace(/\s+$/, '')}\n${lines.join('\n')}`;
+    if (next.length > TEXT_MAX) {
+      setMessage(tImport('textTooLong'));
+      return false;
+    }
+    textRef.current = next;
+    setText(next);
+    return true;
+  };
   useEffect(() => {
     if (parsed && picking === null) previewHeading.current?.focus();
   }, [parsed, picking]);
