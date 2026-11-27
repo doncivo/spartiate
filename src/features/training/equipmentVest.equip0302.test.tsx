@@ -110,4 +110,34 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
     expect(await vest()).toBe(12);
     expect(screen.queryByText('Gilet lesté', { selector: 'dt' })).toBeNull();
   });
+
+  it('D-796 : copie de « Salle complète » (64 matériels déjà disponibles) : gilet coché avec 10 kg, enregistré et relu', async () => {
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Dupliquer pour modifier' }));
+    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
+    fireEvent.click(vestBox('Matériel disponible'));
+    fireEvent.change(screen.getByLabelText(FIELD), { target: { value: '10' } });
+    await save();
+    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    expect(await vest()).toBe(10);
+    const rows = await db.driver.select<{ inventory: string }>('SELECT inventory FROM equipment_profile');
+    expect((JSON.parse(rows[0]?.inventory ?? '{}') as { available: string[] }).available).toContain('weighted-vest');
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
+    expect(screen.getByLabelText(FIELD)).toHaveValue('10');
+  });
+
+  it('D-796 : un refus de l’éditeur nomme sa raison (forcé et interdit à la fois, nom vide), jamais « Enregistrement impossible »', async () => {
+    await editCopy();
+    fireEvent.click(vestBox('Matériel forcé (toujours proposé)'));
+    fireEvent.click(vestBox('Matériel interdit (jamais proposé)'));
+    await save();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Gilet lesté est à la fois forcé et interdit : décoche-le d’une des deux listes.');
+    expect(alert).not.toHaveTextContent('Enregistrement impossible');
+    fireEvent.click(vestBox('Matériel interdit (jamais proposé)'));
+    fireEvent.change(screen.getByLabelText(/^Nom du profil/), { target: { value: '  ' } });
+    await save();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Le nom du profil est vide.');
+  });
 });
