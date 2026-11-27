@@ -8,9 +8,11 @@ import { olderActiveDevices } from './compat';
 const d = (over: Partial<{ self: boolean; status: string; sv: number | null; sm: number | null }>) => ({ self: false, status: 'active', sv: 25, sm: 1, ...over });
 
 describe('olderActiveDevices', () => {
-  it('sv inférieur, inconnu ou majeure inférieure : plus ancien ; soi, inactif, même version ou plus récent : non', () => {
-    const older = [d({ sv: 24 }), d({ sv: null }), d({ sm: 0 }), d({ status: 'clock-ahead', sv: 20 })];
-    const other = [d({ self: true, sv: 3 }), d({ status: 'forgotten', sv: 24 }), d({ status: 'expired', sv: 24 }), d({ status: 'foreign', sv: 24 }), d({ status: 'corrupt', sv: 24 }), d({ status: 'rollback', sv: 24 }), d({}), d({ sv: 26 })];
+  it('sv inférieur, inconnu ou majeure inférieure, quel que soit le statut (sauf oublié ou autre clé) : plus ancien ; soi, oublié, autre clé, même version ou plus récent : non', () => {
+    // Contre-relecture sync-icloud : seuls `forgotten` et `foreign` sont écartés ; un appareil expiré, corrompu ou en retour arrière peut être resté
+    // à une version antérieure (mieux vaut bloquer à tort qu'écraser).
+    const older = [d({ sv: 24 }), d({ sv: null }), d({ sm: 0 }), d({ status: 'clock-ahead', sv: 20 }), d({ status: 'expired', sv: 24 }), d({ status: 'corrupt', sv: 24 }), d({ status: 'rollback', sv: 24 }), d({ status: 'newer-major', sv: 24 })];
+    const other = [d({ self: true, sv: 3 }), d({ status: 'forgotten', sv: 24 }), d({ status: 'foreign', sv: 24 }), d({}), d({ sv: 26 })];
     expect(olderActiveDevices([...older, ...other], 25)).toEqual(older);
   });
 });

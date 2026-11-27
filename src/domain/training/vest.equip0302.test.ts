@@ -101,3 +101,15 @@ describe('EQUIP-0302 : validation du poids du gilet', () => {
     expect(validateEquipmentProfile({ ...base, vestKg: 61 })).toEqual([{ code: 'vest' }]);
   });
 });
+
+describe('EQUIP-0302, contre-relecture code : borne propre du nom des barres', () => {
+  it('nom de barre : borne BARBELL_NAME_MAX (64) distincte de EQUIPMENT_LIST_MAX ; au-delà : refusé (code barbells)', async () => {
+    const { BARBELL_NAME_MAX } = await import('./equipment');
+    expect(BARBELL_NAME_MAX).toBe(64);
+    const base = { name: 'Salle', kind: 'salle' as const, inventory: { ...BODYWEIGHT_ONLY.inventory, barbells: [{ type: 'x'.repeat(BARBELL_NAME_MAX + 1), weightKg: 20 }] }, increments: {} };
+    expect(validateEquipmentProfile(base)).toEqual([{ code: 'barbells' }]);
+    const { trainingFr } = await import('../../i18n/fr.training');
+    expect(trainingFr.errorProfileBarbells).toContain('{name}');
+    expect(trainingFr.errorProfileBarbells).toContain('{max}');
+  });
+});

@@ -65,6 +65,21 @@ describe('EQUIP-0302 : dépôt des profils, poids du gilet', () => {
   });
 });
 
+describe('EQUIP-0302, contre-relecture sync-icloud (D-796) : statut de l’appareil au schéma 24', () => {
+  const LONG = Array.from({ length: 65 }, (_, i) => `m${String(i)}`);
+  for (const [status, blocked] of [['expired', true], ['corrupt', true], ['rollback', true], ['active', true], ['forgotten', false], ['foreign', false]] as const) {
+    it(`appareil en sv 24 ${status} : listes de plus de 64 ${blocked ? 'refusées' : 'acceptées'}`, async () => {
+      const db = await open(A);
+      await db.driver.execute('INSERT INTO sync_state (device_id, is_self, schema_version, format_major, state_seq, status) VALUES (?, 0, 24, 1, 2, ?)', [B, status]);
+      const repo = await db.data.repos.equipmentProfiles();
+      expect(await repo.longListsBlocked()).toBe(blocked);
+      const created = repo.create(profile({ inventory: { ...VEST_INVENTORY, available: LONG } }));
+      if (blocked) await expect(created).rejects.toMatchObject({ code: 'invalid' });
+      else await expect(created).resolves.toMatchObject({ id: P });
+    });
+  }
+});
+
 const importInto = (db: TestDb, data: ExportData, mode: 'merge' | 'replace') =>
   db.data.transaction(async (r) => {
     const repo = await r.exportImport();
