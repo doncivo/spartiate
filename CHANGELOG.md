@@ -2,6 +2,18 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.2
+
+**Mets à jour le PC et l'iPhone le même jour, avant toute saisie.** Deux migrations : ta base passe au schéma 25 (trois colonnes ajoutées, vides pour ce qui existe déjà ; rien n'est modifié ni effacé). Une sauvegarde « Avant mise à jour » est faite d'abord. Un appareil resté en 0.30.1 garde de côté, sans les afficher, les séances closes avec pause et le poids du gilet reçus de l'autre, et les reprend à sa mise à jour. **Mets à jour les deux appareils avant d'enregistrer un profil de matériel de plus de 64 matériels** : tant qu'un appareil plus ancien est connu, Spartiate le refuse et te le dit (D-796).
+
+- **Chaque notification ouvre son écran (D-765, D-770 à D-773)** : le rappel des mesures ouvre Progrès › Corps › Mesures ; un rappel de complément, Nutrition › Compléments ; la fin de repos, la séance ; le check-in des gênes, la récupération du matin et le coucher conseillé, Aujourd'hui ; l'alerte de signature, Plus › SideStore.
+- **Vraie pause de séance (D-658, D-778 à D-785)** : « Pause » dans la séance en cours arrête le chrono et le repos en cours, et suspend la saisie ; « Reprendre » repart sans compter la pause. Le résumé, l'Historique et le replay donnent la durée hors pause et la pause retirée. Terminer et Abandonner restent possibles pendant la pause.
+- **Poids du gilet (D-674, D-791 à D-796)** : dans un profil de matériel, quand le gilet lesté est coché, un champ « Poids du gilet (kg) » ; ce poids devient un lest proposé pour les exercices au poids du corps. Sans poids, rien ne change. Un profil copié de « Salle complète » accepte maintenant le gilet.
+- **« Lecture partielle » (D-673, D-774 à D-777)** : l'heure de dernière synchronisation avance comme avant ; quand un fichier de l'autre appareil n'a pas pu être lu en entier, « lecture partielle » s'affiche à côté (Plus, Détails, export des journaux), avec un avertissement dans Détails. La suite est lue au cycle suivant.
+- **Corrigé** : le rythme des mesures ne revient plus à « Chaque semaine » quand tu le changes juste à l'ouverture de Corps › Mesures (D-766) ; trois tests instables trouvés et corrigés (rien ne change dans l'app).
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.2).
+
 ## 0.30.1
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 23, rien n'est modifié ni effacé. Les deux appareils restent compatibles avec un appareil resté en 0.30.0.
