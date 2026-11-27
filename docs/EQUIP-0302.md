@@ -57,21 +57,47 @@ branche SESS-0302), différence avec `main` limitée aux fichiers de ce ticket.
   que la lecture refuserait (longueurs, nom de barre, nombre de disques), et l'éditeur nomme chaque raison (une phrase par code, le matériel
   forcé et interdit nommé) ; un refus du dépôt dit « Profil refusé… » ou « Ce profil n'existe plus… », « Enregistrement impossible » ne reste
   que pour une écriture qui échoue. Borne cherchée ailleurs : aucune dans l'export (`archive.ts` ne lit pas l'inventaire) ni dans la synchro
-  (colonne `json`, 64 Ko). **Format publié** : la borne s'applique à la lecture de la colonne publiée `inventory`. Une app antérieure à ce
-  ticket qui reçoit un profil de plus de 64 matériels le lit vide (inventaire vide, le moteur ne propose alors que le poids du corps) et refuse
-  de le modifier (garde DATA-0293 : rien n'est réécrit ni perdu) jusqu'à sa mise à jour. Changement sûr dans ce sens, sans republication ;
-  les deux appareils d'Ali se mettent à jour par le même lot.
+  (colonne `json`, 64 Ko). **Format publié** : la borne s'applique à la lecture de la colonne publiée `inventory`. (Ce paragraphe disait à
+  tort qu'une app antérieure refuse de modifier un profil qu'elle lit vide : corrigé par la relecture sync-icloud ci-dessous.)
 - **qa-test après D-796 et mise à jour avec main** (`360c249f`, sans couverture, `--maxWorkers=2`) : `tsc --noEmit` sans erreur ; migrations 249 verts ;
   `src/domain/training` 956 ; `src/domain/sync`, `src/domain/exportImport`, `src/platform/backup`, `src/db/parse` 483 ; `src/features/training` 460 ;
   `src/db/repositories` 604 ; `tests/unit/sync/versions`, `equip0302`, `sess0302` 128 ; `npm run test:bundle` 201 (plafond inchangé) ; `scripts/release` 291 :
   tout vert, aucun délai cette fois. Rust non lancé (CI).
-- **Relectures** — sync-icloud et code-reviewer : à faire (passe distincte, diff à froid).
+- **Relectures** — sync-icloud : **à corriger** (1 bloquant) ; code-reviewer : **à corriger** (1 bloquant, mineurs) ; data-model : favorable
+  sur la migration 0025.
+  - Bloquant sync-icloud (perte de données) : la garde DATA-0293 ne jouait que si la modification ne fournissait pas l'inventaire ; or l'éditeur
+    d'une version antérieure envoie toujours un inventaire complet construit depuis l'inventaire lu VIDE. Scénario : iPhone encore en 0.30.1, PC
+    en 0.30.2 avec une copie de « Salle complète » de plus de 64 matériels ; l'iPhone voit un profil vide, Ali coche et enregistre ; tout
+    l'inventaire est écrasé partout, sans conflit (hlc plus récent), sans retour possible. Correction (règle d'application, aucun changement de
+    protocole, `src/sync/**` non touché) : (a) `longListsBlocked()` du dépôt lit `sync_state` (version publiée par chaque appareil, même source
+    que l'écran des versions) avec `olderActiveDevices` (`src/domain/sync/compat.ts`, mêmes inactifs que `newerDevices`) ; tant qu'un appareil
+    actif publie un `sv` < 25 (ou inconnu), `create` et `update` refusent toute liste d'identifiants au-delà de 64, et l'éditeur dit « Un appareil
+    utilise une version plus ancienne de Spartiate : mets-le à jour avant d'enregistrer plus de 64 matériels. » ; (b) un inventaire ou des
+    incréments stockés illisibles ne sont jamais remplacés, même avec un inventaire fourni (`update` refuse) ; le profil est marqué `unreadable`
+    et l'éditeur passe en lecture seule avec « Ce profil a été écrit par une version plus récente de Spartiate : mets l'app à jour pour le
+    modifier. ». Rouge `6b0f811c` (7 tests), vert `f0f0fa3c`. Tests : `tests/unit/sync/equip0302/olderDevice.test.ts` (appareil au 24, lecture
+    bornée à 64 par le crochet `setEquipmentJsonTestHooks` : profil de 65 lu vide, enregistrement refusé, inventaire intact des deux côtés ;
+    écrivain au 25 refusant 65 tant que l'appareil au 24 est actif, acceptant après sa mise à jour), `olderDevices.equip0302.test.ts`, éditeur.
+  - Bloquant code-reviewer : libellé `vest_kg: 'poids du gilet'` ajouté à `src/i18n/fr.syncField.ts` (`tests/unit/sync/conflicts/texts.test.ts`).
+  - Mineurs : `WEIGHTED_VEST_ID` importé dans l'éditeur ; champ du poids masqué si le gilet est interdit ; borne des listes interpolée dans les
+    messages (`{max}`) ; commentaire périmé du test d'éditeur corrigé ; cas de vrai conflit sur `vest_kg` ajouté à `vestSync.test.ts` (vert dès le
+    rouge : comportement existant, test de couverture). Correction d'un test dans le commit vert : nom du profil cherché par `startsWith` (la
+    parenthèse de l'expression régulière avait perdu son échappement).
+  - Relecture des corrections : à faire.
+- **qa-test après relecture** (`f0f0fa3c`) : sans couverture, `--maxWorkers=2` : `tsc --noEmit` et eslint des fichiers touchés sans erreur ; `tests/unit/sync` entier 2 043 tests, 2 042
+  verts, 1 délai de 5 s sous charge (`epochCarryReplacedParentRules`, vert seul) ; migrations 249 ; `src/domain/training` 956 (1 délai,
+  `programImport.qa`, vert seul, hors ticket) ; `src/domain/sync`, `src/domain/exportImport`, `src/platform/backup`, `src/db/parse` 484 ;
+  `src/features/training` 463 ; `src/db/repositories` 604 ; `npm run test:bundle` 201 (plafond inchangé). Rust non lancé (CI).
 
 ## Périmètre écrit des fichiers de synchro touchés (D-26)
 
 - `src/domain/sync/syncTables.ts` : une colonne publiée ajoutée à `equipment_profile` (`vest_kg`, réel, facultatif). Rien d'autre : ordre des
   tables, colonnes locales, `titleSource` inchangés.
 - `src/domain/sync/schemaRepublish.ts` : entrée `25: ['equipment_profile']`.
+- `src/domain/sync/compat.ts` (relecture) : fonction pure `olderActiveDevices` ajoutée à côté de `newerDevices` (mêmes inactifs), lue par le dépôt des
+  profils ; rien d'autre ne change (comparaisons, lecture, réintégration).
+- `src/i18n/fr.syncField.ts` : libellé de conflit `vest_kg`.
+- `tests/unit/sync/equip0302/olderDevice.test.ts` : banc d'un appareil au 24 à la lecture bornée à 64.
 - `tests/sim/syncDevice.ts` : schéma `v24` et filtre `beforeEquip0302` en tête de la chaîne des catalogues anciens.
 - Non touchés : `src/sync/**` (dont `engine.ts`, `apply.ts`, `snapshot.ts`), protocole, HLC, tombstones, reprise, reset, oubli.
 - Non-régression : `tests/unit/sync/equip0302/vestSync.test.ts` (deux bases par le journal et par l'instantané, appareil au schéma 24 dans
@@ -91,12 +117,18 @@ branche SESS-0302), différence avec `main` limitée aux fichiers de ce ticket.
 - **D-795** — Synchro : `vest_kg` publié, capturé par un déclencheur propre, republication de `equipment_profile` au schéma 25 (un profil
   créé par un appareil resté au 24 est mis de côté, « appareil plus ancien », ADR 0018, puis reçu entier, poids nul) ; aucune valeur par
   défaut SQL (D-785).
-- **D-796** — Listes d'identifiants d'un profil (disponible, forcé, interdit) bornées à 256, fixe, au moins le double du catalogue embarqué
-  (garde de test) ; autres listes à 64 ; le domaine valide les mêmes bornes que la lecture et l'éditeur nomme chaque refus.
+- **D-796** (réécrite après la relecture sync-icloud) — Listes d'identifiants d'un profil (disponible, forcé, interdit) lues jusqu'à 256 (fixe,
+  au moins le double du catalogue embarqué, garde de test) ; autres listes à 64 ; le domaine valide les mêmes bornes que la lecture et
+  l'éditeur nomme chaque refus. Règle d'écriture : tant qu'un appareil actif publie un `sv` < 25 (ou inconnu), aucune liste au-delà de 64
+  n'est enregistrée (refus nommé) ; un inventaire ou des incréments stockés illisibles ne sont jamais remplacés (lecture seule). Risque
+  restant : un profil de plus de 64 matériels enregistré alors qu'aucun appareil ancien n'était connu (avant son association, ou pendant qu'il
+  était inactif), puis lu par une app réellement antérieure (0.30.1 ou avant, sans la garde durcie) : elle le lit vide et son éditeur
+  l'écraserait. Parade : mettre à jour les deux appareils avant d'enregistrer plus de 64 matériels (le message le dit tant qu'un appareil
+  ancien est actif).
 
 ## Points non tranchés
 
-- Profil de plus de 64 matériels lu vide par un appareil resté à une version antérieure (D-796) : effet transitoire, à dire à Ali si un
-  appareil reste en retard.
+- Risque restant de D-796 (appareil ancien inconnu au moment de l'enregistrement d'une liste longue) : à dire à Ali avec le lot ; une
+  parade complète demanderait une règle dans `apply.ts` ou le protocole (hors ticket, choix de sync-icloud).
 - Gilet réglable (plusieurs crans) ou gilet additionné à un autre lest : hors D-674 (D-791).
-- Relecture sync-icloud et avis de data-model (D-674) : à faire avant fusion.
+- Relecture des corrections (sync-icloud, code-reviewer) : à faire avant fusion.
