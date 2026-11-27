@@ -288,6 +288,20 @@ Après la mise à jour des deux appareils le même jour (version qui livre BL-17
 - [ ] **BL-179 (liste des zones)** — Progrès › Corps › Mesures : la liste « Zones · dernière · 4 sem. » est toujours là, ↑ ↓ changent de zone, chaque ligne porte une marque de tendance avec un mot ; courbe avec période, ratios, symétrie et saisie guidée comme sur l'iPhone ; la grille de 1, 2 ou 3 colonnes suit la largeur. Date : ____ Version : ____
 - [ ] **BL-180 (rythme sur PC)** — Progrès › Corps › Mesures : le rythme se règle et les deux phrases « dernière séance… » et « prochaine conseillée… » s'affichent ; le PC dit que le rappel est émis sur l'iPhone (nouveau libellé) et n'envoie aucune notification. Date : ____ Version : ____
 
+## 0.30.2 (défauts, liens directs des notifications, données et synchro)
+
+Après la mise à jour des deux appareils le même jour (version qui livre BL-182 à BL-184 ; D-765 à D-773).
+
+### iPhone
+
+- [ ] **BL-184, H-44 (appui sur une notification)** — app fermée : le matin du rappel des mesures, touche la notification → Progrès › Corps › Mesures s'ouvre ; app en arrière-plan : touche la notification de fin de repos pendant une séance → l'écran de la séance s'ouvre ; touche un rappel de complément → Nutrition › Compléments. Date : ____ Version : ____
+
+## SideStore (renouvellement du 27/11)
+
+### iPhone
+
+- [ ] **BL-185 (date de la signature)** — Plus › À propos et diagnostic : relève la date et l'heure « Expire le … » de la signature SideStore renouvelée le 27/11. Date d'expiration lue : ____ Version : ____
+
 ## Table de contrôle (ID → section)
 
 Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/capability-matrix.md`) et chaque consigne « Après la mise à jour » des sections 0.28.0, 0.28.1 et 0.29.0 du CHANGELOG figure ici.
@@ -296,6 +310,8 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | --- | --- |
 | C-103 | 0.29.2 |
 | C-105 | 0.29.2 |
+| BL-184 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
+| BL-185 | SideStore (renouvellement du 27/11) › iPhone |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |

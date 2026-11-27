@@ -1,4 +1,4 @@
-import type { RawRestAction } from '../../domain/notificationActions';
+import type { RawOpenAction, RawRestAction } from '../../domain/notificationActions';
 import type { ActionDrain, ActionTypeSpec, NotificationActionSource } from '../../platform/notifications';
 import type { SupplementActionProcessor, SupplementActionRun } from './supplementActions';
 
@@ -20,6 +20,8 @@ export interface ActionDispatcherDeps {
   /** Rend vrai si toutes les actions sont réglées (appliquées ou ignorées), faux s'il faut les rejouer. */
   readonly rest: (actions: readonly RawRestAction[]) => Promise<boolean>;
   readonly restTypes: readonly ActionTypeSpec[];
+  /** NOTIF-0302 (BL-184, D-765) : appuis simples du tirage, pour ouvrir l'écran de la notification ; une erreur est journalisée, jamais bloquante. */
+  readonly open?: (opens: readonly RawOpenAction[]) => unknown;
   readonly log: (code: string) => void;
 }
 
@@ -39,7 +41,7 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
       // Tirage impossible : le processeur des compléments le traite comme avant (« source-failed »). Erreur simple, sans la classe de la
       // plateforme : l'importer ajouterait un bloc aux listes de préchargement du départ (D-604).
       if (snapshot === null) throw new Error('notification-action-source-failed');
-      return { entries: snapshot.entries, rest: [], lines: snapshot.lines, unreadable: snapshot.unreadable, writeFailures: snapshot.writeFailures };
+      return { entries: snapshot.entries, rest: [], opens: [], lines: snapshot.lines, unreadable: snapshot.unreadable, writeFailures: snapshot.writeFailures };
     },
     ack: async (done) => {
       if (!restSettled) {
@@ -67,6 +69,14 @@ export function createActionDispatcher(deps: ActionDispatcherDeps): SupplementAc
       snapshot = await source.drain();
     } catch {
       snapshot = null;
+    }
+    const opens = snapshot?.opens ?? [];
+    if (opens.length > 0 && deps.open !== undefined) {
+      try {
+        await deps.open(opens);
+      } catch {
+        deps.log('notification-open-failed');
+      }
     }
     const restActions = snapshot?.rest ?? [];
     if (restActions.length > 0) {

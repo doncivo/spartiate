@@ -6,6 +6,7 @@ import type { AppContainer } from '../app/container';
 import { useNoticeStore } from '../app/notice';
 import { announceLocalChanges, onSyncedDataApplied } from '../sync/remoteChanges';
 import { createActionDispatcher } from './actionDispatcher';
+import { createNotificationOpener } from './notificationOpen';
 import { createRestActionHandler, restActionTypes } from './restActions';
 import { createSupplementActionProcessor, startSupplementActions, type SupplementActionDeps } from './supplementActions';
 
@@ -72,6 +73,8 @@ export function startSupplementReminders(container: AppContainer, env: Supplemen
       createActionDispatcher({
         source: actions,
         restTypes: restActionTypes(),
+        // NOTIF-0302 (BL-184, D-765) : l'appui simple sur une notification ouvre l'écran qu'elle concerne.
+        open: createNotificationOpener({ nowMs: () => container.notificationClock.nowMs(), log: (code) => logFailure('notifications', code) }),
         log: (code) => logFailure('notifications', code),
         rest: createRestActionHandler({
           restEndMs: async () => {

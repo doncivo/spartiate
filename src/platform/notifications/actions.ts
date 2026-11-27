@@ -1,4 +1,4 @@
-import type { NotificationActionId, RawNotificationAction, RawRestAction, RestActionId } from '../../domain/notificationActions';
+import type { NotificationActionId, RawNotificationAction, RawOpenAction, RawRestAction, RestActionId } from '../../domain/notificationActions';
 
 /**
  * Source des actions de notification « Fait » et « +15 min » (N-03, ADR 0012 avenant N3.2) : port de plateforme. Sur l'iPhone, le plugin
@@ -36,6 +36,8 @@ export interface ActionDrain {
    * `lines`, jamais dans `unreadable`. Absent : aucune (faux et réponses d'avant).
    */
   readonly rest?: readonly RawRestAction[];
+  /** NOTIF-0302 (BL-184) : appuis simples (« open »), comptés dans `lines`, jamais dans `unreadable`. Absent : aucun. */
+  readonly opens?: readonly RawOpenAction[];
   /** Lignes physiques lues (à acquitter, illisibles comprises). */
   readonly lines: number;
   /** Lignes illisibles (comptées dans `lines`, absentes de `entries`). */

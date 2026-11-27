@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-417 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+421 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -39,7 +39,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 9 | D-120 | FIX-0171 (0.17.1) : colonne absente d'une archive ancienne ≠ valeur nulle explicite (relecture Codex du 12/11, constat 1). | A garder · B réviser ; effet : synchro, schéma, données |
 | 9 | D-221 | I6-06 : modèle des séances cardio (migration 0018, schéma 18, après la 0017 des compléments, I6-05). | A garder · B réviser ; effet : synchro, schéma, données |
 
-### séance et moteur (123 : 80 à trancher, 43 à confirmer seulement)
+### séance et moteur (124 : 81 à trancher, 43 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -123,6 +123,7 @@ Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec
 | 1 | D-576 | DATA-0293 (BL-040). | A garder · B réviser ; effet : chiffre |
 | 1 | D-602 | SHELL-0294b (C-157). | A garder · B réviser ; effet : écran |
 | 1 | D-750 | CORPS-0301c (BL-179, D-709, D-719 point 4) : déroulé de la saisie guidée. | A garder · B réviser ; effet : écran |
+| 1 | D-773 | NOTIF-0302 : preuve sur l'iPhone. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -172,7 +173,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-638 | SHELL-0295 (C-085) : catalogue hérité fr.routines hors du départ, paramètres typés pour les catalogues à part. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-764 | CORPS-0301d (D-713, D-714) : réglage sur le PC et emplacement. | à confirmer seulement (aucun effet visible repéré) |
 
-### nutrition (26 : 16 à trancher, 10 à confirmer seulement)
+### nutrition (27 : 17 à trancher, 10 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -192,6 +193,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-550 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
 | 1 | D-563 | NUTRI-0292. | A garder · B réviser ; effet : chiffre |
 | 1 | D-733 | PROG-0301b (D-706, D-718) : évolution du poids sur la période. | A garder · B réviser ; effet : chiffre |
+| 1 | D-771 | NOTIF-0302 (D-765, ADR 0012 avenant N-03) : mécanisme de l'appui simple. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -208,7 +210,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-580 | DATA-0293 (C-040, dépôt). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-585 | CONTENT-0293 (C-042). | à confirmer seulement (aucun effet visible repéré) |
 
-### récupération (42 : 16 à trancher, 26 à confirmer seulement)
+### récupération (43 : 17 à trancher, 26 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -228,6 +230,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-552 | NUTRI-0292. | A garder · B réviser ; effet : écran |
 | 1 | D-603 | SHELL-0294b (BL-162, BL-163). | A garder · B réviser ; effet : écran |
 | 1 | D-762 | CORPS-0301d (D-714) : appui sur le rappel des mesures. | A garder · B réviser ; effet : écran |
+| 1 | D-772 | NOTIF-0302 : appuis multiples, rejoués ou sans cible. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
@@ -363,7 +366,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 | 0 | D-720 | PROG-0301a (D-701, D-719) : le sous-onglet Corps › Santé dit qu'aucune valeur n'est importée. | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (64 : 29 à trancher, 35 à confirmer seulement)
+### écrans (65 : 30 à trancher, 35 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -396,6 +399,7 @@ Gardées sans question (à confirmer seulement) :
 | 1 | D-606 | SHELL-0294c (C-120, C-121, C-122). | A garder · B réviser ; effet : écran |
 | 1 | D-714 | DEC-0301 (D-710) : le rappel des mesures est une famille de notification iPhone neuve, « measurement », sur le modèle du rappel des blessures. | A garder · B réviser ; effet : écran |
 | 1 | D-721 | PROG-0301a (D-121, D-701) : le bouclier des photos suit le sous-onglet Photos. | A garder · B réviser ; effet : écran |
+| 1 | D-770 | NOTIF-0302 (D-765) : écran ouvert par chaque notification. | A garder · B réviser ; effet : écran |
 
 Gardées sans question (à confirmer seulement) :
 
