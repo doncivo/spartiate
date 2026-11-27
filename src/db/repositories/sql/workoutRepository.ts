@@ -8,6 +8,7 @@ import {
   SET_KINDS,
   WORKOUT_SOURCES,
   extendRestEnd,
+  endPause,
   isRestSeconds,
   planFromPastWorkout,
   planFromRoutineDay,
@@ -56,6 +57,9 @@ interface WorkoutRow extends SqlRow, SyncRow {
   readonly rest_timer_end_at: string | null;
   readonly rest_timer_seconds: number;
   readonly notes: string;
+  /** SESS-0302 : absentes d'une base antérieure à la migration 0024 (jamais en production : le migrateur passe avant ; banc de synchro au schéma 23). */
+  readonly paused_at?: string | null;
+  readonly paused_ms?: number | null;
 }
 interface SetRow extends SqlRow, SyncRow {
   readonly workout_id: string;
@@ -110,6 +114,7 @@ const rowToWorkout = (row: WorkoutRow): Workout => ({
   restTimerEndAt: row.rest_timer_end_at as IsoDateTime | null,
   restTimerSeconds: row.rest_timer_seconds,
   notes: row.notes,
+  ...(row.paused_ms === undefined ? {} : { pausedAt: (row.paused_at ?? null) as IsoDateTime | null, pausedMs: row.paused_ms ?? 0 }),
   ...readSyncMeta(row),
 });
 const rowToSet = (row: SetRow): WorkoutSet => ({
@@ -288,6 +293,12 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
   const requireOpenRow = async (): Promise<WorkoutRow> => {
     const row = await rawOpen();
     if (!row) throw new RepositoryError('not-found', 'workout', 'open');
+    return row;
+  };
+  /** SESS-0302 (D-658) : aucun repos pendant une pause. */
+  const requireRunningRow = async (): Promise<WorkoutRow> => {
+    const row = await requireOpenRow();
+    if (typeof row.paused_at === 'string') invalid('workout', row.id);
     return row;
   };
 
@@ -809,14 +820,14 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     },
 
     async startRest({ seconds }) {
-      const row = await requireOpenRow();
+      const row = await requireRunningRow();
       if (!isRestSeconds(seconds)) invalid('workout', row.id);
       const written = await writeRest(row.id, (now) => ({ endAt: restEndAt(now, seconds), seconds }));
       return { workoutId: row.id, endAt: written.endAt ?? '', seconds };
     },
 
     async extendRest(addSeconds = REST_EXTEND_SEC) {
-      const row = await requireOpenRow();
+      const row = await requireRunningRow();
       if (!isRestSeconds(addSeconds)) invalid('workout', row.id);
       const written = await writeRest(row.id, (now) => {
         const running = row.rest_timer_end_at !== null && Date.parse(row.rest_timer_end_at) > now;
@@ -834,6 +845,27 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
     getRest: async () => {
       const row = await rawOpen();
       return row ? toRest(row) : null;
+    },
+
+    async pauseWorkout(id) {
+      const row = await requireOpen(id);
+      if (typeof row.paused_at !== 'string') {
+        const stamp = stamper.next();
+        // Le repos en cours est annulé dans la même écriture (séance ouverte : rien n'est capturé ni publié, D-27).
+        // Cumul nul (séance jamais mise en pause) : écrit 0 dès la première pause.
+        await db.execute('UPDATE workout SET paused_at = ?, paused_ms = ?, rest_timer_end_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, row.paused_ms ?? 0, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      }
+      return loadOrThrow(id);
+    },
+
+    async resumeWorkout(id) {
+      const row = await requireOpen(id);
+      if (typeof row.paused_at === 'string') {
+        const stamp = stamper.next();
+        const next = endPause({ pausedAt: row.paused_at, pausedMs: row.paused_ms ?? 0 }, Date.parse(stamp.at));
+        await db.execute('UPDATE workout SET paused_at = NULL, paused_ms = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [next.pausedMs, stamp.at, stamp.deviceId, stamp.hlc, id]);
+      }
+      return loadOrThrow(id);
     },
 
     async discard(id) {
@@ -863,6 +895,11 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
         await db.execute('UPDATE workout_set SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
         // I2-01 : les décisions prises pendant la séance suivent l'agrégat (même tampon ; mises en file par `sync_workout_close_decisions_au`).
         await db.execute('UPDATE recommendation_decision SET updated_at = ?, device_id = ?, hlc = ? WHERE workout_id = ?', [stamp.at, stamp.deviceId, stamp.hlc, workoutId]);
+        // SESS-0302 (D-658) : clôture pendant une pause : la pause en cours rejoint le cumul, avant la clôture (ligne publiée entière ensuite).
+        if (typeof row.paused_at === 'string') {
+          const folded = endPause({ pausedAt: row.paused_at, pausedMs: row.paused_ms ?? 0 }, Date.parse(stamp.at));
+          await db.execute('UPDATE workout SET paused_at = NULL, paused_ms = ? WHERE id = ? AND ended_at IS NULL', [folded.pausedMs, workoutId]);
+        }
         // Clôture : le déclencheur `sync_workout_au` met en file la séance et toutes ses séries (« * »), dans cette instruction.
         await db.execute('UPDATE workout SET ended_at = ?, rest_timer_end_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ? AND ended_at IS NULL', [
           stamp.at,

@@ -4,6 +4,7 @@ import { DEFAULT_PROGRESSION_CONFIG } from './config';
 import { analyzeHistory, isUnconfirmedOutlier } from './estimate1rm';
 import type { ExerciseSession, RoutineDay } from './types';
 import type { WorkoutSet, WorkoutWithSets } from './session';
+import { pausedMsAt, type PauseFields } from './pause';
 
 /**
  * Clôture d'une séance (I1-03 ; PRD § 13.5, § 13.8) : résumé (durée, séries, tonnage, records), écarts avec la routine d'origine
@@ -73,12 +74,13 @@ export function tonnageKg(sets: readonly WorkoutSet[], assisted: ReadonlySet<str
   return Math.round(sets.reduce((sum, s) => sum + setTonnageKg(s, assisted), 0) * 100) / 100;
 }
 
-export function workoutDurationSec(workout: { readonly startedAt: string; readonly endedAt: string | null }): number | null {
+/** Durée d'une séance close (secondes) ; SESS-0302 (D-658) : temps de pause retiré (cumul, et pause restée ouverte jusqu'à la fin). */
+export function workoutDurationSec(workout: PauseFields & { readonly startedAt: string; readonly endedAt: string | null }): number | null {
   if (workout.endedAt === null) return null;
   const start = Date.parse(workout.startedAt);
   const end = Date.parse(workout.endedAt);
   if (Number.isNaN(start) || Number.isNaN(end) || end < start) return null;
-  return Math.round((end - start) / 1000);
+  return Math.round(Math.max(0, end - start - pausedMsAt(workout, end)) / 1000);
 }
 
 const best = (sets: readonly WorkoutSet[], value: (s: WorkoutSet) => number): { value: number; set: WorkoutSet } | null => {

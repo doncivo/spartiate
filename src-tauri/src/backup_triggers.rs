@@ -4650,7 +4650,7 @@ pub const SUPERSEDED_TRIGGERS: [(&str, &str, &str, u32, u32); 3] = [
 /// de 1 à `APP_SCHEMA_VERSION`, même vide (migration sans déclencheur) : une version sans entrée, ou un déclencheur d'une base migrée absent
 /// d'ici, fait échouer `backup_versions.rs` (`i5_01_*`, comparaison avec `tests/fixtures/spartiate-migrations.json`). Jamais de version
 /// par défaut : un oubli ferait recréer à la restauration un déclencheur qu'une migration suivante créerait encore (« trigger already exists »).
-pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 23] = [
+pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 24] = [
     // SPA-001b (migration 0001) : profil et poids.
     (
         1,
@@ -4801,6 +4801,8 @@ pub const SPARTIATE_TRIGGERS_BY_VERSION: [(u32, &[&str]); 23] = [
             "sync_workout_set_corrected_from_au",
         ],
     ),
+    // SESS-0302 (migration 0024) : pause de séance (workout.paused_at, paused_ms), publiée avec la séance close, aucun déclencheur.
+    (24, &[]),
 ];
 
 /// I5-01 point 1.1 : tables créées par les migrations Spartiate (toutes versions). Un déclencheur hérité de l'ancien projet (nom absent de
