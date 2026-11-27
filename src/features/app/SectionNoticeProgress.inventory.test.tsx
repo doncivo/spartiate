@@ -169,7 +169,8 @@ async function warmRepos(): Promise<void> {
   const db = await openBaseDb(DEVICE, '2026-11-04T08:00:00.000Z');
   try {
     const repos = db.data.repos as unknown as Record<string, unknown>;
-    for (const key of ['profile', 'bodyWeights']) {
+    // FIX-0302b : toutes les fabriques (chacune importe son module à la demande), pas seulement celles d'un bloc connu.
+    for (const key of Object.keys(repos)) {
       const factory = repos[key];
       if (typeof factory !== 'function') continue;
       await (factory as () => unknown).call(repos);
@@ -209,7 +210,10 @@ async function warmBlocks(): Promise<void> {
     import('../strength/StrengthScore'),
     import('../../../content/strength/standards.json'),
     import('../../../content/exercises/exercises.json'),
+    import('../../../content/exercises/muscles.json'),
     import('../bodyProgress/BodyProgress'),
+    // FIX-0302b : rythme des mesures (CORPS-0301d), bloc à la demande monté par Corps › Mesures.
+    import('../settings/measurementRhythm/MeasurementRhythmSettings'),
     // CORPS-0301c : Mesures lit le profil et les pesées (dépôt chargé à la demande) ; module chauffé comme les blocs.
     import('../../db/repositories/sql/bodyRepositories'),
     import('../cardio/CardioProgress'),
