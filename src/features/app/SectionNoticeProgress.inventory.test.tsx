@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, normalize } from 'node:path';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHlcClock } from '../../domain/hlc';
 import type { DeviceId, LocalDate } from '../../domain/types';
@@ -122,6 +123,78 @@ describe('PROG-0301a : liste figée P-01 à P-38 (fermée sur docs/PROGRES-0301.
   });
 });
 
+/**
+ * FIX-0302b (cause de l'instabilité locale, docs/journal.md 2026-11-27) : un bloc de Progrès qui importe à froid un module pendant une attente de
+ * `findBy*` (une seconde) peut la dépasser sur un poste chargé. Tout module chargé à la demande par les blocs montés ici est donc préchauffé
+ * avant les attentes : chaque `import('…')` littéral des fichiers de ces blocs figure dans `warmBlocks`, et chaque dépôt lu pendant
+ * l'inventaire a été préchauffé (`warmRepos`). Aucun délai d'attente allongé.
+ */
+const PROGRESS_BLOCK_SOURCES = [
+  'src/features/app/SectionNoticeProgress.tsx',
+  'src/features/progress',
+  'src/features/recovery/RecoveryProgress.tsx',
+  'src/features/strength',
+  'src/features/bodyProgress',
+  'src/features/settings/measurementRhythm',
+  'src/features/cardio/CardioProgress.tsx',
+  'src/features/tracking',
+];
+const THIS_FILE = 'src/features/app/SectionNoticeProgress.inventory.test.tsx';
+
+function sourceFiles(path: string): string[] {
+  if (statSync(path).isFile()) return [path];
+  return readdirSync(path).flatMap((name) => sourceFiles(join(path, name))).filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file));
+}
+
+/** Chemins (depuis la racine, sans extension .ts/.tsx) des `import('…')` littéraux d'un fichier. */
+function dynamicImports(file: string, text: string = readFileSync(file, 'utf8')): string[] {
+  return [...text.matchAll(/import\(\s*'([^']+)'\s*\)/g)].map((m) => normalize(join(dirname(file), m[1] ?? '')).replace(/\\/g, '/').replace(/\.tsx?$/, ''));
+}
+
+describe('FIX-0302b : aucun import à froid pendant les attentes de l’inventaire', () => {
+  it('chaque import() littéral des blocs de Progrès est préchauffé par warmBlocks', () => {
+    const source = readFileSync(THIS_FILE, 'utf8');
+    const start = source.indexOf('\nasync function warmBlocks');
+    const warmed = new Set(dynamicImports(THIS_FILE, source.slice(start, source.indexOf('\n}\n', start))));
+    const wanted = new Set(PROGRESS_BLOCK_SOURCES.flatMap((path) => sourceFiles(path)).flatMap((file) => dynamicImports(file)));
+    expect([...wanted].filter((path) => !warmed.has(path)).sort()).toEqual([]);
+  });
+});
+
+/** Dépôts déjà préchauffés (appel de leur fabrique, qui importe leur module) avant les attentes. */
+const warmedRepos = new Set<string>();
+
+/** Fabriques de dépôts préchauffées : chacune importe son module à la demande une fois, hors de toute attente. */
+async function warmRepos(): Promise<void> {
+  const db = await openBaseDb(DEVICE, '2026-11-04T08:00:00.000Z');
+  try {
+    const repos = db.data.repos as unknown as Record<string, unknown>;
+    for (const key of ['profile', 'bodyWeights']) {
+      const factory = repos[key];
+      if (typeof factory !== 'function') continue;
+      await (factory as () => unknown).call(repos);
+      warmedRepos.add(key);
+    }
+  } finally {
+    await db.close();
+  }
+}
+
+/** Accès aux données qui note chaque fabrique de dépôt appelée (garde de l'inventaire). */
+function recordingData(data: TestDb['data'], seen: Set<string>): TestDb['data'] {
+  const repos = new Proxy(data.repos, {
+    get(target, key, receiver) {
+      const value: unknown = Reflect.get(target, key, receiver);
+      if (typeof value !== 'function' || typeof key !== 'string') return value;
+      return (...args: unknown[]) => {
+        seen.add(key);
+        return (value as (...a: unknown[]) => unknown).apply(target, args);
+      };
+    },
+  });
+  return { ...data, repos };
+}
+
 const usePc = (pc: boolean): void => {
   vi.stubGlobal('matchMedia', (query: string) => ({ matches: pc && query === PC_MEDIA_QUERY, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
 };
@@ -201,7 +274,10 @@ describe.each([
   ['PC', true],
 ] as const)('PROG-0301a : rien ne disparaît de Progrès (%s)', (_name, pc) => {
   let db: TestDb;
-  beforeAll(warmBlocks);
+  beforeAll(async () => {
+    await warmBlocks();
+    await warmRepos();
+  });
   beforeEach(async () => {
     usePc(pc);
     useNavigationStore.setState(INITIAL_NAVIGATION);
@@ -222,7 +298,8 @@ describe.each([
   });
 
   it('6 onglets dans l’ordre, 4 sous-onglets de Corps ; chaque élément P-nn dans son tabpanel', async () => {
-    mount(db);
+    const seen = new Set<string>();
+    mount(db, recordingData(db.data, seen));
     const list = await screen.findByRole('tablist', { name: 'Progrès' });
     expect(within(list).getAllByRole('tab').map((tab) => tab.textContent)).toEqual([...TABS]);
     for (const tab of TABS) {
@@ -238,6 +315,8 @@ describe.each([
         }
       }
     }
+    // FIX-0302b : aucun dépôt n'a été importé à froid pendant une attente.
+    expect([...seen].filter((key) => !warmedRepos.has(key)).sort(), 'dépôts lus sans préchauffage').toEqual([]);
   });
 
   it('P-07, P-29, P-36 : une lecture impossible est dite dans l’onglet, avec « Réessayer »', async () => {
