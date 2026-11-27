@@ -301,8 +301,8 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | ID | Sections |
 | --- | --- |
 | C-103 | 0.29.2 |
-| BL-185 | SideStore (renouvellement du 27/11) › iPhone |
 | C-105 | 0.29.2 |
+| BL-185 | SideStore (renouvellement du 27/11) › iPhone |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-012 | iPhone › Bibliothèque ; PC › Bibliothèque |
 | BL-013 | PC › Routines |
