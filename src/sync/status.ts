@@ -82,6 +82,8 @@ export function statusFromFacts(
     readonly folderLabel: string | null;
     readonly folderKind?: SyncStatus['folderKind'];
     readonly lastSyncAt: IsoDateTime | null;
+    /** SYNC-0302 (D-673) : l'heure `lastSyncAt` vient d'une lecture partielle. */
+    readonly partialRead?: boolean;
     readonly conflictsThisWeek: number;
     /** Y-07 (exigence d'Ali) : échec de réintégration lu dans `sync_meta` ; undefined : lecture impossible, valeur précédente gardée. */
     readonly reintegrationFailure?: ReintegrationFailure | null;
@@ -102,7 +104,7 @@ export function statusFromFacts(
   const phase = phaseOf(facts);
   const clockAhead = facts.devices.find((d) => !d.self && d.status === 'clock-ahead');
   // Champ facultatif : absent quand il n'y a pas d'échec (les états sans échec restent identiques à ceux du lot Y2).
-  const { reintegrationFailure: kept, forget: keptForget, reset: keptReset, ownDelete: keptDelete, warnings: keptWarnings, ...rest } = omitKey(omitKey(omitKey(omitKey(previous, 'stateUnreadable'), 'waitingSince'), 'errorStreak'), 'retryAt');
+  const { reintegrationFailure: kept, forget: keptForget, reset: keptReset, ownDelete: keptDelete, warnings: keptWarnings, ...rest } = omitKey(omitKey(omitKey(omitKey(omitKey(previous, 'stateUnreadable'), 'waitingSince'), 'errorStreak'), 'retryAt'), 'partialRead');
   const repeat = facts.outcome === 'failed' && extra.nowMs !== undefined ? errorRepeat(previous, facts.errorCode, extra.nowMs) : {};
   const ownDelete = extra.ownDelete ?? keptDelete ?? [];
   const warnings: readonly SyncStatusWarning[] = [...(facts.warnings ?? keptWarnings ?? []).filter((w) => w !== 'own-delete-failed'), ...(ownDelete.length > 0 ? ['own-delete-failed' as const] : [])];
@@ -124,6 +126,7 @@ export function statusFromFacts(
     folderLabel: extra.folderLabel,
     folderKind: extra.folderKind ?? previous.folderKind ?? null,
     lastSyncAt: extra.lastSyncAt,
+    ...(extra.partialRead ? { partialRead: true } : {}),
     devices: facts.devices.length > 0 || facts.outcome !== 'failed' ? facts.devices : previous.devices,
     pendingFiles: facts.pendingFiles,
     conflictsThisWeek: extra.conflictsThisWeek,
