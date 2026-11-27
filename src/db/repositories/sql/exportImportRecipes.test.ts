@@ -53,7 +53,7 @@ const apply = async (db: TestDb, incoming: ExportData, mode: 'merge' | 'replace'
 describe('export / import des recettes et de la journée déclarée (I4-07)', () => {
   it('trois tables exportées après la nutrition et avant la récupération (I5-01), recette avant ingrédient ; schéma 9 puis 10', () => {
     expect(TRAINING_EXPORT_TABLES.slice(0, TRAINING_EXPORT_TABLES.indexOf('cardio_session') + 1).slice(-12, -9)).toEqual(['day_completeness', 'recipe', 'recipe_ingredient']); // SYNC-0291 : positions comptées jusqu’à cardio_session (tables de la 0021 ensuite).
-    expect(EXPORT_SV).toBe(23); // SYNC-0291 : schéma 21 ; PROG-04 : schéma 20 ; PROG-01 : schéma 19 ; FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
+    expect(EXPORT_SV).toBe(24); // SYNC-0291 : schéma 21 ; PROG-04 : schéma 20 ; PROG-01 : schéma 19 ; FIX-0181 : schéma 15 (favoris publiés) ; RESET-01 : schéma 16 (data_reset, jamais exportée) ; I6-05 : schéma 17 (compléments). ; I6-06 : schéma 18 (cardio).
   });
 
   it('aller-retour : mêmes données (hash canonique), inconnus conservés nuls, publiées comme toute écriture', async () => {
