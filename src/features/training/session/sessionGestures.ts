@@ -34,6 +34,8 @@ const ARMED = 'ct-session__set--armed';
 const RETURNING = 'ct-session__set--returning';
 const LIFTED = 'ct-session__block--lifted';
 const FIELDS = 'input, select, textarea';
+/** Retour élastique : 160 ms de transition (Session.css), classe retirée au plus tard après ce délai. */
+const RETURN_FALLBACK_MS = 300;
 
 const isFinger = (event: PointerEvent): boolean => event.pointerType === 'touch' && event.isPrimary !== false;
 const capture = (el: Element, pointerId: number): void => {
@@ -60,7 +62,7 @@ export function attachSwipeToDelete(row: HTMLElement, options: SwipeOptions): ()
     if (event.target instanceof Element && event.target.closest(FIELDS) !== null) return;
     start = { id: event.pointerId, x: event.clientX, y: event.clientY };
     axis = 'pending';
-    row.classList.remove(RETURNING);
+    settled();
   };
   const move = (event: PointerEvent): void => {
     if (start === null || event.pointerId !== start.id) return;
@@ -90,7 +92,7 @@ export function attachSwipeToDelete(row: HTMLElement, options: SwipeOptions): ()
       options.onSwipe();
       return;
     }
-    if (swiped) row.classList.add(RETURNING);
+    if (swiped) returning();
   };
   const cancel = (): void => {
     if (start === null) return;
@@ -98,9 +100,20 @@ export function attachSwipeToDelete(row: HTMLElement, options: SwipeOptions): ()
     start = null;
     axis = 'pending';
     reset();
-    if (swiped) row.classList.add(RETURNING);
+    if (swiped) returning();
   };
-  const settled = (): void => row.classList.remove(RETURNING);
+  // Secours si `transitionend` ne vient pas (animations réduites, transition interrompue) : la classe de retour est retirée quand même.
+  let settleTimer: ReturnType<typeof setTimeout> | null = null;
+  const settled = (): void => {
+    if (settleTimer !== null) clearTimeout(settleTimer);
+    settleTimer = null;
+    row.classList.remove(RETURNING);
+  };
+  const returning = (): void => {
+    row.classList.add(RETURNING);
+    if (settleTimer !== null) clearTimeout(settleTimer);
+    settleTimer = setTimeout(settled, RETURN_FALLBACK_MS);
+  };
 
   row.addEventListener('pointerdown', down);
   row.addEventListener('pointermove', move);
@@ -114,7 +127,7 @@ export function attachSwipeToDelete(row: HTMLElement, options: SwipeOptions): ()
     row.removeEventListener('pointercancel', cancel);
     row.removeEventListener('transitionend', settled);
     reset();
-    row.classList.remove(RETURNING);
+    settled();
     row.style.touchAction = previousTouchAction;
   };
 }

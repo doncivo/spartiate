@@ -24,6 +24,7 @@ import { withExcluded } from '../../../domain/training/exclusions';
 import { recordsOfSet } from '../../../domain/training/sessionRecords';
 import { loadExcludedExercises, writeExcluded } from '../exclusionsStore';
 import { moveUnitOrder, sessionUnits, skipUnitOrder, type SessionUnit } from '../../../domain/training/sessionOrder';
+import { restoreAnchor } from '../../../domain/training/setRestore';
 import { setKindPatch, type SetKindChoice } from '../../../domain/training/failureSet';
 import { implementOf } from '../../../domain/training/replacement';
 import { warmupExerciseIds } from '../../../domain/training/warmup';
@@ -191,7 +192,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   /** GEST-0303 : unité soulevée par un appui long ; dernière place annoncée ; bouton à refocaliser après un déplacement. */
   const [lifted, setLifted] = useState<string | null>(null);
   const [moveStatus, setMoveStatus] = useState<string | null>(null);
-  const pendingMoveFocus = useRef<{ readonly exerciseId: string; readonly dir: 'up' | 'down' } | null>(null);
+  const pendingMoveFocus = useRef<{ readonly exerciseId: string; readonly dir: 'up' | 'down' | 'head' } | null>(null);
   const live = useRef(true);
   // Garde du double appui : un second « Terminer » arrivé avant le nouveau rendu ne relance pas la clôture.
   const closing = useRef(false);
@@ -542,20 +543,26 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // GEST-0303 (BL-169, D-653, § 18.1, § 18.6) : série glissée vers la gauche = supprimée (avec « Annuler ») ; appui long sur un exercice =
   // réordonner ; « Monter » / « Descendre » en alternative accessible. Gestes suspendus pendant la pause et pendant une écriture.
   // ---------------------------------------------------------------------------------------------------------------------------------
-  /** Place l'unité `key` à `toIndex`, écrit l'ordre et l'annonce ; `focus` : bouton à refocaliser une fois l'ordre relu. */
-  async function moveUnit(key: string, toIndex: number, focus: 'up' | 'down' | null): Promise<void> {
+  /**
+   * Place l'unité `key` à `toIndex`, écrit l'ordre et l'annonce (région vidée avant : une annonce identique est relue) ; `focus` : bouton
+   * (« Monter » / « Descendre ») ou tête de l'exercice déplacé (appui long), refocalisé une fois l'ordre relu.
+   */
+  async function moveUnit(key: string, toIndex: number, focus: 'up' | 'down' | 'head'): Promise<void> {
     const unit = units.find((x) => x.key === key);
     const order = moveUnitOrder(workout.sets, key, toIndex);
     if (unit === undefined || order === null) return;
     const to = Math.max(0, Math.min(units.length - 1, toIndex));
-    pendingMoveFocus.current = focus === null ? null : { exerciseId: unit.exerciseIds[0] ?? '', dir: focus };
+    setMoveStatus(null);
+    pendingMoveFocus.current = { exerciseId: unit.exerciseIds[0] ?? '', dir: focus };
     const ok = await write((repo) => repo.reorderSets(workout.id, order));
     if (!ok) pendingMoveFocus.current = null;
     if (ok && live.current) setMoveStatus(tSession('reorderDone', { name: nameOfUnit(unit), n: to + 1, total: units.length }));
   }
   /** Série glissée : saisie pas encore gardée écrite puis série supprimée, d'une transaction ; « Annuler » la remet à sa place. */
   async function swipeRemove(set: WorkoutSet, title: string, patch: Partial<SetEntry> | null): Promise<void> {
-    const index = workout.sets.findIndex((s) => s.id === set.id);
+    // Relecture : repère relevé dans l'unité de la série (voisine vivante), pas un index global que d'autres changements rendraient faux.
+    const anchor = restoreAnchor(workout.sets, set.id);
+    if (anchor === null) return;
     const ok = await write(async (repo) => {
       if (patch !== null) await repo.updateSet(set.id, patch);
       await repo.removeSet(set.id);
@@ -568,12 +575,14 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       undo: async () => {
         try {
           await access.transaction(async (repos) => {
-            await (await repos.workouts()).restoreSet(set.id, index);
+            await (await repos.workouts()).restoreSet(set.id, anchor);
           });
         } catch (e) {
-          // Séance close entre-temps (série effacée à la clôture) ou série déjà rendue : rien n'est écrit.
-          if (e instanceof RepositoryError) return 'stale';
-          throw e;
+          if (!(e instanceof RepositoryError)) throw e;
+          // Rien n'est écrit ; la cause est dite : séance close (série effacée à la clôture), en pause, ou changée (voisine, groupe, exercice).
+          const now = await (await access.repos.workouts()).get(workout.id).catch(() => null);
+          const key = now === null || now.endedAt !== null ? 'undoStaleSetClosed' : isPaused(now) ? 'undoStaleSetPaused' : 'undoStaleSet';
+          return { status: 'stale', message: tSession(key) };
         }
         const fresh = await (await access.repos.workouts()).get(workout.id);
         if (live.current && fresh !== null) onWorkout(fresh);
@@ -608,7 +617,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       },
       onDrop: (key, to) => {
         setLifted(null);
-        void gestureState.current.move(key, to, null);
+        void gestureState.current.move(key, to, 'head');
       },
       onCancel: () => setLifted(null),
     });
@@ -618,6 +627,10 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     if (wanted === null) return;
     pendingMoveFocus.current = null;
     const block = document.getElementById(`ct-session-block-${wanted.exerciseId}`);
+    if (wanted.dir === 'head') {
+      block?.querySelector<HTMLElement>('.ct-session__block-title')?.focus();
+      return;
+    }
     const button = block?.querySelector<HTMLElement>(`.ct-session__move-${wanted.dir}`);
     const other = block?.querySelector<HTMLElement>(`.ct-session__move-${wanted.dir === 'up' ? 'down' : 'up'}`);
     (button?.getAttribute('aria-disabled') === 'true' ? other : button)?.focus();
@@ -801,7 +814,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             data-reorder-key={unit?.key}
           >
             <div className="ct-session__block-head" data-reorder-handle="">
-              <h3 className="ct-session__block-title">{block.exerciseName}</h3>
+              <h3 className="ct-session__block-title" tabIndex={-1}>
+                {block.exerciseName}
+              </h3>
               <p className="ct-session__muted">
                 {/* 0.2.3 : un repos nul ou absent n'affiche plus « repos 0 s ». */}
                 {!restSec
@@ -866,7 +881,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                 <>
                   <Button
                     variant="secondary"
-                    className="ct-session__move-up"
+                    className="ct-session__move ct-session__move-up"
                     disabled={locked}
                     ariaDisabled={unitIndex === 0}
                     ariaLabel={tSession('moveUpLabel', { name: nameOfUnit(unit) })}
@@ -876,7 +891,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                   </Button>
                   <Button
                     variant="secondary"
-                    className="ct-session__move-down"
+                    className="ct-session__move ct-session__move-down"
                     disabled={locked}
                     ariaDisabled={unitIndex === units.length - 1}
                     ariaLabel={tSession('moveDownLabel', { name: nameOfUnit(unit) })}

@@ -33,7 +33,7 @@ const deletedAt = async (id: string): Promise<string | null | undefined> =>
 describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => {
   it('la série supprimée revient intacte après son repère, positions contiguës, rien en file de synchro', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1] = sets.map((id) => id);
+    const [b0, b1] = sets as [string, string, string, string];
     const second = must(b1);
     await repo.validateSet(must(b0), { loadKg: 80, reps: 8 });
     await repo.updateSet(second, { loadKg: 82.5, reps: 7, rir: 2 });
@@ -53,7 +53,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('réordonner puis annuler : la série revient après sa voisine, pas à son ancien index', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1, b2, r0] = sets.map((id) => must(id));
+    const [b0, b1, b2, r0] = sets as [string, string, string, string];
     await repo.removeSet(b1);
     await repo.reorderSets(W1, [r0, b0, b2]);
     await repo.restoreSet(b1, { kind: 'after', id: b0 });
@@ -62,7 +62,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('repère disparu ou unité changée : conflict, rien n’est écrit', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1, , r0] = sets.map((id) => must(id));
+    const [b0, b1, , r0] = sets as [string, string, string, string];
     await repo.removeSet(b1);
     await repo.removeSet(b0);
     await expect(repo.restoreSet(b1, { kind: 'after', id: b0 })).rejects.toMatchObject({ code: 'conflict' });
@@ -72,7 +72,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('séance en pause : invalid, rien n’est écrit ; après la reprise, la série revient', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1] = sets.map((id) => must(id));
+    const [b0, b1] = sets as [string, string, string, string];
     await repo.removeSet(b1);
     await repo.pauseWorkout(W1);
     await expect(repo.restoreSet(b1, { kind: 'after', id: b0 })).rejects.toMatchObject({ code: 'invalid' });
@@ -84,7 +84,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('séance pleine (WORKOUT_SETS_MAX séries vivantes) : invalid, comme un ajout', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1] = sets.map((id) => must(id));
+    const [b0, b1] = sets as [string, string, string, string];
     await repo.removeSet(b1);
     // Séance remplie d'un bloc (copies de la série de rowing) : 3 vivantes + 197 = WORKOUT_SETS_MAX.
     await db.driver.execute(
@@ -99,7 +99,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('refus sans écriture : série vivante (invalid), absente (not-found), séance close (série effacée à la clôture : not-found)', async () => {
     const { repo, sets } = await seeded();
-    const [b0, b1, b2] = sets.map((id) => must(id));
+    const [b0, b1, b2] = sets as [string, string, string, string];
     await expect(repo.restoreSet(b1, { kind: 'after', id: b0 })).rejects.toMatchObject({ code: 'invalid' });
     await expect(repo.restoreSet(u(999), { kind: 'after', id: b0 })).rejects.toMatchObject({ code: 'not-found' });
     await repo.removeSet(b2);
@@ -111,7 +111,7 @@ describe('GEST-0303 : restoreSet (annulation d’une série supprimée)', () => 
 
   it('séance close dont la série supprimée existerait encore : invalid, rien n’est écrit', async () => {
     const { repo, sets } = await seeded();
-    const [, b1, b2] = sets.map((id) => must(id));
+    const [, b1, b2] = sets as [string, string, string, string];
     await repo.removeSet(b2);
     // Ligne gardée par une base plus ancienne (cas hypothétique) : la clôture est simulée sans purge.
     await db.driver.execute("UPDATE workout SET ended_at = '2026-10-01T09:00:00.000Z' WHERE id = ?", [W1]);

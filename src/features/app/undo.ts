@@ -19,6 +19,11 @@ import { getLocale, tDynamic, type MessageKey } from '../../i18n';
 export type UndoKind = 'complete' | 'reopen' | 'postpone' | 'move' | 'someday' | 'schedule' | 'duplicate' | 'delete' | 'series' | 'routine' | 'goal' | 'checklist' | 'event' | 'search' | 'linkedTask' | 'tabs' | 'capture' | 'import' | 'syncRestore';
 
 export type UndoOutcome = 'undone' | 'stale';
+/** GEST-0303 : annulation impossible avec son propre message (texte déjà résolu par la commande) ; sinon « Action impossible à annuler ». */
+export interface UndoStale {
+  readonly status: 'stale';
+  readonly message: string;
+}
 
 export interface UndoableCommand {
   readonly kind: UndoKind;
@@ -28,12 +33,12 @@ export interface UndoableCommand {
   readonly labelParams?: Readonly<Record<string, string | number>>;
   /** Libellé propre à la commande (ex. report « à demain » / « au {date} ») ; sinon `UNDO_LABEL_KEYS[kind]`. */
   readonly labelKey?: MessageKey;
-  undo(): Promise<UndoOutcome>;
+  undo(): Promise<UndoOutcome | UndoStale>;
 }
 
 export type UndoResult =
   | { readonly status: 'empty' }
-  | { readonly status: UndoOutcome; readonly command: UndoableCommand };
+  | { readonly status: UndoOutcome; readonly command: UndoableCommand; readonly message?: string };
 
 export interface UndoSnapshot {
   /** Dernière commande annulable (celle du message « Annuler »). */
@@ -117,8 +122,8 @@ export function createUndoStack(capacity: number = UNDO_STACK_CAPACITY): UndoSta
     if (!command) return { status: 'empty' };
     publish();
     // Une commande en échec est retirée quand même : pas de boucle sur une erreur.
-    const status = await command.undo();
-    return { status, command };
+    const outcome = await command.undo();
+    return typeof outcome === 'string' ? { status: outcome, command } : { status: outcome.status, command, message: outcome.message };
   };
 
   return {

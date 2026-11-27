@@ -127,4 +127,8 @@ export const trainingSessionFr = {
   moveDownLabel: 'Descendre « {name} »',
   reorderLifted: '« {name} » soulevé : glisse vers le haut ou le bas, puis relâche.',
   reorderDone: '« {name} » en position {n} sur {total}.',
+  // Relecture GEST-0303 (accessibility-i18n) : annulation impossible d'une série glissée, cause dite.
+  undoStaleSet: 'Série impossible à rétablir : la séance a changé.',
+  undoStaleSetClosed: 'Série impossible à rétablir : la séance est terminée.',
+  undoStaleSetPaused: 'Série impossible à rétablir pendant la pause.',
 } as const;

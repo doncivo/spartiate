@@ -30,7 +30,7 @@ export function UndoToast() {
     setClosedAt(container.undo.getSnapshot().pushCount);
     try {
       const result = await container.undo.undoLast();
-      if (result.status === 'stale') showNotice(t('undo.stale'));
+      if (result.status === 'stale') showNotice('message' in result && result.message !== undefined ? result.message : t('undo.stale'));
     } catch {
       showNotice(t('undo.failed'));
     }

@@ -204,6 +204,45 @@
   user-select: none;
 }
 
+/* Région d'annonce des déplacements : vide, elle ne prend aucune place (reste dans l'arbre d'accessibilité). */
+.ct-session__move-status:empty {
+  margin: 0;
+}
+
+/*
+ * Relecture GEST-0303 (accessibility-i18n) : « Monter » / « Descendre » restent dans le DOM pour VoiceOver et le clavier, masqués visuellement
+ * (jamais display:none ni visibility:hidden), révélés au focus clavier avec une cible d'au moins 44 px ; la maquette iPhone-Seance est inchangée.
+ */
+.ct-button.ct-session__move {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ct-button.ct-session__move:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  min-width: var(--ct-hit-target-min);
+  min-height: var(--ct-hit-target-min);
+  margin: 0;
+  padding: 0 var(--ct-space-3);
+  border: 1px solid var(--ct-color-border-strong);
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+}
+
 .ct-session__block--lifted {
   position: relative;
   z-index: 1;
