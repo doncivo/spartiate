@@ -15,7 +15,7 @@
 // - le délégué est réaffirmé à chaque `didBecomeActive` ; `status` dit s'il est bien le nôtre.
 //
 // Fichier : Library/Application Support/ct-notification-actions/queue.jsonl, une ligne JSON par action :
-//   {"v":1,"n":<entier>,"a":"done"|"snooze15"|"extend30"|"skip","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
+//   {"v":1,"n":<entier>,"a":"done"|"snooze15"|"extend30"|"skip"|"open","t":<ms UTC de la réponse>,"sid":<chaîne|null>,"at":<ms UTC de l'échéance|null>}
 // Catégories : categories.json (même dossier), relu au chargement du plugin pour que les boutons existent avant le premier JS.
 
 import Darwin
@@ -69,7 +69,7 @@ private let directoryName = "ct-notification-actions"
 private let queueFileName = "queue.jsonl"
 private let categoriesFileName = "categories.json"
 private let writeFailuresKey = "fr.spartiate.notification-actions.writeFailures"
-private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip"]
+private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip", "open"]
 
 /// Lecture et écriture du fichier ; une seule file série pour tout le plugin.
 private final class ActionStore {
@@ -296,13 +296,14 @@ private final class ActionsDelegate: NSObject, UNUserNotificationCenterDelegate 
     completionHandler([.banner, .list, .sound])
   }
 
-  /// Réponse de l'utilisateur : « Fait » et « +15 min » sont écrites dans le fichier AVANT le gestionnaire de fin ; l'appui simple, le
-  /// rejet et toute autre action n'écrivent rien (l'app s'ouvre, rien à appliquer).
+  /// Réponse de l'utilisateur : les actions connues et l'appui simple (« open », NOTIF-0302) sont écrits dans le fichier AVANT le gestionnaire
+  /// de fin ; le rejet et toute autre action n'écrivent rien.
   func userNotificationCenter(
     _ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
-    let action = response.actionIdentifier
+    // NOTIF-0302 (BL-184, D-765) : l'appui simple est écrit comme « open », avec le sid de la notification, pour que l'app ouvre son écran.
+    let action = response.actionIdentifier == UNNotificationDefaultActionIdentifier ? "open" : response.actionIdentifier
     guard knownActions.contains(action) else {
       completionHandler()
       return

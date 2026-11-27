@@ -19,6 +19,24 @@ export const NOTIFICATION_ACTION_IDS: readonly NotificationActionId[] = ['done',
 export type RestActionId = 'extend30' | 'skip';
 export const REST_ACTION_IDS: readonly RestActionId[] = ['extend30', 'skip'];
 export const isRestActionId = (value: unknown): value is RestActionId => value === 'extend30' || value === 'skip';
+/**
+ * NOTIF-0302 (BL-184, D-765) : appui simple sur une notification (`UNNotificationDefaultActionIdentifier`), écrit par le plugin comme action
+ * « open » avec l'identifiant de la notification (`extra.sid`). Ici pour la même raison que les actions de repos (D-604). Cible : `notificationTargets.ts`.
+ */
+export const OPEN_ACTION_ID = 'open';
+export const isOpenActionId = (value: unknown): value is typeof OPEN_ACTION_ID => value === OPEN_ACTION_ID;
+
+/** Appui simple tel que le rend le fichier natif (une ligne). */
+export interface RawOpenAction {
+  readonly numericId: number;
+  readonly actionId: typeof OPEN_ACTION_ID;
+  /** Instant de l'appui (ms UTC). */
+  readonly receivedAtMs: number;
+  /** Identifiant stable de la notification (`extra.sid`) ; null s'il manquait. */
+  readonly sid: string | null;
+  readonly deliveredAt: number | null;
+}
+
 /** Catégorie de la notification de fin de repos (`actionTypeId` envoyé avec `show`). */
 export const REST_ACTION_TYPE_ID = 'sp.rest';
 

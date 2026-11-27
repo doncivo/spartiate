@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { RawNotificationAction } from '../../domain/notificationActions';
 import { NotificationActionSourceError, type ActionTypeSpec } from './actions';
 import { createFakeNotificationActionSource } from './fakeActions';
@@ -134,5 +136,31 @@ describe('résolveur', () => {
 
   it('l’iPhone installé a la source du plugin (chargée à la demande)', () => {
     expect(openNotificationActionSource('tauri', 'ios')).not.toBeNull();
+  });
+});
+
+describe('NOTIF-0302 (BL-184, D-765) : appui simple sur une notification', () => {
+  it('drain : la ligne « open » (appui simple) est rendue à part, comptée dans les lignes, jamais illisible', () => {
+    const drain = parseDrain({ entries: [LINE, { ...LINE, a: 'open', sid: 'measurement:2026-11-27', at: null }], lines: 2, unreadable: 0, writeFailures: 0 });
+    expect(drain.entries).toHaveLength(1);
+    expect(drain.opens).toEqual([{ numericId: 70001, actionId: 'open', receivedAtMs: 1_760_000_000_000, sid: 'measurement:2026-11-27', deliveredAt: null }]);
+    expect(drain.unreadable).toBe(0);
+    expect(drain.lines).toBe(2);
+  });
+
+  it('faux : un appui poussé est tiré à part des actions de rappel et de repos', async () => {
+    const source = createFakeNotificationActionSource();
+    source.push({ numericId: 9, actionId: 'open', receivedAtMs: 1, sid: 'timer:rest', deliveredAt: null });
+    const drain = await source.drain();
+    expect(drain.entries).toEqual([]);
+    expect(drain.rest).toEqual([]);
+    expect(drain.opens).toEqual([{ numericId: 9, actionId: 'open', receivedAtMs: 1, sid: 'timer:rest', deliveredAt: null }]);
+    expect(drain.lines).toBe(1);
+  });
+
+  it('Swift : l’appui simple (UNNotificationDefaultActionIdentifier) est écrit comme « open » avec son sid, et relu au drain', () => {
+    const swift = readFileSync(join(__dirname, '..', '..', '..', 'src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift'), 'utf8');
+    expect(swift).toMatch(/knownActions: Set<String> = \[[^\]]*"open"/);
+    expect(swift).toMatch(/UNNotificationDefaultActionIdentifier\s*\?\s*"open"/);
   });
 });

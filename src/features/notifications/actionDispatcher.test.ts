@@ -167,3 +167,46 @@ describe('répartiteur des actions de notification', () => {
     expect(maxInFlight).toBe(1);
   });
 });
+
+describe('NOTIF-0302 (BL-184, D-765) : appuis simples', () => {
+  it('les appuis vont au gestionnaire d’ouverture, jamais aux compléments ; un seul acquittement couvre toutes les lignes', async () => {
+    const source = createFakeNotificationActionSource();
+    const tap = { numericId: 70002, actionId: 'open' as const, receivedAtMs: AT + 3_000, sid: 'measurement:2026-11-27', deliveredAt: null };
+    source.push(done);
+    source.push(tap);
+    const supplement = supplementRig();
+    const opened: unknown[] = [];
+    const dispatcher = createActionDispatcher({
+      source,
+      supplement: supplement.make,
+      rest: async () => true,
+      open: (opens) => void opened.push(opens),
+      restTypes: REST_TYPES,
+      log: () => undefined,
+    });
+    await dispatcher.run();
+    expect(opened).toEqual([[tap]]);
+    expect(supplement.seen).toEqual([[done]]);
+    expect(source.calls).toEqual(['drain', 'ack:2']);
+  });
+
+  it('gestionnaire d’ouverture en échec : journalisé, les compléments passent quand même', async () => {
+    const source = createFakeNotificationActionSource();
+    source.push({ numericId: 70002, actionId: 'open', receivedAtMs: AT, sid: 'timer:rest', deliveredAt: null });
+    const codes: string[] = [];
+    const supplement = supplementRig();
+    const dispatcher = createActionDispatcher({
+      source,
+      supplement: supplement.make,
+      rest: async () => true,
+      open: () => {
+        throw new Error('ouverture impossible (test)');
+      },
+      restTypes: REST_TYPES,
+      log: (code) => codes.push(code),
+    });
+    expect(await dispatcher.run()).toEqual(RUN);
+    expect(codes).toEqual(['notification-open-failed']);
+    expect(source.calls).toEqual(['drain', 'ack:1']);
+  });
+});

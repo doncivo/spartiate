@@ -52,6 +52,9 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
   const [prefs, setPrefs] = useState<MeasurementPrefs>({ rhythm: DEFAULT_MEASUREMENT_RHYTHM_DAYS, reminder: true });
   const [result, setResult] = useState<MeasurementNotificationResult | null>(null);
   const [saveFailed, setSaveFailed] = useState(false);
+  // FIX-0302a (BL-183) : avant la lecture des réglages, l'écran ne connaît que les valeurs par défaut ; les contrôles restent inactifs jusque-là,
+  // sinon un choix enregistrerait le rythme par défaut et écraserait un 14 ou un 28 déjà stocké.
+  const [loaded, setLoaded] = useState(false);
   // Relecture (point 4) : une lecture des réglages arrivée après un choix de l'utilisateur ne l'écrase pas.
   const touched = useRef(false);
   const schedule = measurementSchedule(
@@ -68,11 +71,13 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
       .then(async (service) => {
         const read = await service.readPrefs();
         if (live && !touched.current) setPrefs(read);
+        if (live) setLoaded(true);
         const replanned = await service.replan();
         if (live) setResult(replanned);
       })
       // Service introuvable (bloc non chargé) : l'échec est dit à l'écran, jamais avalé.
       .catch(() => {
+        if (live) setLoaded(true);
         if (live) setResult({ status: 'failed', planned: 0, reason: 'unknown' });
       });
     return () => {
@@ -117,11 +122,12 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
         label={tMeasurementRhythm('title')}
         options={MEASUREMENT_RHYTHMS_DAYS.map((days) => ({ value: String(days), label: tMeasurementRhythm(RHYTHM_TEXT[days]) }))}
         value={String(prefs.rhythm)}
+        disabled={!loaded}
         onChange={(value) => void save({ ...prefs, rhythm: parseMeasurementRhythm(value) }, false)}
       />
       {!pc ? (
         <>
-          <Switch checked={prefs.reminder} label={tMeasurementRhythm('reminderLabel')} onChange={(reminder) => void save({ ...prefs, reminder }, reminder)} />
+          <Switch checked={prefs.reminder} disabled={!loaded} label={tMeasurementRhythm('reminderLabel')} onChange={(reminder) => void save({ ...prefs, reminder }, reminder)} />
           <p className="ct-today__muted">{tMeasurementRhythm('reminderHint')}</p>
         </>
       ) : null}

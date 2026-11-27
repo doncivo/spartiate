@@ -63,7 +63,7 @@ describe('fichier natif : actions de repos à part', () => {
 
 describe('plugin Swift notification-actions : actions de repos acceptées', () => {
   const swift = readFileSync(join(__dirname, '..', '..', '..', 'src-tauri/plugins/notification-actions/ios/Sources/NotificationActionsPlugin.swift'), 'utf8');
-  it('knownActions : done, snooze15, extend30, skip', () => {
-    expect(swift).toContain('private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip"]');
+  it('knownActions : done, snooze15, extend30, skip, open (NOTIF-0302 : appui simple)', () => {
+    expect(swift).toContain('private let knownActions: Set<String> = ["done", "snooze15", "extend30", "skip", "open"]');
   });
 });
