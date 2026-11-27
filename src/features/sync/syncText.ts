@@ -192,7 +192,9 @@ export function statusLine(status: SyncStatus, nowMs: number): string {
       // Jamais « À jour » tant que cet appareil n'a pas publié son état, que des modifications reçues restent inappliquées ou qu'un autre
       // appareil a des fichiers illisibles (Y-FIX-03, ADR 0011 §31).
       if (status.warnings?.some((code) => code === 'own-delete-failed' || code === 'publish-blocked' || code === 'publish-dropped' || code === 'received-unapplied' || code === 'awaiting-other-devices' || code === 'carry-held' || code === 'carry-report' || code === 'older-device') || status.devices.some((d) => !d.self && d.status === 'corrupt')) return t('sync.status.incomplete');
-      return status.lastSyncAt ? t('sync.status.upToDate', { age: formatSyncAge(status.lastSyncAt, nowMs) }) : t('sync.status.neverSynced');
+      if (!status.lastSyncAt) return t('sync.status.neverSynced');
+      // SYNC-0302 (D-673) : l'heure avance, « lecture partielle » à côté (jamais « À jour »).
+      return t(status.partialRead ? 'sync.status.upToDatePartial' : 'sync.status.upToDate', { age: formatSyncAge(status.lastSyncAt, nowMs) });
   }
 }
 
@@ -282,7 +284,7 @@ export function isTroublePhase(status: SyncStatus): boolean {
 /** Le vert et l'annonce de succès exigent un cycle complet, sans travail ou erreur restant visible. */
 export function syncStatusTone(status: SyncStatus): 'success' | 'neutral' | 'danger' {
   if (isTroublePhase(status)) return 'danger';
-  const incomplete = Boolean(status.warnings?.length || status.pendingFiles.length || status.stateUnreadable || status.ownDelete?.length || status.forget?.failure || status.reset?.failure || status.devices.some((device) => !device.self && device.status === 'corrupt'));
+  const incomplete = Boolean(status.partialRead || status.warnings?.length || status.pendingFiles.length || status.stateUnreadable || status.ownDelete?.length || status.forget?.failure || status.reset?.failure || status.devices.some((device) => !device.self && device.status === 'corrupt'));
   return status.phase === 'idle' && status.lastSyncAt !== null && !incomplete ? 'success' : 'neutral';
 }
 

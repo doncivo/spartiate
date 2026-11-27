@@ -65,6 +65,8 @@ export const META = {
   dataResetApplied: 'dataResetApplied',
   /** RESET-01 : heure locale (ms) du dernier effacement fait ici ; les sauvegardes antérieures ne se restaurent plus (D-185). */
   dataResetWipedAt: 'dataResetWipedAt',
+  /** SYNC-0302 (D-673) : heure de dernière synchro posée alors qu'un appareil n'a pas été lu en entier, `{ at }` ; effacée par le premier cycle complet. */
+  partialRead: 'partialRead',
 } as const;
 
 /** Valeur JSON de `sync_meta` ; absente : null ; illisible : `SyncStateUnreadableError` journalisée (jamais lue comme absente). */

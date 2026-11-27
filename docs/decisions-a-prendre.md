@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-421 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+425 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -263,7 +263,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-690 | NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » sans saut de ligne final est refusé en entier, sans rien … | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (93 : 54 à trancher, 39 à confirmer seulement)
+### synchro et données (97 : 57 à trancher, 40 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -284,6 +284,7 @@ Gardées sans question (à confirmer seulement) :
 | 8 | D-561 | NUTRI-0292. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 8 | D-630 | DATA-0295 (BL-003) : réparations de l'ancien schéma sorties de SyncRepository. | A garder · B réviser ; effet : moteur, synchro, schéma |
 | 8 | D-760 | CORPS-0301d (D-713) : clés et effacement du rythme des mesures. | A garder · B réviser ; effet : synchro, schéma, données |
+| 8 | D-774 | SYNC-0302 (D-673, BL-039). | A garder · B réviser ; effet : synchro, schéma, données |
 | 7 | D-75 | Catalogue alimentaire et journal persistant (I4-02, mission de nuit du 2026-11-08). | A garder · B réviser ; effet : synchro, schéma |
 | 7 | D-100 | I6-02 (0.13.0) : mensurations et migration 0012 (schéma 12). | A garder · B réviser ; effet : schéma, données, écran |
 | 7 | D-275 | PROG-01 (0.24.0) : limite connue de la synchro entre schémas, consignée (relecture sync-icloud du 14/11 ). | A garder · B réviser ; effet : synchro, schéma |
@@ -306,6 +307,7 @@ Gardées sans question (à confirmer seulement) :
 | 4 | D-583 | DATA-0293. | A garder · B réviser ; effet : synchro, écran |
 | 4 | D-627 | SHELL-0294f (BL-166) : intention d'ajout d'une époque passée jamais publiée comme tête. | A garder · B réviser ; effet : synchro |
 | 4 | D-763 | CORPS-0301d (D-713) : autorisation des notifications pour le rappel des mesures. | A garder · B réviser ; effet : synchro, écran |
+| 4 | D-776 | SYNC-0302 (D-673, BL-039). | A garder · B réviser ; effet : synchro, écran |
 | 3 | D-469 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-141 | FIX-0173 (constat 4) : unité de measurement.value dans l'export complet selon le genre. | A garder · B réviser ; effet : chiffre |
 | 2 | D-334 | FIX-EXPORT (0.28.0) : horizon de remise à zéro dans le manifeste d'export, refus d'une archive qui ramènerait des données effacées (C-109; complète … | A garder · B réviser ; effet : données |
@@ -318,6 +320,7 @@ Gardées sans question (à confirmer seulement) :
 | 2 | D-467 | SYNC-0291 | A garder · B réviser ; effet : données |
 | 2 | D-609 | SHELL-0294c (C-127). | A garder · B réviser ; effet : données |
 | 2 | D-632 | DATA-0295 (C-154) : aucune écriture à côté d'un fichier évincé. | A garder · B réviser ; effet : données |
+| 2 | D-777 | SYNC-0302 (D-673, BL-039). | A garder · B réviser ; effet : moteur |
 | 1 | D-281 | FIX-0241 (0.25.0) : plafond de 560 px des notices levé sur PC dans Corps. | A garder · B réviser ; effet : chiffre |
 | 1 | D-335 | FIX-EXPORT (0.28.0) : plafond d'import des archives aligné sur 24 Mio, export refusé au-delà (C-136 ). | A garder · B réviser ; effet : chiffre |
 | 1 | D-421 | IMPORT-029a (0.29.0) : rapprochement des noms avec la bibliothèque. | A garder · B réviser ; effet : chiffre |
@@ -365,6 +368,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-687 | SHELL-0299 (D-649, BL-168) : le fichier exporté s'appelle spartiate-journaux-AAAAMMJJ-HHMM.txt. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-715 | DEC-0301 (D-707) : la hauteur des ratios est celle du profil; à défaut, la dernière hauteur importée de Santé. | à confirmer seulement : citée par D-707 d'Ali (déjà validée ?) |
 | 0 | D-720 | PROG-0301a (D-701, D-719) : le sous-onglet Corps › Santé dit qu'aucune valeur n'est importée. | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-775 | SYNC-0302 (D-673, BL-039). | à confirmer seulement (aucun effet visible repéré) |
 
 ### écrans (65 : 30 à trancher, 35 à confirmer seulement)
 
