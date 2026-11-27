@@ -30,6 +30,8 @@ export const migrationManifest: readonly MigrationEntry[] = [
   { version: 21, name: 'exclusion_injury', checksum: '31b8e8d1' },
   { version: 22, name: 'default_profile_rename', checksum: '5401e2c9' },
   { version: 23, name: 'data_0293', checksum: '4e7d2358' },
+  { version: 24, name: 'workout_pause', checksum: '7ec0c980' },
+  { version: 25, name: 'equipment_vest', checksum: 'a4d9df78' },
 ];
 
 export const migrationPlan: MigrationPlan = {

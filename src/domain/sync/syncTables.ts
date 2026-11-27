@@ -349,7 +349,16 @@ const EXERCISE_TABLE = table(
 /** `equipment_profile` : le profil ACTIF n'est pas une colonne, c'est un réglage local de l'appareil (§ 14.3). */
 const EQUIPMENT_PROFILE_TABLE = table(
   'equipment_profile',
-  [c('name', 'text', false, { max: 80 }), c('kind', 'enum', false, { values: ['salle', 'maison', 'voyage'] }), c('inventory', 'json', false), c('increments', 'json', false), createdAt, deletedAt],
+  [
+    c('name', 'text', false, { max: 80 }),
+    c('kind', 'enum', false, { values: ['salle', 'maison', 'voyage'] }),
+    c('inventory', 'json', false),
+    c('increments', 'json', false),
+    createdAt,
+    deletedAt,
+    // EQUIP-0302 (migration 0025, D-674) : poids du gilet lesté (kg, nul = non renseigné), publié, capturé par son propre déclencheur.
+    c('vest_kg', 'real', true),
+  ],
   { titleSource: { kind: 'own', column: 'name' } },
 );
 
@@ -410,6 +419,10 @@ const WORKOUT_TABLE = table(
     c('notes', 'text', false),
     createdAt,
     deletedAt,
+    // SESS-0302 (migration 0024, D-658) : pause en cours (nulle sur une séance close) et cumul des pauses (ms, nul = 0), publiés avec la séance close ;
+    // masqués (aucun déclencheur : séance ouverte seulement, la clôture publie la ligne entière).
+    c('paused_at', 'datetime', true, hidden),
+    c('paused_ms', 'int', true, hidden),
   ],
   { local: ['rest_timer_end_at', 'rest_timer_seconds'], publishWhen: { notNull: 'ended_at' }, titleSource: { kind: 'own', column: 'name' } },
 );

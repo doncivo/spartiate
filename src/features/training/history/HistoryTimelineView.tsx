@@ -78,6 +78,12 @@ export function HistoryTimelineView({ workout, heldOf = () => null }: { readonly
         </ol>
       )}
       {replay.notDone > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.notDone, 'notDoneOne', 'notDone')}</p> : null}
+      {/* SESS-0302 (D-781) : la pause est retirée de la durée totale ; elle n'est attribuée à aucun repos. */}
+      {replay.pause ? (
+        <p className="ct-session__muted">
+          {replay.pause.effectiveSec === null ? tReplay('pauseOnly', { p: formatRest(replay.pause.pausedSec) }) : tReplay('pauseTotal', { d: formatRest(replay.pause.effectiveSec), p: formatRest(replay.pause.pausedSec) })}
+        </p>
+      ) : null}
       {replay.missingInstants > 0 ? <p className="ct-session__muted">{tPlural(tReplay, replay.missingInstants, 'missingOne', 'missing')}</p> : null}
     </section>
   );

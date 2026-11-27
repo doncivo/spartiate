@@ -129,6 +129,7 @@ Profils de matériel (inventaire et incréments en JSON).
 | `kind` | enum | — | non |  |
 | `inventory` | json | — | non |  |
 | `increments` | json | — | non |  |
+| `vest_kg` | real | kg | oui | poids du gilet lesté (vide = non renseigné, aucun lest proposé par le gilet ; archives d'avant le schéma 25 : vide) |
 
 ### `csv/routine.csv`
 
@@ -186,6 +187,8 @@ Séances, terminées ou ouvertes (`ended_at` vide = séance ouverte).
 | `source` | enum | — | non |  |
 | `copied_from_workout_id` | text | — | oui |  |
 | `notes` | text | — | non |  |
+| `paused_at` | datetime | — | oui | début de la pause en cours (vide hors pause) |
+| `paused_ms` | int | ms | oui | temps de pause cumulé, retiré de la durée (vide = 0) |
 
 ### `csv/workout_set.csv`
 

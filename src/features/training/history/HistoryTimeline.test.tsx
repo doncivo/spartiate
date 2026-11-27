@@ -8,6 +8,7 @@ import { PAST, PAST_WORKOUT_ID, seedPastWorkout, setRow } from '../../../../test
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
+import { warmTraining } from '../warmTraining';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -45,7 +46,12 @@ async function openTimeline(): Promise<HTMLElement> {
 }
 
 beforeAll(async () => {
-  await Promise.all([import('../TrainingScreen'), import('./HistoryView'), import('./HistoryTimelineView')]);
+  const warm = await openBaseDb(DEVICE, '2026-11-12T17:00:00.000Z');
+  try {
+    await warmTraining(warm);
+  } finally {
+    await warm.close();
+  }
 }, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);

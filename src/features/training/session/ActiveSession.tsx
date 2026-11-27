@@ -4,7 +4,9 @@ import { formatTimerRemaining } from '../../../domain/syntheticTimer';
 import {
   REST_CHOICES_SEC,
   circuitsOf,
+  effectiveElapsedMs,
   groupByExercise,
+  isPaused,
   loadFieldOf,
   restAfterCircuitSet,
   restRemainingMs,
@@ -448,6 +450,21 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
     }
   }
 
+  /**
+   * SESS-0302 (BL-110, D-658, § 13.2) : « Pause » / « Reprendre ». La pause est écrite en base (instant persisté, jamais un compteur) et annule le repos
+   * en cours dans la même écriture ; minuteur, notification et Live Activity s'arrêtent. La reprise ajoute la pause au cumul ; aucun repos n'est relancé.
+   */
+  async function togglePause(): Promise<void> {
+    const pausing = !paused;
+    const ok = await write((repo) => (pausing ? repo.pauseWorkout(workout.id) : repo.resumeWorkout(workout.id)), tSession('pauseError'));
+    if (!live.current) return;
+    setNow(clock.nowMs());
+    if (!ok || !pausing) return;
+    setRest(null);
+    setRestDone(false);
+    await timer.stop().catch(() => undefined);
+  }
+
   async function extendRest(): Promise<void> {
     try {
       const report = await timer.extend();
@@ -485,6 +502,9 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   // ERGO-01 : repos en barre de progression (secondes écoulées sur la durée lancée), recalculé depuis la date de fin persistée.
   const restElapsed = rest ? Math.min(rest.seconds, Math.max(0, rest.seconds - Math.ceil(remaining / 1000))) : 0;
   const startedMs = Date.parse(workout.startedAt);
+  // SESS-0302 : chrono = durée effective (pauses retirées), figé pendant une pause ; saisie des séries suspendue pendant la pause.
+  const paused = isPaused(workout);
+  const locked = busy || paused;
   // ERGO-01 (Seance-apres.dc.html) : la série en cours est la prochaine série de la séance (ordre des positions, séries alternées d'un circuit
   // comprises : règle `resumeState`, § 13.7) ; elle est le bloc central.
   const currentSetId = resumeState(workout, now)?.nextSetId ?? null;
@@ -570,12 +590,26 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           <h2 className="ct-session__title">{workout.name === '' ? tTraining('sessionFree') : workout.name}</h2>
           <p className="ct-session__muted ct-session__num">
             <span role="timer" aria-live="off" aria-label={tTraining('sessionElapsed')}>
-              {formatClock(now - startedMs)}
+              {formatClock(effectiveElapsedMs(workout, now) ?? now - startedMs)}
             </span>
             {SEP}
             <span>{tTraining('sessionSummary', { done: summary.validated, planned: summary.planned })}</span>
           </p>
           {currentBlock >= 0 ? <p className="ct-session__muted ct-session__num">{tTraining('sessionExercisePosition', { n: currentBlock + 1, total: blocks.length })}</p> : null}
+          <div className="ct-session__pause">
+            <Button variant="secondary" disabled={busy} {...(paused ? { describedBy: 'ct-session-paused' } : {})} onClick={() => void togglePause()}>
+              {tSession(paused ? 'pauseResume' : 'pause')}
+            </Button>
+            {/* Région d'annonce toujours présente (vide hors pause) : seul « En pause » y est injecté, l'aide reste hors annonce. */}
+            <p className="ct-session__paused" role="status">
+              {paused ? <strong>{tSession('paused')}</strong> : null}
+            </p>
+            {paused ? (
+              <p id="ct-session-paused" className="ct-session__hint">
+                {tSession('pausedHint')}
+              </p>
+            ) : null}
+          </div>
         </div>
         <div className="ct-session__field ct-session__field--rest">
           <label className="ct-training__label" htmlFor="ct-session-rest">
@@ -626,7 +660,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         </Suspense>
       )}
 
-      <SessionStrip units={units} nameOf={nameOfUnit} currentKey={currentUnit} busy={busy} onMove={(key, to) => reorder(moveUnitOrder(workout.sets, key, to))} onShow={showUnit} />
+      <SessionStrip units={units} nameOf={nameOfUnit} currentKey={currentUnit} busy={locked} onMove={(key, to) => reorder(moveUnitOrder(workout.sets, key, to))} onShow={showUnit} />
 
       {blocks.length === 0 && <p className="ct-session__muted">{tTraining('sessionNoExercise')}</p>}
 
@@ -646,7 +680,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
           <Fragment key={block.exerciseId}>
           {circuit && (
             <Suspense fallback={null}>
-              <CircuitHeader circuit={circuit} workout={workout} busy={busy} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
+              <CircuitHeader circuit={circuit} workout={workout} busy={locked} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
             </Suspense>
           )}
           <section className="ct-session__block" role="region" aria-label={block.exerciseName} id={`ct-session-block-${block.exerciseId}`} tabIndex={-1}>
@@ -684,7 +718,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     loadField={exercise === undefined ? 'load' : loadFieldOf(exercise)}
                     timed={isTimedExercise(exercise, set)}
                     source={workout.source}
-                    busy={busy}
+                    busy={locked}
                     checkEntry={(entry, kind) => import('./outlierCheck').then((m) => m.checkOutlier(access, exercise, set, entry, kind, workout.sets, held !== null))}
                     onValidate={(entry) => void validate(set, entry)}
                     onDraft={(patch) => void saveDraft(set.id, patch)}
@@ -696,23 +730,23 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               })}
             </ol>
             <div className="ct-training__actions">
-              <Button variant="secondary" disabled={busy} onClick={() => void write((repo) => repo.addSet(workout.id, block.exerciseId, { setKind: block.sets.at(-1)?.setKind === 'timed' ? 'timed' : 'work' }))}>
+              <Button variant="secondary" disabled={locked} onClick={() => void write((repo) => repo.addSet(workout.id, block.exerciseId, { setKind: block.sets.at(-1)?.setKind === 'timed' ? 'timed' : 'work' }))}>
                 {tTraining('sessionAddSet')}
               </Button>
               {block.sets.some((s) => !s.done && s.setKind !== 'warmup') && (
-                <Button variant="secondary" disabled={busy} onClick={() => setReplacing(block.exerciseId)}>
+                <Button variant="secondary" disabled={locked} onClick={() => setReplacing(block.exerciseId)}>
                   {tSession('replace')}
                 </Button>
               )}
               {blockIndex === currentBlock && skipUnitOrder(workout.sets, block.exerciseId) !== null && (
-                <Button variant="secondary" disabled={busy} onClick={() => reorder(skipUnitOrder(workout.sets, block.exerciseId))}>
+                <Button variant="secondary" disabled={locked} onClick={() => reorder(skipUnitOrder(workout.sets, block.exerciseId))}>
                   {tSession('skip')}
                 </Button>
               )}
-              <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exercise', block })}>
+              <Button variant="secondary" disabled={locked} onClick={() => setConfirm({ kind: 'exercise', block })}>
                 {tTraining('sessionRemoveExercise')}
               </Button>
-              <Button variant="secondary" disabled={busy} onClick={() => setConfirm({ kind: 'exclude', block })}>
+              <Button variant="secondary" disabled={locked} onClick={() => setConfirm({ kind: 'exclude', block })}>
                 {tSession('removeExclude')}
               </Button>
               {exercise !== undefined && exercise.metric === 'load-reps' && implementOf(exercise) === 'barbell' && (
@@ -746,11 +780,11 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       )}
 
       <div className="ct-training__actions">
-        <Button variant="secondary" disabled={busy} onClick={() => setPicking(true)}>
+        <Button variant="secondary" disabled={locked} onClick={() => setPicking(true)}>
           {tTraining('sessionAddExercise')}
         </Button>
         {freeExercises >= 2 && !grouping && (
-          <Button variant="secondary" disabled={busy} onClick={() => setGrouping(true)}>
+          <Button variant="secondary" disabled={locked} onClick={() => setGrouping(true)}>
             {tTraining('sessionGroup')}
           </Button>
         )}

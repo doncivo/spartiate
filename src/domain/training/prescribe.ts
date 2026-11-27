@@ -514,6 +514,8 @@ export function prescribe(input: PrescribeInput): Prescription {
 const MAX_BALLAST_LOADS = 2000;
 /** Ceinture (ou dispositif) de lest du catalogue du matériel. */
 export const LOADING_BELT_ID = 'loading-belt';
+/** EQUIP-0302 (D-674) : gilet lesté du catalogue du matériel ; son poids est celui du profil (`vestKg`). */
+export const WEIGHTED_VEST_ID = 'weighted-vest';
 
 /** Pas d'un chronométré : `maxGainPerSession` du temps tenu arrondi en dessous, au moins 1 s, au plus `timeStepMaxSec`. */
 export function timeStepSec(seconds: number, config: ProgressionConfig): number {
@@ -546,7 +548,8 @@ function ballastUsable(profile: NonNullable<PrescribeInput['equipment']>): { has
 
 /**
  * Lests disponibles avec ce profil (kg, croissants, sans doublon) : haltères utilisables → grille des haltères ;
- * ceinture de lest utilisable → en plus, sommes des disques et kettlebells vérifiées utilisables. Ni ceinture ni haltère (ni profil) : aucun lest, rien n'est proposé.
+ * ceinture de lest utilisable → en plus, sommes des disques et kettlebells vérifiées utilisables ; gilet lesté utilisable avec un poids renseigné
+ * (EQUIP-0302, D-674) → en plus, ce poids seul (jamais additionné à un autre lest). Ni ceinture, ni haltère, ni gilet pesé (ni profil) : aucun lest, rien n'est proposé.
  */
 export function ballastLoads(profile: PrescribeInput['equipment']): number[] {
   if (profile === null) return [];
@@ -558,6 +561,8 @@ export function ballastLoads(profile: PrescribeInput['equipment']): number[] {
     for (const kg of plateSums(profile.inventory.platesPerSideKg)) loads.add(kg);
     for (const kg of usable.has('kettlebell') ? (loadGrid(['kettlebell'], profile)?.loads ?? []) : []) loads.add(kg);
   }
+  const vest = profile.vestKg;
+  if (usable.has(WEIGHTED_VEST_ID) && typeof vest === 'number' && vest > 0) loads.add(roundKg(vest));
   return [...loads].filter((kg) => Number.isFinite(kg) && kg > 0).sort((a, b) => a - b);
 }
 

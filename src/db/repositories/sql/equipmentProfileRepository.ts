@@ -1,5 +1,6 @@
 import type { WriteStamper } from '../../../domain/hlc';
-import { emptyInventory, validateEquipmentProfile, type EquipmentProfile, type EquipmentProfileInput, type EquipmentProfileKind } from '../../../domain/training';
+import { olderActiveDevices } from '../../../domain/sync/compat';
+import { emptyInventory, EQUIPMENT_LONG_LISTS_SINCE_SV, exceedsLegacyLists, validateEquipmentProfile, type EquipmentProfile, type EquipmentProfileInput, type EquipmentProfileKind } from '../../../domain/training';
 import { isId } from '../../../domain/types';
 import type { SqlDriver, SqlExecutor, SqlRow } from '../../driver';
 import { parseIncrements, parseInventory } from '../../parse/equipmentJson';
@@ -14,17 +15,25 @@ interface ProfileRow extends SqlRow, SyncRow {
   readonly kind: string;
   readonly inventory: string;
   readonly increments: string;
+  /** EQUIP-0302 : absente d'une base antérieure à la migration 0025 (jamais en production : le migrateur passe avant ; banc de synchro au schéma 24). */
+  readonly vest_kg?: number | null;
 }
 
 /** Lecture tolérante : un inventaire ou des incréments illisibles (autre version) se lisent vides, la ligne reste visible. */
-const rowToProfile = (row: ProfileRow): EquipmentProfile => ({
-  id: row.id,
-  name: row.name,
-  kind: row.kind as EquipmentProfileKind,
-  inventory: parseInventory(decodeJson(row.inventory)) ?? emptyInventory(),
-  increments: parseIncrements(decodeJson(row.increments)) ?? {},
-  ...readSyncMeta(row),
-});
+const rowToProfile = (row: ProfileRow): EquipmentProfile => {
+  const inventory = parseInventory(decodeJson(row.inventory));
+  const increments = parseIncrements(decodeJson(row.increments));
+  return {
+    id: row.id,
+    name: row.name,
+    kind: row.kind as EquipmentProfileKind,
+    inventory: inventory ?? emptyInventory(),
+    increments: increments ?? {},
+    vestKg: row.vest_kg ?? null,
+    ...(inventory === null || increments === null ? { unreadable: true as const } : {}),
+    ...readSyncMeta(row),
+  };
+};
 
 function encode(input: EquipmentProfileInput): { inventory: string; increments: string } {
   if (!isId(input.id) || validateEquipmentProfile(input).length > 0) throw new RepositoryError('invalid', 'equipment_profile', input.id);
@@ -53,6 +62,14 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     if (!row) throw new RepositoryError('not-found', 'equipment_profile', id);
     return rowToProfile(row);
   };
+  /** EQUIP-0302 (D-796) : appareil actif plus ancien que le schéma 25, lu dans `sync_state` (même source que l'écran des versions). */
+  const longListsBlocked = async (): Promise<boolean> => {
+    const rows = await db.select<{ is_self: number; status: string; schema_version: number | null; format_major: number | null }>('SELECT is_self, status, schema_version, format_major FROM sync_state');
+    return olderActiveDevices(rows.map((r) => ({ self: r.is_self === 1, status: r.status, sv: r.schema_version, sm: r.format_major })), EQUIPMENT_LONG_LISTS_SINCE_SV).length > 0;
+  };
+  const refuseLongLists = async (input: EquipmentProfileInput): Promise<void> => {
+    if (exceedsLegacyLists(input.inventory) && (await longListsBlocked())) throw new RepositoryError('invalid', 'equipment_profile', input.id);
+  };
   const get = async (id: string, options?: ReadOptions): Promise<EquipmentProfile | null> => {
     const row = await read(id);
     return !row || (row.deleted_at !== null && options?.includeDeleted !== true) ? null : rowToProfile(row);
@@ -62,10 +79,13 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     async create(input) {
       const json = encode(input);
       if ((await read(input.id)) !== undefined) throw new RepositoryError('conflict', 'equipment_profile', input.id);
+      await refuseLongLists(input);
       const stamp = stamper.next();
+      // EQUIP-0302 : poids du gilet écrit seulement s'il est renseigné (nul sinon, sans valeur par défaut SQL).
+      const vest = input.vestKg ?? null;
       await db.execute(
-        'INSERT INTO equipment_profile (id, name, kind, inventory, increments, created_at, updated_at, device_id, hlc) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [input.id, input.name.trim(), input.kind, json.inventory, json.increments, stamp.at, stamp.at, stamp.deviceId, stamp.hlc],
+        `INSERT INTO equipment_profile (id, name, kind, inventory, increments, created_at, updated_at, device_id, hlc${vest === null ? '' : ', vest_kg'}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${vest === null ? '' : ', ?'})`,
+        [input.id, input.name.trim(), input.kind, json.inventory, json.increments, stamp.at, stamp.at, stamp.deviceId, stamp.hlc, ...(vest === null ? [] : [vest])],
       );
       return reload(input.id);
     },
@@ -73,8 +93,9 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     async update(id, patch) {
       const row = await live(id);
       const current = rowToProfile(row);
-      // DATA-0293 (BL-037) : inventaire ou incréments illisibles non remplacés par la modification : jamais réécrits en vide (écriture refusée).
-      if ((patch.inventory === undefined && parseInventory(decodeJson(row.inventory)) === null) || (patch.increments === undefined && parseIncrements(decodeJson(row.increments)) === null)) {
+      // DATA-0293 (BL-037), durci par EQUIP-0302 (D-796, relecture sync-icloud) : inventaire ou incréments stockés illisibles (version plus récente) : toute
+      // modification est refusée, même avec un inventaire fourni (l'éditeur l'aurait construit depuis l'inventaire lu vide).
+      if (parseInventory(decodeJson(row.inventory)) === null || parseIncrements(decodeJson(row.increments)) === null) {
         throw new RepositoryError('invalid', 'equipment_profile', id);
       }
       const merged: EquipmentProfileInput = {
@@ -83,14 +104,19 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
         kind: patch.kind ?? current.kind,
         inventory: patch.inventory ?? current.inventory,
         increments: patch.increments ?? current.increments,
+        vestKg: patch.vestKg === undefined ? current.vestKg : patch.vestKg,
       };
       const json = encode(merged);
+      await refuseLongLists(merged);
       const stamp = stamper.next();
-      await db.execute('UPDATE equipment_profile SET name = ?, kind = ?, inventory = ?, increments = ?, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [
+      // EQUIP-0302 : le poids du gilet n'est écrit que si la modification le nomme (capturé alors par `sync_equipment_profile_vest_au`).
+      const vest = patch.vestKg === undefined ? [] : [merged.vestKg ?? null];
+      await db.execute(`UPDATE equipment_profile SET name = ?, kind = ?, inventory = ?, increments = ?${vest.length > 0 ? ', vest_kg = ?' : ''}, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?`, [
         merged.name.trim(),
         merged.kind,
         json.inventory,
         json.increments,
+        ...vest,
         stamp.at,
         stamp.deviceId,
         stamp.hlc,
@@ -111,6 +137,7 @@ export function createEquipmentProfileRepository(db: SqlExecutor, stamper: Write
     },
 
     get,
+    longListsBlocked,
 
     async list(options) {
       const where = options?.includeDeleted === true ? '' : 'WHERE deleted_at IS NULL';

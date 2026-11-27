@@ -1,4 +1,6 @@
 import { restAfterCircuitSet, roundOf } from './circuit';
+import { workoutDurationSec } from './closure';
+import type { PauseFields } from './pause';
 import type { WorkoutSet } from './session';
 
 /**
@@ -13,6 +15,9 @@ import type { WorkoutSet } from './session';
  * - Cible du repos : dans un groupe, entre deux exercices d'un même tour, le repos du groupe (0 = aucun) ; sinon la cible de repos de la série (null :
  *   sans cible). Écart de `REPLAY_REST_TOLERANCE_SEC` ou moins : conforme.
  * - Charge et répétitions (ou durée d'une série chronométrée) face aux cibles de la série : au-dessus, en dessous, conforme, sans cible, non saisie.
+ * - SESS-0302 (D-658, D-781) : seul le cumul des pauses est connu, pas leurs instants (une pause peut tomber avant la première série, pendant une
+ *   série ou après la dernière : dans aucun repos). Elle n'est donc JAMAIS attribuée à un repos ; elle est retirée de la durée totale de la séance
+ *   et dite à part (`pause`).
  */
 
 /** Écart toléré entre repos réel et cible (secondes, borne comprise) ; choix prudent révisable par Ali (D-151). */
@@ -69,6 +74,11 @@ export interface WorkoutReplay {
   readonly notDone: number;
   /** Séries validées sans instant de validation. */
   readonly missingInstants: number;
+  /**
+   * SESS-0302 : temps de pause de la séance (secondes) et durée effective (fin − début − pauses ; null sans début ou fin lisible) ; absent sans pause
+   * (déroulé d'avant inchangé).
+   */
+  readonly pause?: { readonly pausedSec: number; readonly effectiveSec: number | null };
 }
 
 const byPosition = (a: WorkoutSet, b: WorkoutSet): number => a.position - b.position || a.id.localeCompare(b.id);
@@ -126,7 +136,10 @@ function restOf(sets: readonly WorkoutSet[], set: WorkoutSet, next: WorkoutSet |
   const to = instantOf(next);
   if (from === null || to === null) return { actualSec: null, targetSec, deviation: 'unknown', deltaSec: null };
   const interval = Math.round((to - from) / 1000);
-  const actualSec = Math.max(0, interval - (next.setKind === 'timed' && next.durationSec !== null ? next.durationSec : 0));
+  return measured(Math.max(0, interval - (next.setKind === 'timed' && next.durationSec !== null ? next.durationSec : 0)), targetSec);
+}
+
+function measured(actualSec: number, targetSec: number | null): ReplayRest {
   if (targetSec === null) return { actualSec, targetSec, deviation: 'noTarget', deltaSec: null };
   const deltaSec = actualSec - targetSec;
   const deviation: ReplayRestDeviation = Math.abs(deltaSec) <= REPLAY_REST_TOLERANCE_SEC ? 'onTarget' : deltaSec > 0 ? 'longer' : 'shorter';
@@ -134,7 +147,7 @@ function restOf(sets: readonly WorkoutSet[], set: WorkoutSet, next: WorkoutSet |
 }
 
 /** Déroulé d'une séance (close en pratique) : étapes dans l'ordre réel, écarts, repos réels ; séries non validées comptées à part. */
-export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[] }): WorkoutReplay {
+export function replayWorkout(workout: PauseFields & { readonly sets: readonly WorkoutSet[]; readonly startedAt?: string; readonly endedAt?: string | null }): WorkoutReplay {
   const sets = [...workout.sets].sort(byPosition);
   const done = sets.filter((s) => s.done);
   const ordered = executionOrder(done);
@@ -151,5 +164,8 @@ export function replayWorkout(workout: { readonly sets: readonly WorkoutSet[] })
       rest: restOf(sets, set, ordered[index + 1]),
     }),
   );
-  return { steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => instantOf(s) === null).length };
+  const pausedSec = typeof workout.pausedMs === 'number' && Number.isFinite(workout.pausedMs) && workout.pausedMs > 0 ? Math.round(workout.pausedMs / 1000) : 0;
+  const { startedAt, endedAt } = workout;
+  const effectiveSec = startedAt === undefined || endedAt === undefined ? null : workoutDurationSec({ pausedAt: workout.pausedAt ?? null, pausedMs: workout.pausedMs ?? null, startedAt, endedAt });
+  return { steps, notDone: sets.length - done.length, missingInstants: done.filter((s) => instantOf(s) === null).length, ...(pausedSec > 0 ? { pause: { pausedSec, effectiveSec } } : {}) };
 }

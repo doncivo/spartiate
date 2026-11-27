@@ -112,4 +112,10 @@ export const trainingSessionFr = {
   // SEANCE-0292b (§ 17.1 a) : record signalé en séance, à la validation de la série qui l'établit.
   liveRecord: 'Record · {name} : {text}',
   platesStandard: 'Jeu de disques standard : aucun disque déclaré dans le profil de matériel.',
+  // SESS-0302 (D-658, § 13.2) : pause de la séance.
+  pause: 'Pause',
+  pauseResume: 'Reprendre',
+  paused: 'En pause',
+  pausedHint: 'Chrono arrêté, repos annulé. La saisie reprend avec la séance.',
+  pauseError: 'La pause n’a pas pu être enregistrée. Réessaie.',
 } as const;

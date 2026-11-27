@@ -53,6 +53,10 @@ export interface Workout extends RowMeta {
   /** Durée totale du dernier repos lancé (secondes). */
   readonly restTimerSeconds: number;
   readonly notes: string;
+  /** SESS-0302 (migration 0024, D-658) : début de la pause en cours (ISO UTC) ; absent ou null : pas de pause. Toujours null sur une séance close. */
+  readonly pausedAt?: IsoDateTime | null;
+  /** SESS-0302 : cumul des pauses terminées (ms) ; absent : 0 (ligne, export ou journal d'avant la 0024). */
+  readonly pausedMs?: number;
 }
 
 export interface WorkoutSet extends RowMeta {

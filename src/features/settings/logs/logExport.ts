@@ -12,6 +12,12 @@ export interface LogExportMeta {
   readonly report?: SyncReport | SyncReportUnavailable;
 }
 
+/** SYNC-0302 (D-673, D-777) : mention de l'heure de cet appareil ; état illisible dit, jamais omis. */
+function partialSuffix(partial: SyncReport['devices'][number]['partialRead']): string {
+  if (partial === 'unreadable') return tLogs('reportPartialReadUnreadable');
+  return partial ? tLogs('reportPartialRead') : '';
+}
+
 /** Lignes du bilan : appareils connus, file d'envoi, lignes mises de côté, conflits, lignes par table. Jamais de contenu. */
 function reportLines(report: SyncReport | SyncReportUnavailable): string[] {
   if ('unavailable' in report) return [tLogs('reportUnavailable', { code: report.unavailable }), ''];
@@ -23,7 +29,7 @@ function reportLines(report: SyncReport | SyncReportUnavailable): string[] {
       platform: d.platform ?? unknown,
       version: d.appVersion ?? unknown,
       status: d.status,
-      lastSync: d.lastSyncAt ?? unknown,
+      lastSync: d.lastSyncAt === null ? unknown : `${d.lastSyncAt}${partialSuffix(d.partialRead)}`,
       lastSeen: d.lastSeen ?? unknown,
       cursor: d.cursor,
     }),

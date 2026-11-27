@@ -78,7 +78,7 @@ describe('(b) appareil resté en 21 qui reçoit une écriture en sv 22', () => {
 const common = { desktop: null, files: createUnavailableFiles(), backups: createUnavailableBackup() } as const;
 
 describe('(c) et (d) démarrage d’une base à jour', () => {
-  it('sv publié = dernière entrée du manifeste (23) ; aucun chargement des instructions de migration', async () => {
+  it('sv publié = dernière entrée du manifeste (25) ; aucun chargement des instructions de migration', async () => {
     useAppStore.setState({ dbStatus: 'idle', dbErrorDetail: null });
     const db = await openSqliteWasmDriver();
     await migrate(db, migrations);
@@ -90,7 +90,7 @@ describe('(c) et (d) démarrage d’une base à jour', () => {
     expect(load).not.toHaveBeenCalled();
     const options = vi.mocked(createSyncService).mock.calls[0]?.[0];
     expect(options?.sv).toBe(migrationManifest.at(-1)?.version);
-    expect(options?.sv).toBe(23);
+    expect(options?.sv).toBe(25);
     await container?.sync?.syncNow('manual');
     expect(container?.sync?.status().phase).not.toBe('error');
     await db.close();

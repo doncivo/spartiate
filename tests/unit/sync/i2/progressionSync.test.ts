@@ -223,7 +223,8 @@ describe('appareil resté en 0.3.0 (schéma 5, ADR 0011 §7.2)', () => {
     expect(await b.driver.select('SELECT COUNT(*) AS n FROM workout_set WHERE workout_id = ?', [W1])).toEqual([{ n: 3 }]);
     expect(await b.driver.select('SELECT COUNT(*) AS n FROM progression_profile')).toEqual([{ n: 0 }]);
     const kept = await b.driver.select<{ table_name: string }>('SELECT DISTINCT table_name FROM sync_unknown ORDER BY table_name');
-    expect(kept.map((r) => r.table_name)).toEqual(['progression_profile', 'recommendation_decision', 'workout_set']);
+    // SESS-0302 : la pause de la séance (colonnes de la 0024) attend aussi dans sync_unknown.
+    expect(kept.map((r) => r.table_name)).toEqual(['progression_profile', 'recommendation_decision', 'workout', 'workout_set']);
     // Mise à jour de l'app sur B : migration 0006, puis réintégration des champs gardés.
     await migrate(b.driver, migrations);
     await reintegrateUnknownFields(b.driver, { catalogue: SYNC_CATALOGUE, now: new Date(b.clock.nowMs()).toISOString() as IsoDateTime });

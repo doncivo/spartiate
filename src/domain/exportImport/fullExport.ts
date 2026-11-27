@@ -167,6 +167,7 @@ const UNIT_OVERRIDES: Readonly<Record<string, string>> = {
   'muscle_recovery.hours': 'h',
   'cardio_session.distance_m': 'm',
   'workout_set.distance_m': 'm',
+  'workout.paused_ms': 'ms',
   'cardio_session.avg_hr': 'bpm',
   'cardio_session.rpe': '1 à 10',
 };
