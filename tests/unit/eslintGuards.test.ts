@@ -61,6 +61,25 @@ describe('config ESLint : interdictions qui se cumulent', () => {
     expect(await ruleIds('src/features/today/zz.ts', "import './zz.css';\n")).not.toContain('no-restricted-syntax');
   });
 
+  // IMPORT-0303 (D-676) : `pdfjs-dist` ne s'importe que dans src/platform/pdf/index.ts (import statique ou dynamique).
+  it.each([
+    ['src/features/training/import/zz.ts', "import { getDocument } from 'pdfjs-dist';\nexport const x = getDocument;\n", 'no-restricted-imports'],
+    ['src/domain/training/zz.ts', "import { getDocument } from 'pdfjs-dist/legacy/build/pdf.min.mjs';\nexport const x = getDocument;\n", 'no-restricted-imports'],
+    ['src/platform/ocr/zz.ts', "import type { PDFDocumentProxy } from 'pdfjs-dist';\nexport type X = PDFDocumentProxy;\n", 'no-restricted-imports'],
+    ['src/App.tsx', "import { getDocument } from 'pdfjs-dist';\nexport const x = getDocument;\n", 'no-restricted-imports'],
+    ['src/features/training/import/zz.ts', "export const load = () => import('pdfjs-dist/legacy/build/pdf.min.mjs');\n", 'no-restricted-syntax'],
+    ['src/platform/pdf/zz.ts', "export const load = () => import('pdfjs-dist');\n", 'no-restricted-syntax'],
+  ])('IMPORT-0303 : %s : pdfjs-dist refusé hors de la façade', async (filePath, code, rule) => {
+    expect(await ruleIds(filePath, code)).toContain(rule);
+  });
+
+  it('IMPORT-0303 : src/platform/pdf/index.ts importe pdfjs-dist ; ses autres interdictions restent', async () => {
+    expect(await ruleIds('src/platform/pdf/index.ts', "export const load = () => import('pdfjs-dist/legacy/build/pdf.min.mjs');\n")).toEqual([]);
+    expect(await ruleIds('src/platform/pdf/index.ts', "import type { PDFDocumentProxy } from 'pdfjs-dist';\nexport type X = PDFDocumentProxy;\n")).toEqual([]);
+    expect(await ruleIds('src/platform/pdf/index.ts', "import { x } from '../../features/zz';\nexport const y = x;\n")).toContain('no-restricted-imports');
+    expect(await ruleIds('src/platform/pdf/index.ts', "import './effet';\n")).toContain('no-restricted-syntax');
+  });
+
   it('import() dynamique du bloc à la demande : permis (c’est le chargement prévu)', async () => {
     expect(await ruleIds('src/i18n/zz.ts', "export const load = () => import('./en');\n")).toEqual([]);
     expect(await ruleIds('src/features/capture/zz.ts', "export const load = () => import('../../domain/chronoAbsolute');\n")).toEqual([]);
