@@ -19,6 +19,8 @@ export const SCHEMA_REPUBLISH: Readonly<Record<number, readonly string[]>> = {
   23: ['progression_profile'],
   // SESS-0302 (D-658) : pause de séance ; une séance close écrite au schéma 23 est reçue entière (cumul 0) après la migration de son appareil.
   24: ['workout'],
+  // EQUIP-0302 (D-674) : poids du gilet ; un profil créé au schéma 24 est reçu entier (poids nul) après la migration de son appareil.
+  25: ['equipment_profile'],
 };
 
 /**

@@ -50,7 +50,8 @@ describe('migration 0024 : workout_pause (SESS-0302)', () => {
       { paused_at: null, paused_ms: null },
     ]);
     expect(await db.select('SELECT 1 FROM sync_outbox')).toEqual([]);
-    expect(await db.select('SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1')).toEqual([{ version: 24 }]);
+    // EQUIP-0302 : la 0025 suit ; la 0024 est bien passée.
+    expect(await db.select('SELECT version FROM schema_migrations WHERE version = 24')).toEqual([{ version: 24 }]);
     await db.close();
   });
 

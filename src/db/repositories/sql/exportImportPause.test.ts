@@ -52,7 +52,7 @@ const pause = (db: TestDb) => db.driver.select('SELECT paused_at, paused_ms FROM
 
 describe('SESS-0302 : export et import de la pause de séance', () => {
   it('schéma 24 : la version d’export suit la dernière migration ; le cumul revient tel quel', async () => {
-    expect(EXPORT_SV).toBe(24);
+    expect(EXPORT_SV).toBe(25);
     const a = await open(A);
     await seed(a, 120_000);
     const b = await open(B);

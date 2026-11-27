@@ -123,7 +123,7 @@ export const syncFieldFr = {
     strength_standard_key: 'standard de force',
     deleted_at: 'suppression',
   },
-  equipment_profile: { name: 'nom', kind: 'type', inventory: 'inventaire', increments: 'incréments', deleted_at: 'suppression' },
+  equipment_profile: { name: 'nom', kind: 'type', inventory: 'inventaire', increments: 'incréments', vest_kg: 'poids du gilet', deleted_at: 'suppression' },
   routine_day: { routine_id: 'routine', name: 'nom', day_order: 'ordre du jour', weekday: 'jour de la semaine', deleted_at: 'suppression' },
   routine_exercise: {
     routine_day_id: 'jour',

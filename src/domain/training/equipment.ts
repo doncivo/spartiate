@@ -8,7 +8,7 @@ import { EQUIPMENT_PROFILE_KINDS, type EquipmentIncrements, type EquipmentInvent
  */
 
 export interface EquipmentIssue {
-  readonly code: 'name-empty' | 'kind' | 'forced-forbidden' | 'dumbbells' | 'cables' | 'machines' | 'kettlebells' | 'barbells' | 'plates' | 'ids' | 'increment';
+  readonly code: 'name-empty' | 'kind' | 'forced-forbidden' | 'dumbbells' | 'cables' | 'machines' | 'kettlebells' | 'barbells' | 'plates' | 'ids' | 'increment' | 'vest';
 }
 
 /** Identifiant de matériel : kebab-case minuscule (catalogue fermé `equipment.json`). */
@@ -117,9 +117,40 @@ const positive = (n: number): boolean => Number.isFinite(n) && n > 0;
 /** SEANCE-0292 (C-081) : un même poids deux fois (clé d'affichage en double, nombre ambigu). */
 const hasDuplicate = (values: readonly number[]): boolean => new Set(values).size !== values.length;
 const range = (r: StackRange): boolean => positive(r.minKg) && positive(r.maxKg) && positive(r.stepKg) && r.minKg <= r.maxKg;
-const ids = (list: readonly string[]): boolean => list.every((id) => EQUIPMENT_ID_RE.test(id));
+/**
+ * EQUIP-0302 (D-796) : borne des listes d'identifiants d'un profil (disponible, forcé, interdit), fixe et sûre, au moins le double du catalogue
+ * embarqué (77 en 0.30.2 ; garde : `src/db/parse/equipmentJson.equip0302.test.ts`). L'ancienne borne (64) était sous le catalogue.
+ */
+export const EQUIPMENT_ID_LIST_MAX = 256;
+/**
+ * EQUIP-0302 (D-796, relecture sync-icloud) : borne de lecture des listes d'identifiants des versions antérieures au schéma 25. Une telle app lit
+ * VIDE un inventaire plus long et son éditeur l'écraserait : tant qu'un appareil actif publie un `sv` < `EQUIPMENT_LONG_LISTS_SINCE_SV`, aucune
+ * liste plus longue n'est enregistrée.
+ */
+export const LEGACY_EQUIPMENT_ID_LIST_MAX = 64;
+export const EQUIPMENT_LONG_LISTS_SINCE_SV = 25;
+/** Une liste d'identifiants (disponible, forcé, interdit) dépasse-t-elle la borne des versions antérieures ? */
+export function exceedsLegacyLists(inv: Pick<EquipmentInventory, 'available' | 'forced' | 'forbidden'>): boolean {
+  return [inv.available, inv.forced, inv.forbidden].some((list) => new Set(list).size > LEGACY_EQUIPMENT_ID_LIST_MAX);
+}
+/** Borne des autres listes d'un profil (barres, disques, kettlebells, machines, poulies), inchangée. */
+export const EQUIPMENT_LIST_MAX = 64;
+/** Longueur maximale du nom d'une barre (lecture, `equipmentJson.ts`), distincte de la borne des listes. */
+export const BARBELL_NAME_MAX = 64;
+/** Nombre de disques d'un même poids admis à la lecture (`equipmentJson.ts`). */
+export const PLATE_COUNT_MAX = 100;
+const ids = (list: readonly string[]): boolean => list.length <= EQUIPMENT_ID_LIST_MAX && list.every((id) => EQUIPMENT_ID_RE.test(id));
+const tooLong = (list: readonly unknown[]): boolean => list.length > EQUIPMENT_LIST_MAX;
 
-export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'name' | 'kind' | 'inventory' | 'increments'>): EquipmentIssue[] {
+/** EQUIP-0302 (D-674) : bornes du poids du gilet lesté (kg), saisi au dixième. */
+export const VEST_KG_MIN = 0.5;
+export const VEST_KG_MAX = 60;
+/** Poids de gilet admis : fini, de `VEST_KG_MIN` à `VEST_KG_MAX`, au dixième de kg. */
+export function isVestKg(kg: number): boolean {
+  return Number.isFinite(kg) && kg >= VEST_KG_MIN && kg <= VEST_KG_MAX && Math.abs(Math.round(kg * 10) - kg * 10) < 1e-9;
+}
+
+export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'name' | 'kind' | 'inventory' | 'increments' | 'vestKg'>): EquipmentIssue[] {
   const issues: EquipmentIssue[] = [];
   const add = (code: EquipmentIssue['code']): void => void issues.push({ code });
   if (input.name.trim() === '' || input.name.length > MAX_NAME) add('name-empty');
@@ -128,12 +159,13 @@ export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'nam
   if (!ids(inv.available) || !ids(inv.forced) || !ids(inv.forbidden)) add('ids');
   if (inv.forced.some((id) => inv.forbidden.includes(id))) add('forced-forbidden');
   if (inv.dumbbells !== null && !range(inv.dumbbells)) add('dumbbells');
-  if (inv.cables.some((c) => !range(c))) add('cables');
-  if (inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
-  if (inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
-  if (inv.barbells.some((b) => b.type.trim() === '' || !positive(b.weightKg))) add('barbells');
-  if (inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
+  if (tooLong(inv.cables) || inv.cables.some((c) => !range(c))) add('cables');
+  if (tooLong(inv.machines) || inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
+  if (tooLong(inv.kettlebellsKg) || inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
+  if (tooLong(inv.barbells) || inv.barbells.some((b) => b.type.trim() === '' || b.type.length > BARBELL_NAME_MAX || !positive(b.weightKg))) add('barbells');
+  if (tooLong(inv.platesPerSideKg) || inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1 || p.count > PLATE_COUNT_MAX) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
   const increments: EquipmentIncrements = input.increments;
   if (Object.values(increments).some((v) => !positive(v))) add('increment');
+  if (input.vestKg !== undefined && input.vestKg !== null && !isVestKg(input.vestKg)) add('vest');
   return issues;
 }

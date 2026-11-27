@@ -132,7 +132,7 @@ describe('migration 0012 : corps (I6-02, schéma 12)', () => {
     const db = await freshDb();
     const names = (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'trigger' AND (name LIKE 'sync_measurement%' OR name LIKE 'sync_progress_photo%') ORDER BY name")).map((r) => r.name);
     expect(names).toEqual(['sync_measurement_ai', 'sync_measurement_au', 'sync_progress_photo_ai', 'sync_progress_photo_au']);
-    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(70); // DATA-0293 : deux de plus (0023). SYNC-0291 : quatre de plus (exercise_exclusion et injury, 0021).
+    expect(await db.select("SELECT 1 FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'")).toHaveLength(71); // EQUIP-0302 : un de plus (0025). DATA-0293 : deux de plus (0023). SYNC-0291 : quatre de plus (exercise_exclusion et injury, 0021).
     await db.close();
   });
 

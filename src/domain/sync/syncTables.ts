@@ -349,7 +349,16 @@ const EXERCISE_TABLE = table(
 /** `equipment_profile` : le profil ACTIF n'est pas une colonne, c'est un réglage local de l'appareil (§ 14.3). */
 const EQUIPMENT_PROFILE_TABLE = table(
   'equipment_profile',
-  [c('name', 'text', false, { max: 80 }), c('kind', 'enum', false, { values: ['salle', 'maison', 'voyage'] }), c('inventory', 'json', false), c('increments', 'json', false), createdAt, deletedAt],
+  [
+    c('name', 'text', false, { max: 80 }),
+    c('kind', 'enum', false, { values: ['salle', 'maison', 'voyage'] }),
+    c('inventory', 'json', false),
+    c('increments', 'json', false),
+    createdAt,
+    deletedAt,
+    // EQUIP-0302 (migration 0025, D-674) : poids du gilet lesté (kg, nul = non renseigné), publié, capturé par son propre déclencheur.
+    c('vest_kg', 'real', true),
+  ],
   { titleSource: { kind: 'own', column: 'name' } },
 );
 

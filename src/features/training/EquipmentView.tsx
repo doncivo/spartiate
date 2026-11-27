@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
-import { EQUIPMENT_PROFILE_KINDS, parsePlateList, parseWeightList, validateEquipmentProfile, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { BARBELL_NAME_MAX, EQUIPMENT_LIST_MAX, EQUIPMENT_PROFILE_KINDS, exceedsLegacyLists, isVestKg, LEGACY_EQUIPMENT_ID_LIST_MAX, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
+import { WEIGHTED_VEST_ID } from '../../domain/training/prescribe';
 import type { DataAccess } from '../../db/repositories/dataAccess';
 import { formatNumber, parseNumber, tTraining, type TrainingTextKey, type TrainingPlainKey } from '../../i18n/trainingText';
 import { Button, ConfirmDialog, SectionTitle, SegmentedControl, Switch } from '../../ui';
@@ -23,6 +24,9 @@ const INCREMENT_KEYS = [
 ] as const satisfies readonly (readonly [string, TrainingTextKey])[];
 
 const kg = (n: number): string => tTraining('kg', { n: formatNumber(n) });
+/** EQUIP-0302 (D-674) : gilet lesté du catalogue du matériel (identifiant du moteur). */
+const VEST_ID = WEIGHTED_VEST_ID;
+const vestChecked = (inv: Pick<EquipmentInventory, 'available' | 'forced'>): boolean => inv.available.includes(VEST_ID) || inv.forced.includes(VEST_ID);
 const range = (r: StackRange): string => tTraining('rangeKg', { min: formatNumber(r.minKg), max: formatNumber(r.maxKg), step: formatNumber(r.stepKg) });
 
 function VerifyTag({ show }: { readonly show: boolean }) {
@@ -97,6 +101,7 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
             <Row label={tTraining('dumbbells')} value={inv.dumbbells ? tTraining('equipmentDumbbellRange', { min: formatNumber(inv.dumbbells.minKg), max: formatNumber(inv.dumbbells.maxKg) }) : tTraining('none')} verify={check.has('dumbbells')} />
             {inv.dumbbells ? <Row label={tTraining('equipmentStep')} value={kg(inv.dumbbells.stepKg)} /> : null}
             <Row label={tTraining('kettlebells')} value={inv.kettlebellsKg.length === 0 ? tTraining('none') : inv.kettlebellsKg.map(formatNumber).join(SEP)} verify={check.has('kettlebells')} />
+            {vestChecked(inv) ? <Row label={names.get(VEST_ID)?.nameFr ?? VEST_ID} value={profile.origin === 'personal' && profile.vestKg !== null ? kg(profile.vestKg) : tTraining('vestWeightUnset')} /> : null}
           </dl>
         </section>
         <section className="ct-equipment__block">
@@ -163,6 +168,25 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
   );
 }
 
+/**
+ * EQUIP-0302 (D-796) : raison nommée de chaque refus de la validation du profil. Table EXHAUSTIVE sur l'union des codes : un code ajouté sans
+ * texte est une erreur de typage. `names` : matériel à la fois forcé et interdit.
+ */
+const ISSUE_TEXT: Readonly<Record<EquipmentIssue['code'], (names: string) => string>> = {
+  'name-empty': () => tTraining('errorProfileName'),
+  kind: () => tTraining('errorProfileKind'),
+  ids: () => tTraining('errorProfileIds'),
+  'forced-forbidden': (names) => tTraining('errorProfileForcedForbidden', { names }),
+  dumbbells: () => tTraining('errorProfileDumbbells'),
+  cables: () => tTraining('errorProfileCables', { max: String(EQUIPMENT_LIST_MAX) }),
+  machines: () => tTraining('errorProfileMachines', { max: String(EQUIPMENT_LIST_MAX) }),
+  kettlebells: () => tTraining('errorProfileKettlebells', { max: String(EQUIPMENT_LIST_MAX) }),
+  barbells: () => tTraining('errorProfileBarbells', { name: String(BARBELL_NAME_MAX), max: String(EQUIPMENT_LIST_MAX) }),
+  plates: () => tTraining('errorProfilePlates', { max: String(EQUIPMENT_LIST_MAX) }),
+  increment: () => tTraining('errorProfileIncrement'),
+  vest: () => tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) }),
+};
+
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
 
 /** SEANCE-0292 (C-066) : liste lue par le domaine (`parseWeightList`) ; refus : message qui nomme l'élément fautif. */
@@ -206,6 +230,9 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
   // SEANCE-0292 (§ 14.3 b) : matériel forcé (toujours proposé) et interdit (jamais proposé), modifiables ; les deux à la fois : refusé.
   const [forced, setForced] = useState<readonly string[]>(inv.forced);
   const [forbidden, setForbidden] = useState<readonly string[]>(inv.forbidden);
+  // EQUIP-0302 (D-674) : poids du gilet, saisi quand le gilet est coché (disponible ou forcé) ; décoché, la valeur enregistrée est gardée.
+  const [vest, setVest] = useState(typeof profile.vestKg === 'number' ? formatNumber(profile.vestKg) : '');
+  const showVest = vestChecked({ available, forced }) && !forbidden.includes(VEST_ID);
   const [error, setError] = useState<string | null>(null);
 
   async function save(): Promise<void> {
@@ -235,16 +262,35 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
       forced,
       forbidden,
     };
-    const input = { name: name.trim(), kind, inventory, increments: inc };
-    if (plateList === null || kbList === null || badIncrement || validateEquipmentProfile(input).length > 0) {
-      setError(plateRead.error ?? kbRead.error ?? tTraining('errorProfile'));
+    const vestText = vest.trim();
+    const vestKg = vestText === '' ? null : parseNumber(vestText);
+    if (showVest && vestText !== '' && (vestKg === null || !isVestKg(vestKg))) {
+      setError(tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) }));
+      return;
+    }
+    const input = { name: name.trim(), kind, inventory, increments: inc, ...(showVest ? { vestKg } : {}) };
+    const issues = validateEquipmentProfile(input);
+    if (plateList === null || kbList === null || badIncrement || issues.length > 0) {
+      const names = new Map(data.content.equipment.map((e) => [e.id, e.nameFr]));
+      const clash = forced.filter((id) => forbidden.includes(id)).map((id) => names.get(id) ?? id).join(', ');
+      const reason = (issue: EquipmentIssue): string => ISSUE_TEXT[issue.code](clash);
+      const reasons = [plateRead.error, kbRead.error, badIncrement ? tTraining('errorProfileIncrement') : null, ...issues.map(reason)].filter((r): r is string => r !== null);
+      setError([...new Set(reasons)].join(' ') || tTraining('errorProfile'));
       return;
     }
     try {
-      await (await access.repos.equipmentProfiles()).update(profile.id, input);
+      const repo = await access.repos.equipmentProfiles();
+      // EQUIP-0302 (D-796) : un appareil plus ancien lirait vide une liste plus longue et l'écraserait : refus nommé, rien d'écrit.
+      if (exceedsLegacyLists(inventory) && (await repo.longListsBlocked())) {
+        setError(tTraining('errorProfileOlderDevice', { max: String(LEGACY_EQUIPMENT_ID_LIST_MAX) }));
+        return;
+      }
+      await repo.update(profile.id, input);
       onDone(true);
-    } catch {
-      setError(tTraining('saveError'));
+    } catch (failure) {
+      // EQUIP-0302 (D-796) : refus du dépôt nommé ; seule une écriture qui échoue vraiment dit « Enregistrement impossible ».
+      const code = (failure as { readonly code?: unknown } | null)?.code;
+      setError(code === 'not-found' ? tTraining('errorProfileGone') : code === 'invalid' ? tTraining('errorProfileRejected') : tTraining('saveError'));
     }
   }
 
@@ -351,6 +397,17 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
           </div>
         </fieldset>
       ))}
+      {showVest && (
+        <div className="ct-training__field">
+          <label className="ct-training__label" htmlFor="ct-vest-kg">
+            {tTraining('vestWeight')}
+          </label>
+          <input id="ct-vest-kg" className="ct-training__input ct-training__num" inputMode="decimal" value={vest} aria-describedby="ct-vest-hint" onChange={(e) => setVest(e.target.value)} />
+          <p id="ct-vest-hint" className="ct-training__muted">
+            {tTraining('vestWeightHint')}
+          </p>
+        </div>
+      )}
       {error && (
         <p className="ct-training__error" role="alert">
           {error}
@@ -436,7 +493,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
             {message}
           </p>
         )}
-        {editing && viewed.origin === 'personal' ? (
+        {editing && viewed.origin === 'personal' && viewed.unreadable !== true ? (
           <ProfileForm
             data={data}
             access={access}
@@ -473,15 +530,17 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
                 </Button>
               ) : (
                 <>
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      setMessage(null);
-                      setEditing(true);
-                    }}
-                  >
-                    {tTraining('editProfile')}
-                  </Button>
+                  {viewed.unreadable === true ? null : (
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setMessage(null);
+                        setEditing(true);
+                      }}
+                    >
+                      {tTraining('editProfile')}
+                    </Button>
+                  )}
                   {/* ERGO-02 : une seule action rouge à l'écran ; « Activer » l'est déjà quand le profil n'est pas actif (suppression confirmée). */}
                   <Button variant={isActive ? 'danger' : 'secondary'} disabled={busy} onClick={() => setConfirm(true)}>
                     {tTraining('deleteProfile')}
@@ -490,6 +549,7 @@ export function EquipmentView({ data, access, ids, reload }: EquipmentViewProps)
               )}
             </div>
             {viewed.origin === 'embedded' && <p className="ct-training__muted">{tTraining('readOnly')}</p>}
+            {viewed.origin === 'personal' && viewed.unreadable === true && <p className="ct-training__muted">{tTraining('profileUnreadable')}</p>}
             <Inventory data={data} profile={viewed} />
           </>
         )}
