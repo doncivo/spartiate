@@ -16,7 +16,7 @@ import { TrainingScreen } from './TrainingScreen';
  */
 const DEVICE = '60000000-0000-4000-8000-0000000302e1' as DeviceId;
 const FIELD = /^Poids du gilet \(kg\)/;
-/** Copie du profil « Poids de corps » : la copie de « Salle complète » a déjà 64 matériels disponibles, plafond de la liste (constat hors ticket). */
+/** Copie du profil « Poids de corps » (peu de matériel) ; le cas « Salle complète » (64 matériels disponibles) a son propre test (D-796). */
 const COPY = 'Poids de corps (copie)';
 
 describe('EQUIP-0302 : éditeur, poids du gilet', () => {
@@ -139,5 +139,40 @@ describe('EQUIP-0302 : éditeur, poids du gilet', () => {
     fireEvent.change(screen.getByLabelText(/^Nom du profil/), { target: { value: '  ' } });
     await save();
     expect(await screen.findByRole('alert')).toHaveTextContent('Le nom du profil est vide.');
+  });
+
+  it('relecture : gilet coché mais interdit : champ du poids masqué (aucun lest possible)', async () => {
+    await editCopy();
+    fireEvent.click(vestBox('Matériel disponible'));
+    expect(screen.getByLabelText(FIELD)).toBeInTheDocument();
+    fireEvent.click(vestBox('Matériel interdit (jamais proposé)'));
+    expect(screen.queryByLabelText(FIELD)).toBeNull();
+  });
+
+  it('relecture sync-icloud (D-796) : appareil actif au schéma 24 : plus de 64 matériels refusés avec la raison, rien d’écrit', async () => {
+    await db.driver.execute("INSERT INTO sync_state (device_id, is_self, schema_version, format_major, state_seq, status) VALUES ('60000000-0000-4000-8000-0000000302f9', 0, 24, 1, 3, 'active')");
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: 'Dupliquer pour modifier' }));
+    await screen.findByRole('heading', { name: 'Salle complète (copie)' });
+    const before = await db.driver.select('SELECT inventory, vest_kg FROM equipment_profile');
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier le profil' }));
+    fireEvent.click(vestBox('Matériel disponible'));
+    fireEvent.change(screen.getByLabelText(FIELD), { target: { value: '10' } });
+    await save();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Un appareil utilise une version plus ancienne de Spartiate : mets-le à jour avant d’enregistrer plus de 64 matériels.');
+    expect(await db.driver.select('SELECT inventory, vest_kg FROM equipment_profile')).toEqual(before);
+  });
+
+  it('relecture sync-icloud (D-796) : profil à l’inventaire illisible (version plus récente) : lecture seule, message, aucune modification proposée', async () => {
+    await editCopy();
+    await save();
+    await screen.findByRole('heading', { name: COPY });
+    await db.driver.execute(`UPDATE equipment_profile SET inventory = '["v2"]'`);
+    cleanup();
+    open();
+    fireEvent.click(await screen.findByRole('button', { name: /^Poids de corps (copie)/ }));
+    await screen.findByRole('heading', { name: COPY });
+    expect(screen.getByText('Ce profil a été écrit par une version plus récente de Spartiate : mets l’app à jour pour le modifier.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Modifier le profil' })).toBeNull();
   });
 });

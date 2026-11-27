@@ -66,6 +66,22 @@ describe('EQUIP-0302 : poids du gilet à deux bases', () => {
     expect(await b.driver.select('SELECT 1 FROM sync_parked')).toEqual([]);
   });
 
+  it('relecture : poids modifié des deux côtés sans synchro entre-temps : une seule valeur des deux côtés, conflit journalisé sur vest_kg', async () => {
+    const { a, b } = await two();
+    await create(a, profile(P, { vestKg: 10 }));
+    await roundTrip();
+    await update(a, P, { vestKg: 12 });
+    b.clock.advance(500);
+    await update(b, P, { vestKg: 14 });
+    await roundTrip(3);
+    const onA = await row(a, P);
+    expect(onA).toEqual(await row(b, P));
+    expect([12, 14]).toContain((onA[0] as { vest_kg: number }).vest_kg);
+    const logged = await a.driver.select<{ field: string }>("SELECT field FROM conflict_log WHERE table_name = 'equipment_profile'");
+    const loggedB = await b.driver.select<{ field: string }>("SELECT field FROM conflict_log WHERE table_name = 'equipment_profile'");
+    expect([...logged, ...loggedB].map((r) => r.field)).toContain('vest_kg');
+  });
+
   it('appareil resté au schéma 24 : profil reçu, poids gardé dans sync_unknown ; son renommage ne l’efface pas ; réintégré à sa mise à jour', async () => {
     const { a, b } = await two('v24');
     await create(a, profile(P, { vestKg: 10 }));
