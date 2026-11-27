@@ -329,6 +329,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-183 | demande d'Ali du 27/11 (point 2) ; relecture CORPS-0301d | Rythme des mesures enregistré à sa valeur par défaut quand on le change avant la lecture des réglages (peut écraser un 14 ou un 28) | fait (FIX-0302a, rouge 77b2bddb, vert d5dfda16 : contrôles inactifs jusqu'à la lecture) |
 | BL-184 | demande d'Ali du 27/11 (point 1, D-765) | Liens directs : chaque notification ouvre l'écran qu'elle concerne (rappel des mesures → Progrès › Corps › Mesures) ; inventaire de toutes les familles et de leur écran, test « chaque notification a une cible » | fait en partie (NOTIF-0302, rouge c802a2f0, vert eec7dd1b ; D-770 à D-773) ; reste le constat d'Ali (H-44, docs/constats-ali.md, section 0.30.2) |
 | BL-185 | demande d'Ali du 27/11 (point 3, D-767) | SideStore renouvelé : relever la date exacte d'expiration affichée dans Plus › À propos et diagnostic | constat d'Ali à faire (docs/constats-ali.md, section « SideStore (renouvellement du 27/11) ») |
+| BL-186 | QA du lot 0.30.2 (relecture de SESS-0302, 27/11) | Tests d'Historique et de clôture de séance instables en local (« Refaire cette séance », « aucune série de travail validée ») : cause et correctif, ni ignorés ni relancés | fait (FIX-0302c, rouge c9d89f8b, vert 41d6dff3 ; cause : premier rendu à froid de l'Entraînement pendant l'attente, docs/journal.md 2026-11-27) |
 
 ## 3. Audit Codex 0.26.0
 

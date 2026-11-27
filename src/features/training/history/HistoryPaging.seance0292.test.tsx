@@ -1,17 +1,26 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
 import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
+import { warmTraining } from '../warmTraining';
 import { TrainingScreen } from '../TrainingScreen';
 
 /** SEANCE-0292 (C-082, § 13.8) : le journal n'est plus limité aux 50 dernières séances. Données synthétiques. */
 const DEVICE = '60000000-0000-4000-8000-0000000000e9' as DeviceId;
 let db: TestDb;
 
+beforeAll(async () => {
+  const warm = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
+  try {
+    await warmTraining(warm);
+  } finally {
+    await warm.close();
+  }
+}, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-01-01T17:00:00.000Z');
