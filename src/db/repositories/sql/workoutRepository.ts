@@ -819,6 +819,19 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       await renumber(row.workout_id);
     },
 
+    async restoreSet(setId, index) {
+      const row = (await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ?', [setId]))[0];
+      if (!row) throw new RepositoryError('not-found', 'workout_set', setId);
+      await requireOpen(row.workout_id);
+      if (row.deleted_at === null) invalid('workout_set', setId);
+      const others = (await rawSets(row.workout_id)).map((r) => r.id);
+      const at = Math.max(0, Math.min(others.length, Number.isFinite(index) ? Math.trunc(index) : others.length));
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.deviceId, stamp.hlc, setId]);
+      await applyOrder([...others.slice(0, at), setId, ...others.slice(at)]);
+      return requireSetRow(setId);
+    },
+
     async startRest({ seconds }) {
       const row = await requireRunningRow();
       if (!isRestSeconds(seconds)) invalid('workout', row.id);

@@ -118,4 +118,13 @@ export const trainingSessionFr = {
   paused: 'En pause',
   pausedHint: 'Chrono arrêté, repos annulé. La saisie reprend avec la séance.',
   pauseError: 'La pause n’a pas pu être enregistrée. Réessaie.',
+  // GEST-0303 (BL-169, D-653, § 18.1) : gestes iPhone (série glissée vers la gauche, appui long sur un exercice) et leur alternative accessible.
+  swipeSetTitle: '{name}, série {n}',
+  swipeWarmupTitle: '{name}, échauffement',
+  moveUp: 'Monter',
+  moveDown: 'Descendre',
+  moveUpLabel: 'Monter « {name} »',
+  moveDownLabel: 'Descendre « {name} »',
+  reorderLifted: '« {name} » soulevé : glisse vers le haut ou le bas, puis relâche.',
+  reorderDone: '« {name} » en position {n} sur {total}.',
 } as const;

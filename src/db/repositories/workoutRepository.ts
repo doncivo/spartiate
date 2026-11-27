@@ -152,6 +152,12 @@ export interface WorkoutRepository {
   setDistance(setId: string, distanceM: number | null): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
   /**
+   * GEST-0303 (BL-169, D-653) : « Annuler » après une série supprimée de la séance OUVERTE : la série revient telle qu'elle était (saisie, état,
+   * type, groupe), à la place `index` (bornée) parmi les séries vivantes ; positions renumérotées. Série vivante ou séance close : `'invalid'` ;
+   * série absente (effacée à la clôture) : `'not-found'`. Plusieurs écritures : à appeler dans `DataAccess.transaction`.
+   */
+  restoreSet(setId: string, index: number): Promise<WorkoutSet>;
+  /**
    * I2-01 : difficulté Facile / Juste / Dur (§ 13.2) de l'exercice dans la séance OUVERTE, écrite sur toutes ses séries (null : effacée).
    * Séance absente : `'not-found'` ; close, exercice absent de la séance ou valeur hors liste : `'invalid'`.
    */

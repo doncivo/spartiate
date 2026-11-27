@@ -10,6 +10,7 @@ import { Button, ConfirmDialog, Icon } from '../../../ui';
 import type { Held } from '../loadDisplay';
 import { useKeyboardSelect } from './keyboardSelect';
 import type { OutlierAsk } from './outlierCheck';
+import type { SessionGestures } from './sessionGestures';
 
 /**
  * Une série de la séance active (§ 13.2, I1-02 critères 2 et 5) : cible rappelée (plage de la routine, ou valeurs de la séance copiée),
@@ -93,6 +94,12 @@ export interface SetRowProps {
   /** SESS-01c : `failure` = série de travail à RIR 0 (`setKindPatch`). */
   readonly onKind: (kind: SetKindChoice) => void;
   readonly onRemove: () => void;
+  /**
+   * GEST-0303 (D-653) : gestes de la séance (bloc à la demande) ; null ou absent : aucun geste. Une série À FAIRE glissée vers la gauche
+   * appelle `onSwipeRemove` avec la saisie pas encore gardée (null : rien à garder), pour qu'« Annuler » la rende intacte.
+   */
+  readonly gestures?: SessionGestures | null;
+  readonly onSwipeRemove?: (patch: Partial<SetEntry> | null) => void;
 }
 
 /** Texte de la question avant écriture (FIX-ABERR) : contrôle relatif, ou vraisemblance à la première séance (décision d'Ali du 20/11). */
@@ -112,7 +119,7 @@ function outlierText(outlier: OutlierAsk, held: Held): string {
 
 const LOAD_LABEL: Readonly<Record<LoadField, TrainingPlainKey>> = { load: 'sessionLoad', ballast: 'sessionLoadBallast', assistance: 'sessionLoadAssistance' };
 
-export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onDraft, onUnvalidate, onKind, onRemove }: SetRowProps) {
+export function SetRow({ set, number, current = false, loads = null, held = null, loadField = 'load', timed, source, busy, checkEntry, onValidate, onDraft, onUnvalidate, onKind, onRemove, gestures = null, onSwipeRemove }: SetRowProps) {
   const [draft, setDraft] = useState<Draft>(() => initialDraft(set, timed));
   const [issue, setIssue] = useState<string | null>(null);
   const [ask, setAsk] = useState<{ readonly entry: SetEntry; readonly outlier: OutlierAsk } | null>(null);
@@ -140,17 +147,34 @@ export function SetRow({ set, number, current = false, loads = null, held = null
   }
   // SEANCE-0292 (C-078) : la saisie d'une série à faire est gardée en base (sortie d'un champ, ou une seconde après la dernière frappe).
   const savedDraft = useRef<Draft>(draft);
-  const flushDraft = (): void => {
-    if (onDraft === undefined || set.done || sameDraft(draft, savedDraft.current) || sameDraft(draft, synced.draft)) return;
+  /** Saisie pas encore gardée en base (champs lisibles seulement), marquée gardée ; null : rien à garder. */
+  const takeDraft = (): Partial<SetEntry> | null => {
+    if (set.done || sameDraft(draft, savedDraft.current) || sameDraft(draft, synced.draft)) return null;
     savedDraft.current = draft;
     const read = (t: string): number | null | undefined => (t.trim() === '' ? null : (parseNumber(t) ?? undefined));
     const patch = draftEntryPatch(timed ? { loadKg: read(draft.load), durationSec: read(draft.duration), rir: read(draft.rir) } : { loadKg: read(draft.load), reps: read(draft.reps), rir: read(draft.rir) });
-    if (Object.keys(patch).length > 0) onDraft(patch);
+    return Object.keys(patch).length > 0 ? patch : null;
+  };
+  const flushDraft = (): void => {
+    if (onDraft === undefined) return;
+    const patch = takeDraft();
+    if (patch !== null) onDraft(patch);
   };
   const flushRef = useRef(flushDraft);
+  // GEST-0303 : état lu par le geste au moment de l'appui et du relâchement (jamais une valeur figée à l'installation des écouteurs).
+  const swipeRef = useRef({ enabled: false, run: (): void => undefined });
   useEffect(() => {
     flushRef.current = flushDraft;
+    swipeRef.current = {
+      enabled: onSwipeRemove !== undefined && !busy && !set.done && !checking && ask === null && !confirmRemove,
+      run: () => onSwipeRemove?.(takeDraft()),
+    };
   });
+  useEffect(() => {
+    const row = rowRef.current;
+    if (gestures === null || row === null) return undefined;
+    return gestures.attachSwipeToDelete(row, { enabled: () => swipeRef.current.enabled, onSwipe: () => swipeRef.current.run() });
+  }, [gestures]);
   useEffect(() => {
     if (onDraft === undefined || set.done) return;
     const id = setTimeout(() => flushRef.current(), 1000);

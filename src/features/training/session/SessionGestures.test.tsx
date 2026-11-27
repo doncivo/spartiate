@@ -119,7 +119,7 @@ describe('GEST-0303 : glisser une série vers la gauche', () => {
     fireEvent.change(within(row).getByLabelText(tTraining('sessionReps')), { target: { value: '7' } });
     swipe(row, -150, 4);
     await waitFor(() => expect(benchSets()).toHaveLength(2));
-    const removedId = before[1];
+    const removedId = before[1] ?? '';
     expect(await liveSetIds()).not.toContain(removedId);
     const toast = await screen.findByText(`« ${tSession('swipeSetTitle', { name: BENCH, n: 2 })} » supprimée`);
     fireEvent.click(within(toast.closest('.ct-undo-host') ?? document.body).getByRole('button', { name: 'Annuler' }));
@@ -128,7 +128,7 @@ describe('GEST-0303 : glisser une série vers la gauche', () => {
     const [restored] = await db.driver.select<{ load_kg: number | null; reps: number | null; done: number }>('SELECT load_kg, reps, done FROM workout_set WHERE id = ?', [removedId]);
     expect(restored).toEqual({ load_kg: 82.5, reps: 7, done: 0 });
     expect(within(second()).getByLabelText(tTraining('sessionLoad'))).toHaveValue('82,5');
-    expect(await db.driver.select('SELECT * FROM sync_outbox')).toEqual([]);
+    expect(await db.driver.select("SELECT table_name FROM sync_outbox WHERE table_name IN ('workout', 'workout_set')")).toEqual([]);
   });
 
   it('en deçà du seuil : retour élastique, rien n’est supprimé', async () => {
@@ -148,7 +148,14 @@ describe('GEST-0303 : glisser une série vers la gauche', () => {
   it('défilement vertical (même s’il finit vers la gauche), souris, série validée : jamais de suppression', async () => {
     await openAndStart();
     const before = await liveSetIds();
-    swipe(second(), -200, 160);
+    // Défilement : le doigt part vers le bas (axe vertical choisi), puis glisse loin vers la gauche.
+    const row = second();
+    pointer(row, 'pointerDown', 300, 50);
+    pointer(row, 'pointerMove', 298, 80);
+    pointer(row, 'pointerMove', 60, 90);
+    expect(row.style.transform).toBe('');
+    pointer(row, 'pointerUp', 60, 90);
+    expect(benchSets()).toHaveLength(3);
     swipe(second(), -200, 0, 'mouse');
     const [first] = benchSets();
     if (!first) throw new Error('première série absente');

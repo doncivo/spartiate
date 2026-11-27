@@ -33,6 +33,8 @@ import { RepositoryError } from '../../../db/repositories/common';
 import type { ClosedWorkout, WorkoutRepository } from '../../../db/repositories/workoutRepository';
 import { logFailure } from '../../../platform/desktop/log';
 import type { Haptics } from '../../../platform/haptics';
+import type { UndoStack } from '../../app/undo';
+import type { SessionGestures } from './sessionGestures';
 import { formatClock, formatExerciseLoad, formatRest, tTraining } from '../../../i18n/trainingText';
 import { tSession } from '../../../i18n/trainingSessionText';
 import { Button, ConfirmDialog } from '../../../ui';
@@ -98,6 +100,8 @@ export interface ActiveSessionProps {
   readonly timer: RestTimerController;
   readonly clock: { nowMs(): number };
   readonly haptics: Haptics;
+  /** GEST-0303 : pile « Annuler » de l'app (bandeau global) : une série supprimée d'un geste y est rendue. */
+  readonly undo: UndoStack;
   readonly onWorkout: (workout: WorkoutWithSets | null) => void;
   readonly onRestSetting: (seconds: number | null) => void;
   /** Séance close (I1-03) : résumé à afficher. */
@@ -113,7 +117,11 @@ const plateStart = (sets: readonly WorkoutSet[]): number | null => {
 
 const isTimedExercise = (exercise: Exercise | undefined, set: WorkoutSet): boolean => set.setKind === 'timed' || exercise?.metric === 'time';
 
-export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, onWorkout, onRestSetting, onClosed }: ActiveSessionProps) {
+/** GEST-0303 : écran tactile (doigt) ; sans lui, et hors iPhone, le bloc des gestes n'est jamais chargé. */
+const touchCapable = (): boolean =>
+  typeof window !== 'undefined' && ((typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches) || (typeof navigator !== 'undefined' && (navigator.maxTouchPoints ?? 0) > 0));
+
+export function ActiveSession({ data, access, workout, restSetting, os, timer, clock, haptics, undo, onWorkout, onRestSetting, onClosed }: ActiveSessionProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
@@ -177,6 +185,13 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const [rest, setRest] = useState<RestView | null>(null);
   const [restDone, setRestDone] = useState(false);
   const [now, setNow] = useState(() => clock.nowMs());
+  /** GEST-0303 : gestes iPhone (bloc à la demande, chargé sur écran tactile seulement) ; null : aucun geste. */
+  const [gestures, setGestures] = useState<SessionGestures | null>(null);
+  const [gestureRoot, setGestureRoot] = useState<HTMLDivElement | null>(null);
+  /** GEST-0303 : unité soulevée par un appui long ; dernière place annoncée ; bouton à refocaliser après un déplacement. */
+  const [lifted, setLifted] = useState<string | null>(null);
+  const [moveStatus, setMoveStatus] = useState<string | null>(null);
+  const pendingMoveFocus = useRef<{ readonly exerciseId: string; readonly dir: 'up' | 'down' } | null>(null);
   const live = useRef(true);
   // Garde du double appui : un second « Terminer » arrivé avant le nouveau rendu ne relance pas la clôture.
   const closing = useRef(false);
@@ -522,6 +537,92 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   const reorder = (order: string[] | null): void => {
     if (order !== null) void write((repo) => repo.reorderSets(workout.id, order));
   };
+
+  // ---------------------------------------------------------------------------------------------------------------------------------
+  // GEST-0303 (BL-169, D-653, § 18.1, § 18.6) : série glissée vers la gauche = supprimée (avec « Annuler ») ; appui long sur un exercice =
+  // réordonner ; « Monter » / « Descendre » en alternative accessible. Gestes suspendus pendant la pause et pendant une écriture.
+  // ---------------------------------------------------------------------------------------------------------------------------------
+  /** Place l'unité `key` à `toIndex`, écrit l'ordre et l'annonce ; `focus` : bouton à refocaliser une fois l'ordre relu. */
+  async function moveUnit(key: string, toIndex: number, focus: 'up' | 'down' | null): Promise<void> {
+    const unit = units.find((x) => x.key === key);
+    const order = moveUnitOrder(workout.sets, key, toIndex);
+    if (unit === undefined || order === null) return;
+    const to = Math.max(0, Math.min(units.length - 1, toIndex));
+    pendingMoveFocus.current = focus === null ? null : { exerciseId: unit.exerciseIds[0] ?? '', dir: focus };
+    const ok = await write((repo) => repo.reorderSets(workout.id, order));
+    if (!ok) pendingMoveFocus.current = null;
+    if (ok && live.current) setMoveStatus(tSession('reorderDone', { name: nameOfUnit(unit), n: to + 1, total: units.length }));
+  }
+  /** Série glissée : saisie pas encore gardée écrite puis série supprimée, d'une transaction ; « Annuler » la remet à sa place. */
+  async function swipeRemove(set: WorkoutSet, title: string, patch: Partial<SetEntry> | null): Promise<void> {
+    const index = workout.sets.findIndex((s) => s.id === set.id);
+    const ok = await write(async (repo) => {
+      if (patch !== null) await repo.updateSet(set.id, patch);
+      await repo.removeSet(set.id);
+    });
+    if (!ok) return;
+    undo.push({
+      kind: 'delete',
+      count: 1,
+      labelParams: { title },
+      undo: async () => {
+        try {
+          await access.transaction(async (repos) => {
+            await (await repos.workouts()).restoreSet(set.id, index);
+          });
+        } catch (e) {
+          // Séance close entre-temps (série effacée à la clôture) ou série déjà rendue : rien n'est écrit.
+          if (e instanceof RepositoryError) return 'stale';
+          throw e;
+        }
+        const fresh = await (await access.repos.workouts()).get(workout.id);
+        if (live.current && fresh !== null) onWorkout(fresh);
+        return 'undone';
+      },
+    });
+  }
+  const gestureState = useRef({ locked, move: moveUnit });
+  useEffect(() => {
+    gestureState.current = { locked, move: moveUnit };
+  });
+  useEffect(() => {
+    if (os !== 'ios' && !touchCapable()) return undefined;
+    let alive = true;
+    import('./sessionGestures').then(
+      (m) => {
+        if (alive) setGestures(m.sessionGestures);
+      },
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [os]);
+  useEffect(() => {
+    if (gestures === null || gestureRoot === null) return undefined;
+    return gestures.attachLongPressReorder(gestureRoot, {
+      enabled: () => !gestureState.current.locked,
+      onLift: (key) => {
+        setLifted(key);
+        haptics.impact('medium');
+      },
+      onDrop: (key, to) => {
+        setLifted(null);
+        void gestureState.current.move(key, to, null);
+      },
+      onCancel: () => setLifted(null),
+    });
+  }, [gestures, gestureRoot, haptics]);
+  useEffect(() => {
+    const wanted = pendingMoveFocus.current;
+    if (wanted === null) return;
+    pendingMoveFocus.current = null;
+    const block = document.getElementById(`ct-session-block-${wanted.exerciseId}`);
+    const button = block?.querySelector<HTMLElement>(`.ct-session__move-${wanted.dir}`);
+    const other = block?.querySelector<HTMLElement>(`.ct-session__move-${wanted.dir === 'up' ? 'down' : 'up'}`);
+    (button?.getAttribute('aria-disabled') === 'true' ? other : button)?.focus();
+  }, [workout]);
+  const liftedUnit = lifted === null ? undefined : units.find((x) => x.key === lifted);
   async function exclude(block: ExerciseBlock): Promise<void> {
     setConfirm(null);
     const next = withExcluded(excludedIds, block.exerciseId, true);
@@ -584,7 +685,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
   }
 
   return (
-    <div className="ct-session__active">
+    <div className="ct-session__active" ref={setGestureRoot} data-gestures={gestures === null ? undefined : 'on'}>
       <header className="ct-session__head">
         <div>
           <h2 className="ct-session__title">{workout.name === '' ? tTraining('sessionFree') : workout.name}</h2>
@@ -661,6 +762,10 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
       )}
 
       <SessionStrip units={units} nameOf={nameOfUnit} currentKey={currentUnit} busy={locked} onMove={(key, to) => reorder(moveUnitOrder(workout.sets, key, to))} onShow={showUnit} />
+      {/* GEST-0303 : région d'annonce toujours présente : exercice soulevé, puis nouvelle place (appui long ou « Monter » / « Descendre »). */}
+      <p className="ct-session__hint ct-session__move-status" role="status">
+        {liftedUnit === undefined ? moveStatus : tSession('reorderLifted', { name: nameOfUnit(liftedUnit) })}
+      </p>
 
       {blocks.length === 0 && <p className="ct-session__muted">{tTraining('sessionNoExercise')}</p>}
 
@@ -676,6 +781,10 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
         const held = heldFor(exercise, data.active);
         let rank = 0;
         const circuit = circuits.find((c) => c.exerciseIds[0] === block.exerciseId);
+        // GEST-0303 : unité de l'exercice (exercice libre ou groupe) ; « Monter » / « Descendre » sur le premier exercice de l'unité.
+        const unitIndex = units.findIndex((x) => x.exerciseIds.includes(block.exerciseId));
+        const unit = units[unitIndex];
+        const movable = unit !== undefined && units.length > 1 && unit.exerciseIds[0] === block.exerciseId;
         return (
           <Fragment key={block.exerciseId}>
           {circuit && (
@@ -683,8 +792,15 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
               <CircuitHeader circuit={circuit} workout={workout} busy={locked} onUngroup={() => void write((repo) => repo.ungroupCircuit(workout.id, circuit.circuitId))} />
             </Suspense>
           )}
-          <section className="ct-session__block" role="region" aria-label={block.exerciseName} id={`ct-session-block-${block.exerciseId}`} tabIndex={-1}>
-            <div className="ct-session__block-head">
+          <section
+            className={unit !== undefined && lifted === unit.key ? 'ct-session__block ct-session__block--lifted' : 'ct-session__block'}
+            role="region"
+            aria-label={block.exerciseName}
+            id={`ct-session-block-${block.exerciseId}`}
+            tabIndex={-1}
+            data-reorder-key={unit?.key}
+          >
+            <div className="ct-session__block-head" data-reorder-handle="">
               <h3 className="ct-session__block-title">{block.exerciseName}</h3>
               <p className="ct-session__muted">
                 {/* 0.2.3 : un repos nul ou absent n'affiche plus « repos 0 s ». */}
@@ -707,6 +823,7 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
             <ol className="ct-session__sets">
               {block.sets.map((set) => {
                 if (set.setKind !== 'warmup') rank += 1;
+                const n = rank;
                 return (
                   <SetRow
                     key={set.id}
@@ -725,6 +842,8 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                     onUnvalidate={() => void write((repo) => repo.unvalidateSet(set.id))}
                     onKind={(kind: SetKindChoice) => void write((repo) => repo.updateSet(set.id, setKindPatch(kind, set)))}
                     onRemove={() => void write((repo) => repo.removeSet(set.id))}
+                    gestures={gestures}
+                    onSwipeRemove={(patch) => void swipeRemove(set, set.setKind === 'warmup' ? tSession('swipeWarmupTitle', { name: block.exerciseName }) : tSession('swipeSetTitle', { name: block.exerciseName, n }), patch)}
                   />
                 );
               })}
@@ -742,6 +861,30 @@ export function ActiveSession({ data, access, workout, restSetting, os, timer, c
                 <Button variant="secondary" disabled={locked} onClick={() => reorder(skipUnitOrder(workout.sets, block.exerciseId))}>
                   {tSession('skip')}
                 </Button>
+              )}
+              {movable && (
+                <>
+                  <Button
+                    variant="secondary"
+                    className="ct-session__move-up"
+                    disabled={locked}
+                    ariaDisabled={unitIndex === 0}
+                    ariaLabel={tSession('moveUpLabel', { name: nameOfUnit(unit) })}
+                    onClick={() => void moveUnit(unit.key, unitIndex - 1, 'up')}
+                  >
+                    {tSession('moveUp')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    className="ct-session__move-down"
+                    disabled={locked}
+                    ariaDisabled={unitIndex === units.length - 1}
+                    ariaLabel={tSession('moveDownLabel', { name: nameOfUnit(unit) })}
+                    onClick={() => void moveUnit(unit.key, unitIndex + 1, 'down')}
+                  >
+                    {tSession('moveDown')}
+                  </Button>
+                </>
               )}
               <Button variant="secondary" disabled={locked} onClick={() => setConfirm({ kind: 'exercise', block })}>
                 {tTraining('sessionRemoveExercise')}

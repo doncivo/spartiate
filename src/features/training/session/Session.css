@@ -182,6 +182,35 @@
   border-top: 1px solid var(--ct-color-border);
 }
 
+/* GEST-0303 (D-653) : série glissée vers la gauche (suit le doigt), armée au-delà du seuil, retour élastique en deçà. */
+.ct-session__set--swiping {
+  position: relative;
+  background: var(--ct-color-surface-raised);
+}
+
+.ct-session__set--armed {
+  outline: 2px solid var(--ct-color-danger);
+  outline-offset: -2px;
+}
+
+.ct-session__set--returning {
+  transition: transform 160ms ease-out;
+}
+
+/* GEST-0303 : tête d'exercice tenue (appui long) : ni loupe ni menu du système ; exercice soulevé mis en avant. */
+[data-reorder-handle] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.ct-session__block--lifted {
+  position: relative;
+  z-index: 1;
+  border-color: var(--ct-color-bronze);
+  box-shadow: 0 0 0 2px var(--ct-color-bronze);
+}
+
 .ct-session__set--done {
   background: var(--ct-color-surface-raised);
   border-radius: var(--ct-radius-sm);
