@@ -347,6 +347,23 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
   });
 
+  // GEST-0303 (BL-169, D-653) : gestes iPhone de la séance (glisser une série, appui long sur un exercice), bloc à la demande importé dynamiquement
+  // par la séance active ; ses marqueurs ne sont dans aucun bloc de départ.
+  it('GEST-0303 : src/features/training/session/sessionGestures.ts est un bloc à la demande, hors du départ', () => {
+    const source = 'src/features/training/session/sessionGestures.ts';
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+
+  it.each(['ct-session__set--swiping', 'ct-session__block--lifted'])('GEST-0303 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   it.each(['atteint la dernière fois', 'Proposition refusée : tu saisis toi-même.', 'Ressenti de l’exercice', 'hard-blocks-increase'])('I2-01 : « %s » hors du départ et présent dans le build', (marker) => {
     const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
     for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
