@@ -16,13 +16,13 @@ const DEVICE = '60000000-0000-4000-8000-0000000000f1' as DeviceId;
 const NOW = '2026-11-12T09:00:00.000Z'; // 10:00 à Paris
 let db: TestDb;
 
-const mount = (samples: readonly { kind: string; day: LocalDate }[], notifications?: NotificationScheduler, zone: string | null = 'Europe/Paris') =>
+const mount = (samples: readonly { kind: string; day: LocalDate }[], notifications?: NotificationScheduler, zone: string | null = 'Europe/Paris', data: TestDb['data'] = db.data) =>
   render(
     <AppContainerProvider
       container={createAppContainer({
         clock: db.clock,
         hlc: createHlcClock({ clock: db.clock, deviceId: DEVICE }),
-        data: db.data,
+        data,
         platform: { runtime: 'web', os: notifications ? 'ios' : 'other' },
         ...(notifications ? { notifications, notificationClock: { nowMs: () => Date.parse(NOW), zone: () => zone } } : {}),
       })}
@@ -42,6 +42,60 @@ afterEach(async () => {
   cleanup();
   vi.unstubAllGlobals();
   await db.close();
+});
+
+/**
+ * FIX-0302a (BL-183, docs/CORPS-0301d.md) : lecture des réglages retenue jusqu'à `release()`. Avant la lecture, l'écran ne connaît que les valeurs
+ * par défaut : un choix fait à ce moment enregistrait le rythme par défaut et écrasait un 14 ou un 28 déjà stocké.
+ */
+function slowSettings(data: TestDb['data']): { readonly data: TestDb['data']; readonly release: () => void } {
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const settings = new Proxy(data.repos.settings, {
+    get(target, key, receiver) {
+      const value: unknown = Reflect.get(target, key, receiver);
+      if (key !== 'get' || typeof value !== 'function') return value;
+      return async (...args: unknown[]) => {
+        await gate;
+        return (value as (...a: unknown[]) => unknown).apply(target, args);
+      };
+    },
+  });
+  const repos = new Proxy(data.repos, { get: (target, key, receiver) => (key === 'settings' ? settings : Reflect.get(target, key, receiver)) });
+  return { data: { ...data, repos }, release: () => release() };
+}
+
+describe('FIX-0302a : un choix fait avant la lecture des réglages n’écrase pas le réglage stocké', () => {
+  it('iPhone : contrôles inactifs pendant la lecture ; un appui sur l’interrupteur ne réécrit pas le rythme 28 en 7', async () => {
+    await db.data.repos.settings.set('bodyProgress.measurementRhythm', 28);
+    await seed('2026-11-09');
+    const slow = slowSettings(db.data);
+    mount([waist('2026-11-09')], createFakeNotificationScheduler(), 'Europe/Paris', slow.data);
+    const toggle = screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' });
+    expect(toggle).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Chaque semaine' })).toBeDisabled();
+    fireEvent.click(toggle);
+    slow.release();
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Toutes les 4 semaines' })).toHaveAttribute('aria-checked', 'true'));
+    expect(await db.data.repos.settings.get('bodyProgress.measurementRhythm')).toBe(28);
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).not.toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('PC : le rythme ne se règle qu’après la lecture ; le 14 stocké reste 14', async () => {
+    await db.data.repos.settings.set('bodyProgress.measurementRhythm', 14);
+    const slow = slowSettings(db.data);
+    mount([waist('2026-11-09')], undefined, 'Europe/Paris', slow.data);
+    const weekly = screen.getByRole('radio', { name: 'Chaque semaine' });
+    expect(weekly).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio', { name: 'Toutes les 4 semaines' }));
+    slow.release();
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Toutes les 2 semaines' })).toHaveAttribute('aria-checked', 'true'));
+    expect(await db.data.repos.settings.get('bodyProgress.measurementRhythm')).toBe(14);
+    expect(screen.getByRole('radio', { name: 'Chaque semaine' })).not.toBeDisabled();
+  });
 });
 
 describe('rythme des mesures', () => {
