@@ -135,6 +135,8 @@ export function exceedsLegacyLists(inv: Pick<EquipmentInventory, 'available' | '
 }
 /** Borne des autres listes d'un profil (barres, disques, kettlebells, machines, poulies), inchangée. */
 export const EQUIPMENT_LIST_MAX = 64;
+/** Longueur maximale du nom d'une barre (lecture, `equipmentJson.ts`), distincte de la borne des listes. */
+export const BARBELL_NAME_MAX = 64;
 /** Nombre de disques d'un même poids admis à la lecture (`equipmentJson.ts`). */
 export const PLATE_COUNT_MAX = 100;
 const ids = (list: readonly string[]): boolean => list.length <= EQUIPMENT_ID_LIST_MAX && list.every((id) => EQUIPMENT_ID_RE.test(id));
@@ -160,7 +162,7 @@ export function validateEquipmentProfile(input: Pick<EquipmentProfileInput, 'nam
   if (tooLong(inv.cables) || inv.cables.some((c) => !range(c))) add('cables');
   if (tooLong(inv.machines) || inv.machines.some((m) => !EQUIPMENT_ID_RE.test(m.equipmentId) || !range({ minKg: m.stackMinKg, maxKg: m.stackMaxKg, stepKg: m.stepKg }))) add('machines');
   if (tooLong(inv.kettlebellsKg) || inv.kettlebellsKg.some((k) => !positive(k)) || hasDuplicate(inv.kettlebellsKg)) add('kettlebells');
-  if (tooLong(inv.barbells) || inv.barbells.some((b) => b.type.trim() === '' || b.type.length > 64 || !positive(b.weightKg))) add('barbells');
+  if (tooLong(inv.barbells) || inv.barbells.some((b) => b.type.trim() === '' || b.type.length > BARBELL_NAME_MAX || !positive(b.weightKg))) add('barbells');
   if (tooLong(inv.platesPerSideKg) || inv.platesPerSideKg.some((p) => !positive(p.weightKg) || !Number.isInteger(p.count) || p.count < 1 || p.count > PLATE_COUNT_MAX) || hasDuplicate(inv.platesPerSideKg.map((p) => p.weightKg))) add('plates');
   const increments: EquipmentIncrements = input.increments;
   if (Object.values(increments).some((v) => !positive(v))) add('increment');

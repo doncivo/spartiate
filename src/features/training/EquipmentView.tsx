@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { EQUIPMENT_LIST_MAX, EQUIPMENT_PROFILE_KINDS, exceedsLegacyLists, isVestKg, LEGACY_EQUIPMENT_ID_LIST_MAX, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
+import { BARBELL_NAME_MAX, EQUIPMENT_LIST_MAX, EQUIPMENT_PROFILE_KINDS, exceedsLegacyLists, isVestKg, LEGACY_EQUIPMENT_ID_LIST_MAX, type EquipmentIssue, parsePlateList, parseWeightList, validateEquipmentProfile, VEST_KG_MAX, VEST_KG_MIN, type EquipmentInventory, type EquipmentProfileKind, type StackRange } from '../../domain/training';
 import type { IdGenerator } from '../../domain/id';
 import { WEIGHTED_VEST_ID } from '../../domain/training/prescribe';
 import type { DataAccess } from '../../db/repositories/dataAccess';
@@ -168,22 +168,24 @@ function Inventory({ data, profile }: { readonly data: TrainingData; readonly pr
   );
 }
 
-/** EQUIP-0302 (D-796) : raison nommée de chaque refus de la validation du profil. */
-const ISSUE_KEY = {
-  'name-empty': 'errorProfileName',
-  kind: 'errorProfileKind',
-  ids: 'errorProfileIds',
-  dumbbells: 'errorProfileDumbbells',
-  increment: 'errorProfileIncrement',
-} as const satisfies Readonly<Partial<Record<EquipmentIssue['code'], TrainingPlainKey>>>;
-/** Raisons qui disent la borne des listes (`EQUIPMENT_LIST_MAX`), interpolée. */
-const ISSUE_MAX_KEY = {
-  cables: 'errorProfileCables',
-  machines: 'errorProfileMachines',
-  kettlebells: 'errorProfileKettlebells',
-  barbells: 'errorProfileBarbells',
-  plates: 'errorProfilePlates',
-} as const;
+/**
+ * EQUIP-0302 (D-796) : raison nommée de chaque refus de la validation du profil. Table EXHAUSTIVE sur l'union des codes : un code ajouté sans
+ * texte est une erreur de typage. `names` : matériel à la fois forcé et interdit.
+ */
+const ISSUE_TEXT: Readonly<Record<EquipmentIssue['code'], (names: string) => string>> = {
+  'name-empty': () => tTraining('errorProfileName'),
+  kind: () => tTraining('errorProfileKind'),
+  ids: () => tTraining('errorProfileIds'),
+  'forced-forbidden': (names) => tTraining('errorProfileForcedForbidden', { names }),
+  dumbbells: () => tTraining('errorProfileDumbbells'),
+  cables: () => tTraining('errorProfileCables', { max: String(EQUIPMENT_LIST_MAX) }),
+  machines: () => tTraining('errorProfileMachines', { max: String(EQUIPMENT_LIST_MAX) }),
+  kettlebells: () => tTraining('errorProfileKettlebells', { max: String(EQUIPMENT_LIST_MAX) }),
+  barbells: () => tTraining('errorProfileBarbells', { name: String(BARBELL_NAME_MAX), max: String(EQUIPMENT_LIST_MAX) }),
+  plates: () => tTraining('errorProfilePlates', { max: String(EQUIPMENT_LIST_MAX) }),
+  increment: () => tTraining('errorProfileIncrement'),
+  vest: () => tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) }),
+};
 
 const listText = (values: readonly number[]): string => values.map(formatNumber).join(' ; ');
 
@@ -270,14 +272,8 @@ function ProfileForm({ data, access, profile, onDone }: EditProps) {
     const issues = validateEquipmentProfile(input);
     if (plateList === null || kbList === null || badIncrement || issues.length > 0) {
       const names = new Map(data.content.equipment.map((e) => [e.id, e.nameFr]));
-      const reason = (issue: EquipmentIssue): string =>
-        issue.code === 'forced-forbidden'
-          ? tTraining('errorProfileForcedForbidden', { names: forced.filter((id) => forbidden.includes(id)).map((id) => names.get(id) ?? id).join(', ') })
-          : issue.code === 'vest'
-            ? tTraining('errorVestWeight', { min: formatNumber(VEST_KG_MIN), max: formatNumber(VEST_KG_MAX) })
-            : issue.code in ISSUE_MAX_KEY
-              ? tTraining(ISSUE_MAX_KEY[issue.code as keyof typeof ISSUE_MAX_KEY], { max: String(EQUIPMENT_LIST_MAX) })
-              : tTraining(ISSUE_KEY[issue.code as keyof typeof ISSUE_KEY]);
+      const clash = forced.filter((id) => forbidden.includes(id)).map((id) => names.get(id) ?? id).join(', ');
+      const reason = (issue: EquipmentIssue): string => ISSUE_TEXT[issue.code](clash);
       const reasons = [plateRead.error, kbRead.error, badIncrement ? tTraining('errorProfileIncrement') : null, ...issues.map(reason)].filter((r): r is string => r !== null);
       setError([...new Set(reasons)].join(' ') || tTraining('errorProfile'));
       return;

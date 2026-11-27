@@ -175,7 +175,7 @@ export const trainingFr = {
   errorProfileCables: 'Poulies : des plages positives, le minimum avant le maximum, {max} au plus.',
   errorProfileMachines: 'Machines : des plages positives, le minimum avant le maximum, {max} au plus.',
   errorProfileKettlebells: 'Kettlebells : des poids positifs, chacun une seule fois, {max} au plus.',
-  errorProfileBarbells: 'Barres : un nom de {max} caractères au plus et un poids positif, {max} barres au plus.',
+  errorProfileBarbells: 'Barres : un nom de {name} caractères au plus et un poids positif, {max} barres au plus.',
   errorProfilePlates: 'Disques : des poids positifs, chacun une seule fois, {max} poids au plus.',
   errorProfileIncrement: 'Crans : des nombres positifs (ex. 2,5).',
   errorProfileGone: 'Ce profil n’existe plus sur cet appareil (supprimé ailleurs ?).',

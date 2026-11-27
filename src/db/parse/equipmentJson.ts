@@ -1,4 +1,4 @@
-import { EQUIPMENT_ID_LIST_MAX, EQUIPMENT_LIST_MAX, PLATE_COUNT_MAX, type BarbellSpec, type EquipmentIncrements, type EquipmentInventory, type MachineSpec, type PlateSpec, type StackRange } from '../../domain/training';
+import { BARBELL_NAME_MAX, EQUIPMENT_ID_LIST_MAX, EQUIPMENT_LIST_MAX, PLATE_COUNT_MAX, type BarbellSpec, type EquipmentIncrements, type EquipmentInventory, type MachineSpec, type PlateSpec, type StackRange } from '../../domain/training';
 
 /**
  * Validation à la main des JSON d'un profil de matériel (ADR 0008). Valeur typée ou `null`. `parseInventory` complète les champs absents
@@ -47,7 +47,7 @@ const range = (v: unknown): StackRange | null => {
   return Array.isArray(extra) && extra.length > 0 && extra.length <= 16 && extra.every(positive) ? { ...base, extraKg: extra as number[] } : base;
 };
 const barbell = (v: unknown): BarbellSpec | null => {
-  if (!(isRecord(v) && typeof v['type'] === 'string' && v['type'].length <= 64 && positive(v['weightKg']))) return null;
+  if (!(isRecord(v) && typeof v['type'] === 'string' && v['type'].length <= BARBELL_NAME_MAX && positive(v['weightKg']))) return null;
   const equipmentId = v['equipmentId'];
   // I2-01 : matériel de la barre, facultatif (profil d'avant la 0.3.0) ; présent, il doit être un identifiant du catalogue.
   if (equipmentId === undefined) return { type: v['type'], weightKg: v['weightKg'] };

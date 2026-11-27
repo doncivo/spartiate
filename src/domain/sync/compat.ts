@@ -88,11 +88,13 @@ export function newerDevices<D extends { readonly self: boolean; readonly status
 
 /**
  * EQUIP-0302 (D-796, relecture sync-icloud) : appareils actifs, autres que soi, qui publient une version de schéma inférieure à `sv`, inconnue, ou
- * une majeure inférieure (même liste d'inactifs que `newerDevices`). Sert aux règles d'écriture qui protègent un appareil plus ancien (aucun
- * changement de protocole).
+ * une majeure inférieure. Seuls les appareils oubliés (`forgotten`) ou d'une autre clé (`foreign`) sont écartés (contre-relecture sync-icloud) : un
+ * appareil expiré, corrompu ou en retour arrière peut être resté à une version antérieure ; mieux vaut bloquer à tort qu'écraser. `newerDevices`
+ * garde sa propre liste. Sert aux règles d'écriture qui protègent un appareil plus ancien (aucun changement de protocole).
  */
+const NOT_A_PEER: ReadonlySet<string> = new Set<DeviceState>(['forgotten', 'foreign']);
 export function olderActiveDevices<D extends { readonly self: boolean; readonly status: string; readonly sv: number | null; readonly sm: number | null }>(devices: readonly D[], sv: number): D[] {
-  return devices.filter((d) => !d.self && !INACTIVE.has(d.status as DeviceState) && (d.sv === null || d.sm === null || d.sm < SYNC_FORMAT_MAJOR || (d.sm === SYNC_FORMAT_MAJOR && d.sv < sv)));
+  return devices.filter((d) => !d.self && !NOT_A_PEER.has(d.status) && (d.sv === null || d.sm === null || d.sm < SYNC_FORMAT_MAJOR || (d.sm === SYNC_FORMAT_MAJOR && d.sv < sv)));
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------
