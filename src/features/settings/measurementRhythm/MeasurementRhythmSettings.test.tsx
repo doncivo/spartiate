@@ -84,6 +84,19 @@ describe('FIX-0302a : un choix fait avant la lecture des réglages n’écrase p
     expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toHaveAttribute('aria-checked', 'true');
   });
 
+  it('iPhone : service introuvable, les contrôles s’activent quand même et l’échec est dit (critère 3, relecture)', async () => {
+    const repos = new Proxy(db.data.repos, {
+      get: (target, key, receiver) => {
+        if (key === 'settings') throw new Error('service introuvable (test)');
+        return Reflect.get(target, key, receiver);
+      },
+    });
+    mount([waist('2026-11-09')], createFakeNotificationScheduler(), 'Europe/Paris', { ...db.data, repos });
+    expect(await screen.findByText('Le rappel n’a pas pu être programmé.')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).not.toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Chaque semaine' })).not.toBeDisabled();
+  });
+
   it('PC : le rythme ne se règle qu’après la lecture ; le 14 stocké reste 14', async () => {
     await db.data.repos.settings.set('bodyProgress.measurementRhythm', 14);
     const slow = slowSettings(db.data);
