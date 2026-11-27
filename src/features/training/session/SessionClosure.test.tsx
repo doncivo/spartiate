@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createHlcClock } from '../../../domain/hlc';
 import type { RoutineInput } from '../../../domain/training';
 import type { DeviceId } from '../../../domain/types';
@@ -11,6 +11,7 @@ import { AppContainerProvider } from '../../app/AppContainerContext';
 import { createAppContainer } from '../../app/container';
 import { INITIAL_NAVIGATION, useNavigationStore, type Route } from '../../app/navigation';
 import { onSyncedDataApplied } from '../../sync/remoteChanges';
+import { warmTraining } from '../warmTraining';
 import { TrainingScreen } from '../TrainingScreen';
 
 /**
@@ -91,6 +92,14 @@ const startFromRoutine = async () => {
 const summaryRegion = () => screen.findByRole('region', { name: 'Résumé de la séance' });
 const routineLines = () => db.driver.select('SELECT id, exercise_id, sets, deleted_at FROM routine_exercise ORDER BY id');
 
+beforeAll(async () => {
+  const warm = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
+  try {
+    await warmTraining(warm);
+  } finally {
+    await warm.close();
+  }
+}, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
   db = await openBaseDb(DEVICE, '2026-11-09T17:00:00.000Z');
