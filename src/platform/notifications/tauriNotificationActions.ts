@@ -1,5 +1,5 @@
 import { addPluginListener, invoke } from '@tauri-apps/api/core';
-import { isRestActionId, NOTIFICATION_ACTION_IDS, type RawNotificationAction, type RawRestAction } from '../../domain/notificationActions';
+import { isOpenActionId, isRestActionId, NOTIFICATION_ACTION_IDS, type RawNotificationAction, type RawOpenAction, type RawRestAction } from '../../domain/notificationActions';
 import { NotificationActionSourceError, type ActionDrain, type ActionSourceStatus, type NotificationActionSource } from './actions';
 
 /**
@@ -28,15 +28,16 @@ function failureOf(error: unknown): NotificationActionSourceError {
 }
 
 /** Une ligne du fichier natif (`{ n, a, t, sid, at }`) ou null si elle ne respecte pas le format ; action de repos (SHELL-0294b) à part. */
-function parseLine(value: unknown): RawNotificationAction | RawRestAction | null {
+function parseLine(value: unknown): RawNotificationAction | RawRestAction | RawOpenAction | null {
   if (!isRecord(value)) return null;
   const { n, a, t, sid, at } = value;
   if (typeof n !== 'number' || !Number.isInteger(n)) return null;
-  if (typeof a !== 'string' || (!(NOTIFICATION_ACTION_IDS as readonly string[]).includes(a) && !isRestActionId(a))) return null;
+  if (typeof a !== 'string' || (!(NOTIFICATION_ACTION_IDS as readonly string[]).includes(a) && !isRestActionId(a) && !isOpenActionId(a))) return null;
   if (typeof t !== 'number' || !Number.isFinite(t)) return null;
   if (sid !== null && typeof sid !== 'string') return null;
   if (at !== null && (typeof at !== 'number' || !Number.isFinite(at))) return null;
   const base = { numericId: n, receivedAtMs: t, sid: sid === '' ? null : sid, deliveredAt: at };
+  if (isOpenActionId(a)) return { ...base, actionId: a };
   return isRestActionId(a) ? { ...base, actionId: a } : { ...base, actionId: a as RawNotificationAction['actionId'] };
 }
 
@@ -46,15 +47,17 @@ export function parseDrain(value: unknown): ActionDrain {
   }
   const entries: RawNotificationAction[] = [];
   const rest: RawRestAction[] = [];
+  const opens: RawOpenAction[] = [];
   let unreadable = value['unreadable'];
   for (const line of value['entries'] as unknown[]) {
     const parsed = parseLine(line);
     if (parsed === null) unreadable += 1;
+    else if (isOpenActionId(parsed.actionId)) opens.push(parsed as RawOpenAction);
     else if (isRestActionId(parsed.actionId)) rest.push(parsed as RawRestAction);
     else entries.push(parsed as RawNotificationAction);
   }
   // Une entrée rejetée ici était physiquement dans le fichier : elle compte déjà dans `lines`, pas dans `unreadable` du natif.
-  return { entries, rest, lines: value['lines'], unreadable, writeFailures: value['writeFailures'] };
+  return { entries, rest, opens, lines: value['lines'], unreadable, writeFailures: value['writeFailures'] };
 }
 
 export function createTauriNotificationActionSource(
