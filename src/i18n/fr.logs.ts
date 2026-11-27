@@ -44,6 +44,7 @@ export const logsFr = {
   reportSelf: ' (cet appareil)',
   // SYNC-0302 (D-673) : heure de dernière synchro posée par une lecture partielle.
   reportPartialRead: ' (lecture partielle)',
+  reportPartialReadUnreadable: ' (lecture partielle : état illisible)',
   reportUnknownValue: 'inconnue',
   reportNoDevice: 'Aucun appareil connu.',
   reportOutbox: 'Entrées en attente d’envoi : {count}',

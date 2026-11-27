@@ -192,6 +192,8 @@ export function createSyncService(options: SyncServiceOptions): SyncEngineServic
       if (!waiting && (stored !== null || invalid)) await writeJson(options.data.repos, META.waitingSince, null);
       return waiting ? stored : null;
     });
+    /** SYNC-0302 : mention de l'heure rendue par le cycle ; heure gardée (cycle sans heure) : mention gardée. */
+    const keptPartialRead = (r: CycleResult): boolean => (r.lastSyncAt !== null ? r.partialRead === true : status.partialRead === true);
     publish(
       statusFromFacts(withoutCycleStart(status), result, {
         waitingSince: waitingSince === undefined ? (waiting ? (status.waitingSince ?? null) : null) : waitingSince,
@@ -199,7 +201,7 @@ export function createSyncService(options: SyncServiceOptions): SyncEngineServic
         folderKind: result.folderKind ?? status.folderKind ?? null,
         lastSyncAt: result.lastSyncAt ?? status.lastSyncAt,
         // SYNC-0302 : la mention suit l'heure affichée (heure gardée : mention gardée).
-        partialRead: result.lastSyncAt !== null ? result.partialRead === true : status.partialRead === true,
+        partialRead: keptPartialRead(result),
         conflictsThisWeek: conflicts,
         ...(reintegrationFailure === undefined ? {} : { reintegrationFailure }),
         ...(forget === undefined ? {} : { forget }),

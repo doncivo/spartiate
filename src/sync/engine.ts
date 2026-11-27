@@ -1207,7 +1207,10 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
         });
       }
     }
+    /** Heure rendue : celle de ce cycle s'il l'a posée, sinon l'heure gardée ; la mention suit la même heure. */
+    const shownLastSyncAt = pending.size === 0 && !readFailed ? lastSyncAt : (selfRow?.lastSyncAt ?? null);
     const partialRead = advanced ? !allRead : await partialReadAt(deps, selfRow?.lastSyncAt ?? null);
+    const partialFlag = partialRead ? { partialRead: true } : {};
     // Y-11 (revue 13) : un appareil attendu par la réinitialisation est toujours dans APPAREILS (« jamais vu » s'il n'a jamais été lu).
     const resetWaiting = directive.kind === 'initiator' ? directive.view.waiting : [];
     const devices = withUnseenDevices(await deviceStatuses(repos, self, accepted, deps.sv, logger), scan, self, [...(await readWaitingDevices(repos)), ...resetWaiting]);
@@ -1215,7 +1218,7 @@ async function cycleSteps(deps: SyncDeps, baseHooks: CycleHooks, options: CycleO
     const resetLag = options.resetCheck ? resetLagging(deps, { scan, forget: forgetView, accepted, own: lastWritten ?? ownState }) : undefined;
     const lag = resetLag === undefined ? {} : { resetLag };
     if (publishError !== null) return { ...EMPTY, outcome: 'failed', errorCode: publishError as SyncErrorCode, pendingFiles: [...pending], devices, folderLabel, folderKind, worked, keyMismatch, ...lag };
-    return { outcome: 'done', errorCode: null, pendingFiles: [...pending], devices, keyMismatch, folderLabel, folderKind, lastSyncAt: pending.size === 0 && !readFailed ? lastSyncAt : (selfRow?.lastSyncAt ?? null), ...(partialRead ? { partialRead: true } : {}), worked, ...lag };
+    return { outcome: 'done', errorCode: null, pendingFiles: [...pending], devices, keyMismatch, folderLabel, folderKind, lastSyncAt: shownLastSyncAt, ...partialFlag, worked, ...lag };
   } catch (error) {
     if (isCycleInterrupted(error)) throw error;
     const code = syncErrorCodeOf(error);

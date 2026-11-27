@@ -85,4 +85,12 @@ describe('SYNC-0302 : lecture partielle à l’écran', () => {
     expect(t('sync.status.lastSyncPartial', { time: '07:58' })).toBe('Dernière synchronisation : 07:58 · lecture partielle');
     expect(t('sync.status.warnPartialRead')).toMatch(/prochain cycle/);
   });
+
+  it('relecture : la mention de « Cet appareil » ne vaut que pour l’heure qu’elle désigne (lastReadAt = lastSyncAt)', () => {
+    const other = '2026-10-07T07:50:00.000Z' as IsoDateTime;
+    renderDetails(status({ partialRead: true, devices: devices.map((d) => (d.self ? { ...d, lastReadAt: other } : d)) }));
+    const time = formatSyncTime(other, nowMs);
+    expect(screen.getByText(t('sync.status.lastSync', { time }))).toBeTruthy();
+    expect(screen.queryByText(t('sync.status.lastSyncPartial', { time }))).toBeNull();
+  });
 });

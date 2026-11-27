@@ -10,8 +10,11 @@ export interface SyncReportDevice {
   readonly appVersion: string | null;
   readonly status: string;
   readonly lastSyncAt: string | null;
-  /** SYNC-0302 (D-673) : cet appareil, heure posée par une lecture partielle (`sync_meta.partialRead` qui désigne `lastSyncAt`). */
-  readonly partialRead: boolean;
+  /**
+   * SYNC-0302 (D-673) : cet appareil, heure posée par une lecture partielle (`sync_meta.partialRead` qui désigne `lastSyncAt`) ;
+   * `'unreadable'` : méta illisible (D-777, dit dans l'export, jamais omis).
+   */
+  readonly partialRead: boolean | 'unreadable';
   /** Heure de la dernière modification lue de cet appareil (extraite de l'horloge hybride, jamais l'horloge entière). */
   readonly lastSeen: string | null;
   /** `segment/enregistrement`. */
@@ -36,15 +39,20 @@ function isoOfHlc(hlc: string | null): string | null {
   }
 }
 
-/** SYNC-0302 : heure de `sync_meta.partialRead` (`{ at }`), null si absente ou illisible (le bilan reste exportable). */
-function partialAtOf(raw: string | null): string | null {
+/** SYNC-0302 : heure de `sync_meta.partialRead` (`{ at }`) ; null si absente ; `'unreadable'` si illisible (le bilan reste exportable). */
+function partialAtOf(raw: string | null): string | null | 'unreadable' {
   if (raw === null) return null;
   try {
     const value = JSON.parse(raw) as { at?: unknown } | null;
-    return typeof value?.at === 'string' ? value.at : null;
+    return typeof value?.at === 'string' ? value.at : 'unreadable';
   } catch {
-    return null;
+    return 'unreadable';
   }
+}
+
+function partialOf(row: { readonly isSelf: boolean; readonly lastSyncAt: string | null }, partialAt: string | null | 'unreadable'): boolean | 'unreadable' {
+  if (!row.isSelf || row.lastSyncAt === null || partialAt === null) return false;
+  return partialAt === 'unreadable' ? 'unreadable' : row.lastSyncAt === partialAt;
 }
 
 /** Compteurs du bilan de l'export des journaux (0.2.4 point 3) : lecture seule, aucune valeur de champ. */
@@ -60,7 +68,7 @@ export async function readSyncReport(repos: Repositories): Promise<SyncReport> {
       appVersion: row.appVersion,
       status: row.status,
       lastSyncAt: row.lastSyncAt,
-      partialRead: row.isSelf && row.lastSyncAt !== null && row.lastSyncAt === partialAt,
+      partialRead: partialOf(row, partialAt),
       lastSeen: isoOfHlc(row.lastSeenHlc),
       cursor: `${String(row.cursorSegment)}/${String(row.cursorRecord)}`,
     })),

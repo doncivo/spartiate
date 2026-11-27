@@ -73,6 +73,14 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
   // Avertissements, vers lequel renvoie la ligne d'état « Synchro incomplète : voir les avertissements » (contre-revue, point 3).
   const carryRaised = (status.warnings ?? []).includes('carry-report');
   const shownWarnings = (status.warnings ?? []).filter((code) => code !== 'carry-report' && code !== 'own-delete-failed');
+  /**
+   * Texte de la ligne de lecture d'un appareil. SYNC-0302 : la mention « lecture partielle » ne vaut que pour l'heure qu'elle désigne
+   * (`lastReadAt` de cet appareil égal à `status.lastSyncAt`, même ligne `sync_state`).
+   */
+  const readKey = (device: SyncDeviceStatus) => {
+    if (!device.self) return 'sync.status.lastRead' as const;
+    return status.partialRead === true && device.lastReadAt === status.lastSyncAt ? ('sync.status.lastSyncPartial' as const) : ('sync.status.lastSync' as const);
+  };
   /** ERGO-02 : "Ajouter un appareil" (iPhone) ou "Ajouter un iPhone" (PC, colonne de droite) : l'appairage existant, inchangé. */
   const addDevice = (title: string, className = 'ct-sync__add') => (
     <section className={className} role="region" aria-labelledby="ct-sync-add-title">
@@ -118,7 +126,7 @@ export function SyncDetailsScreen({ slots = {} }: { readonly slots?: SyncDetails
           <li key={device.deviceId} className="ct-settings__row ct-sync__device" data-status={device.status} data-device-id={device.deviceId}>
             <div className="ct-sync__deviceIdentity">
               <SyncDeviceName device={device} devices={status.devices} />
-              <span className="ct-sync__deviceRead">{device.lastReadAt ? t(device.self ? (status.partialRead ? 'sync.status.lastSyncPartial' : 'sync.status.lastSync') : 'sync.status.lastRead', { time: formatSyncTime(device.lastReadAt, nowMs) }) : t('sync.status.neverRead')}</span>
+              <span className="ct-sync__deviceRead">{device.lastReadAt ? t(readKey(device), { time: formatSyncTime(device.lastReadAt, nowMs) }) : t('sync.status.neverRead')}</span>
             </div>
             {/* Pastille de statut alignée à droite (critère 4) : un seul gabarit pour tous les appareils. */}
             <span className="ct-settings__value ct-sync__deviceState" data-tone={deviceTone(device)}>

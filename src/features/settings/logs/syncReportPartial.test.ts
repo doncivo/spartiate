@@ -38,4 +38,14 @@ describe('SYNC-0302 : lecture partielle dans le bilan de l’export des journaux
     await db.data.repos.sync.setMeta('partialRead', JSON.stringify({ at: '2026-11-06T10:00:00.000Z' }));
     expect(await exported()).not.toContain('lecture partielle');
   });
+
+  it('relecture, D-777 : méta illisible : « (lecture partielle : état illisible) » sur la ligne de cet appareil, jamais omise', async () => {
+    for (const raw of ['{', JSON.stringify({ quand: AT })]) {
+      await db.data.repos.sync.setMeta('partialRead', raw);
+      expect((await readSyncReport(db.data.repos)).devices.find((d) => d.self)?.partialRead).toBe('unreadable');
+      const lines = (await exported()).split('\r\n');
+      expect(lines.find((l) => l.startsWith('Appareil 60000000'))).toContain(`dernière synchro ${AT} (lecture partielle : état illisible)`);
+      expect(lines.find((l) => l.startsWith('Appareil bbbbbbbb'))).not.toContain('lecture partielle');
+    }
+  });
 });
