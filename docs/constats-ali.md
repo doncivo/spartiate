@@ -309,6 +309,13 @@ Après la mise à jour des deux appareils le même jour (version qui livre BL-18
 - [ ] **BL-184, H-44 (appui sur une notification)** — app fermée : le matin du rappel des mesures, touche la notification → Progrès › Corps › Mesures s'ouvre ; app en arrière-plan : touche la notification de fin de repos pendant une séance → l'écran de la séance s'ouvre ; touche un rappel de complément → Nutrition › Compléments. Date : ____ Version : ____
 - [ ] **BL-110 (pause de séance)** — pendant une séance, touche Pause : « En pause » s'affiche, le repos en cours s'arrête, la saisie est suspendue ; après 2 minutes, Reprendre : le chrono reprend sans compter la pause ; à la fin, le résumé et l'Historique donnent la durée hors pause et « (… de pause retirée) » ; sur le PC, la séance reçue montre la même durée. Date : ____ Version : ____
 
+- [ ] **BL-175 (poids du gilet)** — Entraînement › Matériel, ton profil : coche le gilet lesté, saisis son poids (par exemple 10) et enregistre ; une séance générée propose ce poids comme lest sur un exercice au poids du corps arrivé en haut de sa plage ; sur le PC, le profil reçu montre le même poids. Date : ____ Version : ____
+- [ ] **BL-039 (lecture partielle)** — Plus › Appareils et synchro : si « lecture partielle » apparaît à côté de l'heure, Détails montre l'avertissement ; après le cycle suivant (ouvre l'app sur l'autre appareil), la mention disparaît. Si elle n'apparaît jamais : « non rencontré ». Date : ____ Version : ____
+
+### PC
+
+- [ ] **BL-183 (rythme des mesures)** — Progrès › Corps › Mesures : choisis « Toutes les 4 semaines », quitte l'app, rouvre-la et touche aussitôt la zone du rythme : le réglage reste « Toutes les 4 semaines ». Date : ____ Version : ____
+
 ## SideStore (renouvellement du 27/11)
 
 ### iPhone
@@ -323,8 +330,11 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | --- | --- |
 | C-103 | 0.29.2 |
 | C-105 | 0.29.2 |
+| BL-039 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-110 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-126 | 0.30.3 (import PDF, gestes iPhone) › iPhone ; PC |
+| BL-175 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
+| BL-183 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › PC |
 | BL-184 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-185 | SideStore (renouvellement du 27/11) › iPhone |
 | BL-009 | iPhone › Bibliothèque ; PC › Bibliothèque |
