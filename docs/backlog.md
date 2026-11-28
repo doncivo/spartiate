@@ -331,7 +331,7 @@ FIX-PROGRAMME, FIX-COQUILLE (rapport.md, « Les 10 corrections à faire en premi
 | BL-185 | demande d'Ali du 27/11 (point 3, D-767) | SideStore renouvelé : relever la date exacte d'expiration affichée dans Plus › À propos et diagnostic | constat d'Ali à faire (docs/constats-ali.md, section « SideStore (renouvellement du 27/11) ») |
 | BL-186 | QA du lot 0.30.2 (relecture de SESS-0302, 27/11) | Tests d'Historique et de clôture de séance instables en local (« Refaire cette séance », « aucune série de travail validée ») : cause et correctif, ni ignorés ni relancés | fait (FIX-0302c, rouge c9d89f8b, vert 41d6dff3 ; cause : premier rendu à froid de l'Entraînement pendant l'attente, docs/journal.md 2026-11-27) |
 | BL-187 | relecture sync-icloud d'EQUIP-0302 (27/11, D-796) | Parade complète contre l'écrasement d'une liste de matériel longue (> 64) par une app antérieure inconnue ou inactive : règle d'application dans apply.ts (refuser une écriture d'inventaire venant d'un sv inférieur quand la valeur locale dépasse l'ancienne borne), ADR ou avenant 0011 avec architect | à faire (0.30.x, données et synchro, M) |
-| BL-188 | relecture de FIX-0302a (27/11) | Rythme des mesures : une lecture des réglages qui échoue rend en silence les valeurs par défaut (`readPrefs`), un choix peut alors écraser le réglage stocké ; dire l'échec à l'écran et garder les contrôles inactifs | à faire (0.30.x, coquille, iOS et qualité, S) |
+| BL-188 | relecture de FIX-0302a (27/11) | Rythme des mesures : une lecture des réglages qui échoue rend en silence les valeurs par défaut (`readPrefs`), un choix peut alors écraser le réglage stocké ; dire l'échec à l'écran et garder les contrôles inactifs | fait (FIX-0304, rouge 97325818 ; D-804) |
 
 ## 3. Audit Codex 0.26.0
 

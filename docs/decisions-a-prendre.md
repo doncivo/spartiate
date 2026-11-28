@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-448 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+449 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -391,7 +391,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-788 | IMPORT-0303 : reconstruction des lignes. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-790 | IMPORT-0303 : preuve sur l'appareil. | à confirmer seulement (aucun effet visible repéré) |
 
-### écrans (67 : 31 à trancher, 36 à confirmer seulement)
+### écrans (68 : 31 à trancher, 37 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -467,6 +467,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-752 | CORPS-0301c (BL-179, D-704, D-705, D-716) : silhouette, pastilles et couleurs. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-754 | CORPS-0301c (BL-179, D-709) : conseils de placement du mètre de la saisie guidée. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-801 | GEST-0303 (D-653, BL-169). | à confirmer seulement (aucun effet visible repéré) |
+| 0 | D-804 | FIX-0304 (BL-188). | à confirmer seulement (aucun effet visible repéré) |
 
 ### CI et outillage (69 : 33 à trancher, 36 à confirmer seulement)
 
