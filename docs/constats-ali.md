@@ -300,6 +300,7 @@ Après la mise à jour des deux appareils le même jour (version qui livre BL-12
 ### PC
 
 - [ ] **BL-126, H-45 (import PDF)** — même essai sur le PC : un PDF texte donne l'aperçu ; l'écran ne se fige pas plus de quelques secondes. Date : ____ Version : ____
+- [ ] **BL-169 (clavier)** — pendant une séance sur le PC : Tab jusqu'à un exercice, « Monter » ou « Descendre » apparaît au focus et déplace l'exercice (le groupe entier pour un circuit) ; au premier exercice, « Monter » est inactif. Date : ____ Version : ____
 
 ## 0.30.2 (défauts, liens directs des notifications, données et synchro)
 
@@ -334,7 +335,7 @@ Chaque ligne « constat d'Ali » ouverte du registre (`docs/backlog.md`, `docs/c
 | BL-039 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-110 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-126 | 0.30.3 (import PDF, gestes iPhone) › iPhone ; PC |
-| BL-169 | 0.30.3 (import PDF, gestes iPhone) › iPhone |
+| BL-169 | 0.30.3 (import PDF, gestes iPhone) › iPhone ; PC |
 | BL-175 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
 | BL-183 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › PC |
 | BL-184 | 0.30.2 (défauts, liens directs des notifications, données et synchro) › iPhone |
