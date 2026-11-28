@@ -35,6 +35,7 @@ export async function warmTraining(db: TestDb): Promise<void> {
     import('./session/ReplaceExercise'),
     import('./session/outlierCheck'),
     import('./session/redDayState'),
+    import('./session/sessionGestures'),
     import('./session/WorkoutSummary'),
     import('./session/GeneratedSession'),
     import('./session/todaySessionPreview'),

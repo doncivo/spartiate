@@ -154,6 +154,7 @@ export function SessionScreen({ data, platform, onExit }: { readonly data: Train
           timer={timer}
           clock={container.clock}
           haptics={container.haptics}
+          undo={container.undo}
           onWorkout={(workout) => setLoad((now) => (now.status === 'ready' ? { ...now, workout } : now))}
           onRestSetting={setRestSetting}
           onClosed={(closed) => {

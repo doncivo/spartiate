@@ -1,7 +1,7 @@
 {
   "version": 1,
   "totaux": {
-    "skipProjet": 17,
+    "skipProjet": 18,
     "skipCondition": 1,
     "pause": 23,
     "plafond": 18,
@@ -72,6 +72,9 @@
       "pause": 1
     },
     "tests/e2e/BL-119-zoom-pc.spec.ts": {
+      "skipProjet": 1
+    },
+    "tests/e2e/GEST-0303-gestes-iphone.spec.ts": {
       "skipProjet": 1
     },
     "tests/e2e/I-02.spec.ts": {

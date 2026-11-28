@@ -1,5 +1,6 @@
 import type { Difficulty, RoutineDiff, SetEntry, SetKind, Workout, WorkoutSet, WorkoutSource, WorkoutSummary, WorkoutWithSets } from '../../domain/training';
 import type { IsoDateTime } from '../../domain/types';
+import type { RestoreAnchor } from '../../domain/training/setRestore';
 
 /**
  * Séance locale puis close (tables `workout` et `workout_set`, I1-02 / I1-03 ; D-27 : une séance ouverte n'est jamais publiée ; la
@@ -151,6 +152,14 @@ export interface WorkoutRepository {
   /** DATA-0293 (BL-112) : distance en mètres d'une série de la séance OUVERTE (0 à 100 000, null : effacée) ; close ou hors bornes : `'invalid'`. */
   setDistance(setId: string, distanceM: number | null): Promise<WorkoutSet>;
   removeSet(setId: string): Promise<void>;
+  /**
+   * GEST-0303 (BL-169, D-653 ; relecture) : « Annuler » après une série supprimée de la séance OUVERTE : la série revient telle qu'elle était
+   * (saisie, état, type, groupe) à côté de son repère (`restoreAnchor`, relevé au geste) ; positions renumérotées. Repère disparu ou passé dans
+   * une autre unité, groupe défait, ordre changé (série seule de son unité) : `'conflict'`. Série vivante, séance close, en pause ou pleine
+   * (`WORKOUT_SETS_MAX`) : `'invalid'` ; série absente (effacée à la clôture) : `'not-found'`. Rien n'est écrit en cas de refus. Plusieurs
+   * écritures : à appeler dans `DataAccess.transaction`.
+   */
+  restoreSet(setId: string, anchor: RestoreAnchor): Promise<WorkoutSet>;
   /**
    * I2-01 : difficulté Facile / Juste / Dur (§ 13.2) de l'exercice dans la séance OUVERTE, écrite sur toutes ses séries (null : effacée).
    * Séance absente : `'not-found'` ; close, exercice absent de la séance ou valeur hors liste : `'invalid'`.

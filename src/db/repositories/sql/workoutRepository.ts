@@ -1,3 +1,4 @@
+import { restoreOrder } from '../../../domain/training/setRestore';
 import { uuidGenerator, type IdGenerator } from '../../../domain/id';
 import type { WriteStamper } from '../../../domain/hlc';
 import {
@@ -817,6 +818,23 @@ export function createWorkoutRepository(db: SqlExecutor, stamper: WriteStamper, 
       const row = await requireSet(setId);
       await markSetDeleted(setId);
       await renumber(row.workout_id);
+    },
+
+    async restoreSet(setId, anchor) {
+      const row = (await db.select<SetRow>('SELECT * FROM workout_set WHERE id = ?', [setId]))[0];
+      if (!row) throw new RepositoryError('not-found', 'workout_set', setId);
+      const workout = await requireOpen(row.workout_id);
+      // Pendant la pause, la saisie est suspendue (D-779) : l'annulation aussi.
+      if (row.deleted_at === null || typeof workout.paused_at === 'string') invalid('workout_set', setId);
+      const rows = await rawSets(row.workout_id);
+      // Même borne qu'un ajout : l'agrégat publié d'un bloc ne dépasse jamais WORKOUT_SETS_MAX séries.
+      if (rows.length >= WORKOUT_SETS_MAX) invalid('workout_set', row.workout_id);
+      const order = restoreOrder(rows.map(rowToSet), rowToSet(row), anchor);
+      if (order === null) throw new RepositoryError('conflict', 'workout_set', setId);
+      const stamp = stamper.next();
+      await db.execute('UPDATE workout_set SET deleted_at = NULL, updated_at = ?, device_id = ?, hlc = ? WHERE id = ?', [stamp.at, stamp.deviceId, stamp.hlc, setId]);
+      await applyOrder(order);
+      return requireSetRow(setId);
     },
 
     async startRest({ seconds }) {
