@@ -68,6 +68,42 @@ export function sameValue(a: SyncValue, b: SyncValue): boolean {
 
 const side = (value: SyncValue, hlc: Hlc): ConflictSide => ({ value, hlc, device: hlcDevice(hlc) });
 
+/**
+ * SYNC-0304 (BL-187, D-805, ADR 0011 avenant 40) : inventaire d'un profil de matériel gardé contre un écrivain plus ancien. Une app au schéma < 25
+ * lit au plus 64 identifiants par liste (disponible, forcé, interdit) : au-delà, elle voit un inventaire vide et son éditeur le réécrit depuis ce
+ * vide. Bornes recopiées de `src/domain/training/equipment.ts` (`LEGACY_EQUIPMENT_ID_LIST_MAX`, `EQUIPMENT_LONG_LISTS_SINCE_SV`, égalité testée) :
+ * ce module est du départ, le domaine du matériel ne l'est pas.
+ */
+export const OLDER_INVENTORY_GUARD = { table: 'equipment_profile', field: 'inventory', sinceSv: 25, legacyMax: 64 } as const;
+
+/** Une liste d'identifiants de l'inventaire stocké dépasse-t-elle l'ancienne borne de lecture (doublons comptés une fois) ? */
+function exceedsLegacyInventory(value: SyncValue): boolean {
+  if (typeof value !== 'string') return false;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return false;
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return false;
+  const record = parsed as Record<string, unknown>;
+  return ['available', 'forced', 'forbidden'].some((key) => {
+    const list = record[key];
+    return Array.isArray(list) && new Set(list).size > OLDER_INVENTORY_GUARD.legacyMax;
+  });
+}
+
+/**
+ * Vrai si l'écriture reçue `remote` d'un écrivain au schéma `remoteSv` ne doit PAS remplacer la valeur locale `local` du champ `field` de `table` :
+ * `equipment_profile.inventory`, écrivain au schéma < 25 ou inconnu (non entier, négatif : traité comme plus ancien, D-796), valeur locale dont une
+ * liste dépasse 64, valeur reçue différente. Ailleurs, règle ordinaire (faux).
+ */
+export function olderWriterKeepsLocal(table: string, field: string, local: SyncValue, remote: SyncValue, remoteSv: number): boolean {
+  if (table !== OLDER_INVENTORY_GUARD.table || field !== OLDER_INVENTORY_GUARD.field) return false;
+  if (Number.isSafeInteger(remoteSv) && remoteSv >= OLDER_INVENTORY_GUARD.sinceSv) return false;
+  return !sameValue(local, remote) && exceedsLegacyInventory(local);
+}
+
 /** Décision pour un champ reçu (hlc déjà validés par `parse.ts`). */
 export function mergeField(local: LocalField | null, remote: SyncField, options: MergeOptions = {}): FieldDecision {
   const [value, hlc, base] = remote;

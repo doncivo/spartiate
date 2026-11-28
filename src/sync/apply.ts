@@ -2,7 +2,7 @@ import type { ConflictEntry, FieldClock, Repositories, StoredRow } from '../db/r
 import type { DeviceId, Hlc, IsoDateTime } from '../domain/types';
 import type { SyncField, SyncOp, SyncValue } from '../domain/sync/format';
 import { isStrictHlc, isUnknownName, isUnknownSettingKey } from '../domain/sync/format';
-import { deletedWhileModified, isBeforeReset, mergeField, modifiedWhileDeleted, type FieldConflict, type LocalField } from '../domain/sync/merge';
+import { deletedWhileModified, isBeforeReset, mergeField, modifiedWhileDeleted, olderWriterKeepsLocal, type FieldConflict, type LocalField } from '../domain/sync/merge';
 import { hlcDevice } from '../domain/sync/parse';
 import { DATA_RESET_TABLE, TECHNICAL_COLUMNS, type SyncCatalogue, type SyncTable } from '../domain/sync/syncTables';
 import type { SyncLogger } from './log';
@@ -474,8 +474,15 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
     }
     const applied = new Map<string, SyncField>();
     const fieldConflicts: { field: string; conflict: FieldConflict }[] = [];
+    /** SYNC-0304 (D-805, ADR 0011 avenant 40) : champs gagnants par hlc mais gardés contre un écrivain plus ancien (`olderWriterKeepsLocal`). */
+    const olderKept: [string, SyncField, LocalField][] = [];
     for (const [name, field] of fields) {
-      const decision = mergeField(localFields.get(name) ?? null, field, ctx.fromSnapshot ? { fromSnapshot: true } : {});
+      const local = localFields.get(name) ?? null;
+      const decision = mergeField(local, field, ctx.fromSnapshot ? { fromSnapshot: true } : {});
+      if (decision.apply && local !== null && olderWriterKeepsLocal(t.name, name, local.value, field[0], ctx.remoteSv)) {
+        olderKept.push([name, field, local]);
+        continue;
+      }
       if (decision.apply) applied.set(name, field);
       if (decision.conflict && cat.column(t.name, name)?.conflictVisible) fieldConflicts.push({ field: name, conflict: decision.conflict });
     }
@@ -503,6 +510,25 @@ export async function applyOps(repos: Repositories, ops: readonly SyncOp[], ctx:
         discardedHlc: conflict.discarded.hlc,
       });
     }
+    // SYNC-0304 : valeur locale gardée, jamais perdue en silence : écriture écartée inscrite dans `conflict_log` (réversible depuis Plus → Appareils
+    // et synchro), journal sans donnée, valeur locale republiée à un hlc neuf fondé sur l'écriture écartée (l'écrivain ancien converge ; sa
+    // republication après mise à jour, au même hlc, ne l'emporte plus).
+    for (const [name, field, local] of olderKept) {
+      const hlc = await sync.reassertField(t, op.id, name, field[1]);
+      ctx.logger.log('apply-older-kept', { table: t.name, field: name });
+      conflicts.push({
+        table: t.name,
+        rowId: op.id,
+        field: name,
+        keptValue: local.value,
+        discardedValue: field[0],
+        keptDevice: hlcDevice(hlc),
+        discardedDevice: hlcDevice(field[1]),
+        keptHlc: hlc,
+        discardedHlc: field[1],
+      });
+    }
+    if (olderKept.length > 0) await refreshRow(t, op.id, row);
     if (applied.size === 0) {
       outcomes.push('unchanged');
       continue;

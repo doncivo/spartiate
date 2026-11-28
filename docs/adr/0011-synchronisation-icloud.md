@@ -1862,6 +1862,42 @@ Complète § 7.2 : un champ inconnu du catalogue du lecteur est gardé dans `syn
 
 Tests : `tests/unit/sync/versions/fixA009bReintegration.test.ts`, `fixA009bQa.test.ts` ; cas « plus ancien que `'*'` sans horloge propre » réécrits selon cette règle (valeur locale non nulle, ou valeur nulle désormais réintégrée) dans `src/domain/sync/compat.reintegration.test.ts` et `tests/unit/sync/versions/reintegrateQa.test.ts`.
 
+### 40. Avenant SYNC-0304 : inventaire long gardé contre un écrivain plus ancien (2026-11-28, D-805 à D-807, choix prudents ; BL-187)
+
+**Défaut** (risque restant de D-796, EQUIP-0302) : depuis le schéma 25, une liste d'identifiants d'un profil de matériel (`equipment_profile.inventory` :
+`available`, `forced`, `forbidden`) peut dépasser 64 ; une app au schéma < 25 (0.30.1 ou avant) n'en lit que 64 au plus, voit un inventaire vide et
+son éditeur le réécrit depuis ce vide. Hors de portée de la garde d'écriture de D-796 (appareil ancien inconnu ou inactif à l'enregistrement), cette
+écriture, plus récente, gagnait par hlc (§ 4.1) sans conflit et écrasait la liste partout ; la republication de cet appareil après sa mise à jour
+(`SCHEMA_REPUBLISH[25]`, ADR 0018) l'aurait de toute façon rapportée, au même hlc, avec un `sv` à jour.
+
+**Règle** (complète § 4.1 et § 7.2, ligne présente seulement) :
+1. Un champ reçu `equipment_profile.inventory` que la fusion ordinaire appliquerait (hlc plus récent) **n'est pas appliqué** quand l'écrivain
+   publie un `sv` < 25 **ou inconnu** (non entier : traité comme plus ancien, comme D-796), que la valeur locale a une liste d'identifiants de plus
+   de 64 éléments distincts et que la valeur reçue diffère. Règle pure `olderWriterKeepsLocal` (`src/domain/sync/merge.ts`, bornes recopiées du
+   domaine du matériel, égalité testée) ; application dans `src/sync/apply.ts`, journal comme instantané (même `applyOps`).
+2. **Rien n'est perdu en silence** : l'écriture écartée est inscrite dans `conflict_log` (gardée : la valeur locale ; écartée : la valeur reçue, son
+   hlc et son appareil), consultable et réversible depuis Plus → Appareils et synchro (§ 4.3, mécanisme existant) ; journal `apply-older-kept`
+   (table et champ, jamais de contenu).
+3. **Convergence** : la valeur locale est republiée par une écriture locale (`reassertField`, sous garde, comme le rattachement de la décision (c))
+   à un hlc neuf, postérieur à celui reçu (`HlcClock.receive()` précède toujours l'application), **fondé sur l'écriture écartée** (`base` = son
+   hlc) : l'appareil ancien l'applique sans conflit ; sa republication après mise à jour, au hlc écarté, perd ensuite par la règle ordinaire.
+4. Inchangés : format, `sm`, `sv`, catalogue, déclencheurs ; les autres champs de la même opération (nom, incréments, gilet) suivent la règle
+   ordinaire ; une ligne absente (création) n'est jamais concernée ; écrivain au `sv` ≥ 25 : règle ordinaire ; une liste locale de 64 ou moins :
+   règle ordinaire.
+
+**Pourquoi un avenant à 0011 plutôt qu'à 0018** : 0018 traite des lignes créées sans les colonnes d'un schéma plus récent (mise de côté
+`sync_parked`, republication) ; ici la colonne est connue des deux côtés et c'est la décision de fusion d'un champ qui change (§ 4.1). La mise de
+côté de 0018 ne convient pas : une opération dans `sync_parked` est rejouée puis appliquée, ce qui rendrait l'écrasement différé ; `sync_unknown`
+ne garde que des champs inconnus du lecteur ; l'avertissement `older-device` ne compte que les créations de côté (et D-796 dit déjà « mets-le à
+jour » tant qu'un appareil ancien est actif).
+
+**Limites connues** : la modification faite sur l'appareil ancien est écartée (gardée dans `conflict_log` de l'appareil à jour seulement : conflit Relecture sync-icloud du 28/11 : trou 1 : une modification d'inventaire faite sur l'appareil ancien puis mise à jour avant qu'un cycle la publie part au `sv` 25 et s'applique par hlc, sans entrée dans `conflict_log` (`republishAfterUpgrade`, `src/sync/olderWriter.ts`) ; trou 2 : le rejeu d'une opération mise de côté (`retryParked`, `src/sync/maintenance.ts:120` ; report d'époque, `src/sync/epochSwitch.ts:365`) passe `remoteSv: deps.sv` au lieu du `sv` stocké, la garde ne joue pas (écart jusqu'à la republication de l'appareil à jour, qui l'emporte par hlc) (BL-189).
+inscrit d'un seul côté, à la différence de § 4.2) ; chaque nouvel enregistrement de l'inventaire sur l'appareil ancien est écarté de même tant
+qu'il n'est pas mis à jour ; deux appareils anciens entre eux ne sont pas protégés (aucun ne lit de liste longue).
+
+Tests : `src/domain/sync/olderInventory.test.ts`, `tests/unit/sync/equip0302/olderInventoryApply.test.ts`, `olderInventoryTwoDevices.test.ts` ;
+non-régression `tests/unit/sync/equip0302`, `tests/unit/sync/versions`, `tests/unit/sync/conflicts`, `src/domain/sync`.
+
 ## Conséquences
 
 - **Dépendances** (validées par l'architecte) :

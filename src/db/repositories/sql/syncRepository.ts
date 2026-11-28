@@ -377,6 +377,18 @@ export function createSyncRepository(db: SqlExecutor, stamper: WriteStamper, cat
       const rows = await db.select<{ hlc: string }>(`SELECT hlc FROM ${t.name} WHERE ${keyOf(t)} = ?`, [id]);
       if (rows[0]) await detachRow(t, column, id, rows[0].hlc as Hlc);
     },
+    async reassertField(t, id, column, base) {
+      const rows = await db.select<{ hlc: string }>(`SELECT hlc FROM ${t.name} WHERE ${keyOf(t)} = ?`, [id]);
+      // Tampon pris juste avant l'écriture, comme `detachRow`.
+      const stamp = stamper.next();
+      if (!rows[0] || !t.columns.some((col) => col.name === column)) return stamp.hlc as Hlc;
+      await db.execute(`UPDATE ${t.name} SET updated_at = ?, device_id = ?, hlc = ? WHERE ${keyOf(t)} = ?`, [stamp.at, stamp.deviceId, stamp.hlc, id]);
+      await db.execute("INSERT INTO sync_field_clock (table_name, row_id, field, hlc, base_hlc) VALUES (?, ?, '*', ?, NULL) ON CONFLICT (table_name, row_id, field) DO NOTHING", [t.name, id, rows[0].hlc]);
+      await upsertClocks(t, id, [{ field: column, hlc: stamp.hlc as Hlc, base }]);
+      await db.execute('DELETE FROM sync_outbox WHERE table_name = ? AND row_id = ? AND field = ?', [t.name, id, column]);
+      await db.execute('INSERT INTO sync_outbox (table_name, row_id, field) VALUES (?, ?, ?)', [t.name, id, column]);
+      return stamp.hlc as Hlc;
+    },
     async detachLiveChildren(t, column, parentIds) {
       if (!t.columns.some((col) => col.name === column && col.nullable) || !t.columns.some((col) => col.name === 'deleted_at')) return [];
       const out: string[] = [];
