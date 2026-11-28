@@ -1891,7 +1891,7 @@ côté de 0018 ne convient pas : une opération dans `sync_parked` est rejouée 
 ne garde que des champs inconnus du lecteur ; l'avertissement `older-device` ne compte que les créations de côté (et D-796 dit déjà « mets-le à
 jour » tant qu'un appareil ancien est actif).
 
-**Limites connues** : la modification faite sur l'appareil ancien est écartée (gardée dans `conflict_log` de l'appareil à jour seulement : conflit
+**Limites connues** : la modification faite sur l'appareil ancien est écartée (gardée dans `conflict_log` de l'appareil à jour seulement : conflit Relecture sync-icloud du 28/11 : trou 1 : une modification d'inventaire faite sur l'appareil ancien puis mise à jour avant qu'un cycle la publie part au `sv` 25 et s'applique par hlc, sans entrée dans `conflict_log` (`republishAfterUpgrade`, `src/sync/olderWriter.ts`) ; trou 2 : le rejeu d'une opération mise de côté (`retryParked`, `src/sync/maintenance.ts:120` ; report d'époque, `src/sync/epochSwitch.ts:365`) passe `remoteSv: deps.sv` au lieu du `sv` stocké, la garde ne joue pas (écart jusqu'à la republication de l'appareil à jour, qui l'emporte par hlc) (BL-189).
 inscrit d'un seul côté, à la différence de § 4.2) ; chaque nouvel enregistrement de l'inventaire sur l'appareil ancien est écarté de même tant
 qu'il n'est pas mis à jour ; deux appareils anciens entre eux ne sont pas protégés (aucun ne lit de liste longue).
 
