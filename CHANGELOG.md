@@ -7,7 +7,7 @@ Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGEL
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 25, rien n'est modifié ni effacé.
 
 - **Lire un PDF (D-676, D-786 à D-790)** : Entraînement › Routines › Importer un programme › « Lire un PDF » lit le texte d'un programme en PDF (10 Mo et 20 pages au plus), sur l'appareil, sans réseau ; les lignes rejoignent le texte et donnent l'aperçu habituel avant confirmation. Un PDF protégé ou scanné est refusé et la raison est dite (pour un scan : fais une capture de la page et lis-la comme une photo). Le fichier n'est jamais enregistré.
-- **Gestes de la séance sur l'iPhone (D-653, D-797 à D-801)** : glisse une série à faire vers la gauche pour la supprimer, « Annuler » (5 s) la remet à sa place ; un appui long sur le titre d'un exercice le soulève pour le déplacer. Un défilement vertical ne supprime rien. Au clavier et avec VoiceOver, « Monter » et « Descendre » font le même déplacement. Sur le PC, rien ne change.
+- **Gestes de la séance sur l'iPhone (D-653, D-797 à D-801)** : glisse une série à faire vers la gauche pour la supprimer, « Annuler » (5 s) la remet à sa place ; un appui long sur le titre d'un exercice le soulève pour le déplacer. Un défilement vertical ne supprime rien. Au clavier et avec VoiceOver, « Monter » et « Descendre » font le même déplacement. Sur le PC : pas de glissement à la souris ; au clavier, « Monter » et « Descendre » apparaissent au focus et déplacent un exercice ; sur un écran tactile, les gestes marchent au doigt.
 
 Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.3).
 
