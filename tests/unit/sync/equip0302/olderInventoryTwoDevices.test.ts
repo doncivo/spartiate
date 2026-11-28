@@ -64,7 +64,7 @@ describe('SYNC-0304 : liste longue gardée contre un appareil resté au schéma 
     expect(await available(a)).toEqual(LONG);
     const onA = await logged(a);
     expect(onA.map((r) => r.field)).toEqual(['inventory']);
-    expect((JSON.parse(onA[0]?.discarded_value ?? '{}') as { available: string[] }).available).toEqual(['weighted-vest']);
+    expect((JSON.parse(JSON.parse(onA[0]?.discarded_value ?? '"{}"') as string) as { available: string[] }).available).toEqual(['weighted-vest']);
     // Valeur gardée republiée : l'appareil ancien converge (aucun écrasement durable de part ni d'autre).
     expect(await available(b)).toEqual(LONG);
 

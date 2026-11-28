@@ -66,7 +66,7 @@ describe('SYNC-0304 : inventaire long gardé contre un écrivain plus ancien (ap
     expect((await stored())?.inventory).toBe(LONG);
     const logged = await conflicts();
     expect(logged).toHaveLength(1);
-    expect(logged[0]).toMatchObject({ field: 'inventory', kept_value: LONG, discarded_value: EMPTY, discarded_hlc: h(5), kept_device: SELF });
+    expect(logged[0]).toMatchObject({ field: 'inventory', kept_value: JSON.stringify(LONG), discarded_value: JSON.stringify(EMPTY), discarded_hlc: h(5), kept_device: SELF });
     expect(logger.entries.filter((e) => e.event === 'apply-older-kept')).toEqual([{ event: 'apply-older-kept', detail: { table: 'equipment_profile', field: 'inventory' } }]);
     expect(JSON.stringify(logger.entries)).not.toContain('item-');
     expect(await outbox()).toEqual([{ field: 'inventory' }]);

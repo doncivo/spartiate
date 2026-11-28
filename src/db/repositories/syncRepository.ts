@@ -244,6 +244,12 @@ export interface SyncRepository {
   detachLiveChildren(table: SyncTable, column: string, parentIds: readonly string[]): Promise<string[]>;
   /** Même écriture locale pour une ligne donnée (ligne reçue dont le parent de `column` est purgé ici, décision (c)). Sous garde. */
   detachField(table: SyncTable, id: string, column: string): Promise<void>;
+  /**
+   * SYNC-0304 (D-805, ADR 0011 avenant 40) : valeur locale de `column` gardée contre une écriture reçue d'un écrivain plus ancien, republiée à un
+   * hlc neuf (après celui reçu : `HlcClock.receive()` précède l'application) fondé sur l'écriture écartée (`base`) : l'écrivain ancien l'applique
+   * sans conflit. Valeur inchangée ; horloge du champ, métadonnées de la ligne et entrée de file du champ. Sous garde ; renvoie le hlc neuf.
+   */
+  reassertField(table: SyncTable, id: string, column: string, base: Hlc): Promise<Hlc>;
   /** Y-09 (T-08) : rappels qui visent les lignes données (`target_type`, `target_id`), avec leur hlc ; purgés avec elles. */
   targetReminders(targetType: string, targetIds: readonly string[]): Promise<{ readonly id: string; readonly targetId: string; readonly hlc: Hlc }[]>;
   /** Plus grand hlc présent (tables publiées), pour l'horloge locale. */
