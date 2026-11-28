@@ -425,6 +425,18 @@ cargo zerovec-derive 0.11.6 : Unicode-3.0
 cargo zlib-rs 0.6.8 : Zlib
 cargo zmij 1.0.23 : MIT
 npm @fontsource/cinzel 5.3.0 : OFL-1.1
+npm @napi-rs/canvas 1.2.1 : MIT
+npm @napi-rs/canvas-android-arm64 1.2.1 : MIT
+npm @napi-rs/canvas-darwin-arm64 1.2.1 : MIT
+npm @napi-rs/canvas-darwin-x64 1.2.1 : MIT
+npm @napi-rs/canvas-linux-arm-gnueabihf 1.2.1 : MIT
+npm @napi-rs/canvas-linux-arm64-gnu 1.2.1 : MIT
+npm @napi-rs/canvas-linux-arm64-musl 1.2.1 : MIT
+npm @napi-rs/canvas-linux-riscv64-gnu 1.2.1 : MIT
+npm @napi-rs/canvas-linux-x64-gnu 1.2.1 : MIT
+npm @napi-rs/canvas-linux-x64-musl 1.2.1 : MIT
+npm @napi-rs/canvas-win32-arm64-msvc 1.2.1 : MIT
+npm @napi-rs/canvas-win32-x64-msvc 1.2.1 : MIT
 npm @tauri-apps/api 2.12.1 : Apache-2.0 OR MIT
 npm @tauri-apps/plugin-autostart 2.7.0 : MIT OR Apache-2.0
 npm @tauri-apps/plugin-barcode-scanner 2.5.1 : MIT OR Apache-2.0
@@ -439,6 +451,7 @@ npm csstype 3.2.3 : MIT
 npm js-tokens 4.0.0 : MIT
 npm loose-envify 1.4.0 : MIT
 npm lucide-react 1.49.0 : ISC
+npm pdfjs-dist 6.5.438 : Apache-2.0
 npm qrcode-generator 2.0.4 : MIT
 npm react 18.3.1 : MIT
 npm react-dom 18.3.1 : MIT
@@ -483,6 +496,17 @@ Licence déclarée par le composant (champ « license » de son manifeste) ; son
 - webview2-com 0.39.1 : MIT (aucun fichier de licence dans les sources)
 - webview2-com-macros 0.8.1 : MIT (aucun fichier de licence dans les sources)
 - webview2-com-sys 0.39.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-android-arm64 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-darwin-arm64 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-darwin-x64 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-arm-gnueabihf 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-arm64-gnu 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-arm64-musl 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-riscv64-gnu 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-x64-gnu 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-linux-x64-musl 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-win32-arm64-msvc 1.2.1 : MIT (aucun fichier de licence dans les sources)
+- @napi-rs/canvas-win32-x64-msvc 1.2.1 : MIT (aucun fichier de licence dans les sources)
 - qrcode-generator 2.0.4 : MIT (aucun fichier de licence dans les sources)
 
 == Textes de licence ==
@@ -585,6 +609,65 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ----- Texte 2 : 1 composant(s) -----
+@napi-rs/canvas 1.2.1
+
+MIT License
+
+Copyright (c) 2020 lynweklm@gmail.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+src/svg_doc/broken_image.png is Chromium's broken-image icon
+(third_party/blink/public/default_100_percent/blink/broken_image.png),
+used under the Chromium license:
+
+Copyright 2015 The Chromium Authors
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+----- Texte 3 : 1 composant(s) -----
 @tauri-apps/api 2.12.1
 
 Apache License
@@ -807,7 +890,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/tauri.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 3 : 7 composant(s) -----
+----- Texte 4 : 7 composant(s) -----
 @tauri-apps/plugin-autostart 2.7.0, @tauri-apps/plugin-barcode-scanner 2.5.1, @tauri-apps/plugin-geolocation 2.5.0, @tauri-apps/plugin-opener 2.7.0, @tauri-apps/plugin-process 2.4.0, @tauri-apps/plugin-sql 2.5.0, @tauri-apps/plugin-updater 2.13.1
 
 SPDXVersion: SPDX-2.1
@@ -831,7 +914,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/tauri.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 4 : 2 composant(s) -----
+----- Texte 5 : 2 composant(s) -----
 @types/prop-types 15.7.15, @types/react 18.3.31
 
 MIT License
@@ -856,7 +939,7 @@ MIT License
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
 
------ Texte 5 : 1 composant(s) -----
+----- Texte 6 : 1 composant(s) -----
 adler2 2.0.1
 
 Copyright (C) Jonas Schievink <jonasschievink@gmail.com>
@@ -1098,7 +1181,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 6 : 8 composant(s) -----
+----- Texte 7 : 8 composant(s) -----
 aho-corasick 1.1.5, byteorder 1.5.0, jiff 0.2.37, jiff-core 0.1.1, jiff-tzdb 0.1.8, jiff-tzdb-platform 0.1.3, memchr 2.8.3, walkdir 2.5.0
 
 This project is dual-licensed under the Unlicense and MIT licenses.
@@ -1152,7 +1235,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
------ Texte 7 : 2 composant(s) -----
+----- Texte 8 : 2 composant(s) -----
 alloc-no-stdlib 3.0.0, brotli-decompressor 6.0.1
 
 Copyright (c) 2016 Dropbox, Inc.
@@ -1168,7 +1251,7 @@ Redistribution and use in source and binary forms, with or without modification,
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
------ Texte 8 : 25 composant(s) -----
+----- Texte 9 : 25 composant(s) -----
 allocator-api2 0.2.21, anyhow 1.0.104, dtoa 1.0.11, dyn-clone 1.0.20, erased-serde 0.4.10, etcetera 0.8.0, itoa 1.0.18, proc-macro2 1.0.107, quote 1.0.47, ref-cast 1.0.27, ref-cast-impl 1.0.27, rustc-hash 2.1.3, semver 1.0.28, serde 1.0.229, serde-untagged 0.1.9, serde_core 1.0.229, serde_derive 1.0.229, serde_derive_internals 0.29.1, serde_json 1.0.151, serde_repr 0.1.21, syn 2.0.119, syn 3.0.6, thiserror 2.0.21, thiserror-impl 2.0.21, typeid 1.0.3
 
 Apache License
@@ -1372,7 +1455,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 9 : 1 composant(s) -----
+----- Texte 10 : 1 composant(s) -----
 arrayvec 0.7.8
 
 Apache License
@@ -1603,7 +1686,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 10 : 1 composant(s) -----
+----- Texte 11 : 1 composant(s) -----
 atoi 2.0.0
 
 MIT License
@@ -1628,7 +1711,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 11 : 1 composant(s) -----
+----- Texte 12 : 1 composant(s) -----
 atomic-waker 1.1.2
 
 Apache License
@@ -1903,7 +1986,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 12 : 1 composant(s) -----
+----- Texte 13 : 1 composant(s) -----
 auto-launch 0.6.0
 
 MIT License
@@ -1928,7 +2011,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 13 : 1 composant(s) -----
+----- Texte 14 : 1 composant(s) -----
 autocfg 1.5.1
 
 Apache License
@@ -2159,7 +2242,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 14 : 1 composant(s) -----
+----- Texte 15 : 1 composant(s) -----
 aws-lc-rs 1.18.1
 
 SPDX-License-Identifier: ISC AND (Apache-2.0 OR ISC)
@@ -2365,7 +2448,7 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
------ Texte 15 : 1 composant(s) -----
+----- Texte 16 : 1 composant(s) -----
 aws-lc-sys 0.45.0
 
 AWS Libcrypto (AWS-LC)
@@ -2685,7 +2768,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 16 : 2 composant(s) -----
+----- Texte 17 : 2 composant(s) -----
 base64 0.21.7, base64 0.22.1
 
 Apache License
@@ -2912,7 +2995,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 17 : 1 composant(s) -----
+----- Texte 18 : 1 composant(s) -----
 base64 0.23.1
 
 Apache License
@@ -3139,7 +3222,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 18 : 1 composant(s) -----
+----- Texte 19 : 1 composant(s) -----
 base64ct 1.8.3
 
 Apache License
@@ -3371,7 +3454,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 19 : 2 composant(s) -----
+----- Texte 20 : 2 composant(s) -----
 bit-set 0.8.0, bit-vec 0.8.0
 
 Apache License
@@ -3602,7 +3685,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 20 : 11 composant(s) -----
+----- Texte 21 : 11 composant(s) -----
 bitflags 1.3.2, bitflags 2.13.2, glob 0.3.4, log 0.4.34, num-bigint-dig 0.8.6, num-integer 0.1.47, num-iter 0.1.46, num-traits 0.2.19, regex 1.13.1, regex-automata 0.4.18, regex-syntax 0.8.11
 
 Apache License
@@ -3833,7 +3916,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 21 : 1 composant(s) -----
+----- Texte 22 : 1 composant(s) -----
 block-buffer 0.10.4
 
 Apache License
@@ -4064,7 +4147,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 22 : 2 composant(s) -----
+----- Texte 23 : 2 composant(s) -----
 borsh 1.8.1, borsh-derive 1.8.1
 
 Apache License
@@ -4293,7 +4376,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 23 : 1 composant(s) -----
+----- Texte 24 : 1 composant(s) -----
 brotli 9.0.0
 
 Copyright (c) 2016 Dropbox, Inc.
@@ -4329,7 +4412,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 24 : 1 composant(s) -----
+----- Texte 25 : 1 composant(s) -----
 bs58 0.5.1
 
 Apache License
@@ -4555,7 +4638,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 25 : 1 composant(s) -----
+----- Texte 26 : 1 composant(s) -----
 bytemuck 1.25.2
 
 Apache License
@@ -4642,7 +4725,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 26 : 1 composant(s) -----
+----- Texte 27 : 1 composant(s) -----
 byteorder-lite 0.1.0
 
 The MIT License (MIT)
@@ -4692,7 +4775,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
------ Texte 27 : 1 composant(s) -----
+----- Texte 28 : 1 composant(s) -----
 bytes 1.12.1
 
 Copyright (c) 2018 Carl Lerche
@@ -4721,7 +4804,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 28 : 8 composant(s) -----
+----- Texte 29 : 8 composant(s) -----
 camino 1.2.6, displaydoc 0.2.7, event-listener 5.4.2, fastrand 2.5.0, lazy_static 1.5.1, once_cell 1.21.4, rsa 0.9.10, servo_arc 0.4.3
 
 Apache License
@@ -4950,7 +5033,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 29 : 3 composant(s) -----
+----- Texte 30 : 3 composant(s) -----
 cargo-platform 0.1.9, home 0.5.12, proc-macro-crate 3.5.0
 
 Apache License
@@ -5179,7 +5262,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 30 : 2 composant(s) -----
+----- Texte 31 : 2 composant(s) -----
 cargo_metadata 0.19.2, zmij 1.0.23
 
 Permission is hereby granted, free of charge, to any
@@ -5206,7 +5289,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 31 : 1 composant(s) -----
+----- Texte 32 : 1 composant(s) -----
 cargo_toml 1.0.1
 
 © Kornel Lesiński
@@ -5412,7 +5495,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 32 : 7 composant(s) -----
+----- Texte 33 : 7 composant(s) -----
 cc 1.5.1, cfg-if 1.0.5, cmake 0.1.58, find-msvc-tools 0.1.14, jobserver 0.1.35, pkg-config 0.3.34, socket2 0.6.5
 
 Apache License
@@ -5643,7 +5726,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 33 : 1 composant(s) -----
+----- Texte 34 : 1 composant(s) -----
 cfb 0.14.0
 
 MIT License
@@ -5668,7 +5751,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 34 : 1 composant(s) -----
+----- Texte 35 : 1 composant(s) -----
 cfg_aliases 0.2.2
 
 MIT License
@@ -5708,7 +5791,7 @@ The `cfg_aliases!` macro uses a lot of the code from [`tectonic_cfg_support::tar
     SOFTWARE.
 ---
 
------ Texte 35 : 1 composant(s) -----
+----- Texte 36 : 1 composant(s) -----
 chrono 0.4.45
 
 Rust-chrono is dual-licensed under The MIT License [1] and
@@ -5951,7 +6034,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ~~~~
 
------ Texte 36 : 1 composant(s) -----
+----- Texte 37 : 1 composant(s) -----
 const-oid 0.9.6
 
 Apache License
@@ -6182,7 +6265,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 37 : 1 composant(s) -----
+----- Texte 38 : 1 composant(s) -----
 cookie 0.18.3
 
 Apache License
@@ -6415,7 +6498,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 38 : 5 composant(s) -----
+----- Texte 39 : 5 composant(s) -----
 core-foundation 0.10.1, core-foundation 0.9.4, core-foundation-sys 0.8.7, string_cache 0.9.0, string_cache_codegen 0.6.1
 
 Apache License
@@ -6646,7 +6729,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 39 : 1 composant(s) -----
+----- Texte 40 : 1 composant(s) -----
 cpufeatures 0.2.17
 
 Apache License
@@ -6877,7 +6960,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 40 : 1 composant(s) -----
+----- Texte 41 : 1 composant(s) -----
 crc 3.4.0
 
 Apache License
@@ -7104,7 +7187,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 41 : 1 composant(s) -----
+----- Texte 42 : 1 composant(s) -----
 crc32fast 1.5.2
 
 Apache License
@@ -7331,7 +7414,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 42 : 1 composant(s) -----
+----- Texte 43 : 1 composant(s) -----
 crossbeam-channel 0.5.17
 
 Apache License
@@ -8158,7 +8241,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
------ Texte 43 : 2 composant(s) -----
+----- Texte 44 : 2 composant(s) -----
 crossbeam-queue 0.3.14, crossbeam-utils 0.8.23
 
 Apache License
@@ -8391,7 +8474,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 44 : 1 composant(s) -----
+----- Texte 45 : 1 composant(s) -----
 crypto-common 0.1.7
 
 Apache License
@@ -8622,7 +8705,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 45 : 3 composant(s) -----
+----- Texte 46 : 3 composant(s) -----
 cssparser 0.37.0, cssparser-macros 0.7.1, dtoa-short 0.3.5
 
 Mozilla Public License Version 2.0
@@ -8999,7 +9082,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   This Source Code Form is "Incompatible With Secondary Licenses", as
   defined by the Mozilla Public License, v. 2.0.
 
------ Texte 46 : 1 composant(s) -----
+----- Texte 47 : 1 composant(s) -----
 csstype 3.2.3
 
 Copyright (c) 2017-2018 Fredrik Nicol
@@ -9022,7 +9105,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 47 : 1 composant(s) -----
+----- Texte 48 : 1 composant(s) -----
 ctor 1.0.13
 
 Apache License
@@ -9233,7 +9316,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 48 : 3 composant(s) -----
+----- Texte 49 : 3 composant(s) -----
 darling 0.24.1, darling_core 0.24.1, darling_macro 0.24.1
 
 MIT License
@@ -9258,7 +9341,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 49 : 2 composant(s) -----
+----- Texte 50 : 2 composant(s) -----
 defmt 1.1.1, defmt-macros 1.1.1
 
 Apache License
@@ -9489,7 +9572,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 50 : 2 composant(s) -----
+----- Texte 51 : 2 composant(s) -----
 der 0.7.10, pkcs8 0.10.2
 
 Apache License
@@ -9720,7 +9803,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 51 : 1 composant(s) -----
+----- Texte 52 : 1 composant(s) -----
 deranged 0.5.8
 
 Apache License
@@ -9945,7 +10028,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 52 : 2 composant(s) -----
+----- Texte 53 : 2 composant(s) -----
 derive_more 2.1.1, derive_more-impl 2.1.1
 
 The MIT License (MIT)
@@ -9970,7 +10053,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 53 : 2 composant(s) -----
+----- Texte 54 : 2 composant(s) -----
 digest 0.10.7, hmac 0.12.1
 
 Apache License
@@ -10201,7 +10284,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 54 : 2 composant(s) -----
+----- Texte 55 : 2 composant(s) -----
 dirs 7.0.0, dirs-sys 0.5.0
 
 Apache License
@@ -10399,7 +10482,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 55 : 1 composant(s) -----
+----- Texte 56 : 1 composant(s) -----
 dom_query 0.28.0
 
 MIT License
@@ -10430,7 +10513,7 @@ This project contains portions of code and architectural concepts originally
 derived from the "nipper" project (https://github.com/importcjj/nipper),
 developed by Chen Jiaju, licensed under the MIT License and the Apache License 2.0 (dual licensed).
 
------ Texte 56 : 1 composant(s) -----
+----- Texte 57 : 1 composant(s) -----
 dotenvy 0.15.7
 
 # The MIT License (MIT)
@@ -10455,7 +10538,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 57 : 1 composant(s) -----
+----- Texte 58 : 1 composant(s) -----
 dpi 0.1.2
 
 Apache License
@@ -10712,7 +10795,7 @@ and labelled as such in comments in the individual source files. All
 have been licensed under extremely permissive terms.
 ------------------------------------------------------------------------------
 
------ Texte 58 : 1 composant(s) -----
+----- Texte 59 : 1 composant(s) -----
 dunce 1.0.5
 
 Creative Commons Legal Code
@@ -10837,7 +10920,7 @@ express Statement of Purpose.
     party to this document and has no duty or obligation with respect to
     this CC0 or use of the Work.
 
------ Texte 59 : 3 composant(s) -----
+----- Texte 60 : 3 composant(s) -----
 either 1.18.0, serde_with 3.24.0, serde_with_macros 3.24.0
 
 Apache License
@@ -11068,7 +11151,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 60 : 1 composant(s) -----
+----- Texte 61 : 1 composant(s) -----
 embed-resource 3.0.11
 
 The MIT License (MIT)
@@ -11093,7 +11176,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 61 : 1 composant(s) -----
+----- Texte 62 : 1 composant(s) -----
 equivalent 1.0.2
 
 Apache License
@@ -11324,7 +11407,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 62 : 1 composant(s) -----
+----- Texte 63 : 1 composant(s) -----
 fallible-iterator 0.3.0
 
 Apache License
@@ -11549,7 +11632,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 63 : 1 composant(s) -----
+----- Texte 64 : 1 composant(s) -----
 fallible-streaming-iterator 0.1.9
 
 Apache License
@@ -11774,7 +11857,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 64 : 2 composant(s) -----
+----- Texte 65 : 2 composant(s) -----
 fdeflate 0.3.7, image 0.25.10
 
 Apache License
@@ -11980,7 +12063,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 65 : 1 composant(s) -----
+----- Texte 66 : 1 composant(s) -----
 flate2 1.1.10
 
 Apache License
@@ -12211,7 +12294,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 66 : 1 composant(s) -----
+----- Texte 67 : 1 composant(s) -----
 flume 0.11.1
 
 Apache License
@@ -12440,7 +12523,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 67 : 1 composant(s) -----
+----- Texte 68 : 1 composant(s) -----
 fnv 1.0.7
 
 Apache License
@@ -12671,7 +12754,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 68 : 2 composant(s) -----
+----- Texte 69 : 2 composant(s) -----
 foldhash 0.1.5, foldhash 0.2.0
 
 Copyright (c) 2024 Orson Peters
@@ -12694,7 +12777,7 @@ the following restrictions:
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 69 : 1 composant(s) -----
+----- Texte 70 : 1 composant(s) -----
 form_urlencoded 1.2.3
 
 Apache License
@@ -12925,7 +13008,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 70 : 1 composant(s) -----
+----- Texte 71 : 1 composant(s) -----
 fs_extra 1.3.0
 
 MIT License
@@ -12950,7 +13033,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 71 : 8 composant(s) -----
+----- Texte 72 : 8 composant(s) -----
 futures-channel 0.3.34, futures-core 0.3.34, futures-executor 0.3.34, futures-io 0.3.34, futures-macro 0.3.34, futures-sink 0.3.34, futures-task 0.3.34, futures-util 0.3.34
 
 Apache License
@@ -13183,7 +13266,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 72 : 1 composant(s) -----
+----- Texte 73 : 1 composant(s) -----
 futures-intrusive 0.5.0
 
 Apache License
@@ -13414,7 +13497,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 73 : 1 composant(s) -----
+----- Texte 74 : 1 composant(s) -----
 generic-array 0.14.7
 
 The MIT License (MIT)
@@ -13439,7 +13522,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 74 : 1 composant(s) -----
+----- Texte 75 : 1 composant(s) -----
 getrandom 0.2.17
 
 Apache License
@@ -13671,7 +13754,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 75 : 1 composant(s) -----
+----- Texte 76 : 1 composant(s) -----
 getrandom 0.3.4
 
 Apache License
@@ -13903,7 +13986,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 76 : 1 composant(s) -----
+----- Texte 77 : 1 composant(s) -----
 getrandom 0.4.3
 
 Apache License
@@ -14135,7 +14218,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 77 : 3 composant(s) -----
+----- Texte 78 : 3 composant(s) -----
 hashbrown 0.12.3, hashbrown 0.15.5, hashbrown 0.17.1
 
 Apache License
@@ -14366,7 +14449,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 78 : 2 composant(s) -----
+----- Texte 79 : 2 composant(s) -----
 hashlink 0.10.0, hashlink 0.12.2
 
 Apache License
@@ -14598,7 +14681,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 79 : 5 composant(s) -----
+----- Texte 80 : 5 composant(s) -----
 heck 0.5.0, unicode-bidi 0.3.18, unicode-normalization 0.1.25, unicode-properties 0.1.4, unicode-segmentation 1.13.3
 
 Apache License
@@ -14829,7 +14912,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 80 : 1 composant(s) -----
+----- Texte 81 : 1 composant(s) -----
 hex 0.4.3
 
 Apache License
@@ -15055,7 +15138,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 81 : 1 composant(s) -----
+----- Texte 82 : 1 composant(s) -----
 hkdf 0.12.4
 
 Apache License
@@ -15287,7 +15370,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 82 : 3 composant(s) -----
+----- Texte 83 : 3 composant(s) -----
 html5ever 0.39.0, markup5ever 0.39.0, web_atoms 0.2.6
 
 Apache License
@@ -15518,7 +15601,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 83 : 1 composant(s) -----
+----- Texte 84 : 1 composant(s) -----
 http 1.5.0
 
 Apache License
@@ -15749,7 +15832,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 84 : 2 composant(s) -----
+----- Texte 85 : 2 composant(s) -----
 http-body 1.1.0, http-body-util 0.1.5
 
 Copyright (c) 2019-2026 Sean McArthur & Hyper Contributors
@@ -15778,7 +15861,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 85 : 1 composant(s) -----
+----- Texte 86 : 1 composant(s) -----
 httparse 1.10.1
 
 Apache License
@@ -16003,7 +16086,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 86 : 1 composant(s) -----
+----- Texte 87 : 1 composant(s) -----
 hyper 1.11.1
 
 Copyright (c) 2014-2026 Sean McArthur
@@ -16026,7 +16109,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 87 : 2 composant(s) -----
+----- Texte 88 : 2 composant(s) -----
 hyper-rustls 0.27.10, rustls 0.23.46
 
 Apache License
@@ -16273,7 +16356,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 88 : 1 composant(s) -----
+----- Texte 89 : 1 composant(s) -----
 hyper-util 0.1.21
 
 Copyright (c) 2023-2025 Sean McArthur
@@ -16296,7 +16379,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 89 : 1 composant(s) -----
+----- Texte 90 : 1 composant(s) -----
 iana-time-zone 0.1.65
 
 Apache License
@@ -16527,7 +16610,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 90 : 1 composant(s) -----
+----- Texte 91 : 1 composant(s) -----
 ico 0.5.0
 
 MIT License
@@ -16552,7 +16635,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 91 : 18 composant(s) -----
+----- Texte 92 : 18 composant(s) -----
 icu_collections 2.3.0, icu_locale_core 2.3.0, icu_normalizer 2.3.0, icu_normalizer_data 2.3.0, icu_properties 2.3.0, icu_properties_data 2.3.0, icu_provider 2.3.1, litemap 0.8.3, potential_utf 0.1.6, tinystr 0.8.4, writeable 0.6.4, yoke 0.8.3, yoke-derive 0.8.4, zerofrom 0.1.8, zerofrom-derive 0.1.8, zerotrie 0.2.5, zerovec 0.11.8, zerovec-derive 0.11.6
 
 UNICODE LICENSE V3
@@ -16602,7 +16685,7 @@ SPDX-License-Identifier: Unicode-3.0
 Portions of ICU4X may have been adapted from ICU4C and/or ICU4J.
 ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
 
------ Texte 92 : 1 composant(s) -----
+----- Texte 93 : 1 composant(s) -----
 ident_case 1.0.1
 
 MIT License
@@ -16625,7 +16708,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 93 : 3 composant(s) -----
+----- Texte 94 : 3 composant(s) -----
 idna 1.1.0, percent-encoding 2.3.2, url 2.5.9
 
 Apache License
@@ -16856,7 +16939,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 94 : 1 composant(s) -----
+----- Texte 95 : 1 composant(s) -----
 idna_adapter 1.2.2
 
 Apache License
@@ -17087,7 +17170,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 95 : 2 composant(s) -----
+----- Texte 96 : 2 composant(s) -----
 indexmap 1.9.3, indexmap 2.14.2
 
 Apache License
@@ -17318,7 +17401,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 96 : 1 composant(s) -----
+----- Texte 97 : 1 composant(s) -----
 infer 0.22.0
 
 MIT License
@@ -17343,7 +17426,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 97 : 1 composant(s) -----
+----- Texte 98 : 1 composant(s) -----
 ipnet 2.12.2
 
 Apache License
@@ -17556,7 +17639,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 98 : 1 composant(s) -----
+----- Texte 99 : 1 composant(s) -----
 js-tokens 4.0.0
 
 The MIT License (MIT)
@@ -17581,7 +17664,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 99 : 1 composant(s) -----
+----- Texte 100 : 1 composant(s) -----
 json-patch 4.2.0
 
 Apache License
@@ -17808,7 +17891,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 100 : 1 composant(s) -----
+----- Texte 101 : 1 composant(s) -----
 jsonptr 0.7.1
 
 Apache License
@@ -18035,7 +18118,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 101 : 1 composant(s) -----
+----- Texte 102 : 1 composant(s) -----
 keyboard-types 0.8.3
 
 Apache License
@@ -18260,7 +18343,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 102 : 1 composant(s) -----
+----- Texte 103 : 1 composant(s) -----
 keyring 3.6.3
 
 Apache License
@@ -18491,7 +18574,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 103 : 1 composant(s) -----
+----- Texte 104 : 1 composant(s) -----
 libc 0.2.189
 
 Apache License
@@ -18697,7 +18780,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 104 : 1 composant(s) -----
+----- Texte 105 : 1 composant(s) -----
 libm 0.2.16
 
 rust-lang/libm as a whole is available for use under the MIT license:
@@ -18959,7 +19042,7 @@ have been licensed under extremely permissive terms.
 
 Copyright notices are retained in src/* files where relevant.
 
------ Texte 105 : 2 composant(s) -----
+----- Texte 106 : 2 composant(s) -----
 libsqlite3-sys 0.39.1, rusqlite 0.41.1
 
 Copyright (c) 2014 The rusqlite developers
@@ -18982,7 +19065,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 106 : 4 composant(s) -----
+----- Texte 107 : 4 composant(s) -----
 lock_api 0.4.14, parking_lot 0.12.5, parking_lot_core 0.9.12, rustc_version 0.4.1
 
 Apache License
@@ -19213,7 +19296,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 107 : 1 composant(s) -----
+----- Texte 108 : 1 composant(s) -----
 loose-envify 1.4.0
 
 The MIT License (MIT)
@@ -19238,7 +19321,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 108 : 1 composant(s) -----
+----- Texte 109 : 1 composant(s) -----
 lucide-react 1.49.0
 
 ISC License
@@ -19285,7 +19368,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 109 : 3 composant(s) -----
+----- Texte 110 : 3 composant(s) -----
 md-5 0.10.6, sha1 0.10.7, sha2 0.10.9
 
 Apache License
@@ -19518,7 +19601,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 110 : 1 composant(s) -----
+----- Texte 111 : 1 composant(s) -----
 mime 0.3.17
 
 Apache License
@@ -19743,7 +19826,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 111 : 1 composant(s) -----
+----- Texte 112 : 1 composant(s) -----
 minisign-verify 0.2.5
 
 Copyright (c) 2019-2025 Frank Denis
@@ -19806,7 +19889,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 112 : 2 composant(s) -----
+----- Texte 113 : 2 composant(s) -----
 miniz_oxide 0.8.9, miniz_oxide 0.9.1
 
 MIT License
@@ -20052,7 +20135,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 113 : 1 composant(s) -----
+----- Texte 114 : 1 composant(s) -----
 mio 1.2.3
 
 Copyright (c) 2014 Carl Lerche and other MIO contributors
@@ -20075,7 +20158,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 114 : 2 composant(s) -----
+----- Texte 115 : 2 composant(s) -----
 moxcms 0.8.1, pxfm 0.1.30
 
 Apache License
@@ -20307,7 +20390,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
------ Texte 115 : 1 composant(s) -----
+----- Texte 116 : 1 composant(s) -----
 muda 0.20.0
 
 Apache License
@@ -20554,7 +20637,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/muda.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/muda.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 116 : 1 composant(s) -----
+----- Texte 117 : 1 composant(s) -----
 new_debug_unreachable 1.0.6
 
 Copyright (c) 2015 Jonathan Reem
@@ -20583,7 +20666,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 117 : 1 composant(s) -----
+----- Texte 118 : 1 composant(s) -----
 num-conv 0.2.2
 
 Apache License
@@ -20783,7 +20866,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 118 : 1 composant(s) -----
+----- Texte 119 : 1 composant(s) -----
 open 5.4.4
 
 The MIT License (MIT)
@@ -20812,7 +20895,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 119 : 1 composant(s) -----
+----- Texte 120 : 1 composant(s) -----
 option-ext 0.2.0
 
 Mozilla Public License Version 2.0
@@ -21189,7 +21272,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   This Source Code Form is "Incompatible With Secondary Licenses", as
   defined by the Mozilla Public License, v. 2.0.
 
------ Texte 120 : 1 composant(s) -----
+----- Texte 121 : 1 composant(s) -----
 os_info 3.15.0
 
 The MIT License (MIT)
@@ -21214,7 +21297,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 121 : 1 composant(s) -----
+----- Texte 122 : 1 composant(s) -----
 parking 2.2.1
 
 Apache License
@@ -21453,7 +21536,7 @@ http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 option. All files in the project carrying such notice may not be
 copied, modified, or distributed except according to those terms.
 
------ Texte 122 : 1 composant(s) -----
+----- Texte 123 : 1 composant(s) -----
 pem-rfc7468 0.7.0
 
 Apache License
@@ -21684,7 +21767,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 123 : 5 composant(s) -----
+----- Texte 124 : 5 composant(s) -----
 phf 0.13.1, phf_codegen 0.13.1, phf_generator 0.13.1, phf_macros 0.13.1, phf_shared 0.13.1
 
 The MIT License (MIT)
@@ -21708,7 +21791,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 124 : 1 composant(s) -----
+----- Texte 125 : 1 composant(s) -----
 pin-project-lite 0.2.17
 
 Apache License
@@ -21912,7 +21995,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 125 : 2 composant(s) -----
+----- Texte 126 : 2 composant(s) -----
 pkcs1 0.7.5, spki 0.7.3
 
 Apache License
@@ -22143,7 +22226,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 126 : 1 composant(s) -----
+----- Texte 127 : 1 composant(s) -----
 plist 1.10.1
 
 Copyright (c) 2015 Edward Barnard
@@ -22166,7 +22249,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 127 : 2 composant(s) -----
+----- Texte 128 : 2 composant(s) -----
 png 0.17.16, png 0.18.1
 
 Apache License
@@ -22397,7 +22480,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 128 : 1 composant(s) -----
+----- Texte 129 : 1 composant(s) -----
 powerfmt 0.2.0
 
 Apache License
@@ -22622,7 +22705,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 129 : 1 composant(s) -----
+----- Texte 130 : 1 composant(s) -----
 ppv-lite86 0.2.21
 
 Apache License
@@ -22853,7 +22936,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 130 : 1 composant(s) -----
+----- Texte 131 : 1 composant(s) -----
 precomputed-hash 0.1.1
 
 MIT License
@@ -22878,7 +22961,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 131 : 1 composant(s) -----
+----- Texte 132 : 1 composant(s) -----
 quick-xml 0.42.0
 
 The MIT License (MIT)
@@ -22905,7 +22988,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 132 : 3 composant(s) -----
+----- Texte 133 : 3 composant(s) -----
 rand 0.8.8, rand 0.9.5, rand_chacha 0.9.0
 
 Apache License
@@ -23112,7 +23195,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 133 : 1 composant(s) -----
+----- Texte 134 : 1 composant(s) -----
 rand_chacha 0.3.1
 
 Apache License
@@ -23344,7 +23427,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 134 : 2 composant(s) -----
+----- Texte 135 : 2 composant(s) -----
 rand_core 0.6.4, rand_core 0.9.5
 
 Apache License
@@ -23562,7 +23645,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 135 : 1 composant(s) -----
+----- Texte 136 : 1 composant(s) -----
 raw-window-handle 0.6.2
 
 Apache License
@@ -23776,7 +23859,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 136 : 3 composant(s) -----
+----- Texte 137 : 3 composant(s) -----
 react 18.3.1, react-dom 18.3.1, scheduler 0.23.2
 
 MIT License
@@ -23801,7 +23884,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 137 : 1 composant(s) -----
+----- Texte 138 : 1 composant(s) -----
 reqwest 0.13.5
 
 Apache License
@@ -24026,7 +24109,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 138 : 1 composant(s) -----
+----- Texte 139 : 1 composant(s) -----
 rfd 0.16.0
 
 MIT License
@@ -24051,7 +24134,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 139 : 1 composant(s) -----
+----- Texte 140 : 1 composant(s) -----
 ring 0.17.14
 
 *ring* uses an "ISC" license, like BoringSSL used to use, for new code
@@ -24350,7 +24433,7 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
 OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
------ Texte 140 : 1 composant(s) -----
+----- Texte 141 : 1 composant(s) -----
 rust_decimal 1.43.0
 
 MIT License
@@ -24375,7 +24458,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 141 : 1 composant(s) -----
+----- Texte 142 : 1 composant(s) -----
 rustls-pki-types 1.15.1
 
 Apache License
@@ -24606,7 +24689,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 142 : 1 composant(s) -----
+----- Texte 143 : 1 composant(s) -----
 rustls-platform-verifier 0.7.1
 
 Apache License
@@ -24833,7 +24916,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 143 : 1 composant(s) -----
+----- Texte 144 : 1 composant(s) -----
 rustls-webpki 0.103.16
 
 Except as otherwise noted, this project is licensed under the following
@@ -24856,7 +24939,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 The files under third-party/chromium are licensed as described in
 third-party/chromium/LICENSE.
 
------ Texte 144 : 1 composant(s) -----
+----- Texte 145 : 1 composant(s) -----
 ryu 1.0.23
 
 Apache License
@@ -25060,7 +25143,7 @@ FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 145 : 2 composant(s) -----
+----- Texte 146 : 2 composant(s) -----
 same-file 1.0.6, winapi-util 0.1.11
 
 This project is dual-licensed under the Unlicense and MIT licenses.
@@ -25114,7 +25197,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
------ Texte 146 : 4 composant(s) -----
+----- Texte 147 : 4 composant(s) -----
 schemars 0.8.22, schemars 0.9.0, schemars 1.2.2, schemars_derive 0.8.22
 
 MIT License
@@ -25139,7 +25222,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 147 : 1 composant(s) -----
+----- Texte 148 : 1 composant(s) -----
 scopeguard 1.2.0
 
 Apache License
@@ -25370,7 +25453,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 148 : 3 composant(s) -----
+----- Texte 149 : 3 composant(s) -----
 security-framework 2.11.1, security-framework 3.7.0, security-framework-sys 2.17.0
 
 Apache License
@@ -25596,7 +25679,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 149 : 6 composant(s) -----
+----- Texte 150 : 6 composant(s) -----
 serde_spanned 1.1.1, toml 1.1.6+spec-1.1.0, toml_datetime 1.1.1+spec-1.1.0, toml_edit 0.25.15+spec-1.1.0, toml_parser 1.1.3+spec-1.1.0, toml_writer 1.1.2+spec-1.1.0
 
 Apache License
@@ -25821,7 +25904,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 150 : 1 composant(s) -----
+----- Texte 151 : 1 composant(s) -----
 serde_urlencoded 0.7.1
 
 Apache License
@@ -26027,7 +26110,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 151 : 2 composant(s) -----
+----- Texte 152 : 2 composant(s) -----
 serialize-to-javascript 0.1.2, serialize-to-javascript-impl 0.1.2
 
 Apache License
@@ -26254,7 +26337,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 152 : 1 composant(s) -----
+----- Texte 153 : 1 composant(s) -----
 shlex 2.0.1
 
 Copyright 2015 Nicholas Allegra (comex).
@@ -26293,7 +26376,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 153 : 1 composant(s) -----
+----- Texte 154 : 1 composant(s) -----
 signature 2.2.0
 
 Apache License
@@ -26524,7 +26607,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 154 : 1 composant(s) -----
+----- Texte 155 : 1 composant(s) -----
 simd-adler32 0.3.10
 
 MIT License
@@ -26549,7 +26632,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 155 : 1 composant(s) -----
+----- Texte 156 : 1 composant(s) -----
 siphasher 1.0.4
 
 Copyright 2012-2016 The Rust Project Developers.
@@ -26780,7 +26863,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 156 : 1 composant(s) -----
+----- Texte 157 : 1 composant(s) -----
 slab 0.4.12
 
 Copyright (c) 2019 Carl Lerche
@@ -26809,7 +26892,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 157 : 1 composant(s) -----
+----- Texte 158 : 1 composant(s) -----
 smallvec 1.16.2
 
 Apache License
@@ -27040,7 +27123,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 158 : 1 composant(s) -----
+----- Texte 159 : 1 composant(s) -----
 softbuffer 0.4.8
 
 Apache License
@@ -27265,7 +27348,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 159 : 1 composant(s) -----
+----- Texte 160 : 1 composant(s) -----
 spin 0.9.9
 
 The MIT License (MIT)
@@ -27290,7 +27373,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 160 : 7 composant(s) -----
+----- Texte 161 : 7 composant(s) -----
 sqlx 0.8.6, sqlx-core 0.8.6, sqlx-macros 0.8.6, sqlx-macros-core 0.8.6, sqlx-mysql 0.8.6, sqlx-postgres 0.8.6, sqlx-sqlite 0.8.6
 
 Apache License
@@ -27521,7 +27604,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 161 : 1 composant(s) -----
+----- Texte 162 : 1 composant(s) -----
 stable_deref_trait 1.2.1
 
 Apache License
@@ -27752,7 +27835,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 162 : 1 composant(s) -----
+----- Texte 163 : 1 composant(s) -----
 stringprep 0.1.5
 
 Apache License
@@ -27977,7 +28060,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 163 : 1 composant(s) -----
+----- Texte 164 : 1 composant(s) -----
 strsim 0.11.1
 
 The MIT License (MIT)
@@ -28004,7 +28087,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 164 : 1 composant(s) -----
+----- Texte 165 : 1 composant(s) -----
 subtle 2.6.1
 
 Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
@@ -28037,7 +28120,7 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
------ Texte 165 : 1 composant(s) -----
+----- Texte 166 : 1 composant(s) -----
 swift-rs 1.0.8
 
 Apache License
@@ -28262,8 +28345,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 166 : 1 composant(s) -----
-sync_wrapper 1.0.2
+----- Texte 167 : 2 composant(s) -----
+sync_wrapper 1.0.2, pdfjs-dist 6.5.438
 
 Apache License
                            Version 2.0, January 2004
@@ -28442,7 +28525,7 @@ Apache License
 
    END OF TERMS AND CONDITIONS
 
------ Texte 167 : 1 composant(s) -----
+----- Texte 168 : 1 composant(s) -----
 synstructure 0.14.0
 
 Copyright 2016 Nika Layzell
@@ -28453,7 +28536,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 168 : 1 composant(s) -----
+----- Texte 169 : 1 composant(s) -----
 tao 0.37.1
 
 Apache License
@@ -28677,7 +28760,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/tao.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/tao.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 169 : 7 composant(s) -----
+----- Texte 170 : 7 composant(s) -----
 tauri 2.12.1, tauri-build 2.7.1, tauri-codegen 2.7.1, tauri-macros 2.7.1, tauri-runtime 2.12.1, tauri-runtime-wry 2.12.1, tauri-utils 2.10.1
 
 Apache License
@@ -28879,7 +28962,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 170 : 10 composant(s) -----
+----- Texte 171 : 10 composant(s) -----
 tauri-plugin-autostart 2.7.0, tauri-plugin-barcode-scanner 2.5.1, tauri-plugin-biometric 2.4.1, tauri-plugin-dialog 2.8.1, tauri-plugin-fs 2.6.0, tauri-plugin-geolocation 2.5.0, tauri-plugin-notification 2.5.1, tauri-plugin-opener 2.7.0, tauri-plugin-process 2.4.0, tauri-plugin-updater 2.13.1
 
 SPDXVersion: SPDX-2.1
@@ -29102,7 +29185,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 171 : 1 composant(s) -----
+----- Texte 172 : 1 composant(s) -----
 tauri-plugin-single-instance 2.5.2
 
 SPDXVersion: SPDX-2.1
@@ -29325,7 +29408,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 172 : 1 composant(s) -----
+----- Texte 173 : 1 composant(s) -----
 tauri-winres 0.3.6
 
 The MIT License (MIT)
@@ -29357,7 +29440,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 173 : 1 composant(s) -----
+----- Texte 174 : 1 composant(s) -----
 tempfile 3.27.0
 
 Apache License
@@ -29588,7 +29671,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 174 : 1 composant(s) -----
+----- Texte 175 : 1 composant(s) -----
 tendril 0.5.1
 
 Apache License
@@ -29819,7 +29902,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 175 : 3 composant(s) -----
+----- Texte 176 : 3 composant(s) -----
 time 0.3.55, time-core 0.1.9, time-macros 0.2.32
 
 Apache License
@@ -30019,7 +30102,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 176 : 1 composant(s) -----
+----- Texte 177 : 1 composant(s) -----
 tinyvec 1.13.3
 
 Apache License
@@ -30242,7 +30325,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 177 : 3 composant(s) -----
+----- Texte 178 : 3 composant(s) -----
 tokio 1.53.1, tokio-stream 0.1.19, tokio-util 0.7.19
 
 MIT License
@@ -30267,7 +30350,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 178 : 1 composant(s) -----
+----- Texte 179 : 1 composant(s) -----
 tokio-macros 2.7.2
 
 MIT License
@@ -30293,7 +30376,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 179 : 1 composant(s) -----
+----- Texte 180 : 1 composant(s) -----
 tokio-rustls 0.26.6
 
 Apache License
@@ -30524,7 +30607,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 180 : 3 composant(s) -----
+----- Texte 181 : 3 composant(s) -----
 tower 0.5.3, tower-layer 0.3.3, tower-service 0.3.3
 
 Copyright (c) 2019 Tower Contributors
@@ -30553,7 +30636,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 181 : 1 composant(s) -----
+----- Texte 182 : 1 composant(s) -----
 tower-http 0.6.11
 
 Copyright (c) 2019-2021 Tower Contributors
@@ -30582,7 +30665,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 182 : 3 composant(s) -----
+----- Texte 183 : 3 composant(s) -----
 tracing 0.1.44, tracing-attributes 0.1.31, tracing-core 0.1.36
 
 Copyright (c) 2019 Tokio Contributors
@@ -30611,7 +30694,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 183 : 1 composant(s) -----
+----- Texte 184 : 1 composant(s) -----
 tray-icon 0.25.1
 
 Apache License
@@ -30858,7 +30941,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/tray-icon.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/tray-icon.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 184 : 1 composant(s) -----
+----- Texte 185 : 1 composant(s) -----
 try-lock 0.2.5
 
 Copyright (c) 2018-2023 Sean McArthur
@@ -30882,7 +30965,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 185 : 1 composant(s) -----
+----- Texte 186 : 1 composant(s) -----
 typenum 1.20.1
 
 MIT OR Apache-2.0
@@ -31111,7 +31194,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 186 : 1 composant(s) -----
+----- Texte 187 : 1 composant(s) -----
 unicode-ident 1.0.26
 
 Apache License
@@ -31355,7 +31438,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 
------ Texte 187 : 1 composant(s) -----
+----- Texte 188 : 1 composant(s) -----
 untrusted 0.9.0
 
 // Copyright 2015-2016 Brian Smith.
@@ -31372,7 +31455,7 @@ untrusted 0.9.0
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
------ Texte 188 : 1 composant(s) -----
+----- Texte 189 : 1 composant(s) -----
 urlpattern 0.6.0
 
 MIT License
@@ -31397,7 +31480,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 189 : 1 composant(s) -----
+----- Texte 190 : 1 composant(s) -----
 utf8_iter 1.0.4
 
 Apache License
@@ -31628,7 +31711,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 190 : 1 composant(s) -----
+----- Texte 191 : 1 composant(s) -----
 uuid 1.26.1
 
 Apache License
@@ -31860,7 +31943,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 191 : 1 composant(s) -----
+----- Texte 192 : 1 composant(s) -----
 vcpkg 0.2.15
 
 Apache License
@@ -32091,7 +32174,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 192 : 1 composant(s) -----
+----- Texte 193 : 1 composant(s) -----
 version_check 0.9.5
 
 Apache License
@@ -32316,7 +32399,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 193 : 2 composant(s) -----
+----- Texte 194 : 2 composant(s) -----
 vswhom 0.1.0, vswhom-sys 0.1.3
 
 The MIT License (MIT)
@@ -32341,7 +32424,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 194 : 1 composant(s) -----
+----- Texte 195 : 1 composant(s) -----
 want 0.3.1
 
 Copyright (c) 2018-2019 Sean McArthur
@@ -32364,7 +32447,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 195 : 1 composant(s) -----
+----- Texte 196 : 1 composant(s) -----
 web-time 1.1.0
 
 Apache License
@@ -32591,7 +32674,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 196 : 1 composant(s) -----
+----- Texte 197 : 1 composant(s) -----
 whoami 1.6.1
 
 Apache License
@@ -32815,7 +32898,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
------ Texte 197 : 1 composant(s) -----
+----- Texte 198 : 1 composant(s) -----
 window-vibrancy 0.8.1
 
 Apache License
@@ -33062,7 +33145,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/window-vibrancy.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/window-vibrancy.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 198 : 23 composant(s) -----
+----- Texte 199 : 23 composant(s) -----
 windows 0.62.2, windows-collections 0.3.2, windows-core 0.62.2, windows-future 0.3.2, windows-implement 0.60.2, windows-interface 0.59.3, windows-link 0.2.1, windows-numerics 0.3.1, windows-registry 0.6.1, windows-result 0.4.1, windows-strings 0.5.1, windows-sys 0.48.0, windows-sys 0.59.0, windows-sys 0.60.2, windows-sys 0.61.2, windows-targets 0.48.5, windows-targets 0.52.6, windows-targets 0.53.5, windows-threading 0.2.1, windows-version 0.1.7, windows_x86_64_msvc 0.48.5, windows_x86_64_msvc 0.52.6, windows_x86_64_msvc 0.53.1
 
 Apache License
@@ -33289,7 +33372,7 @@ MIT License
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE
 
------ Texte 199 : 1 composant(s) -----
+----- Texte 200 : 1 composant(s) -----
 winnow 1.0.4
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -33311,7 +33394,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
------ Texte 200 : 1 composant(s) -----
+----- Texte 201 : 1 composant(s) -----
 winreg 0.55.0
 
 Copyright (c) 2015 Igor Shaula
@@ -33334,7 +33417,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
------ Texte 201 : 1 composant(s) -----
+----- Texte 202 : 1 composant(s) -----
 wry 0.57.0
 
 Apache License
@@ -33582,7 +33665,7 @@ PackageDownloadLocation: git+https://github.com/tauri-apps/wry.git
 PackageDownloadLocation: git+ssh://github.com/tauri-apps/wry.git
 Creator: Person: Daniel Thompson-Yvetot
 
------ Texte 202 : 1 composant(s) -----
+----- Texte 203 : 1 composant(s) -----
 zerocopy 0.8.59
 
 Apache License
@@ -33838,7 +33921,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 203 : 1 composant(s) -----
+----- Texte 204 : 1 composant(s) -----
 zeroize 1.9.0
 
 Apache License
@@ -34069,7 +34152,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
------ Texte 204 : 1 composant(s) -----
+----- Texte 205 : 1 composant(s) -----
 zlib-rs 0.6.8
 
 (C) 2024 Trifecta Tech Foundation
@@ -34092,7 +34175,7 @@ freely, subject to the following restrictions:
 
 3. This notice may not be removed or altered from any source distribution.
 
------ Texte 205 : 1 composant(s) -----
+----- Texte 206 : 1 composant(s) -----
 zustand 5.0.15
 
 MIT License

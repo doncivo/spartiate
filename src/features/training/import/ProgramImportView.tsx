@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentType } from 'react';
 import { importMetricNote, importedRoutineSpec, matchExerciseName, parseProgramText, type ImportMatch, type ImportedExercise, type ProgramImport } from '../../../domain/training/programImport';
 import { validateRoutine } from '../../../domain/training/routineRules';
 import type { Exercise, RoutineInput } from '../../../domain/training';
@@ -9,11 +9,13 @@ import { tImport } from '../../../i18n/programImportText';
 import { Button } from '../../../ui';
 import { ExerciseList } from '../LibraryView';
 import type { TrainingData } from '../trainingState';
+import type { ExtractPdfText } from '../../../platform/pdf/types';
 import { PhotoReader, type PhotoReaderProps } from './PhotoReader';
+import type { PdfReaderProps } from './PdfReader';
 import './ProgramImport.css';
 
 /**
- * Import d'un programme (IMPORT-029, § 17.4) : texte collé ou lu sur une photo → analyse pure (`parseProgramText`) → aperçu complet
+ * Import d'un programme (IMPORT-029, § 17.4) : texte collé, lu sur une photo ou dans un PDF (IMPORT-0303, lecteur à la demande) → analyse pure (`parseProgramText`) → aperçu complet
  * (séances, exercices rapprochés de la bibliothèque, séries, plage, RIR, lignes non reconnues) → « Créer la routine » : une routine Libre
  * écrite en une transaction par le repository des routines. Rien n'est écrit avant la confirmation. Bloc à la demande (hors du départ).
  */
@@ -27,7 +29,12 @@ export interface ProgramImportViewProps {
   readonly onCreated: (routineId: string, message: string) => Promise<void>;
   /** IMPORT-029b : moteurs de lecture d'image (façade OCR) ; par défaut ceux de l'appareil. */
   readonly ocr?: PhotoReaderProps['open'];
+  /** IMPORT-0303 : lecture du texte d'un PDF ; par défaut la façade de l'appareil (pdf.js chargé à la demande). */
+  readonly pdf?: ExtractPdfText;
 }
+
+/** IMPORT-0303 : le lecteur PDF (avec la façade pdf.js et son catalogue) est un bloc à la demande chargé à l'ouverture de l'import. */
+type PdfReaderState = { readonly Reader: ComponentType<PdfReaderProps> } | 'loading' | 'failed';
 
 const METRIC_NOTE_KEY = {
   'seconds-on-reps': 'metric_seconds-on-reps',
@@ -52,8 +59,9 @@ function schemeText(exercise: ImportedExercise): string {
 /** Revue : texte collé borné (un programme tient en quelques milliers de caractères). */
 const TEXT_MAX = 50_000;
 
-export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }: ProgramImportViewProps) {
+export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr, pdf }: ProgramImportViewProps) {
   const [text, setText] = useState('');
+  const [pdfReader, setPdfReader] = useState<PdfReaderState>('loading');
   const [parsed, setParsed] = useState<ProgramImport | null>(null);
   const [name, setName] = useState('');
   const [picks, setPicks] = useState<ReadonlyMap<string, Pick>>(new Map());
@@ -64,6 +72,10 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
   // Revue : la routine écrite, la création est fermée pour de bon (une ouverture de l'éditeur en échec ne la rouvre jamais).
   const [written, setWritten] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
+  const textRef = useRef(text);
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
   const previewHeading = useRef<HTMLHeadingElement>(null);
 
   const byId = useMemo(() => new Map(data.exercises.map((e) => [e.id, e])), [data]);
@@ -78,6 +90,34 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
   useEffect(() => {
     heading.current?.focus();
   }, []);
+  useEffect(() => {
+    let alive = true;
+    import('./PdfReader').then(
+      (module) => {
+        if (alive) setPdfReader({ Reader: module.PdfReader });
+      },
+      () => {
+        // Bloc introuvable : dit à l'écran (jamais silencieux) ; le collage et la photo restent possibles.
+        if (alive) setPdfReader('failed');
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, []);
+  // Relecture IMPORT-0303 : les lignes lues (photo, PDF) respectent la même borne que la saisie ; au-delà, rien n'est ajouté et c'est dit.
+  // Le texte courant est lu par une ref : une lecture lente ne réécrit jamais une saisie faite pendant l'attente.
+  const appendLines = (lines: readonly string[]): boolean => {
+    const current = textRef.current;
+    const next = current.trim() === '' ? lines.join('\n') : `${current.replace(/\s+$/, '')}\n${lines.join('\n')}`;
+    if (next.length > TEXT_MAX) {
+      setMessage(tImport('textTooLong'));
+      return false;
+    }
+    textRef.current = next;
+    setText(next);
+    return true;
+  };
   useEffect(() => {
     if (parsed && picking === null) previewHeading.current?.focus();
   }, [parsed, picking]);
@@ -213,9 +253,16 @@ export function ProgramImportView({ data, access, ids, onClose, onCreated, ocr }
           </label>
           <PhotoReader
             {...(ocr ? { open: ocr } : {})}
-            onLines={(lines) => setText((current) => (current.trim() === '' ? lines.join('\n') : `${current.replace(/\s+$/, '')}\n${lines.join('\n')}`))}
+            onLines={appendLines}
             onStatus={setMessage}
           />
+          {pdfReader === 'failed' ? (
+            <p className="ct-training__warn" role="status">
+              {tImport('pdfLoadFailed')}
+            </p>
+          ) : pdfReader === 'loading' ? null : (
+            <pdfReader.Reader onLines={appendLines} onStatus={setMessage} {...(pdf ? { read: pdf } : {})} />
+          )}
           <p className="ct-training__muted">{tImport('privacy')}</p>
           <div className="ct-training__actions">
             <Button onClick={analyze}>{tImport('analyze')}</Button>
