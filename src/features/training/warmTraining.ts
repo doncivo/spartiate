@@ -27,6 +27,7 @@ export async function warmTraining(db: TestDb): Promise<void> {
     import('./media/ExerciseMedia'),
     import('./RoutineCircuitUi'),
     import('./import/ProgramImportView'),
+    import('./import/PdfReader'),
     import('./session/CircuitUi'),
     import('./session/ExerciseExtras'),
     import('./session/ExerciseProgression'),

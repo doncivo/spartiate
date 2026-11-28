@@ -7,11 +7,12 @@ import { tImport, type ProgramImportPlainKey } from '../../../i18n/programImport
  * IMPORT-029b (§ 17.4, D-200) : lecture d'une photo ou d'une capture du programme par la façade OCR existante (Vision sur l'iPhone,
  * Windows.Media.Ocr sur le PC, mêmes commandes Rust). L'image est choisie par le sélecteur du navigateur intégré, réduite en mémoire (côté le
  * plus grand ≤ 2 000 px, JPEG) puis lue ; elle n'est jamais enregistrée ni envoyée. Les lignes lues s'ajoutent au texte, que l'analyseur
- * de lignes lit ensuite comme un collage. Sans moteur (navigateur) : « disponible sur iPhone et sur PC ». Le PDF n'est pas lu (reporté).
+ * de lignes lit ensuite comme un collage. Sans moteur (navigateur) : « disponible sur iPhone et sur PC ». Le PDF est lu à part (PdfReader, IMPORT-0303).
  */
 
 export interface PhotoReaderProps {
-  readonly onLines: (lines: readonly string[]) => void;
+  /** Ajoute les lignes au texte ; faux si elles sont refusées (texte trop long : la vue l'a dit, aucun autre message). */
+  readonly onLines: (lines: readonly string[]) => boolean;
   readonly onStatus: (message: string | null) => void;
   /** Moteurs de lecture ; par défaut ceux de l'appareil (`openOcrService`). */
   readonly open?: () => OcrService;
@@ -69,7 +70,6 @@ export function PhotoReader({ onLines, onStatus, open }: PhotoReaderProps) {
     return (
       <div className="ct-import__photo">
         <p className="ct-training__muted">{tImport('photoUnavailable')}</p>
-        <p className="ct-training__muted">{tImport('pdfLater')}</p>
       </div>
     );
   }
@@ -93,7 +93,7 @@ export function PhotoReader({ onLines, onStatus, open }: PhotoReaderProps) {
         onStatus(tImport('photoNone'));
         return;
       }
-      onLines(lines);
+      if (!onLines(lines)) return;
       const done = tPlural(tImport, lines.length, 'photoDoneOne', 'photoDone');
       onStatus(result.truncated === true ? `${done} ${tImport('photoTruncated')}` : done);
     } catch (error) {
@@ -110,7 +110,6 @@ export function PhotoReader({ onLines, onStatus, open }: PhotoReaderProps) {
       <label htmlFor={inputId} className="ct-button ct-button--secondary ct-import__photo-button" aria-disabled={busy || undefined}>
         {tImport('photo')}
       </label>
-      <p className="ct-training__muted">{tImport('pdfLater')}</p>
     </div>
   );
 }

@@ -41,8 +41,9 @@ function choosePhoto(): void {
   fireEvent.change(input, { target: { files: [file] } });
 }
 
+// Relecture IMPORT-0303 (motif FIX-0302b) : la vue importe le lecteur PDF à la demande ; préchauffé ici, jamais à froid pendant une attente.
 beforeAll(async () => {
-  await Promise.all([import('../TrainingScreen'), import('./ProgramImportView')]);
+  await Promise.all([import('../TrainingScreen'), import('./ProgramImportView'), import('./PdfReader')]);
 }, 60_000);
 beforeEach(async () => {
   useNavigationStore.setState(INITIAL_NAVIGATION);
@@ -109,11 +110,12 @@ describe('IMPORT-029b : photo ou capture lue par l’OCR natif', () => {
     expect(textArea().value).toBe('Squat 3x5\nCurl marteau 3 x 12');
   });
 
-  it('sans moteur de lecture (navigateur) : « disponible sur iPhone et sur PC », PDF reporté, collage toujours possible', async () => {
+  // IMPORT-0303 (D-676) : le PDF est lu (PdfReader.test.tsx) ; l'ancien refus « PDF : pas encore lu » disparaît.
+  it('sans moteur de lecture (navigateur) : « disponible sur iPhone et sur PC », plus de refus du PDF, collage toujours possible', async () => {
     await openImport();
     await waitFor(() => expect(screen.getByText(tImport('photoUnavailable'))).toBeTruthy());
     expect(screen.queryByLabelText(tImport('photo'))).toBeNull();
-    expect(screen.getByText(tImport('pdfLater'))).toBeTruthy();
+    expect(screen.queryByText(/PDF : pas encore lu/)).toBeNull();
     expect(screen.getByRole('button', { name: tImport('analyze') })).toBeTruthy();
   });
 });

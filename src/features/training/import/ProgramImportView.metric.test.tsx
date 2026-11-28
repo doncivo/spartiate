@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { beforeAll, afterEach, describe, expect, it } from 'vitest';
 import { uuidGenerator } from '../../../domain/id';
 import type { DeviceId } from '../../../domain/types';
 import { openBaseDb, type TestDb } from '../../../db/repositories/sql/testSetup';
@@ -23,6 +23,11 @@ async function preview(text: string): Promise<void> {
   fireEvent.click(screen.getByRole('button', { name: tImport('analyze') }));
   await screen.findByRole('button', { name: tImport('create') });
 }
+
+// Relecture IMPORT-0303 (motif FIX-0302b) : la vue importe le lecteur PDF à la demande ; préchauffé ici, jamais à froid pendant une attente.
+beforeAll(async () => {
+  await import('./PdfReader');
+}, 60_000);
 
 describe('CONTENT-0293 : aperçu d’import et métrique de l’exercice choisi', () => {
   it('« Planche 3 x 12 » : exercice chronométré choisi, le texte signale des répétitions enregistrées en secondes', async () => {

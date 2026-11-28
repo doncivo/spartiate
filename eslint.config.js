@@ -15,6 +15,26 @@ const ON_DEMAND_PATTERN = {
   message: 'Bloc chargé à la demande (PERF-02, BUNDLE-01) : import() depuis src/features/app/lazyScreens.tsx, src/features/capture/absoluteDatesLoader.ts ou src/i18n/index.ts seulement.',
 };
 
+/** IMPORT-0303 (D-676) : pdf.js ne s'importe que dans la façade src/platform/pdf/index.ts (bloc à la demande, worker local). */
+const PDFJS_MESSAGE = 'pdfjs-dist ne s’importe que dans src/platform/pdf/index.ts (IMPORT-0303, D-676) : passer par extractPdfText.';
+const PDFJS_PATTERN = { group: ['pdfjs-dist', 'pdfjs-dist/**'], message: PDFJS_MESSAGE };
+/** Même interdiction pour import() (la règle no-restricted-imports ne voit que les déclarations). */
+const PDFJS_DYNAMIC = { selector: 'ImportExpression[source.value=/^pdfjs-dist(\\/|$)/]', message: PDFJS_MESSAGE };
+/** Règles de syntaxe communes de src/ (hors tests) ; la façade PDF les reprend sans PDFJS_DYNAMIC. */
+const SRC_SYNTAX = [
+  { selector: 'JSXText[value=/\\p{L}/u]', message: 'Texte d’interface en dur : utiliser t() de src/i18n.' },
+  {
+    selector: 'JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal',
+    message: 'Texte d’interface en dur : utiliser t() de src/i18n.',
+  },
+  {
+    selector: 'ImportDeclaration[specifiers.length=0]:not([source.value=/\\.css$/])',
+    message: 'Import nu interdit : sideEffects (package.json) l’élaguerait ; appeler une fonction d’initialisation explicite.',
+  },
+];
+/** Motifs interdits à src/platform (hors façade PDF). */
+const PLATFORM_PATTERNS = [{ group: [...layer('features'), ...layer('ui')] }, ON_DEMAND_PATTERN];
+
 /** Interdit l'import des couches listées depuis les fichiers ciblés ; `allow` : motifs relatifs admis malgré tout (négations). */
 const forbidLayers = (files, layers, message, allow = []) => ({
   files,
@@ -28,6 +48,7 @@ const forbidLayers = (files, layers, message, allow = []) => ({
           { group: [...layers.flatMap(layer), '!**/domain/sync', '!**/domain/sync/**', ...allow.map((pattern) => `!${pattern}`)], message },
           { group: ['@tauri-apps/*'], message: 'Les API Tauri ne s’importent que dans src/platform (ADR 0001).' },
           ON_DEMAND_PATTERN,
+          PDFJS_PATTERN,
         ],
       },
     ],
@@ -91,32 +112,28 @@ export default tseslint.config(
   ),
   {
     files: ['src/platform/**'],
-    rules: { 'no-restricted-imports': ['error', { patterns: [{ group: [...layer('features'), ...layer('ui')] }, ON_DEMAND_PATTERN] }] },
+    rules: { 'no-restricted-imports': ['error', { patterns: [...PLATFORM_PATTERNS, PDFJS_PATTERN] }] },
   },
   // Reste de src/ (captureMain.tsx, etc.) : mêmes blocs à la demande. App.tsx et main.tsx sont exclus : leur bloc forbidLayers (plus haut)
   // porte déjà ces motifs, et ce bloc, placé après, écraserait ses interdictions (db/drivers, platform/tauri, @tauri-apps/*).
   {
     files: ['src/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}', 'src/App.tsx', 'src/main.tsx'],
-    rules: { 'no-restricted-imports': ['error', { patterns: [ON_DEMAND_PATTERN] }] },
+    rules: { 'no-restricted-imports': ['error', { patterns: [ON_DEMAND_PATTERN, PDFJS_PATTERN] }] },
   },
   // sideEffects: ["**/*.css"] (package.json) : un import nu d'un module TS/JS serait élagué par le bundler (ADR 0001, avenant PERF-02).
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],
+    rules: { 'no-restricted-syntax': ['error', ...SRC_SYNTAX, PDFJS_DYNAMIC] },
+  },
+  // IMPORT-0303 (D-676) : la façade PDF, seul point d'import de pdfjs-dist ; elle garde les autres interdictions de src/platform et de src/.
+  {
+    // pdfjs.d.ts : déclaration de type du build legacy (aucun code exécuté).
+    files: ['src/platform/pdf/index.ts', 'src/platform/pdf/pdfjs.d.ts'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        { selector: 'JSXText[value=/\\p{L}/u]', message: 'Texte d’interface en dur : utiliser t() de src/i18n.' },
-        {
-          selector: 'JSXAttribute[name.name=/^(aria-label|aria-description|title|placeholder|alt)$/] > Literal',
-          message: 'Texte d’interface en dur : utiliser t() de src/i18n.',
-        },
-        {
-          selector: 'ImportDeclaration[specifiers.length=0]:not([source.value=/\\.css$/])',
-          message: 'Import nu interdit : sideEffects (package.json) l’élaguerait ; appeler une fonction d’initialisation explicite.',
-        },
-      ],
+      'no-restricted-imports': ['error', { patterns: PLATFORM_PATTERNS }],
+      'no-restricted-syntax': ['error', ...SRC_SYNTAX],
     },
   },
   {

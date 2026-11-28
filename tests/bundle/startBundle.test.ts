@@ -602,6 +602,36 @@ describe('bundle de départ (index.html)', () => {
     expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
   });
 
+  // IMPORT-0303 (D-676) : lecteur PDF (bloc à la demande PdfReader, catalogue fr.pdfImport, façade src/platform/pdf) importé dynamiquement par la vue
+  // d'import ; pdf.js (build legacy) importé dynamiquement par la façade seule, son worker émis comme fichier local : rien de tout cela au départ.
+  it.each(['src/features/training/import/PdfReader.tsx', 'node_modules/pdfjs-dist/legacy/build/pdf.min.mjs'])('IMPORT-0303 : %s est un bloc à la demande, hors du départ', (source) => {
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    const chunk = manifest[source];
+    if (!chunk) throw new Error(`bloc ${source} absent du manifeste`);
+    expect(start.has(chunk.file)).toBe(false);
+    expect(Object.values(manifest).some((other) => other.dynamicImports?.includes(source))).toBe(true);
+  });
+  it('IMPORT-0303 : la façade src/platform/pdf est dans le bloc à la demande du lecteur (ou un bloc qu’il importe), jamais au départ', () => {
+    const reader = manifest['src/features/training/import/PdfReader.tsx'];
+    if (!reader) throw new Error('bloc PdfReader absent du manifeste');
+    const facade = manifest['src/platform/pdf/index.ts'];
+    const start = new Set(startChunks().map((chunk) => chunk.file));
+    if (facade) expect(start.has(facade.file)).toBe(false);
+    const facadeJs = readFileSync(join(outDir, facade?.file ?? reader.file), 'utf8');
+    expect(facadeJs.includes('pdf.worker.min')).toBe(true);
+  });
+  it('IMPORT-0303 : le worker de pdf.js est un fichier local de dist/assets, jamais cité par le départ', () => {
+    const workers = readdirSync(join(outDir, 'assets')).filter((name) => /^pdf\.worker\.min-.*\.mjs$/.test(name));
+    expect(workers).toHaveLength(1);
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes('pdf.worker'), chunk.file).toBe(false);
+  });
+  it.each(['Lire un PDF', 'PDF protégé par un mot de passe', 'Fais une capture de la page et lis-la comme une photo', 'PasswordException'])('IMPORT-0303 : « %s » hors du départ et présent dans le build', (marker) => {
+    const start = startChunks().filter((chunk) => chunk.file.endsWith('.js'));
+    for (const chunk of start) expect(readFileSync(join(outDir, chunk.file), 'utf8').includes(marker), chunk.file).toBe(false);
+    expect(Object.values(manifest).some((chunk) => chunk.file.endsWith('.js') && readFileSync(join(outDir, chunk.file), 'utf8').includes(marker))).toBe(true);
+  });
+
   // I6-03b : déroulé série par série (bloc à la demande HistoryTimelineView, catalogue fr.workoutReplay, domaine replay) : hors du départ, présents dans le build.
   it('I6-03b : src/features/training/history/HistoryTimelineView.tsx est un bloc à la demande, hors du départ', () => {
     const start = new Set(startChunks().map((chunk) => chunk.file));
