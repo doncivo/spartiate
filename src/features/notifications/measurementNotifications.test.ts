@@ -48,6 +48,29 @@ describe('famille « measurement »', () => {
   });
 });
 
+describe('FIX-0304 (BL-188) : lecture des réglages en échec', () => {
+  it('readPrefs le dit (rejet, journal) au lieu de rendre les valeurs par défaut ; replan ne planifie rien sur des réglages inconnus', async () => {
+    const scheduler = createFakeNotificationScheduler();
+    const logs: string[] = [];
+    const service = createMeasurementNotificationService({
+      scheduler,
+      clock: { nowMs: () => NOW_MS, zone: () => ZONE },
+      settings: {
+        get: (async () => {
+          throw new Error('lecture impossible (test)');
+        }) as never,
+        set: (async () => undefined) as never,
+      },
+      samples: async () => [{ kind: 'waist', date: '2026-11-08' as LocalDate }],
+      log: (code) => logs.push(code),
+    });
+    await expect(service.readPrefs()).rejects.toThrow();
+    expect(logs).toContain('measurement-prefs-read-failed');
+    expect(await service.replan()).toMatchObject({ status: 'failed', planned: 0 });
+    expect(await scheduler.pending()).toEqual([]);
+  });
+});
+
 describe('service du rappel des mesures', () => {
   it('par défaut : 7 jours, rappel actif, une notification neutre à 09:00 le jour prévu', async () => {
     const { service, scheduler } = setup();
