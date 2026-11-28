@@ -77,7 +77,10 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
         try {
           read = await service.readPrefs();
         } catch {
-          if (live) setReadFailed(true);
+          if (live) {
+            setReadFailed(true);
+            setLoaded(false);
+          }
           return;
         }
         if (live && !touched.current) setPrefs(read);
@@ -90,7 +93,10 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
       })
       // Service introuvable (bloc non chargé) : le réglage stocké est inconnu, dit à l'écran comme une lecture en échec (D-804).
       .catch(() => {
-        if (live) setReadFailed(true);
+        if (live) {
+          setReadFailed(true);
+          setLoaded(false);
+        }
       });
     return () => {
       live = false;
