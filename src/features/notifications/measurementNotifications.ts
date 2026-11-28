@@ -1,4 +1,4 @@
-import { DEFAULT_MEASUREMENT_RHYTHM_DAYS, parseMeasurementRhythm, type MeasurementRhythmDays } from '../../domain/bodyProgress/measurementSchedule';
+import { parseMeasurementRhythm, type MeasurementRhythmDays } from '../../domain/bodyProgress/measurementSchedule';
 import type { BodySample } from '../../domain/bodyProgress/period';
 import { parseMeasurementReminder, planMeasurementNotifications } from '../../domain/measurementNotificationPlan';
 import { localDateTimeAt } from '../../domain/notificationInstant';
@@ -46,18 +46,22 @@ export interface MeasurementNotificationService {
 }
 
 const isOurs = (request: Pick<NotificationRequest, 'kind'>): boolean => request.kind === 'measurement';
-const DEFAULT_PREFS: MeasurementPrefs = { rhythm: DEFAULT_MEASUREMENT_RHYTHM_DAYS, reminder: true };
 const SAVE_FAILED: MeasurementNotificationResult = { status: 'failed', planned: 0, reason: 'unknown', saveFailed: true };
 
 export function createMeasurementNotificationService(deps: MeasurementNotificationDeps): MeasurementNotificationService {
   const serial = deps.serial ?? createSerialQueue();
 
+  /**
+   * FIX-0304 (BL-188, D-804) : une lecture en échec est dite (journal puis rejet), jamais remplacée par les valeurs par défaut : l'écran garderait
+   * ses contrôles actifs sur un 7 inventé et un choix écraserait le réglage stocké ; la planification, elle, ne pose rien sur des réglages inconnus.
+   */
   async function readPrefs(): Promise<MeasurementPrefs> {
     try {
       const [rhythm, reminder] = await Promise.all([deps.settings.get('bodyProgress.measurementRhythm'), deps.settings.get('bodyProgress.measurementReminder')]);
       return { rhythm: parseMeasurementRhythm(rhythm), reminder: parseMeasurementReminder(reminder) };
-    } catch {
-      return DEFAULT_PREFS;
+    } catch (error) {
+      deps.log('measurement-prefs-read-failed');
+      throw error;
     }
   }
 
