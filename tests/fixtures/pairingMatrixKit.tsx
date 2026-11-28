@@ -17,7 +17,7 @@ import type { SyncStatus } from '../../src/platform/sync/types';
 import { createSyncService, silentSyncLogger } from '../../src/sync';
 import { SYNC_CATALOGUE } from '../../src/domain/sync/syncTables';
 import { PAIRING_PHONE_ID as SELF, publishedPcFolder, type PcWorld } from './pairingWorld';
-import { settle } from '../setup/settle';
+import { settle, SETTLE_MAX_TURNS } from '../setup/settle';
 
 /**
  * Banc de la matrice « état × plateforme × écran » de l'association (Y-IOS-02, QA du parcours, demande d'Ali 0.2.2) : moteur et plateforme
@@ -181,14 +181,28 @@ export function bannerText(): string | null {
 }
 
 /** Actions offertes par Réglages › Synchronisation, par Détails, et bandeau. */
+/**
+ * REL-0.30.4 (CI du 28/11, run 46148668416, E02 PC) : `SyncSettingsSection` lance un cycle à l'ouverture ; pendant ce cycle le bouton se lit
+ * « Synchronisation… » (`aria-busy`). `settle` s'arrête sur un document inchangé pendant un tour, ce qui n'est pas la fin du cycle : sur un
+ * runner chargé, l'observation tombait au milieu et ne voyait pas « Synchroniser ». On attend donc le signal (plus aucun élément `aria-busy`),
+ * compté en tours comme `settle`, jamais en durée.
+ */
+async function settleIdle(driver: TestDb['driver']): Promise<void> {
+  for (let turn = 0; turn < SETTLE_MAX_TURNS; turn++) {
+    await settle(driver);
+    if (document.querySelector('[aria-busy="true"]') === null) return;
+  }
+  throw new Error(`cycle de synchro jamais terminé après ${String(SETTLE_MAX_TURNS)} attentes`);
+}
+
 export async function observe(h: Harness): Promise<Seen> {
   const { db } = current();
   renderIn(h.container, <SyncSettingsSection />);
-  await settle(db.driver);
+  await settleIdle(db.driver);
   const settings = visibleActions();
   cleanup();
   renderIn(h.container, <SyncDetailsScreen />);
-  await settle(db.driver);
+  await settleIdle(db.driver);
   const details = visibleActions();
   cleanup();
   return { settings, details, banner: bannerText() };

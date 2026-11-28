@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.4
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 25, rien n'est modifié ni effacé.
+
+- **Rythme des mesures, lecture impossible (D-804)** : si Spartiate ne parvient pas à lire tes réglages du rythme, Corps › Mesures le dit (« Réglages du rythme illisibles : rien n'a été modifié. ») avec « Réessayer », et le rythme et le rappel restent inactifs : un choix ne peut plus écraser ton réglage enregistré. Aucun rappel n'est posé sur des réglages inconnus.
+- **Listes de matériel longues protégées (D-805 à D-807)** : si un appareil resté sur une version antérieure à la 0.30.2 réécrit un profil de matériel de plus de 64 matériels (qu'il lit vide), l'appareil à jour garde sa liste, l'inscrit dans le journal des conflits (Plus › Appareils et synchro, réversible) et la renvoie à l'autre appareil. La modification faite sur l'appareil ancien est alors écartée : mets les deux appareils à jour le même jour.
+
+Rien de nouveau à constater après cette mise à jour : les essais en attente restent ceux des sections 0.30.2 et 0.30.3 de `docs/constats-ali.md`.
+
 ## 0.30.3
 
 **Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 25, rien n'est modifié ni effacé.
