@@ -14,7 +14,7 @@ en fin de fichier, générée par `node scripts/release/prudent-review.mjs --wri
 
 ## Revue par thème des choix prudents (D-490, BL-149)
 
-448 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
+451 décisions retenues : colonne source « Claude » ou « choix prudent », ou texte « révisable par Ali », hors décisions validées par Ali dans leur colonne source.
 Thème, poids et nature sont calculés par mots-clés (scripts/release/prudent-review.mjs) : un tri mécanique, à corriger par Ali s'il se trompe (D-618).
 Poids : synchro 3, schéma 3, moteur 2, données effacées 2, chiffre 1, écran 1, longueur jusqu'à 3, « à trancher » 4. Les plus lourdes en tête de chaque thème.
 Réponse attendue : « D-n : A » (garder) ou « D-n : B, … » (réviser, avec ce qui change). Aucun comportement ne change tant qu'Ali n'a pas répondu ; une réponse devient une D- nouvelle.
@@ -273,7 +273,7 @@ Gardées sans question (à confirmer seulement) :
 | 0 | D-690 | NUTRI-0299 (BL-172, D-664, D-680) : un fichier du raccourci « Spartiate — récupération » sans saut de ligne final est refusé en entier, sans rien … | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-712 | DEC-0301 (D-700, D-701) : « Notes du matin (30 jours) » reste dans Activité › Suivis, en dernier sous-bloc. | à confirmer seulement (aucun effet visible repéré) |
 
-### synchro et données (108 : 61 à trancher, 47 à confirmer seulement)
+### synchro et données (111 : 61 à trancher, 50 à confirmer seulement)
 
 | Poids | D- | Résumé | Ce qu'Ali tranche |
 |---|---|---|---|
@@ -366,6 +366,9 @@ Gardées sans question (à confirmer seulement) :
 | 3 | D-637 | DATA-0295 (réserves de la relecture sync-icloud de la PR #223) : C-154 et C-153 resserrés. | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-642 | REL-0.29.5 (H-43, C-155) : un dossier sans synchro de dossier ne bloque pas la publication. | à confirmer seulement (aucun effet visible repéré) |
 | 3 | D-780 | SESS-0302 (D-658, BL-110). | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-805 | SYNC-0304 (BL-187, suite de D-796), avenant 40 de l'ADR 0011. | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-806 | SYNC-0304 (BL-187). | à confirmer seulement (aucun effet visible repéré) |
+| 3 | D-807 | SYNC-0304 (BL-187). | à confirmer seulement (aucun effet visible repéré) |
 | 1 | D-135 | FIX-0172 : relecture de sante après l'ouverture (automatisation « Lorsque Spartiate est ouverte »). | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-280 | FIX-0241 (0.25.0) : colonnes de Progrès › Corps selon la largeur. | à confirmer seulement (aucun effet visible repéré) |
 | 0 | D-329 | FIX-CONFID-IOS (0.28.0) : base, sauvegardes locales et journal exclus de la sauvegarde iCloud de l'iPhone (audit Claude C-152, C-147; applique D-99 … | à confirmer seulement (aucun effet visible repéré) |
