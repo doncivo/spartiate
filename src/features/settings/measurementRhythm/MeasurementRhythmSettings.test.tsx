@@ -84,7 +84,7 @@ describe('FIX-0302a : un choix fait avant la lecture des réglages n’écrase p
     expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('iPhone : service introuvable, les contrôles s’activent quand même et l’échec est dit (critère 3, relecture)', async () => {
+  it('iPhone : service introuvable, les contrôles restent inactifs et l’échec est dit (FIX-0304, BL-188, D-804 ; révise le critère 3 de FIX-0302a)', async () => {
     const repos = new Proxy(db.data.repos, {
       get: (target, key, receiver) => {
         if (key === 'settings') throw new Error('service introuvable (test)');
@@ -92,9 +92,38 @@ describe('FIX-0302a : un choix fait avant la lecture des réglages n’écrase p
       },
     });
     mount([waist('2026-11-09')], createFakeNotificationScheduler(), 'Europe/Paris', { ...db.data, repos });
-    expect(await screen.findByText('Le rappel n’a pas pu être programmé.')).toBeInTheDocument();
-    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).not.toBeDisabled();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Réglages du rythme illisibles');
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Chaque semaine' })).toBeDisabled();
+  });
+
+  it('lecture des réglages en échec : dit à l’écran, contrôles inactifs, rien n’est écrit ; « Réessayer » relit le 28 stocké (FIX-0304, BL-188)', async () => {
+    await db.data.repos.settings.set('bodyProgress.measurementRhythm', 28);
+    let broken = true;
+    const real = db.data.repos.settings;
+    const settings = new Proxy(real, {
+      get(target, key, receiver) {
+        const value: unknown = Reflect.get(target, key, receiver);
+        if (key !== 'get' || typeof value !== 'function') return value;
+        return async (...args: unknown[]) => {
+          if (broken) throw new Error('lecture impossible (test)');
+          return (value as (...a: unknown[]) => unknown).apply(target, args);
+        };
+      },
+    });
+    const repos = new Proxy(db.data.repos, { get: (target, key, receiver) => (key === 'settings' ? settings : Reflect.get(target, key, receiver)) });
+    mount([waist('2026-11-09')], createFakeNotificationScheduler(), 'Europe/Paris', { ...db.data, repos });
+    expect(await screen.findByRole('alert')).toHaveTextContent('Réglages du rythme illisibles');
+    const weekly = screen.getByRole('radio', { name: 'Chaque semaine' });
+    expect(weekly).toBeDisabled();
+    expect(screen.getByRole('switch', { name: 'Rappel le matin du jour prévu' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('radio', { name: 'Toutes les 2 semaines' }));
+    expect(await real.get('bodyProgress.measurementRhythm')).toBe(28);
+    broken = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Réessayer' }));
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Toutes les 4 semaines' })).toHaveAttribute('aria-checked', 'true'));
     expect(screen.getByRole('radio', { name: 'Chaque semaine' })).not.toBeDisabled();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('PC : le rythme ne se règle qu’après la lecture ; le 14 stocké reste 14', async () => {

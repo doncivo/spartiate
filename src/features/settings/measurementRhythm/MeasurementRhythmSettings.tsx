@@ -4,6 +4,7 @@ import { todayLocal } from '../../../domain/clock';
 import type { LocalDate } from '../../../domain/types';
 import { tMeasurementRhythm } from '../../../i18n/measurementRhythmText';
 import { tPlural } from '../../../i18n/plural';
+import { Button } from '../../../ui/Button';
 import { SegmentedControl } from '../../../ui/SegmentedControl';
 import { Switch } from '../../../ui/Switch';
 import { useAppContainer } from '../../app/AppContainerContext';
@@ -55,6 +56,9 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
   // FIX-0302a (BL-183) : avant la lecture des réglages, l'écran ne connaît que les valeurs par défaut ; les contrôles restent inactifs jusque-là,
   // sinon un choix enregistrerait le rythme par défaut et écraserait un 14 ou un 28 déjà stocké.
   const [loaded, setLoaded] = useState(false);
+  // FIX-0304 (BL-188, D-804) : lecture en échec (ou service introuvable) : dite à l'écran, contrôles inactifs, « Réessayer » relit.
+  const [readFailed, setReadFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   // Relecture (point 4) : une lecture des réglages arrivée après un choix de l'utilisateur ne l'écrase pas.
   const touched = useRef(false);
   const schedule = measurementSchedule(
@@ -69,21 +73,35 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
     let live = true;
     void loadService(container)
       .then(async (service) => {
-        const read = await service.readPrefs();
+        let read: MeasurementPrefs;
+        try {
+          read = await service.readPrefs();
+        } catch {
+          if (live) {
+            setReadFailed(true);
+            setLoaded(false);
+          }
+          return;
+        }
         if (live && !touched.current) setPrefs(read);
-        if (live) setLoaded(true);
+        if (live) {
+          setReadFailed(false);
+          setLoaded(true);
+        }
         const replanned = await service.replan();
         if (live) setResult(replanned);
       })
-      // Service introuvable (bloc non chargé) : l'échec est dit à l'écran, jamais avalé.
+      // Service introuvable (bloc non chargé) : le réglage stocké est inconnu, dit à l'écran comme une lecture en échec (D-804).
       .catch(() => {
-        if (live) setLoaded(true);
-        if (live) setResult({ status: 'failed', planned: 0, reason: 'unknown' });
+        if (live) {
+          setReadFailed(true);
+          setLoaded(false);
+        }
       });
     return () => {
       live = false;
     };
-  }, [container, lastKey]);
+  }, [container, lastKey, attempt]);
 
   const save = async (next: MeasurementPrefs, askPermission: boolean): Promise<void> => {
     const previous = prefs;
@@ -135,6 +153,14 @@ export function MeasurementRhythmSettings({ samples }: MeasurementRhythmProps) {
         <p role="status" className="ct-today__muted">
           {note}
         </p>
+      ) : null}
+      {readFailed ? (
+        <div role="alert">
+          <p className="ct-today__text">{tMeasurementRhythm('readFailed')}</p>
+          <Button variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+            {tMeasurementRhythm('retry')}
+          </Button>
+        </div>
       ) : null}
       {saveFailed ? (
         <p role="alert" className="ct-today__text">

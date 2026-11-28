@@ -20,4 +20,6 @@ export const measurementRhythmFr = {
   reminderPermission: 'Notifications refusées : autorise Spartiate dans les Réglages de l’iPhone.',
   reminderFailed: 'Le rappel n’a pas pu être programmé.',
   saveFailed: 'Réglage non enregistré. Réessaie.',
+  readFailed: 'Réglages du rythme illisibles : rien n’a été modifié.',
+  retry: 'Réessayer',
 } as const;
