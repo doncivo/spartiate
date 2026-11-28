@@ -2,6 +2,15 @@
 
 Le changelog de l'ancien projet est archivé : `docs/archive/circletasks/CHANGELOG.md` (D-40).
 
+## 0.30.3
+
+**Mets à jour le PC et l'iPhone le même jour.** Aucune migration : ta base reste au schéma 25, rien n'est modifié ni effacé.
+
+- **Lire un PDF (D-676, D-786 à D-790)** : Entraînement › Routines › Importer un programme › « Lire un PDF » lit le texte d'un programme en PDF (10 Mo et 20 pages au plus), sur l'appareil, sans réseau ; les lignes rejoignent le texte et donnent l'aperçu habituel avant confirmation. Un PDF protégé ou scanné est refusé et la raison est dite (pour un scan : fais une capture de la page et lis-la comme une photo). Le fichier n'est jamais enregistré.
+- **Gestes de la séance sur l'iPhone (D-653, D-797 à D-801)** : glisse une série à faire vers la gauche pour la supprimer, « Annuler » (5 s) la remet à sa place ; un appui long sur le titre d'un exercice le soulève pour le déplacer. Un défilement vertical ne supprime rien. Au clavier et avec VoiceOver, « Monter » et « Descendre » font le même déplacement. Sur le PC, rien ne change.
+
+Après la mise à jour : la liste est dans `docs/constats-ali.md` (section 0.30.3).
+
 ## 0.30.2
 
 **Mets à jour le PC et l'iPhone le même jour, avant toute saisie.** Deux migrations : ta base passe au schéma 25 (trois colonnes ajoutées, vides pour ce qui existe déjà ; rien n'est modifié ni effacé). Une sauvegarde « Avant mise à jour » est faite d'abord. Un appareil resté en 0.30.1 garde de côté, sans les afficher, le temps de pause et le poids du gilet reçus de l'autre, et les reprend à sa mise à jour ; dans l'autre sens, une séance close ou un profil de matériel créé sur un appareil resté en 0.30.1 est mis de côté jusqu'à sa mise à jour, sans perte. Une base au schéma 25 restaurée dans une 0.30.1 est refusée, sans perte. **Mets à jour les deux appareils avant d'enregistrer un profil de matériel de plus de 64 matériels** : tant qu'un appareil plus ancien est connu, Spartiate le refuse et te le dit (D-796).
